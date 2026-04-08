@@ -61,7 +61,7 @@ const Index = () => {
       <div className="fixed bottom-6 right-6 w-6 h-6 rounded-full bg-foreground/80" />
 
       {/* Popup */}
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-lg rounded-[2rem] border bg-background p-8">
           <DialogHeader>
             <DialogTitle className="text-sm tracking-widest font-normal">
