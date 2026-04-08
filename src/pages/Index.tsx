@@ -53,7 +53,7 @@ const Index = () => {
           <span
             className={`absolute w-7 h-7 rounded-full bg-primary shadow-sm transition-all duration-300 ease-in-out ${toggled ? 'left-[55px]' : 'left-1'}`}
           />
-          <span className={`text-xs font-medium text-foreground tracking-wider transition-all duration-300 ease-in-out ${toggled ? 'ml-3' : 'ml-10'}`}>.uno</span>
+          <span className={`text-xs font-semibold text-foreground tracking-wider transition-all duration-300 ease-in-out ${toggled ? 'ml-3' : 'ml-10'}`}>.uno</span>
         </button>
       </div>
 
