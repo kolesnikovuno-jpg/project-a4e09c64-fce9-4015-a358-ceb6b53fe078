@@ -36,10 +36,10 @@ const Index = () => {
     >
       {/* Center content */}
       <div className="flex flex-col items-start px-6 max-w-lg">
-        <p className="text-foreground mb-3 text-sm">
+        <p className="text-foreground mb-3 tracking-widest text-sm">
           architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
         </p>
-        <p className="text-muted-foreground leading-relaxed text-xs mb-8">
+        <p className="text-muted-foreground leading-relaxed text-xs tracking-wider mb-8">
           выявляю структуру → формирую идею →<br />
           разворачиваю в проект → контролирую<br />
           реализацию.
@@ -53,7 +53,7 @@ const Index = () => {
           <span
             className={`absolute w-7 h-7 rounded-full bg-primary shadow-sm transition-all duration-300 ease-in-out ${toggled ? 'left-[55px]' : 'left-1'}`}
           />
-          <span className={`text-xs font-semibold text-foreground transition-all duration-300 ease-in-out ${toggled ? 'ml-4' : 'ml-11'}`}>.uno</span>
+          <span className={`text-xs font-semibold text-foreground tracking-wider transition-all duration-300 ease-in-out ${toggled ? 'ml-3' : 'ml-10'}`}>.uno</span>
         </button>
       </div>
 
@@ -64,11 +64,11 @@ const Index = () => {
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-lg rounded-[2rem] border bg-background p-8">
           <DialogHeader>
-            <DialogTitle className="text-sm font-normal">
+            <DialogTitle className="text-sm tracking-widest font-normal">
               .uno studio
             </DialogTitle>
           </DialogHeader>
-          <div className="text-xs text-muted-foreground leading-relaxed space-y-3">
+          <div className="text-xs text-muted-foreground leading-relaxed tracking-wider space-y-3">
             <p>
               анализ ситуации, формирование идеи, создание концепции, разработка проекции, передача прав, контроль качества.
             </p>

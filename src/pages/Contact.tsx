@@ -10,7 +10,7 @@ const contacts = [
 const Contact = () => (
   <Layout>
     <section className="container mx-auto px-6 py-24">
-      <p className="text-sm font-medium uppercase text-primary mb-4">
+      <p className="text-sm font-medium tracking-widest uppercase text-primary mb-4">
         Контакты
       </p>
       <h1 className="text-3xl md:text-5xl mb-6 max-w-xl">
