@@ -4,9 +4,20 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 const Index = () => {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Don't navigate if clicking on interactive elements
+    const target = e.target as HTMLElement;
+    if (target.closest("button") || target.closest("[role='dialog']")) return;
+    navigate("/canvas");
+  };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-background">
+    <div
+      className="relative min-h-screen flex items-center justify-center bg-background cursor-pointer"
+      onClick={handleBackgroundClick}
+    >
       {/* Center content */}
       <div className="flex flex-col items-start px-6 max-w-lg">
         <p className="text-foreground mb-3 tracking-widest text-sm">
