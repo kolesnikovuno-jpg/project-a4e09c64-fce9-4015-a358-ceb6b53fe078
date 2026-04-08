@@ -4,10 +4,26 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 const Index = () => {
   const [open, setOpen] = useState(false);
+  const [toggled, setToggled] = useState(false);
   const navigate = useNavigate();
 
+  const handleToggle = () => {
+    if (!toggled) {
+      setToggled(true);
+      setTimeout(() => setOpen(true), 350);
+    } else {
+      setOpen(false);
+    }
+  };
+
+  const handleClose = (value: boolean) => {
+    if (!value) {
+      setOpen(false);
+      setToggled(false);
+    }
+  };
+
   const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Don't navigate if clicking on interactive elements
     const target = e.target as HTMLElement;
     if (target.closest("button") || target.closest("[role='dialog']")) return;
     navigate("/canvas");
