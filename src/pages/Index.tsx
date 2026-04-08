@@ -48,7 +48,7 @@ const Index = () => {
         {/* Toggle button */}
         <button
           onClick={handleToggle}
-          className="group relative flex items-center bg-primary/20 rounded-full w-[90px] h-9 hover:bg-primary/30 transition-colors cursor-pointer"
+          className="group relative flex items-center bg-primary/20 border border-primary/40 rounded-full w-[90px] h-9 hover:bg-primary/30 transition-colors cursor-pointer"
         >
           <span
             className={`absolute w-7 h-7 rounded-full bg-primary shadow-sm transition-all duration-300 ease-in-out ${toggled ? 'left-[55px]' : 'left-1'}`}
