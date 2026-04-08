@@ -32,10 +32,12 @@ const Index = () => {
         {/* Toggle button */}
         <button
           onClick={() => setOpen(!open)}
-          className="group flex items-center gap-0 bg-primary/20 rounded-full pr-3 pl-1 py-1 hover:bg-primary/30 transition-colors cursor-pointer"
+          className="group relative flex items-center bg-primary/20 rounded-full w-[90px] h-9 hover:bg-primary/30 transition-colors cursor-pointer"
         >
-          <span className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shadow-sm" />
-          <span className="text-xs font-medium text-foreground ml-2 tracking-wider">.uno</span>
+          <span
+            className={`absolute w-7 h-7 rounded-full bg-primary shadow-sm transition-all duration-300 ease-in-out ${open ? 'left-[55px]' : 'left-1'}`}
+          />
+          <span className={`text-xs font-medium text-foreground tracking-wider transition-all duration-300 ease-in-out ${open ? 'ml-3' : 'ml-10'}`}>.uno</span>
         </button>
       </div>
 
