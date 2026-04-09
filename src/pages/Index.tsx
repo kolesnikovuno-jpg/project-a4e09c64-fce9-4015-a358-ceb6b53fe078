@@ -36,10 +36,10 @@ const Index = () => {
     >
       {/* Mobile: left-aligned naturally. Desktop: absolute centered on circle */}
       <div className="flex flex-col items-start md:absolute md:top-1/2 md:left-1/2 md:[-webkit-transform:translate(-18px,-50%)] md:[transform:translate(-18px,-50%)]">
-        <p className="text-foreground mb-3 tracking-widest text-sm">
+        <p className="text-foreground mb-3 tracking-widest text-base md:text-sm">
           architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
         </p>
-        <p className="text-muted-foreground leading-relaxed text-xs tracking-wider mb-8">
+        <p className="text-muted-foreground leading-relaxed text-sm md:text-xs tracking-wider mb-8">
           выявляю структуру → формирую идею →<br />
           разворачиваю в проект → контролирую<br />
           реализацию.
