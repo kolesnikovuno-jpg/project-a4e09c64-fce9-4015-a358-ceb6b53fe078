@@ -34,8 +34,8 @@ const Index = () => {
       className="relative min-h-screen flex items-center justify-center bg-background cursor-pointer"
       onClick={handleBackgroundClick}
     >
-      {/* Center content */}
-      <div className="flex flex-col items-start px-6 max-w-lg" style={{ transform: 'translateX(-27px)' }}>
+      {/* Anchor: circle center = viewport center. Circle center is 18px from button left. */}
+      <div className="absolute flex flex-col items-start" style={{ left: '50%', top: '50%', transform: 'translate(-18px, -50%)' }}>
         <p className="text-foreground mb-3 tracking-widest text-sm">
           architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
         </p>
