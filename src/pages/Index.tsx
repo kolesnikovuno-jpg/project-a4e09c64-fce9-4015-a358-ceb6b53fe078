@@ -52,9 +52,18 @@ const Index = () => {
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-2xl rounded-none border border-white/20 bg-white/60 backdrop-blur-sm shadow-none p-8">
           <DialogHeader className="text-left">
-            <DialogTitle className="text-sm tracking-[0.15em] font-normal">
-              .uno studio
-            </DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-sm tracking-[0.15em] font-normal">
+                .uno studio
+              </DialogTitle>
+              <a
+                href="/unocalc"
+                onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
+                className="text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors mr-6"
+              >
+                unocalc
+              </a>
+            </div>
             <p className="text-foreground tracking-[0.12em] text-[13px] mt-2">
               architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
             </p>
