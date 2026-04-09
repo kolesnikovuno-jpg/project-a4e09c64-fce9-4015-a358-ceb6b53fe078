@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
 
 const About = () => {
   const navigate = useNavigate();
@@ -8,11 +7,10 @@ const About = () => {
     <div className="min-h-screen bg-background flex items-center justify-center px-6 py-12">
       <div className="max-w-xl w-full">
         <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-[11px] tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors mb-10 cursor-pointer"
+          onClick={() => navigate("/")}
+          className="text-[11px] tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors mb-10 cursor-pointer"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          назад
+          .uno
         </button>
 
         <h1 className="text-sm tracking-[0.15em] font-normal mb-2">R. Yuriy Kolesnikov</h1>
