@@ -58,7 +58,7 @@ const Index = () => {
                 <a
                   href="/about"
                   onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/about"); }}
-                  className="ml-4 text-sm tracking-[0.15em] font-normal text-primary/70 hover:text-primary transition-colors"
+                  className="ml-4 text-sm tracking-[0.15em] font-normal text-foreground/70 hover:text-foreground transition-colors"
                 >
                   R.Yury Kolesnikov
                 </a>

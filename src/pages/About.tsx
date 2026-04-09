@@ -1,19 +1,19 @@
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const About = () => {
-  const navigate = useNavigate();
-
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6 py-12">
       <div className="max-w-xl w-full">
-        <button
-          onClick={() => navigate("/")}
-          className="text-[11px] tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors mb-10 cursor-pointer"
-        >
-          .uno
-        </button>
+        <div className="flex items-center justify-between mb-10">
+          <h1 className="text-sm tracking-[0.15em] font-normal">R. Yuriy Kolesnikov</h1>
+          <Link
+            to="/"
+            className="text-[13px] text-primary font-medium hover:text-primary/80 transition-colors"
+          >
+            .uno
+          </Link>
+        </div>
 
-        <h1 className="text-sm tracking-[0.15em] font-normal mb-2">R. Yuriy Kolesnikov</h1>
         <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-8">.uno studio</p>
 
         <div className="text-[13px] leading-[1.85] text-foreground/85 space-y-5">
