@@ -104,14 +104,14 @@ const Index = () => {
                 href="https://t.me/kolesnikov_uno"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block text-[13px] text-primary hover:text-primary/70 transition-colors mb-1.5"
+                className="block text-[13px] text-primary font-medium hover:text-primary/80 transition-colors mb-1.5"
               >
                 Написать в Telegram →
               </a>
               <a
                 href="/pricing"
                 onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/pricing"); }}
-                className="block text-[13px] text-primary/50 hover:text-primary/70 transition-colors"
+                className="block text-[13px] text-primary/75 hover:text-primary/90 transition-colors"
               >
                 Формат и стоимость →
               </a>
