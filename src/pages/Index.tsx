@@ -35,10 +35,10 @@ const Index = () => {
       onClick={handleBackgroundClick}
     >
       {/* Mobile: left-aligned naturally. Desktop: absolute centered on circle */}
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-center mt-[72px] md:mt-0">
         <button
           onClick={handleToggle}
-          className="group relative flex items-center bg-primary border border-primary/60 rounded-full w-[90px] h-9 hover:bg-primary/90 transition-colors cursor-pointer ml-[27px]"
+          className="group relative flex items-center bg-primary border border-primary/60 rounded-full w-[90px] h-9 hover:bg-primary/90 transition-colors cursor-pointer translate-x-[27px]"
         >
           <span
             className={`absolute w-7 h-7 rounded-full bg-white/80 shadow-sm transition-all duration-300 ease-in-out ${toggled ? 'left-[55px]' : 'left-1'}`}
