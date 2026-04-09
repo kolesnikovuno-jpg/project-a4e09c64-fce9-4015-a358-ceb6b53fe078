@@ -31,7 +31,7 @@ const Index = () => {
 
   return (
     <div
-      className="relative min-h-screen flex items-center bg-background cursor-pointer justify-start pl-6 md:justify-center md:pl-0"
+      className="relative min-h-screen flex items-center bg-white/90 cursor-pointer justify-start pl-6 md:justify-center md:pl-0"
       onClick={handleBackgroundClick}
     >
       {/* Mobile: left-aligned naturally. Desktop: absolute centered on circle */}
