@@ -35,7 +35,7 @@ const Index = () => {
       onClick={handleBackgroundClick}
     >
       {/* Anchor: circle center = viewport center. Circle center is 18px from button left. */}
-      <div className="flex flex-col items-start" style={{ transform: 'translateX(18px)' }}>
+      <div className="absolute flex flex-col items-start" style={{ left: '50%', top: '50%', transform: 'translate(-18px, -50%)' }}>
         <p className="text-foreground mb-3 tracking-widest text-sm">
           architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
         </p>
