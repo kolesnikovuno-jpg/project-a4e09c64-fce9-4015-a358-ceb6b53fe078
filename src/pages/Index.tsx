@@ -51,6 +51,21 @@ const Index = () => {
       {/* Popup */}
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-2xl rounded-none border border-white/20 bg-white/60 backdrop-blur-sm shadow-none p-8 overflow-visible">
+          {/* Circle menu — nodes connected to the close dot */}
+          <div className="hidden md:block absolute -top-8 -right-20 pointer-events-none" style={{ width: '180px', height: '140px' }}>
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 180 140" fill="none">
+              <line x1="155" y1="20" x2="90" y2="90" stroke="hsl(var(--primary))" strokeWidth="0.75" opacity="0.45" />
+            </svg>
+            <a
+              href="/unocalc"
+              onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
+              className="pointer-events-auto absolute flex items-center justify-center w-[72px] h-[72px] rounded-full border border-primary/35 text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
+              style={{ left: '54px', top: '54px' }}
+            >
+              unocalc
+            </a>
+          </div>
+
           <DialogHeader className="text-left overflow-visible">
             <div className="flex items-center justify-between overflow-visible">
               <DialogTitle className="text-sm tracking-[0.15em] font-normal">
@@ -59,16 +74,16 @@ const Index = () => {
               <a
                 href="/about"
                 onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/about"); }}
-                className="text-[13px] text-primary font-medium hover:text-primary/80 transition-colors"
+                className="text-[13px] text-primary font-medium hover:text-primary/80 transition-colors mr-6"
               >
                 R.Yury Kolesnikov
               </a>
+              {/* Mobile fallback for unocalc */}
               <a
                 href="/unocalc"
                 onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
-                className="relative text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors mr-6 px-5 py-2.5 border border-dashed border-primary/20 rounded-full"
+                className="md:hidden text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors mr-6"
               >
-                <span className="absolute left-1/2 -translate-x-[0.5px] -top-10 w-px h-10 bg-primary/20" />
                 unocalc
               </a>
             </div>
