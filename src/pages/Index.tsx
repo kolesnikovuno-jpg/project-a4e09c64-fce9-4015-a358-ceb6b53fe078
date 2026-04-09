@@ -56,13 +56,22 @@ const Index = () => {
               <DialogTitle className="text-sm tracking-[0.15em] font-normal">
                 .uno studio
               </DialogTitle>
-              <a
-                href="/unocalc"
-                onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
-                className="text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors mr-6"
-              >
-                unocalc
-              </a>
+              <div className="flex items-center gap-4 mr-6">
+                <a
+                  href="/about"
+                  onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/about"); }}
+                  className="text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
+                >
+                  о себе
+                </a>
+                <a
+                  href="/unocalc"
+                  onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
+                  className="text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
+                >
+                  unocalc
+                </a>
+              </div>
             </div>
             <p className="text-foreground tracking-[0.12em] text-[13px] mt-2">
               architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
