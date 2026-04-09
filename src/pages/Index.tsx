@@ -55,6 +55,13 @@ const Index = () => {
             <DialogTitle className="text-sm tracking-[0.15em] font-normal">
               .uno studio
             </DialogTitle>
+            <p className="text-foreground tracking-[0.12em] text-[13px] mt-2">
+              architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
+            </p>
+            <p className="text-muted-foreground text-[12px] leading-relaxed mt-1">
+              выявляю структуру → формирую идею →<br />
+              разворачиваю в проект → контролирую реализацию.
+            </p>
           </DialogHeader>
 
           {/* Mobile: vertical stack / Desktop: two columns */}
