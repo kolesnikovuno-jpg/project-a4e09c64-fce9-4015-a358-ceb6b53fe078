@@ -66,53 +66,51 @@ const Index = () => {
               .uno studio
             </DialogTitle>
           </DialogHeader>
-          <div className="text-sm text-foreground leading-relaxed tracking-wider space-y-0">
-            <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-1">что это</p>
-            <p className="text-base font-medium mb-0.5">Проектирование структуры и формы.</p>
-            <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-4">как это происходит</p>
+          <div className="text-foreground leading-relaxed tracking-wide">
+            <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground mb-1">что это</p>
+            <p className="text-[15px] font-semibold tracking-tight mb-1">Проектирование структуры и формы.</p>
+            <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground mb-5">как это происходит</p>
 
-            <div className="space-y-0 divide-y divide-muted">
-              <div className="py-3">
-                <p className="font-medium text-sm">Анализ ситуации</p>
-                <p className="text-xs text-muted-foreground">Определение контекста, конфигурации и связей.</p>
+            <div className="space-y-4 mb-6">
+              <div>
+                <p className="text-[13px] font-normal text-foreground">Анализ ситуации</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Определение контекста, конфигурации и связей.</p>
               </div>
-              <div className="py-3">
-                <p className="font-medium text-sm">Формирование идеи</p>
-                <p className="text-xs text-muted-foreground">Выбор принципа решения.</p>
+              <div>
+                <p className="text-[13px] font-normal text-foreground">Формирование идеи</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Выбор принципа решения.</p>
               </div>
-              <div className="py-3">
-                <p className="font-medium text-sm">Создание концепции</p>
-                <p className="text-xs text-muted-foreground">Сборка формы и логики.</p>
+              <div>
+                <p className="text-[13px] font-normal text-foreground">Создание концепции</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Сборка формы и логики.</p>
               </div>
-              <div className="py-3">
-                <p className="font-medium text-sm">Разработка проекта</p>
-                <p className="text-xs text-muted-foreground">Рабочая документация и проекции.</p>
+              <div>
+                <p className="text-[13px] font-normal text-foreground">Разработка проекта</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Рабочая документация и проекции.</p>
               </div>
-              <div className="py-3">
-                <p className="font-medium text-sm">Контроль реализации</p>
-                <p className="text-xs text-muted-foreground">Проверка соответствия и передача прав.</p>
+              <div>
+                <p className="text-[13px] font-normal text-foreground">Контроль реализации</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Проверка соответствия и передача прав.</p>
               </div>
             </div>
 
-            <div className="pt-4">
-              <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-1">результат</p>
-              <p className="text-base font-medium mb-4">Структура, которая работает.</p>
-              <a
-                href="https://t.me/kolesnikov_uno"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-sm text-primary hover:text-primary/80 transition-colors mb-1.5"
-              >
-                Написать в Telegram →
-              </a>
-              <a
-                href="/pricing"
-                onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/pricing"); }}
-                className="block text-sm text-primary/60 hover:text-primary/80 transition-colors"
-              >
-                Формат и стоимость →
-              </a>
-            </div>
+            <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground mb-1">результат</p>
+            <p className="text-[15px] font-semibold tracking-tight mb-5">Структура, которая работает.</p>
+            <a
+              href="https://t.me/kolesnikov_uno"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-[13px] text-primary hover:text-primary/70 transition-colors mb-1.5"
+            >
+              Написать в Telegram →
+            </a>
+            <a
+              href="/pricing"
+              onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/pricing"); }}
+              className="block text-[13px] text-primary/50 hover:text-primary/70 transition-colors"
+            >
+              Формат и стоимость →
+            </a>
           </div>
         </DialogContent>
       </Dialog>
