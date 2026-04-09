@@ -54,16 +54,16 @@ const Index = () => {
           <DialogHeader className="text-left">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-sm tracking-[0.15em] font-normal">
-                <span>.uno studio</span>
+                .uno studio
+              </DialogTitle>
+              <div className="flex items-center gap-4 mr-6">
                 <a
                   href="/about"
                   onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/about"); }}
-                  className="ml-4 text-sm tracking-[0.15em] font-normal text-foreground/70 hover:text-foreground transition-colors"
+                  className="text-[13px] text-primary font-medium hover:text-primary/80 transition-colors"
                 >
                   R.Yury Kolesnikov
                 </a>
-              </DialogTitle>
-              <div className="flex items-center gap-4 mr-6">
                 <a
                   href="/unocalc"
                   onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
