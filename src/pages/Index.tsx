@@ -52,17 +52,15 @@ const Index = () => {
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-2xl rounded-none border border-white/20 bg-white/60 backdrop-blur-sm shadow-none p-8 overflow-visible">
           {/* Circle menu — nodes connected to the close dot */}
-          <div className="hidden md:block absolute -top-4 right-4 pointer-events-none" style={{ width: '160px', height: '120px' }}>
-            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 160 120" fill="none">
-              {/* Line from dot (top-right) to unocalc circle */}
-              <line x1="140" y1="12" x2="80" y2="80" stroke="hsl(var(--primary))" strokeWidth="0.75" opacity="0.35" />
+          <div className="hidden md:block absolute -top-8 -right-20 pointer-events-none" style={{ width: '180px', height: '140px' }}>
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 180 140" fill="none">
+              <line x1="155" y1="20" x2="90" y2="90" stroke="hsl(var(--primary))" strokeWidth="0.75" opacity="0.45" />
             </svg>
-            {/* unocalc circle */}
             <a
               href="/unocalc"
               onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
-              className="pointer-events-auto absolute flex items-center justify-center w-[72px] h-[72px] rounded-full border border-primary/30 text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
-              style={{ left: '44px', top: '44px' }}
+              className="pointer-events-auto absolute flex items-center justify-center w-[72px] h-[72px] rounded-full border border-primary/35 text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
+              style={{ left: '54px', top: '54px' }}
             >
               unocalc
             </a>
