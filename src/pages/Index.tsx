@@ -60,57 +60,89 @@ const Index = () => {
 
       {/* Popup */}
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-lg rounded-none border border-white/20 bg-white/60 backdrop-blur-sm shadow-none p-8">
+        <DialogContent className="sm:max-w-2xl rounded-none border border-white/20 bg-white/60 backdrop-blur-sm shadow-none p-8">
           <DialogHeader className="text-left">
             <DialogTitle className="text-sm tracking-widest font-normal">
               .uno studio
             </DialogTitle>
           </DialogHeader>
-          <div className="text-foreground leading-relaxed tracking-wide">
-            <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground mb-1">что это</p>
-            <p className="text-[15px] font-semibold tracking-tight mb-1">Проектирование структуры и формы.</p>
-            <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground mb-5">как это происходит</p>
 
-            <div className="space-y-4 mb-6">
-              <div>
-                <p className="text-[13px] font-normal text-foreground">Анализ ситуации</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Определение контекста, конфигурации и связей.</p>
+          {/* Mobile: vertical stack / Desktop: two columns */}
+          <div className="text-foreground leading-relaxed tracking-wide md:grid md:grid-cols-2 md:gap-10">
+            {/* Left column: what + result + links */}
+            <div>
+              <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground mb-1">что это</p>
+              <p className="text-[15px] md:text-[17px] font-semibold tracking-tight mb-6 md:mb-10">Проектирование структуры и формы.</p>
+
+              {/* On mobile: steps go here (between what and result) */}
+              <div className="md:hidden space-y-4 mb-6">
+                <div>
+                  <p className="text-[13px] font-normal text-foreground">Анализ ситуации</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Определение контекста, конфигурации и связей.</p>
+                </div>
+                <div>
+                  <p className="text-[13px] font-normal text-foreground">Формирование идеи</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Выбор принципа решения.</p>
+                </div>
+                <div>
+                  <p className="text-[13px] font-normal text-foreground">Создание концепции</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Сборка формы и логики.</p>
+                </div>
+                <div>
+                  <p className="text-[13px] font-normal text-foreground">Разработка проекта</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Рабочая документация и проекции.</p>
+                </div>
+                <div>
+                  <p className="text-[13px] font-normal text-foreground">Контроль реализации</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Проверка соответствия и передача прав.</p>
+                </div>
               </div>
-              <div>
-                <p className="text-[13px] font-normal text-foreground">Формирование идеи</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Выбор принципа решения.</p>
-              </div>
-              <div>
-                <p className="text-[13px] font-normal text-foreground">Создание концепции</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Сборка формы и логики.</p>
-              </div>
-              <div>
-                <p className="text-[13px] font-normal text-foreground">Разработка проекта</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Рабочая документация и проекции.</p>
-              </div>
-              <div>
-                <p className="text-[13px] font-normal text-foreground">Контроль реализации</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Проверка соответствия и передача прав.</p>
-              </div>
+
+              <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground mb-1">результат</p>
+              <p className="text-[15px] md:text-[17px] font-semibold tracking-tight mb-5 md:mb-8">Структура, которая работает.</p>
+              <a
+                href="https://t.me/kolesnikov_uno"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-[13px] text-primary hover:text-primary/70 transition-colors mb-1.5"
+              >
+                Написать в Telegram →
+              </a>
+              <a
+                href="/pricing"
+                onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/pricing"); }}
+                className="block text-[13px] text-primary/50 hover:text-primary/70 transition-colors"
+              >
+                Формат и стоимость →
+              </a>
             </div>
 
-            <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground mb-1">результат</p>
-            <p className="text-[15px] font-semibold tracking-tight mb-5">Структура, которая работает.</p>
-            <a
-              href="https://t.me/kolesnikov_uno"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block text-[13px] text-primary hover:text-primary/70 transition-colors mb-1.5"
-            >
-              Написать в Telegram →
-            </a>
-            <a
-              href="/pricing"
-              onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/pricing"); }}
-              className="block text-[13px] text-primary/50 hover:text-primary/70 transition-colors"
-            >
-              Формат и стоимость →
-            </a>
+            {/* Right column: steps (desktop only) */}
+            <div className="hidden md:block">
+              <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground mb-4">как это происходит</p>
+              <div className="space-y-5">
+                <div>
+                  <p className="text-[13px] font-normal text-foreground">Анализ ситуации</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Определение контекста, конфигурации и связей.</p>
+                </div>
+                <div>
+                  <p className="text-[13px] font-normal text-foreground">Формирование идеи</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Выбор принципа решения.</p>
+                </div>
+                <div>
+                  <p className="text-[13px] font-normal text-foreground">Создание концепции</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Сборка формы и логики.</p>
+                </div>
+                <div>
+                  <p className="text-[13px] font-normal text-foreground">Разработка проекта</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Рабочая документация и проекции.</p>
+                </div>
+                <div>
+                  <p className="text-[13px] font-normal text-foreground">Контроль реализации</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Проверка соответствия и передача прав.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
