@@ -66,18 +66,10 @@ const Index = () => {
               <a
                 href="/unocalc"
                 onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
-                className="relative text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors mr-6"
+                className="relative text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors mr-6 px-5 py-2.5 border border-dashed border-primary/20 rounded-full"
               >
-                <span className="relative z-10">unocalc</span>
-                <svg
-                  className="absolute pointer-events-none"
-                  style={{ top: '-56px', left: '50%', transform: 'translateX(-50%)', width: '90px', height: '80px', overflow: 'visible' }}
-                  viewBox="0 0 90 80"
-                  fill="none"
-                >
-                  <line x1="45" y1="0" x2="45" y2="35" stroke="hsl(var(--primary))" strokeWidth="0.5" opacity="0.25" />
-                  <ellipse cx="45" cy="58" rx="36" ry="18" stroke="hsl(var(--primary))" strokeWidth="0.5" opacity="0.2" strokeDasharray="4 3" />
-                </svg>
+                <span className="absolute left-1/2 -translate-x-[0.5px] -top-10 w-px h-10 bg-primary/20" />
+                unocalc
               </a>
             </div>
             <p className="text-foreground tracking-[0.12em] text-[13px] mt-2">
