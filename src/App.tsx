@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index";
 import Canvas from "./pages/Canvas";
 import Pricing from "./pages/Pricing";
+import UnoCalc from "./pages/UnoCalc";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/doodle" element={<Canvas />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/unocalc" element={<UnoCalc />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
