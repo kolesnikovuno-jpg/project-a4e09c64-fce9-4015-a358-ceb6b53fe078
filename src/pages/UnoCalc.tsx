@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 const levels = [
@@ -30,11 +30,11 @@ const UnoCalc = () => {
     : null;
 
   return (
-    <div className="min-h-screen flex items-start md:items-center justify-center bg-background px-6 py-16 md:py-0">
+    <div className="min-h-screen flex items-start md:items-center justify-center bg-background px-6 py-8 md:py-0">
       <div className="max-w-[640px] w-full">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8 md:mb-10">
-          <h1 className="text-[17px] md:text-[19px] font-semibold tracking-tight text-foreground">
+        <div className="flex items-center justify-between mb-6 md:mb-8">
+          <h1 className="text-[17px] md:text-[19px] font-normal tracking-[0.12em] text-foreground">
             unocalc
           </h1>
           <Link
@@ -46,12 +46,12 @@ const UnoCalc = () => {
         </div>
 
         {/* Top note */}
-        <p className="text-center text-[12px] text-muted-foreground mb-5">
+        <p className="text-center text-[12px] text-muted-foreground mb-4">
           расчет энергетической плотности пространства
         </p>
 
         {/* Subtitle */}
-        <p className="text-center text-[14px] text-muted-foreground/80 mt-8 mb-4">
+        <p className="text-center text-[14px] text-muted-foreground/80 mt-6 mb-3">
           введи габариты элемента пространства
         </p>
 
@@ -61,33 +61,35 @@ const UnoCalc = () => {
           { label: "ширина (мм)", value: b, set: setB },
           { label: "высота (мм)", value: c, set: setC },
         ].map((f) => (
-          <div key={f.label} className="mb-6">
-            <label className="block text-[12px] text-muted-foreground mb-1.5">{f.label}</label>
+          <div key={f.label} className="mb-4">
+            <label className="block text-[12px] text-muted-foreground mb-1">{f.label}</label>
             <input
               type="number"
               value={f.value}
               onChange={(e) => f.set(e.target.value)}
-              className="w-full border-0 border-b border-border bg-transparent py-2.5 text-[16px] text-foreground outline-none focus:border-[#93D6D0] transition-colors"
+              className="w-full border-0 border-b border-border bg-transparent py-2 text-[16px] text-foreground outline-none transition-colors duration-300 focus:border-[#93D6D0]"
             />
           </div>
         ))}
 
         {/* Volume */}
-        <div className="my-4 px-4 py-3.5 bg-muted/50 flex items-center justify-between text-[14px]">
+        <div className="mt-5 mb-4 px-4 py-3 bg-muted/40 rounded-sm flex items-center justify-between text-[14px]">
           <span className="text-muted-foreground">объем</span>
           <span className="text-[20px] text-foreground">{volume.toFixed(2)} м³</span>
         </div>
 
         {/* Level */}
-        <p className="text-center text-[14px] text-muted-foreground/80 mt-8 mb-4">
+        <p className="text-center text-[14px] text-muted-foreground/80 mt-6 mb-3">
           уровень настройки
         </p>
 
-        <div className="space-y-3.5">
+        <div className="space-y-1">
           {levels.map((lvl) => (
             <label
               key={lvl.value}
-              className="flex items-start cursor-pointer text-[14px] text-foreground/85"
+              className={`flex items-start cursor-pointer text-[14px] text-foreground/85 rounded-sm px-3 py-2.5 transition-colors duration-200 ${
+                q === lvl.value ? "bg-[#93D6D0]/[0.07]" : "hover:bg-muted/30"
+              }`}
             >
               <input
                 type="radio"
@@ -98,7 +100,7 @@ const UnoCalc = () => {
                 className="hidden"
               />
               <span
-                className={`mt-[3px] mr-2.5 flex-shrink-0 w-4 h-4 rounded-full border transition-colors relative ${
+                className={`mt-[3px] mr-2.5 flex-shrink-0 w-4 h-4 rounded-full border transition-colors duration-200 relative ${
                   q === lvl.value ? "border-[#93D6D0]" : "border-border"
                 }`}
               >
@@ -115,21 +117,23 @@ const UnoCalc = () => {
         </div>
 
         {/* Result */}
-        <div className="mt-6 px-4 py-3.5 bg-[#93D6D0]/[0.18] border-l-[3px] border-[#6FC5BE] flex items-center justify-between text-[14px]">
+        <div className="mt-5 px-4 py-3 bg-[#93D6D0]/[0.12] border-l-[3px] border-[#6FC5BE] rounded-sm flex items-center justify-between text-[14px]">
           <span className="text-muted-foreground">результат</span>
           <span className="text-[20px] text-foreground">{energy ?? "—"} U.E.R.</span>
         </div>
 
-        {/* Interpretation */}
-        <p className="mt-4 text-center text-[13px] text-muted-foreground">
-          {valid ? interpret(q) : "введи параметры для расчета"}
-        </p>
+        {/* Interpretation — visually separated */}
+        <div className="mt-5 px-4 py-3 bg-muted/25 rounded-sm text-center">
+          <p className="text-[13px] text-muted-foreground">
+            {valid ? interpret(q) : "введи параметры для расчета"}
+          </p>
+        </div>
 
-        <p className="mt-2.5 text-center text-[13px] text-foreground">
+        <p className="mt-4 text-center text-[13px] text-foreground">
           для точной настройки требуется анализ структуры
         </p>
 
-        <p className="mt-10 text-center text-[11px] text-muted-foreground/70">
+        <p className="mt-8 text-center text-[11px] text-muted-foreground/60">
           U.E.R. — Unit of Energy Resonance / Единица Энергетического Резонанса
         </p>
       </div>
