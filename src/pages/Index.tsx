@@ -35,7 +35,7 @@ const Index = () => {
       onClick={handleBackgroundClick}
     >
       {/* Center content */}
-      <div className="flex flex-col items-start px-6 max-w-lg" style={{ transform: 'translateX(-27px)' }}>
+      <div className="flex flex-col items-start px-6">
         <p className="text-foreground mb-3 tracking-widest text-sm">
           architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
         </p>
@@ -45,10 +45,11 @@ const Index = () => {
           реализацию.
         </p>
 
-        {/* Toggle button */}
+        {/* Toggle button — offset so the circle center is at page center */}
         <button
           onClick={handleToggle}
           className="group relative flex items-center bg-primary border border-primary/60 rounded-full w-[90px] h-9 hover:bg-primary/90 transition-colors cursor-pointer"
+          style={{ position: 'relative', left: '50%', transform: 'translateX(-18px)' }}
         >
           <span
             className={`absolute w-7 h-7 rounded-full bg-white/80 shadow-sm transition-all duration-300 ease-in-out ${toggled ? 'left-[55px]' : 'left-1'}`}
