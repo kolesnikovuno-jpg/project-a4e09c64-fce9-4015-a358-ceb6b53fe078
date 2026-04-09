@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Canvas from "./pages/Canvas";
 import Pricing from "./pages/Pricing";
 import UnoCalc from "./pages/UnoCalc";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
