@@ -86,6 +86,6 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'Manrope', sans-serif;
     font-size: 13px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
   }
 }
