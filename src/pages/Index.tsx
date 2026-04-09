@@ -35,17 +35,7 @@ const Index = () => {
       onClick={handleBackgroundClick}
     >
       {/* Mobile: left-aligned naturally. Desktop: absolute centered on circle */}
-      <div className="flex flex-col items-start md:absolute md:top-1/2 md:left-1/2 md:[-webkit-transform:translate(-18px,-50%)] md:[transform:translate(-18px,-50%)]">
-        <p className="text-foreground mb-3 tracking-[0.15em] text-base md:text-sm">
-          architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
-        </p>
-        <p className="text-muted-foreground leading-relaxed text-sm md:text-xs mb-8">
-          выявляю структуру → формирую идею →<br />
-          разворачиваю в проект → контролирую<br />
-          реализацию.
-        </p>
-
-        {/* Toggle button */}
+      <div className="flex items-center justify-center">
         <button
           onClick={handleToggle}
           className="group relative flex items-center bg-primary border border-primary/60 rounded-full w-[90px] h-9 hover:bg-primary/90 transition-colors cursor-pointer"
