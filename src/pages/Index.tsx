@@ -34,8 +34,6 @@ const Index = () => {
       className="relative min-h-screen flex items-center justify-center bg-white/90 cursor-pointer"
       onClick={handleBackgroundClick}
     >
-      onClick={handleBackgroundClick}
-    >
       {/* Mobile: left-aligned naturally. Desktop: absolute centered on circle */}
       <div className="flex items-center justify-center">
         <button
