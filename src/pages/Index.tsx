@@ -57,8 +57,6 @@ const Index = () => {
         </button>
       </div>
 
-      {/* Bottom right dot */}
-      <div className="fixed bottom-6 right-6 w-6 h-6 rounded-full bg-foreground/80" />
 
       {/* Popup */}
       <Dialog open={open} onOpenChange={handleClose}>
