@@ -3,7 +3,7 @@ import Layout from "@/components/Layout";
 const About = () => (
   <Layout>
     <section className="container mx-auto px-6 py-24">
-      <p className="text-sm font-medium tracking-widest uppercase text-primary mb-4">
+      <p className="text-sm font-medium tracking-[0.15em] uppercase text-primary mb-4">
         О нас
       </p>
       <h1 className="text-3xl md:text-5xl mb-6 max-w-xl">

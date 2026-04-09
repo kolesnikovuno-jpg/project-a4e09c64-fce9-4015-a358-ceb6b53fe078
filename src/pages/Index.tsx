@@ -36,10 +36,10 @@ const Index = () => {
     >
       {/* Mobile: left-aligned naturally. Desktop: absolute centered on circle */}
       <div className="flex flex-col items-start md:absolute md:top-1/2 md:left-1/2 md:[-webkit-transform:translate(-18px,-50%)] md:[transform:translate(-18px,-50%)]">
-        <p className="text-foreground mb-3 tracking-widest text-base md:text-sm">
+        <p className="text-foreground mb-3 tracking-[0.15em] text-base md:text-sm">
           architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
         </p>
-        <p className="text-muted-foreground leading-relaxed text-sm md:text-xs tracking-wider mb-8">
+        <p className="text-muted-foreground leading-relaxed text-sm md:text-xs mb-8">
           выявляю структуру → формирую идею →<br />
           разворачиваю в проект → контролирую<br />
           реализацию.
@@ -53,7 +53,7 @@ const Index = () => {
           <span
             className={`absolute w-7 h-7 rounded-full bg-white/80 shadow-sm transition-all duration-300 ease-in-out ${toggled ? 'left-[55px]' : 'left-1'}`}
           />
-          <span className={`text-xs font-semibold text-white tracking-wider transition-all duration-300 ease-in-out ${toggled ? 'ml-3' : 'ml-10'}`}>.uno</span>
+          <span className={`text-xs font-semibold text-white transition-all duration-300 ease-in-out ${toggled ? 'ml-3' : 'ml-10'}`}>.uno</span>
         </button>
       </div>
 
@@ -62,17 +62,17 @@ const Index = () => {
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-2xl rounded-none border border-white/20 bg-white/60 backdrop-blur-sm shadow-none p-8">
           <DialogHeader className="text-left">
-            <DialogTitle className="text-sm tracking-widest font-normal">
+            <DialogTitle className="text-sm tracking-[0.15em] font-normal">
               .uno studio
             </DialogTitle>
           </DialogHeader>
 
           {/* Mobile: vertical stack / Desktop: two columns */}
-          <div className="text-foreground leading-relaxed tracking-wide md:grid md:grid-cols-2 md:gap-10">
+          <div className="text-foreground leading-relaxed md:grid md:grid-cols-2 md:gap-10">
             {/* Left column: what + result + links */}
             <div>
-              <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground mb-1">что это</p>
-              <p className="text-[15px] md:text-[17px] font-semibold tracking-tight mb-6 md:mb-10">Проектирование структуры и формы.</p>
+              <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1">что это</p>
+              <p className="text-[15px] md:text-[17px] font-semibold mb-6 md:mb-10">Проектирование структуры и формы.</p>
 
               {/* On mobile: steps go here (between what and result) */}
               <div className="md:hidden space-y-4 mb-6">
@@ -98,8 +98,8 @@ const Index = () => {
                 </div>
               </div>
 
-              <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground mb-1">результат</p>
-              <p className="text-[15px] md:text-[17px] font-semibold tracking-tight mb-5 md:mb-8">Структура, которая работает.</p>
+              <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1">результат</p>
+              <p className="text-[15px] md:text-[17px] font-semibold mb-5 md:mb-8">Структура, которая работает.</p>
               <a
                 href="https://t.me/kolesnikov_uno"
                 target="_blank"
@@ -119,7 +119,7 @@ const Index = () => {
 
             {/* Right column: steps (desktop only) */}
             <div className="hidden md:block">
-              <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground mb-4">как это происходит</p>
+              <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-4">как это происходит</p>
               <div className="space-y-5">
                 <div>
                   <p className="text-[13px] font-normal text-foreground">Анализ ситуации</p>
