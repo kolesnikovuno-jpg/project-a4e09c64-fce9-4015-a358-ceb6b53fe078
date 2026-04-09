@@ -1,9 +1,19 @@
+import { Link } from "react-router-dom";
+
 const Pricing = () => (
   <div className="min-h-screen flex items-start md:items-center justify-center bg-background px-6 py-16 md:py-0">
     <div className="max-w-xl w-full">
-      <h1 className="text-[17px] md:text-[19px] font-semibold tracking-tight text-foreground mb-8 md:mb-10">
-        Стоимость и формат
-      </h1>
+      <div className="flex items-center justify-between mb-8 md:mb-10">
+        <h1 className="text-[17px] md:text-[19px] font-semibold tracking-tight text-foreground">
+          Стоимость и формат
+        </h1>
+        <Link
+          to="/"
+          className="text-[13px] text-primary font-medium hover:text-primary/80 transition-colors"
+        >
+          .uno
+        </Link>
+      </div>
 
       <div className="space-y-5 md:space-y-6 text-[13px] md:text-[14px] text-muted-foreground leading-relaxed">
         <p>
