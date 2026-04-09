@@ -23,6 +23,7 @@ const App = () => (
           <Route path="/doodle" element={<Canvas />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/unocalc" element={<UnoCalc />} />
+          <Route path="/about" element={<About />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
