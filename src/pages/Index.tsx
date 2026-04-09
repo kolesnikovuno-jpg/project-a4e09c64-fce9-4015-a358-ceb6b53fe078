@@ -31,7 +31,7 @@ const Index = () => {
 
   return (
     <div
-      className="relative min-h-screen flex items-center bg-background cursor-pointer justify-start pl-6 md:justify-center md:pl-0"
+      className="relative min-h-screen flex items-center bg-white/90 cursor-pointer justify-start pl-6 md:justify-center md:pl-0"
       onClick={handleBackgroundClick}
     >
       {/* Mobile: left-aligned naturally. Desktop: absolute centered on circle */}
@@ -62,7 +62,7 @@ const Index = () => {
 
       {/* Popup */}
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-lg rounded-[2rem] border bg-background p-8">
+        <DialogContent className="sm:max-w-lg rounded-[2rem] border border-white/20 bg-white/90 backdrop-blur-sm p-8">
           <DialogHeader>
             <DialogTitle className="text-sm tracking-widest font-normal">
               .uno studio
