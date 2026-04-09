@@ -51,16 +51,17 @@ const Index = () => {
       {/* Popup */}
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-2xl rounded-none border border-white/20 bg-white/60 backdrop-blur-sm shadow-none p-8 overflow-visible">
-          {/* Circle menu — nodes connected to the close dot */}
-          <div className="hidden md:block absolute -top-8 -right-20 pointer-events-none" style={{ width: '180px', height: '140px' }}>
-            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 180 140" fill="none">
-              <line x1="155" y1="20" x2="90" y2="90" stroke="hsl(var(--primary))" strokeWidth="0.75" opacity="0.45" />
+          {/* Circle menu — line from close button (×) down-left to unocalc circle */}
+          <div className="hidden md:block absolute pointer-events-none" style={{ top: '8px', right: '8px', width: '200px', height: '160px' }}>
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 160" fill="none">
+              {/* Line from close dot (top-right) diagonally down-left to circle center */}
+              <line x1="188" y1="12" x2="72" y2="120" stroke="hsl(var(--primary))" strokeWidth="0.75" opacity="0.4" />
             </svg>
             <a
               href="/unocalc"
               onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
-              className="pointer-events-auto absolute flex items-center justify-center w-[72px] h-[72px] rounded-full border border-primary/35 text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
-              style={{ left: '54px', top: '54px' }}
+              className="pointer-events-auto absolute flex items-center justify-center w-[68px] h-[68px] rounded-full border border-primary/30 text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
+              style={{ left: '38px', top: '86px' }}
             >
               unocalc
             </a>
