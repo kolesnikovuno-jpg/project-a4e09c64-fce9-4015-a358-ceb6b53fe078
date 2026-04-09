@@ -31,21 +31,11 @@ const Index = () => {
 
   return (
     <div
-      className="relative min-h-screen flex items-center bg-white/90 cursor-pointer justify-start pl-6 md:justify-center md:pl-0"
+      className="relative min-h-screen flex items-center justify-center bg-white/90 cursor-pointer"
       onClick={handleBackgroundClick}
     >
       {/* Mobile: left-aligned naturally. Desktop: absolute centered on circle */}
-      <div className="flex flex-col items-start md:absolute md:top-1/2 md:left-1/2 md:[-webkit-transform:translate(-18px,-50%)] md:[transform:translate(-18px,-50%)]">
-        <p className="text-foreground mb-3 tracking-[0.15em] text-base md:text-sm">
-          architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
-        </p>
-        <p className="text-muted-foreground leading-relaxed text-sm md:text-xs mb-8">
-          выявляю структуру → формирую идею →<br />
-          разворачиваю в проект → контролирую<br />
-          реализацию.
-        </p>
-
-        {/* Toggle button */}
+      <div className="flex items-center justify-center">
         <button
           onClick={handleToggle}
           className="group relative flex items-center bg-primary border border-primary/60 rounded-full w-[90px] h-9 hover:bg-primary/90 transition-colors cursor-pointer"
@@ -65,6 +55,13 @@ const Index = () => {
             <DialogTitle className="text-sm tracking-[0.15em] font-normal">
               .uno studio
             </DialogTitle>
+            <p className="text-foreground tracking-[0.12em] text-[13px] mt-2">
+              architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
+            </p>
+            <p className="text-muted-foreground text-[12px] leading-relaxed mt-1">
+              выявляю структуру → формирую идею →<br />
+              разворачиваю в проект → контролирую реализацию.
+            </p>
           </DialogHeader>
 
           {/* Mobile: vertical stack / Desktop: two columns */}
