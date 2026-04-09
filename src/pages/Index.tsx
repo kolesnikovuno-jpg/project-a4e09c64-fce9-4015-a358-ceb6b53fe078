@@ -54,17 +54,17 @@ const Index = () => {
           <DialogHeader className="text-left">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-sm tracking-[0.15em] font-normal">
-                .uno studio
-              </DialogTitle>
-              <div className="flex items-center gap-4 mr-6">
+                <span>.uno studio</span>
                 <a
                   href="/about"
                   onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/about"); }}
-                  className="text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
+                  className="ml-4 text-sm tracking-[0.15em] font-normal text-primary/70 hover:text-primary transition-colors"
                 >
-                  о себе
+                  R.Yury Kolesnikov
                 </a>
-                <a
+              </DialogTitle>
+              <div className="flex items-center gap-4 mr-6">
+                <
                   href="/unocalc"
                   onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
                   className="text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
