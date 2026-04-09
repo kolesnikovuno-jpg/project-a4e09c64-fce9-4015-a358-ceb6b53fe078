@@ -31,11 +31,11 @@ const Index = () => {
 
   return (
     <div
-      className="relative min-h-screen flex items-center justify-center bg-background cursor-pointer"
+      className="relative min-h-screen flex items-center bg-background cursor-pointer justify-start pl-6 md:justify-center md:pl-0"
       onClick={handleBackgroundClick}
     >
-      {/* Anchor: circle center = viewport center. Circle center is 18px from button left. */}
-      <div className="absolute flex flex-col items-start" style={{ left: '50%', top: '50%', transform: 'translate(-18px, -50%)' }}>
+      {/* Mobile: left-aligned naturally. Desktop: absolute centered on circle */}
+      <div className="flex flex-col items-start md:absolute md:top-1/2 md:left-1/2 md:[-webkit-transform:translate(-18px,-50%)] md:[transform:translate(-18px,-50%)]">
         <p className="text-foreground mb-3 tracking-widest text-sm">
           architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
         </p>
