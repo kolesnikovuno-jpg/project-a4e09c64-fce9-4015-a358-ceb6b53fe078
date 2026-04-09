@@ -69,18 +69,15 @@ const Index = () => {
                 className="relative text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors mr-6"
               >
                 <span className="relative z-10">unocalc</span>
-                {/* Decorative circle + line */}
                 <svg
-                  className="absolute -top-10 left-1/2 -translate-x-1/2 pointer-events-none"
-                  width="80"
-                  height="70"
-                  viewBox="0 0 80 70"
+                  className="absolute -top-14 left-1/2 -translate-x-1/2 pointer-events-none overflow-visible"
+                  width="90"
+                  height="80"
+                  viewBox="0 0 90 80"
                   fill="none"
                 >
-                  {/* Line going up from circle */}
-                  <line x1="40" y1="0" x2="40" y2="22" stroke="hsl(var(--primary))" strokeWidth="0.5" opacity="0.3" />
-                  {/* Circle around text */}
-                  <ellipse cx="40" cy="48" rx="34" ry="18" stroke="hsl(var(--primary))" strokeWidth="0.5" opacity="0.25" strokeDasharray="3 2" />
+                  <line x1="45" y1="0" x2="45" y2="30" stroke="hsl(var(--primary))" strokeWidth="0.5" opacity="0.25" />
+                  <ellipse cx="45" cy="58" rx="38" ry="20" stroke="hsl(var(--primary))" strokeWidth="0.5" opacity="0.2" strokeDasharray="4 3" />
                 </svg>
               </a>
             </div>
