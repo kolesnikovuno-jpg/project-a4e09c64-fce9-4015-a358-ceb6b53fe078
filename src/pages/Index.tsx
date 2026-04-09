@@ -50,9 +50,9 @@ const Index = () => {
 
       {/* Popup */}
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-2xl rounded-none border border-white/20 bg-white/60 backdrop-blur-sm shadow-none p-8">
-          <DialogHeader className="text-left">
-            <div className="flex items-center justify-between">
+        <DialogContent className="sm:max-w-2xl rounded-none border border-white/20 bg-white/60 backdrop-blur-sm shadow-none p-8 overflow-visible">
+          <DialogHeader className="text-left overflow-visible">
+            <div className="flex items-center justify-between overflow-visible">
               <DialogTitle className="text-sm tracking-[0.15em] font-normal">
                 .uno studio
               </DialogTitle>
@@ -66,8 +66,9 @@ const Index = () => {
               <a
                 href="/unocalc"
                 onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
-                className="text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors mr-6"
+                className="relative text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors mr-6 px-5 py-2.5 border border-dashed border-primary/20 rounded-full"
               >
+                <span className="absolute left-1/2 -translate-x-[0.5px] -top-10 w-px h-10 bg-primary/20" />
                 unocalc
               </a>
             </div>
