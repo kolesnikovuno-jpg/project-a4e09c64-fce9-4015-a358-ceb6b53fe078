@@ -63,7 +63,7 @@ const Index = () => {
       {/* Popup */}
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-lg rounded-none border border-white/20 bg-white/60 backdrop-blur-sm shadow-none p-8">
-          <DialogHeader>
+          <DialogHeader className="text-left">
             <DialogTitle className="text-sm tracking-widest font-normal">
               .uno studio
             </DialogTitle>
