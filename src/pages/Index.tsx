@@ -50,7 +50,7 @@ const Index = () => {
 
       {/* Popup */}
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-2xl rounded-none border border-white/20 bg-white/60 backdrop-blur-sm shadow-none p-8">
+        <DialogContent className="sm:max-w-2xl rounded-none border border-white/20 bg-white/60 backdrop-blur-sm shadow-none p-8 overflow-visible">
           <DialogHeader className="text-left">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-sm tracking-[0.15em] font-normal">
