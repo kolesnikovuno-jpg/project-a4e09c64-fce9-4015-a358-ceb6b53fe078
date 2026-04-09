@@ -26,7 +26,7 @@ const Index = () => {
   const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
     if (target.closest("button") || target.closest("[role='dialog']")) return;
-    navigate("/canvas");
+    navigate("/doodle");
   };
 
   return (
@@ -38,7 +38,7 @@ const Index = () => {
       <div className="flex items-center justify-center">
         <button
           onClick={handleToggle}
-          className="group relative flex items-center bg-primary border border-primary/60 rounded-full w-[90px] h-9 hover:bg-primary/90 transition-colors cursor-pointer"
+          className="group relative flex items-center bg-primary border border-primary/60 rounded-full w-[90px] h-9 hover:bg-primary/90 transition-colors cursor-pointer ml-[27px]"
         >
           <span
             className={`absolute w-7 h-7 rounded-full bg-white/80 shadow-sm transition-all duration-300 ease-in-out ${toggled ? 'left-[55px]' : 'left-1'}`}
