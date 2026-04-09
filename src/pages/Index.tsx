@@ -70,14 +70,13 @@ const Index = () => {
               >
                 <span className="relative z-10">unocalc</span>
                 <svg
-                  className="absolute -top-14 left-1/2 -translate-x-1/2 pointer-events-none overflow-visible"
-                  width="90"
-                  height="80"
+                  className="absolute pointer-events-none"
+                  style={{ top: '-56px', left: '50%', transform: 'translateX(-50%)', width: '90px', height: '80px', overflow: 'visible' }}
                   viewBox="0 0 90 80"
                   fill="none"
                 >
-                  <line x1="45" y1="0" x2="45" y2="30" stroke="hsl(var(--primary))" strokeWidth="0.5" opacity="0.25" />
-                  <ellipse cx="45" cy="58" rx="38" ry="20" stroke="hsl(var(--primary))" strokeWidth="0.5" opacity="0.2" strokeDasharray="4 3" />
+                  <line x1="45" y1="0" x2="45" y2="35" stroke="hsl(var(--primary))" strokeWidth="0.5" opacity="0.25" />
+                  <ellipse cx="45" cy="58" rx="36" ry="18" stroke="hsl(var(--primary))" strokeWidth="0.5" opacity="0.2" strokeDasharray="4 3" />
                 </svg>
               </a>
             </div>
