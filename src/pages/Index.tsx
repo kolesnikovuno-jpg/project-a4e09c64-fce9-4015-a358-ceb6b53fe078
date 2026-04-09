@@ -64,7 +64,7 @@ const Index = () => {
                 </a>
               </DialogTitle>
               <div className="flex items-center gap-4 mr-6">
-                <
+                <a
                   href="/unocalc"
                   onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
                   className="text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
