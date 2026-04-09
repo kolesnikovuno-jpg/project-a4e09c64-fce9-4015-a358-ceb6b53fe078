@@ -35,7 +35,7 @@ const Index = () => {
       onClick={handleBackgroundClick}
     >
       {/* Center content */}
-      <div className="flex flex-col items-start px-6 max-w-lg">
+      <div className="flex flex-col items-start px-6 max-w-lg" style={{ transform: 'translateX(calc(-45px + 18px))' }}>
         <p className="text-foreground mb-3 tracking-widest text-sm">
           architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
         </p>
