@@ -120,22 +120,17 @@ const Index = () => {
                 {/* Header */}
                 <div className="flex flex-col space-y-1.5 text-left overflow-visible">
                   {/* Mobile header */}
-                  <div className="md:hidden flex items-baseline gap-3 overflow-visible">
-                    <a
-                      href="/about"
-                      onClick={(e) => { e.preventDefault(); handleClose(); navigate("/about"); }}
-                      className="text-sm tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors"
-                    >
-                      R.Yury Kolesnikov
-                    </a>
-                    <span className="text-sm tracking-[0.15em] font-normal text-foreground">.uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span></span>
-                    <a
-                      href="/unocalc"
-                      onClick={(e) => { e.preventDefault(); handleClose(); navigate("/unocalc"); }}
-                      className="ml-auto text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
-                    >
-                      unocalc
-                    </a>
+                  <div className="md:hidden overflow-visible">
+                    <div className="flex items-baseline gap-3">
+                      <a
+                        href="/about"
+                        onClick={(e) => { e.preventDefault(); handleClose(); navigate("/about"); }}
+                        className="text-sm tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors"
+                      >
+                        R.Yury Kolesnikov
+                      </a>
+                      <span className="text-sm tracking-[0.15em] font-normal text-foreground">.uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span></span>
+                    </div>
                   </div>
                   {/* Desktop header */}
                   <div className="hidden md:flex relative items-baseline overflow-visible">
@@ -150,9 +145,18 @@ const Index = () => {
                       .uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span>
                     </span>
                   </div>
-                  <p className="text-foreground tracking-[0.12em] text-[13px] mt-2">
-                    architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
-                  </p>
+                  <div className="flex items-baseline mt-2">
+                    <p className="text-foreground tracking-[0.12em] text-[13px]">
+                      architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
+                    </p>
+                    <a
+                      href="/unocalc"
+                      onClick={(e) => { e.preventDefault(); handleClose(); navigate("/unocalc"); }}
+                      className="md:hidden ml-auto text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
+                    >
+                      unocalc
+                    </a>
+                  </div>
                   <p className="text-muted-foreground text-[12px] leading-relaxed mt-1">
                     выявляю структуру → формирую идею →<br />
                     разворачиваю в проект → контролирую реализацию.
