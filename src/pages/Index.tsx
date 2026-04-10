@@ -145,9 +145,18 @@ const Index = () => {
                       .uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span>
                     </span>
                   </div>
-                  <p className="text-foreground tracking-[0.12em] text-[13px] mt-2">
-                    architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
-                  </p>
+                  <div className="flex items-baseline mt-2">
+                    <p className="text-foreground tracking-[0.12em] text-[13px]">
+                      architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
+                    </p>
+                    <a
+                      href="/unocalc"
+                      onClick={(e) => { e.preventDefault(); handleClose(); navigate("/unocalc"); }}
+                      className="md:hidden ml-auto text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
+                    >
+                      unocalc
+                    </a>
+                  </div>
                   <p className="text-muted-foreground text-[12px] leading-relaxed mt-1">
                     выявляю структуру → формирую идею →<br />
                     разворачиваю в проект → контролирую реализацию.
