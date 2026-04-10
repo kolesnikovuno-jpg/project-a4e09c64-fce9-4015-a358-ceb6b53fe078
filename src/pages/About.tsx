@@ -5,7 +5,7 @@ const About = () => {
     <div className="min-h-screen bg-background flex items-center justify-center px-6 py-12">
       <div className="max-w-xl w-full">
         <div className="flex items-center justify-between mb-10">
-          <h1 className="text-sm tracking-[0.15em] font-normal">R. Yury Kolesnikov</h1>
+          <h1 className="text-sm tracking-[0.15em] font-normal">R.Yury Kolesnikov</h1>
           <Link to="/" className="text-[13px] text-primary font-medium hover:text-primary/80 transition-colors">
             .uno
           </Link>
