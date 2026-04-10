@@ -67,25 +67,35 @@ const Index = () => {
           </div>
 
           <DialogHeader className="text-left overflow-visible">
-            <div className="relative flex items-center overflow-visible">
+            {/* Mobile header */}
+            <div className="md:hidden flex items-baseline gap-3 overflow-visible">
+              <a
+                href="/about"
+                onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/about"); }}
+                className="text-sm tracking-[0.15em] font-normal text-foreground hover:text-primary transition-colors"
+              >
+                R.Yury Kolesnikov
+              </a>
+              <span className="text-sm tracking-[0.15em] font-normal text-foreground">.uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span></span>
+              <a
+                href="/unocalc"
+                onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
+                className="ml-auto text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
+              >
+                unocalc
+              </a>
+            </div>
+            {/* Desktop header */}
+            <div className="hidden md:flex relative items-center overflow-visible">
               <DialogTitle className="text-sm tracking-[0.15em] font-normal">
                 .uno studio
               </DialogTitle>
-              {/* Centered link */}
               <a
                 href="/about"
                 onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/about"); }}
                 className="absolute left-1/2 -translate-x-1/2 text-[13px] text-primary font-medium hover:text-primary/80 transition-colors"
               >
                 R.Yury Kolesnikov
-              </a>
-              {/* Mobile fallback for unocalc */}
-              <a
-                href="/unocalc"
-                onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
-                className="md:hidden ml-auto text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
-              >
-                unocalc
               </a>
             </div>
             <p className="text-foreground tracking-[0.12em] text-[13px] mt-2">
