@@ -52,16 +52,15 @@ const Index = () => {
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-2xl rounded-none border border-white/20 bg-white/60 backdrop-blur-sm shadow-none p-8 overflow-visible">
           {/* Circle menu — line from close button (×) down-left to unocalc circle */}
-          <div className="hidden md:block absolute pointer-events-none" style={{ top: '8px', right: '8px', width: '160px', height: '120px' }}>
-            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 160 120" fill="none">
-              {/* Line from close dot to circle edge (not inside) */}
-              <line x1="148" y1="12" x2="95" y2="68" stroke="hsl(var(--primary))" strokeWidth="0.75" opacity="0.4" />
+          <div className="hidden md:block absolute pointer-events-none" style={{ top: '8px', right: '8px', width: '160px', height: '110px' }}>
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 160 110" fill="none">
+              <line x1="148" y1="12" x2="98" y2="58" stroke="hsl(var(--primary))" strokeWidth="0.75" opacity="0.55" />
             </svg>
             <a
               href="/unocalc"
               onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
               className="pointer-events-auto absolute flex items-center justify-center w-[60px] h-[60px] rounded-full border border-primary/30 text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
-              style={{ left: '52px', top: '52px' }}
+              style={{ left: '52px', top: '38px' }}
             >
               unocalc
             </a>
