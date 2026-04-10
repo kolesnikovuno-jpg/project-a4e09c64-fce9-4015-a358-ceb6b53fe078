@@ -68,14 +68,15 @@ const Index = () => {
           </div>
 
           <DialogHeader className="text-left overflow-visible">
-            <div className="flex items-center justify-between overflow-visible">
+            <div className="relative flex items-center overflow-visible">
               <DialogTitle className="text-sm tracking-[0.15em] font-normal">
                 .uno studio
               </DialogTitle>
+              {/* Centered link */}
               <a
                 href="/about"
                 onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/about"); }}
-                className="text-[13px] text-primary font-medium hover:text-primary/80 transition-colors"
+                className="absolute left-1/2 -translate-x-1/2 text-[13px] text-primary font-medium hover:text-primary/80 transition-colors"
               >
                 R.Yury Kolesnikov
               </a>
@@ -83,7 +84,7 @@ const Index = () => {
               <a
                 href="/unocalc"
                 onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
-                className="md:hidden text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
+                className="md:hidden ml-auto text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
               >
                 unocalc
               </a>
