@@ -86,7 +86,7 @@ const Index = () => {
               </a>
             </div>
             {/* Desktop header */}
-            <div className="hidden md:flex items-baseline gap-3 overflow-visible">
+            <div className="hidden md:flex relative items-baseline overflow-visible">
               <a
                 href="/about"
                 onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/about"); }}
@@ -94,7 +94,7 @@ const Index = () => {
               >
                 R.Yury Kolesnikov
               </a>
-              <DialogTitle className="text-sm tracking-[0.15em] font-normal">
+              <DialogTitle className="absolute left-1/2 -translate-x-1/2 text-sm tracking-[0.15em] font-normal whitespace-nowrap">
                 .uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span>
               </DialogTitle>
             </div>
