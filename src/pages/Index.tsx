@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { motion, AnimatePresence, LayoutGroup } from "motion/react";
 
 const Index = () => {
   const [open, setOpen] = useState(false);
@@ -16,177 +16,229 @@ const Index = () => {
     }
   };
 
-  const handleClose = (value: boolean) => {
-    if (!value) {
-      setOpen(false);
-      setToggled(false);
-    }
+  const handleClose = () => {
+    setOpen(false);
+    setTimeout(() => setToggled(false), 400);
   };
 
   const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
-    if (target.closest("button") || target.closest("[role='dialog']")) return;
+    if (target.closest("button") || target.closest("[data-popup]")) return;
     navigate("/doodle");
   };
 
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).hasAttribute("data-overlay")) {
+      handleClose();
+    }
+  };
+
   return (
-    <div
-      className="relative min-h-screen flex items-center justify-center bg-white/90 cursor-pointer"
-      onClick={handleBackgroundClick}
-    >
-      {/* Mobile: left-aligned naturally. Desktop: absolute centered on circle */}
-      <div className="flex items-center justify-center mt-[72px] md:mt-0">
-        <button
-          onClick={handleToggle}
-           className="group relative flex items-center bg-primary border border-primary/60 rounded-full w-[76px] h-9 hover:bg-primary/90 transition-colors cursor-pointer translate-x-[27px]"
-         >
-           <span
-             className={`absolute w-7 h-7 rounded-full bg-white/80 shadow-sm transition-all duration-300 ease-in-out ${toggled ? 'left-[42px]' : 'left-1'}`}
-           />
-           <span className={`text-xs font-semibold text-white transition-all duration-300 ease-in-out ${toggled ? 'ml-2' : 'ml-9'}`}>.uno</span>
-        </button>
-      </div>
+    <LayoutGroup>
+      <div
+        className="relative min-h-screen flex items-center justify-center bg-white/90 cursor-pointer"
+        onClick={handleBackgroundClick}
+      >
+        {/* Toggle button */}
+        <div className="flex items-center justify-center mt-[72px] md:mt-0">
+          <button
+            onClick={handleToggle}
+            className="group relative flex items-center bg-primary border border-primary/60 rounded-full w-[76px] h-9 hover:bg-primary/90 transition-colors cursor-pointer translate-x-[27px]"
+          >
+            {!open && (
+              <motion.span
+                layoutId="morph-circle"
+                className="absolute w-7 h-7 rounded-full shadow-sm"
+                style={{ backgroundColor: open ? '#93D6D0' : 'rgba(255,255,255,0.8)' }}
+                initial={false}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                animate={{ left: toggled ? 42 : 4 }}
+              />
+            )}
+            <span className={`text-xs font-semibold text-white transition-all duration-300 ease-in-out ${toggled ? 'ml-2' : 'ml-9'}`}>.uno</span>
+          </button>
+        </div>
 
-
-      {/* Popup */}
-      <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-2xl rounded-none border border-white/20 bg-white/60 backdrop-blur-sm shadow-none p-8 overflow-visible">
-          {/* Circle menu — line from close button (×) down-left to unocalc circle */}
-          <div className="hidden md:block absolute pointer-events-none" style={{ top: '8px', right: '8px', width: '160px', height: '110px' }}>
-            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 160 110" fill="none">
-              <line x1="148" y1="12" x2="98" y2="58" stroke="hsl(var(--primary))" strokeWidth="0.75" opacity="0.55" />
-            </svg>
-            <a
-              href="/unocalc"
-              onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
-              className="pointer-events-auto absolute flex items-center justify-center w-[60px] h-[60px] rounded-full border border-primary/30 text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
-              style={{ left: '52px', top: '38px' }}
+        {/* Custom overlay popup */}
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              data-overlay
+              className="fixed inset-0 z-50 flex items-center justify-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={handleOverlayClick}
             >
-              unocalc
-            </a>
-          </div>
+              {/* Backdrop */}
+              <motion.div
+                data-overlay
+                className="absolute inset-0 bg-white/60 backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              />
 
-          <DialogHeader className="text-left overflow-visible">
-            {/* Mobile header */}
-            <div className="md:hidden flex items-baseline gap-3 overflow-visible">
-              <a
-                href="/about"
-                onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/about"); }}
-                className="text-sm tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors"
+              {/* Content card */}
+              <motion.div
+                data-popup
+                className="relative z-10 w-full max-w-2xl mx-4 border border-white/20 bg-white/60 backdrop-blur-sm p-8 overflow-visible"
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.2 }}
               >
-                R.Yury Kolesnikov
-              </a>
-              <span className="text-sm tracking-[0.15em] font-normal text-foreground">.uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span></span>
-              <a
-                href="/unocalc"
-                onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
-                className="ml-auto text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
-              >
-                unocalc
-              </a>
-            </div>
-            {/* Desktop header */}
-            <div className="hidden md:flex relative items-baseline overflow-visible">
-              <a
-                href="/about"
-                onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/about"); }}
-                className="text-sm tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors"
-              >
-                R.Yury Kolesnikov
-              </a>
-              <DialogTitle className="absolute left-1/2 -translate-x-1/2 text-sm tracking-[0.15em] font-normal whitespace-nowrap">
-                .uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span>
-              </DialogTitle>
-            </div>
-            <p className="text-foreground tracking-[0.12em] text-[13px] mt-2">
-              architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
-            </p>
-            <p className="text-muted-foreground text-[12px] leading-relaxed mt-1">
-              выявляю структуру → формирую идею →<br />
-              разворачиваю в проект → контролирую реализацию.
-            </p>
-          </DialogHeader>
+                {/* Close button — morphing circle */}
+                <button
+                  onClick={handleClose}
+                  className="absolute right-4 top-4 w-5 h-5 flex items-center justify-center cursor-pointer focus:outline-none"
+                >
+                  <motion.span
+                    layoutId="morph-circle"
+                    className="block w-5 h-5 rounded-full"
+                    style={{ backgroundColor: '#93D6D0' }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                </button>
 
-          {/* Mobile: vertical stack / Desktop: two columns */}
-          <div className="text-foreground leading-relaxed md:grid md:grid-cols-2 md:gap-10">
-            {/* Left column: what + result + links */}
-            <div>
-              <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1">что это</p>
-              <p className="text-[15px] md:text-[17px] font-semibold mb-6 md:mb-10">Проектирование структуры и формы.</p>
+                {/* Circle menu — line from close to unocalc */}
+                <div className="hidden md:block absolute pointer-events-none" style={{ top: '8px', right: '8px', width: '160px', height: '110px' }}>
+                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 160 110" fill="none">
+                    <line x1="148" y1="12" x2="98" y2="58" stroke="hsl(var(--primary))" strokeWidth="0.75" opacity="0.55" />
+                  </svg>
+                  <a
+                    href="/unocalc"
+                    onClick={(e) => { e.preventDefault(); handleClose(); navigate("/unocalc"); }}
+                    className="pointer-events-auto absolute flex items-center justify-center w-[60px] h-[60px] rounded-full border border-primary/30 text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
+                    style={{ left: '52px', top: '38px' }}
+                  >
+                    unocalc
+                  </a>
+                </div>
 
-              {/* On mobile: steps go here (between what and result) */}
-              <div className="md:hidden space-y-4 mb-6">
-                <div>
-                  <p className="text-[13px] font-normal text-foreground">Анализ ситуации</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Определение контекста, конфигурации и связей.</p>
+                {/* Header */}
+                <div className="flex flex-col space-y-1.5 text-left overflow-visible">
+                  {/* Mobile header */}
+                  <div className="md:hidden flex items-baseline gap-3 overflow-visible">
+                    <a
+                      href="/about"
+                      onClick={(e) => { e.preventDefault(); handleClose(); navigate("/about"); }}
+                      className="text-sm tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors"
+                    >
+                      R.Yury Kolesnikov
+                    </a>
+                    <span className="text-sm tracking-[0.15em] font-normal text-foreground">.uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span></span>
+                    <a
+                      href="/unocalc"
+                      onClick={(e) => { e.preventDefault(); handleClose(); navigate("/unocalc"); }}
+                      className="ml-auto text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
+                    >
+                      unocalc
+                    </a>
+                  </div>
+                  {/* Desktop header */}
+                  <div className="hidden md:flex relative items-baseline overflow-visible">
+                    <a
+                      href="/about"
+                      onClick={(e) => { e.preventDefault(); handleClose(); navigate("/about"); }}
+                      className="text-sm tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors"
+                    >
+                      R.Yury Kolesnikov
+                    </a>
+                    <span className="absolute left-1/2 -translate-x-1/2 text-sm tracking-[0.15em] font-normal whitespace-nowrap">
+                      .uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span>
+                    </span>
+                  </div>
+                  <p className="text-foreground tracking-[0.12em] text-[13px] mt-2">
+                    architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
+                  </p>
+                  <p className="text-muted-foreground text-[12px] leading-relaxed mt-1">
+                    выявляю структуру → формирую идею →<br />
+                    разворачиваю в проект → контролирую реализацию.
+                  </p>
                 </div>
-                <div>
-                  <p className="text-[13px] font-normal text-foreground">Формирование идеи</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Выбор принципа решения.</p>
-                </div>
-                <div>
-                  <p className="text-[13px] font-normal text-foreground">Создание концепции</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Сборка формы и логики.</p>
-                </div>
-                <div>
-                  <p className="text-[13px] font-normal text-foreground">Разработка проекта</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Рабочая документация и проекции.</p>
-                </div>
-                <div>
-                  <p className="text-[13px] font-normal text-foreground">Контроль реализации</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Проверка соответствия и передача прав.</p>
-                </div>
-              </div>
 
-              <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1">результат</p>
-              <p className="text-[15px] md:text-[17px] font-semibold mb-5 md:mb-8">Структура, которая работает.</p>
-              <a
-                href="https://t.me/kolesnikov_uno"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-[13px] text-primary font-medium hover:text-primary/80 transition-colors mb-1.5"
-              >
-                Написать в Telegram →
-              </a>
-              <a
-                href="/pricing"
-                onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/pricing"); }}
-                className="block text-[13px] text-primary/75 hover:text-primary/90 transition-colors"
-              >
-                Формат и стоимость →
-              </a>
-            </div>
+                {/* Content */}
+                <div className="text-foreground leading-relaxed md:grid md:grid-cols-2 md:gap-10 mt-4">
+                  <div>
+                    <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1">что это</p>
+                    <p className="text-[15px] md:text-[17px] font-semibold mb-6 md:mb-10">Проектирование структуры и формы.</p>
 
-            {/* Right column: steps (desktop only) */}
-            <div className="hidden md:block">
-              <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-4">как это происходит</p>
-              <div className="space-y-5">
-                <div>
-                  <p className="text-[13px] font-normal text-foreground">Анализ ситуации</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Определение контекста, конфигурации и связей.</p>
+                    <div className="md:hidden space-y-4 mb-6">
+                      <div>
+                        <p className="text-[13px] font-normal text-foreground">Анализ ситуации</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Определение контекста, конфигурации и связей.</p>
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-normal text-foreground">Формирование идеи</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Выбор принципа решения.</p>
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-normal text-foreground">Создание концепции</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Сборка формы и логики.</p>
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-normal text-foreground">Разработка проекта</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Рабочая документация и проекции.</p>
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-normal text-foreground">Контроль реализации</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Проверка соответствия и передача прав.</p>
+                      </div>
+                    </div>
+
+                    <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1">результат</p>
+                    <p className="text-[15px] md:text-[17px] font-semibold mb-5 md:mb-8">Структура, которая работает.</p>
+                    <a
+                      href="https://t.me/kolesnikov_uno"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-[13px] text-primary font-medium hover:text-primary/80 transition-colors mb-1.5"
+                    >
+                      Написать в Telegram →
+                    </a>
+                    <a
+                      href="/pricing"
+                      onClick={(e) => { e.preventDefault(); handleClose(); navigate("/pricing"); }}
+                      className="block text-[13px] text-primary/75 hover:text-primary/90 transition-colors"
+                    >
+                      Формат и стоимость →
+                    </a>
+                  </div>
+
+                  <div className="hidden md:block">
+                    <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-4">как это происходит</p>
+                    <div className="space-y-5">
+                      <div>
+                        <p className="text-[13px] font-normal text-foreground">Анализ ситуации</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Определение контекста, конфигурации и связей.</p>
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-normal text-foreground">Формирование идеи</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Выбор принципа решения.</p>
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-normal text-foreground">Создание концепции</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Сборка формы и логики.</p>
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-normal text-foreground">Разработка проекта</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Рабочая документация и проекции.</p>
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-normal text-foreground">Контроль реализации</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Проверка соответствия и передача прав.</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[13px] font-normal text-foreground">Формирование идеи</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Выбор принципа решения.</p>
-                </div>
-                <div>
-                  <p className="text-[13px] font-normal text-foreground">Создание концепции</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Сборка формы и логики.</p>
-                </div>
-                <div>
-                  <p className="text-[13px] font-normal text-foreground">Разработка проекта</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Рабочая документация и проекции.</p>
-                </div>
-                <div>
-                  <p className="text-[13px] font-normal text-foreground">Контроль реализации</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Проверка соответствия и передача прав.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </LayoutGroup>
   );
 };
 
