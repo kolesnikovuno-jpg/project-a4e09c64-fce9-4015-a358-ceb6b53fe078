@@ -83,7 +83,7 @@ const Index = () => {
               <a
                 href="/unocalc"
                 onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/unocalc"); }}
-                className="md:hidden text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors mr-6"
+                className="md:hidden text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
               >
                 unocalc
               </a>
