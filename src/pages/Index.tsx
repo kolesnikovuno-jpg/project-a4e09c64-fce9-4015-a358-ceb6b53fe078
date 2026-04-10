@@ -64,7 +64,7 @@ const Index = () => {
           {open && (
             <motion.div
               data-overlay
-              className="fixed inset-0 z-50 flex items-center justify-center"
+              className="fixed inset-0 z-50 flex items-start md:items-center justify-center overflow-y-auto"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -83,7 +83,7 @@ const Index = () => {
               {/* Content card */}
               <motion.div
                 data-popup
-                className="relative z-10 w-full max-w-2xl mx-4 border border-white/20 bg-white/60 backdrop-blur-sm p-8 overflow-visible"
+                className="relative z-10 w-full max-w-2xl mx-4 my-4 border border-white/20 bg-white/60 backdrop-blur-sm p-8 overflow-visible max-h-[calc(100vh-2rem)] overflow-y-auto"
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.96 }}
