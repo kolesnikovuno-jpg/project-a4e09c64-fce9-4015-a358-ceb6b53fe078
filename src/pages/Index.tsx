@@ -51,7 +51,7 @@ const Index = () => {
                 className="absolute w-7 h-7 rounded-full shadow-sm"
                 style={{ backgroundColor: open ? '#93D6D0' : 'rgba(255,255,255,0.8)' }}
                 initial={false}
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                transition={{ type: "spring", stiffness: 200, damping: 28, mass: 0.8 }}
                 animate={{ left: toggled ? 42 : 4 }}
               />
             )}
@@ -98,7 +98,7 @@ const Index = () => {
                     layoutId="morph-circle"
                     className="block w-5 h-5 rounded-full"
                     style={{ backgroundColor: '#93D6D0' }}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 28, mass: 0.8 }}
                   />
                 </button>
 
