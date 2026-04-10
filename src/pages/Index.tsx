@@ -38,12 +38,12 @@ const Index = () => {
       <div className="flex items-center justify-center mt-[72px] md:mt-0">
         <button
           onClick={handleToggle}
-          className="group relative flex items-center bg-primary border border-primary/60 rounded-full w-[90px] h-9 hover:bg-primary/90 transition-colors cursor-pointer translate-x-[27px]"
-        >
-          <span
-            className={`absolute w-7 h-7 rounded-full bg-white/80 shadow-sm transition-all duration-300 ease-in-out ${toggled ? 'left-[55px]' : 'left-1'}`}
-          />
-          <span className={`text-xs font-semibold text-white transition-all duration-300 ease-in-out ${toggled ? 'ml-3' : 'ml-10'}`}>.uno</span>
+           className="group relative flex items-center bg-primary border border-primary/60 rounded-full w-[76px] h-9 hover:bg-primary/90 transition-colors cursor-pointer translate-x-[27px]"
+         >
+           <span
+             className={`absolute w-7 h-7 rounded-full bg-white/80 shadow-sm transition-all duration-300 ease-in-out ${toggled ? 'left-[42px]' : 'left-1'}`}
+           />
+           <span className={`text-xs font-semibold text-white transition-all duration-300 ease-in-out ${toggled ? 'ml-2' : 'ml-9'}`}>.uno</span>
         </button>
       </div>
 
