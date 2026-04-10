@@ -86,17 +86,17 @@ const Index = () => {
               </a>
             </div>
             {/* Desktop header */}
-            <div className="hidden md:flex relative items-center overflow-visible">
-              <DialogTitle className="text-sm tracking-[0.15em] font-normal">
-                .uno studio
-              </DialogTitle>
+            <div className="hidden md:flex items-baseline gap-3 overflow-visible">
               <a
                 href="/about"
                 onClick={(e) => { e.preventDefault(); handleClose(false); navigate("/about"); }}
-                className="absolute left-1/2 -translate-x-1/2 text-[13px] text-primary font-medium hover:text-primary/80 transition-colors"
+                className="text-sm tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors"
               >
                 R.Yury Kolesnikov
               </a>
+              <DialogTitle className="text-sm tracking-[0.15em] font-normal">
+                .uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span>
+              </DialogTitle>
             </div>
             <p className="text-foreground tracking-[0.12em] text-[13px] mt-2">
               architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
