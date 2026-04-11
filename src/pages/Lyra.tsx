@@ -143,7 +143,7 @@ const Lyra = () => {
           {/* Model */}
           <model-viewer
             ref={modelRef as any}
-            src="https://my-uno-model.b-cdn.net/lyra.glb"
+            src="https://my-uno-model.b-cdn.net/Nava.glb"
             alt="Lyra — Kolesnikov.UNO"
             camera-controls
             interaction-prompt="none"
