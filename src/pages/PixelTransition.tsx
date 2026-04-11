@@ -77,11 +77,10 @@ const PixelTransition = () => {
     dyingPixels: Pixel[];
     birthPixels: Pixel[];
     holdPixels: Pixel[];
-    phase: "hold" | "morph";
+    phase: "idle" | "hold" | "morph";
     phaseStart: number;
     currentImage: 0 | 1;
     imagesData: ReturnType<typeof getPixels>[];
-    morphCount: number;
   } | null>(null);
 
   const init = useCallback(async () => {
@@ -117,11 +116,10 @@ const PixelTransition = () => {
       dyingPixels: [],
       birthPixels: [],
       holdPixels,
-      phase: "hold",
+      phase: "idle",
       phaseStart: performance.now(),
       currentImage: 0,
       imagesData: [dataA, dataB],
-      morphCount: 0,
     };
 
     setLoaded(true);
@@ -170,7 +168,6 @@ const PixelTransition = () => {
       state!.phase = "morph";
       state!.phaseStart = now;
       state!.currentImage = nextImg;
-      state!.morphCount++;
     };
 
     const animate = (now: number) => {
@@ -180,12 +177,12 @@ const PixelTransition = () => {
       ctx.fillStyle = "rgba(255,255,255,1)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      if (state.phase === "hold") {
+      if (state.phase === "idle" || state.phase === "hold") {
         for (const p of state.holdPixels) {
           ctx.fillStyle = p.color;
           ctx.fillRect(p.x, p.y, PIXEL_SIZE - 1, PIXEL_SIZE - 1);
         }
-        if (elapsed > HOLD_DURATION && state.morphCount < 2) {
+        if (state.phase === "hold" && elapsed > HOLD_DURATION) {
           startMorph(state, now);
         }
       } else if (state.phase === "morph") {
@@ -251,11 +248,19 @@ const PixelTransition = () => {
     return () => { cleanup.then(fn => fn?.()); };
   }, [init]);
 
+  const handleClick = useCallback(() => {
+    const state = animRef.current;
+    if (state && state.phase === "idle") {
+      state.phase = "hold";
+      state.phaseStart = performance.now();
+    }
+  }, []);
+
   return (
-    <div className="fixed inset-0 bg-white">
-      <canvas ref={canvasRef} className="block w-full h-full" />
+    <div className="fixed inset-0 bg-white cursor-pointer" onClick={handleClick}>
+      <canvas ref={canvasRef} className="block w-full h-full pointer-events-none" />
       <button
-        onClick={() => navigate("/")}
+        onClick={(e) => { e.stopPropagation(); navigate("/"); }}
         className="absolute top-4 left-4 text-xs tracking-widest text-muted-foreground hover:text-foreground transition-colors z-10"
       >
         ← .uno
