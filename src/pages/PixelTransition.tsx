@@ -245,11 +245,19 @@ const PixelTransition = () => {
     return () => { cleanup.then(fn => fn?.()); };
   }, [init]);
 
+  const handleClick = useCallback(() => {
+    const state = animRef.current;
+    if (state && state.phase === "idle") {
+      state.phase = "hold";
+      state.phaseStart = performance.now();
+    }
+  }, []);
+
   return (
-    <div className="fixed inset-0 bg-white">
-      <canvas ref={canvasRef} className="block w-full h-full" />
+    <div className="fixed inset-0 bg-white cursor-pointer" onClick={handleClick}>
+      <canvas ref={canvasRef} className="block w-full h-full pointer-events-none" />
       <button
-        onClick={() => navigate("/")}
+        onClick={(e) => { e.stopPropagation(); navigate("/"); }}
         className="absolute top-4 left-4 text-xs tracking-widest text-muted-foreground hover:text-foreground transition-colors z-10"
       >
         ← .uno
