@@ -35,15 +35,12 @@ const Lyra = () => {
   const loaderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Load model-viewer script
-    const script = document.createElement("script");
-    script.type = "module";
-    script.src = "https://ajax.googleapis.com/ajax/libs/model-viewer/3.0.1/model-viewer.min.js";
-    document.head.appendChild(script);
-
-    return () => {
-      document.head.removeChild(script);
-    };
+    if (!customElements.get("model-viewer")) {
+      const script = document.createElement("script");
+      script.type = "module";
+      script.src = "https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js";
+      document.head.appendChild(script);
+    }
   }, []);
 
   useEffect(() => {
