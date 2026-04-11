@@ -51,7 +51,7 @@ const Lyra = () => {
     const loader = loaderRef.current;
     if (!mv || !loader) return;
 
-    const SRC_PRIMARY = "https://uno-model.b-cdn.net/lyra.glb";
+    const SRC_PRIMARY = "https://my-uno.b-cdn.net/lyra.glb";
 
     const onLoad = () => {
       loader.classList.add("hide");
@@ -132,8 +132,16 @@ const Lyra = () => {
               src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
             />
             <button slot="ar-button" className="uno-ar" aria-label="View in AR" title="AR">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-                stroke="#888" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#888"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <rect x="3" y="3" width="7" height="7" rx="1" />
                 <rect x="14" y="3" width="7" height="7" rx="1" />
                 <rect x="3" y="14" width="7" height="7" rx="1" />
