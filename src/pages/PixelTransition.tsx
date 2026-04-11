@@ -121,6 +121,7 @@ const PixelTransition = () => {
       phaseStart: performance.now(),
       currentImage: 0,
       imagesData: [dataA, dataB],
+      morphCount: 0,
     };
 
     setLoaded(true);
