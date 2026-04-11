@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import photoA from "@/assets/photo-a.jpg";
 import photoB from "@/assets/photo-b.jpg";
 
-const PIXEL_SIZE = 8;
+const PIXEL_SIZE = 4;
 const TRANSITION_DURATION = 3000;
 const HOLD_DURATION = 3000;
 
@@ -81,6 +81,7 @@ const PixelTransition = () => {
     phaseStart: number;
     currentImage: 0 | 1;
     imagesData: ReturnType<typeof getPixels>[];
+    morphCount: number;
   } | null>(null);
 
   const init = useCallback(async () => {
@@ -120,6 +121,7 @@ const PixelTransition = () => {
       phaseStart: performance.now(),
       currentImage: 0,
       imagesData: [dataA, dataB],
+      morphCount: 0,
     };
 
     setLoaded(true);
@@ -168,6 +170,7 @@ const PixelTransition = () => {
       state!.phase = "morph";
       state!.phaseStart = now;
       state!.currentImage = nextImg;
+      state!.morphCount++;
     };
 
     const animate = (now: number) => {
@@ -182,7 +185,7 @@ const PixelTransition = () => {
           ctx.fillStyle = p.color;
           ctx.fillRect(p.x, p.y, PIXEL_SIZE - 1, PIXEL_SIZE - 1);
         }
-        if (elapsed > HOLD_DURATION) {
+        if (elapsed > HOLD_DURATION && state.morphCount < 2) {
           startMorph(state, now);
         }
       } else if (state.phase === "morph") {
