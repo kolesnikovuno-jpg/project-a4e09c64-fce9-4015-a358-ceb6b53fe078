@@ -51,7 +51,7 @@ const Lyra = () => {
     const loader = loaderRef.current;
     if (!mv || !loader) return;
 
-    const SRC_PRIMARY = "https://my-uno.b-cdn.net/lyra.glb";
+    const SRC_PRIMARY = "https://my-uno-model.b-cdn.net/lyra.glb";
 
     const onLoad = () => {
       loader.classList.add("hide");
