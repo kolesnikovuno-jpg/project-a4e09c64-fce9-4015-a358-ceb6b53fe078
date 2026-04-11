@@ -4,7 +4,7 @@ import photoA from "@/assets/photo-a.jpg";
 import photoB from "@/assets/photo-b.jpg";
 
 const PIXEL_SIZE = 8;
-const TRANSITION_DURATION = 2500;
+const TRANSITION_DURATION = 3000;
 const HOLD_DURATION = 3000;
 
 interface Pixel {
@@ -17,6 +17,7 @@ interface Pixel {
   color: string;
   targetColor: string;
   delay: number;
+  dying: boolean; // scattering away
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -34,9 +35,8 @@ function getPixels(
   canvasW: number,
   canvasH: number,
   pixelSize: number
-): { colors: string[][]; cols: number; rows: number; offsetX: number; offsetY: number } {
+) {
   const offscreen = document.createElement("canvas");
-  // fit image into canvas maintaining aspect ratio
   const scale = Math.min(canvasW / img.width, canvasH / img.height) * 0.85;
   const w = Math.floor(img.width * scale);
   const h = Math.floor(img.height * scale);
@@ -74,8 +74,10 @@ const PixelTransition = () => {
   const [loaded, setLoaded] = useState(false);
 
   const animRef = useRef<{
-    pixels: Pixel[];
-    phase: "hold" | "scatter" | "gather" | "holdB";
+    dyingPixels: Pixel[];
+    birthPixels: Pixel[];
+    holdPixels: Pixel[];
+    phase: "hold" | "morph";
     phaseStart: number;
     currentImage: 0 | 1;
     imagesData: ReturnType<typeof getPixels>[];
@@ -94,24 +96,26 @@ const PixelTransition = () => {
     const dataA = getPixels(images[0], canvas.width, canvas.height, PIXEL_SIZE);
     const dataB = getPixels(images[1], canvas.width, canvas.height, PIXEL_SIZE);
 
-    // Create initial pixels from image A
-    const pixels: Pixel[] = [];
+    // Create initial hold pixels from image A
+    const holdPixels: Pixel[] = [];
     for (let row = 0; row < dataA.rows; row++) {
       for (let col = 0; col < dataA.cols; col++) {
         const x = dataA.offsetX + col * PIXEL_SIZE;
         const y = dataA.offsetY + row * PIXEL_SIZE;
-        pixels.push({
+        holdPixels.push({
           x, y, targetX: x, targetY: y,
           startX: x, startY: y,
           color: dataA.colors[row][col],
           targetColor: dataA.colors[row][col],
-          delay: Math.random() * 0.3,
+          delay: 0, dying: false,
         });
       }
     }
 
     animRef.current = {
-      pixels,
+      dyingPixels: [],
+      birthPixels: [],
+      holdPixels,
       phase: "hold",
       phaseStart: performance.now(),
       currentImage: 0,
@@ -122,6 +126,50 @@ const PixelTransition = () => {
 
     let animId: number;
 
+    const startMorph = (state: typeof animRef.current, now: number) => {
+      const nextImg = state!.currentImage === 0 ? 1 : 0;
+      const nextData = state!.imagesData[nextImg];
+
+      // Dying pixels: current image scatters left
+      const dying: Pixel[] = state!.holdPixels.map(p => ({
+        ...p,
+        startX: p.x,
+        startY: p.y,
+        targetX: -200 + Math.random() * -400,
+        targetY: p.y + (Math.random() - 0.5) * canvas.height * 0.8,
+        delay: Math.random() * 0.4,
+        dying: true,
+      }));
+
+      // Birth pixels: next image gathers from right
+      const birth: Pixel[] = [];
+      for (let row = 0; row < nextData.rows; row++) {
+        for (let col = 0; col < nextData.cols; col++) {
+          const tx = nextData.offsetX + col * PIXEL_SIZE;
+          const ty = nextData.offsetY + row * PIXEL_SIZE;
+          birth.push({
+            x: canvas.width + 200 + Math.random() * 400,
+            y: ty + (Math.random() - 0.5) * canvas.height * 0.8,
+            startX: canvas.width + 200 + Math.random() * 400,
+            startY: ty + (Math.random() - 0.5) * canvas.height * 0.8,
+            targetX: tx,
+            targetY: ty,
+            color: nextData.colors[row][col],
+            targetColor: nextData.colors[row][col],
+            delay: Math.random() * 0.4,
+            dying: false,
+          });
+        }
+      }
+
+      state!.dyingPixels = dying;
+      state!.birthPixels = birth;
+      state!.holdPixels = [];
+      state!.phase = "morph";
+      state!.phaseStart = now;
+      state!.currentImage = nextImg;
+    };
+
     const animate = (now: number) => {
       const state = animRef.current!;
       const elapsed = now - state.phaseStart;
@@ -129,115 +177,51 @@ const PixelTransition = () => {
       ctx.fillStyle = "rgba(255,255,255,1)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      if (state.phase === "hold" || state.phase === "holdB") {
-        // Just draw pixels in place
-        for (const p of state.pixels) {
+      if (state.phase === "hold") {
+        for (const p of state.holdPixels) {
           ctx.fillStyle = p.color;
           ctx.fillRect(p.x, p.y, PIXEL_SIZE - 1, PIXEL_SIZE - 1);
         }
-
         if (elapsed > HOLD_DURATION) {
-          // Start scatter phase
-          const nextImg = state.currentImage === 0 ? 1 : 0;
-          const nextData = state.imagesData[nextImg];
-          
-          // Scatter: pixels fly off to the left with randomness
-          for (const p of state.pixels) {
-            p.startX = p.x;
-            p.startY = p.y;
-            p.targetX = -200 + Math.random() * -300;
-            p.targetY = p.y + (Math.random() - 0.5) * canvas.height * 0.6;
-            p.delay = Math.random() * 0.25;
-          }
-          state.phase = "scatter";
-          state.phaseStart = now;
-
-          // Prepare gather targets from next image
-          const gatherPixels: { x: number; y: number; color: string }[] = [];
-          for (let row = 0; row < nextData.rows; row++) {
-            for (let col = 0; col < nextData.cols; col++) {
-              gatherPixels.push({
-                x: nextData.offsetX + col * PIXEL_SIZE,
-                y: nextData.offsetY + row * PIXEL_SIZE,
-                color: nextData.colors[row][col],
-              });
-            }
-          }
-
-          // Resize pixel array if needed, assign gather targets
-          const maxLen = Math.max(state.pixels.length, gatherPixels.length);
-          while (state.pixels.length < maxLen) {
-            // duplicate random pixels if we need more
-            const src = state.pixels[Math.floor(Math.random() * state.pixels.length)];
-            state.pixels.push({ ...src, delay: Math.random() * 0.25 });
-          }
-          // Store gather targets in a stash
-          (state as any).gatherTargets = gatherPixels;
-          (state as any).nextImage = nextImg;
+          startMorph(state, now);
         }
-      } else if (state.phase === "scatter") {
+      } else if (state.phase === "morph") {
         const progress = Math.min(elapsed / TRANSITION_DURATION, 1);
 
-        for (const p of state.pixels) {
+        // Draw dying pixels (scatter left, fade out)
+        for (const p of state.dyingPixels) {
           const t = Math.max(0, Math.min(1, (progress - p.delay) / (1 - p.delay)));
           const e = easeInOutCubic(t);
           p.x = p.startX + (p.targetX - p.startX) * e;
           p.y = p.startY + (p.targetY - p.startY) * e;
-          const alpha = 1 - t * 0.7;
-          ctx.globalAlpha = alpha;
+          ctx.globalAlpha = 1 - t;
           ctx.fillStyle = p.color;
           ctx.fillRect(p.x, p.y, PIXEL_SIZE - 1, PIXEL_SIZE - 1);
         }
-        ctx.globalAlpha = 1;
 
-        if (progress >= 1) {
-          // Start gather phase — pixels come from right
-          const gatherTargets = (state as any).gatherTargets as { x: number; y: number; color: string }[];
-          const nextImg = (state as any).nextImage as 0 | 1;
-
-          // Trim or use pixels
-          state.pixels.length = gatherTargets.length;
-
-          for (let i = 0; i < gatherTargets.length; i++) {
-            const p = state.pixels[i];
-            if (!p) continue;
-            p.startX = canvas.width + 200 + Math.random() * 300;
-            p.startY = gatherTargets[i].y + (Math.random() - 0.5) * canvas.height * 0.6;
-            p.targetX = gatherTargets[i].x;
-            p.targetY = gatherTargets[i].y;
-            p.targetColor = gatherTargets[i].color;
-            p.color = gatherTargets[i].color;
-            p.x = p.startX;
-            p.y = p.startY;
-            p.delay = Math.random() * 0.25;
-          }
-
-          state.phase = "gather";
-          state.phaseStart = now;
-          state.currentImage = nextImg;
-        }
-      } else if (state.phase === "gather") {
-        const progress = Math.min(elapsed / TRANSITION_DURATION, 1);
-
-        for (const p of state.pixels) {
+        // Draw birth pixels (gather from right, fade in)
+        for (const p of state.birthPixels) {
           const t = Math.max(0, Math.min(1, (progress - p.delay) / (1 - p.delay)));
           const e = easeInOutCubic(t);
           p.x = p.startX + (p.targetX - p.startX) * e;
           p.y = p.startY + (p.targetY - p.startY) * e;
-          const alpha = 0.3 + t * 0.7;
-          ctx.globalAlpha = alpha;
+          ctx.globalAlpha = t;
           ctx.fillStyle = p.color;
           ctx.fillRect(p.x, p.y, PIXEL_SIZE - 1, PIXEL_SIZE - 1);
         }
+
         ctx.globalAlpha = 1;
 
         if (progress >= 1) {
-          // Snap to final positions
-          for (const p of state.pixels) {
-            p.x = p.targetX;
-            p.y = p.targetY;
-          }
-          state.phase = "holdB";
+          // Snap birth pixels as new hold
+          state.holdPixels = state.birthPixels.map(p => ({
+            ...p,
+            x: p.targetX,
+            y: p.targetY,
+          }));
+          state.dyingPixels = [];
+          state.birthPixels = [];
+          state.phase = "hold";
           state.phaseStart = now;
         }
       }
