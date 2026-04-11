@@ -124,7 +124,7 @@ const Lyra = () => {
             ar
             ar-modes="webxr scene-viewer quick-look"
             ar-scale="auto"
-            ios-src="https://uno-model.b-cdn.net/lyra.usdz"
+            ios-src="https://my-uno.b-cdn.net/lyra.usdz"
           >
             <img
               slot="poster"
