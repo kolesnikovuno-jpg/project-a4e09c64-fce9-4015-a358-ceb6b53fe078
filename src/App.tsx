@@ -27,6 +27,7 @@ const App = () => (
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/unocalc" element={<UnoCalc />} />
           <Route path="/about" element={<About />} />
+          <Route path="/lyra" element={<Lyra />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
