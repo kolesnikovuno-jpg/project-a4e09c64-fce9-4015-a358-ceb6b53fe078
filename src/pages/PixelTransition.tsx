@@ -5,7 +5,7 @@ import photoB from "@/assets/photo-b.jpg";
 
 const PIXEL_SIZE = 4;
 const TRANSITION_DURATION = 3000;
-const HOLD_DURATION = 3000;
+
 
 interface Pixel {
   x: number;
