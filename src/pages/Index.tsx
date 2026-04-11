@@ -22,13 +22,16 @@ const Index = () => {
   };
 
   const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (open) return;
+
     const target = e.target as HTMLElement;
     if (target.closest("button") || target.closest("[data-popup]")) return;
+
     navigate("/doodle");
   };
 
   const handleOverlayClick = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).hasAttribute("data-overlay")) {
+    if (e.currentTarget === e.target) {
       handleClose();
     }
   };
@@ -49,13 +52,17 @@ const Index = () => {
               <motion.span
                 layoutId="morph-circle"
                 className="absolute w-7 h-7 rounded-full shadow-sm"
-                style={{ backgroundColor: open ? '#93D6D0' : 'rgba(255,255,255,0.8)' }}
+                style={{ backgroundColor: open ? "#93D6D0" : "rgba(255,255,255,0.8)" }}
                 initial={false}
                 transition={{ type: "spring", stiffness: 200, damping: 28, mass: 0.8 }}
                 animate={{ left: toggled ? 42 : 4 }}
               />
             )}
-            <span className={`text-xs font-semibold text-white transition-all duration-300 ease-in-out ${toggled ? 'ml-2' : 'ml-9'}`}>.uno</span>
+            <span
+              className={`text-xs font-semibold text-white transition-all duration-300 ease-in-out ${toggled ? "ml-2" : "ml-9"}`}
+            >
+              .uno
+            </span>
           </button>
         </div>
 
@@ -97,21 +104,36 @@ const Index = () => {
                   <motion.span
                     layoutId="morph-circle"
                     className="block w-5 h-5 rounded-full"
-                    style={{ backgroundColor: '#93D6D0' }}
+                    style={{ backgroundColor: "#93D6D0" }}
                     transition={{ type: "spring", stiffness: 200, damping: 28, mass: 0.8 }}
                   />
                 </button>
 
                 {/* Circle menu — line from close to unocalc */}
-                <div className="hidden md:block absolute pointer-events-none" style={{ top: '8px', right: '8px', width: '160px', height: '110px' }}>
+                <div
+                  className="hidden md:block absolute pointer-events-none"
+                  style={{ top: "8px", right: "8px", width: "160px", height: "110px" }}
+                >
                   <svg className="absolute inset-0 w-full h-full" viewBox="0 0 160 110" fill="none">
-                    <line x1="148" y1="12" x2="98" y2="58" stroke="hsl(var(--primary))" strokeWidth="0.75" opacity="0.55" />
+                    <line
+                      x1="148"
+                      y1="12"
+                      x2="98"
+                      y2="58"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth="0.75"
+                      opacity="0.55"
+                    />
                   </svg>
                   <a
                     href="/unocalc"
-                    onClick={(e) => { e.preventDefault(); handleClose(); navigate("/unocalc"); }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleClose();
+                      navigate("/unocalc");
+                    }}
                     className="pointer-events-auto absolute flex items-center justify-center w-[60px] h-[60px] rounded-full border border-primary/30 text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
-                    style={{ left: '52px', top: '38px' }}
+                    style={{ left: "52px", top: "38px" }}
                   >
                     unocalc
                   </a>
@@ -124,19 +146,29 @@ const Index = () => {
                     <div className="flex items-baseline gap-3">
                       <a
                         href="/about"
-                        onClick={(e) => { e.preventDefault(); handleClose(); navigate("/about"); }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleClose();
+                          navigate("/about");
+                        }}
                         className="text-sm tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors"
                       >
                         R.Yury Kolesnikov
                       </a>
-                      <span className="text-sm tracking-[0.15em] font-normal text-foreground">.uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span></span>
+                      <span className="text-sm tracking-[0.15em] font-normal text-foreground">
+                        .uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span>
+                      </span>
                     </div>
                   </div>
                   {/* Desktop header */}
                   <div className="hidden md:flex relative items-baseline overflow-visible">
                     <a
                       href="/about"
-                      onClick={(e) => { e.preventDefault(); handleClose(); navigate("/about"); }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleClose();
+                        navigate("/about");
+                      }}
                       className="text-sm tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors"
                     >
                       R.Yury Kolesnikov
@@ -151,7 +183,11 @@ const Index = () => {
                     </p>
                     <a
                       href="/unocalc"
-                      onClick={(e) => { e.preventDefault(); handleClose(); navigate("/unocalc"); }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleClose();
+                        navigate("/unocalc");
+                      }}
                       className="md:hidden ml-auto text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
                     >
                       unocalc
@@ -167,12 +203,16 @@ const Index = () => {
                 <div className="text-foreground leading-relaxed md:grid md:grid-cols-2 md:gap-10 mt-4">
                   <div>
                     <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1">что это</p>
-                    <p className="text-[15px] md:text-[17px] font-semibold mb-6 md:mb-10">Проектирование структуры и формы.</p>
+                    <p className="text-[15px] md:text-[17px] font-semibold mb-6 md:mb-10">
+                      Проектирование структуры и формы.
+                    </p>
 
                     <div className="md:hidden space-y-4 mb-6">
                       <div>
                         <p className="text-[13px] font-normal text-foreground">Анализ ситуации</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Определение контекста, конфигурации и связей.</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          Определение контекста, конфигурации и связей.
+                        </p>
                       </div>
                       <div>
                         <p className="text-[13px] font-normal text-foreground">Формирование идеи</p>
@@ -188,12 +228,16 @@ const Index = () => {
                       </div>
                       <div>
                         <p className="text-[13px] font-normal text-foreground">Контроль реализации</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Проверка соответствия и передача прав.</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          Проверка соответствия и передача прав.
+                        </p>
                       </div>
                     </div>
 
                     <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1">результат</p>
-                    <p className="text-[15px] md:text-[17px] font-semibold mb-5 md:mb-8">Структура, которая работает.</p>
+                    <p className="text-[15px] md:text-[17px] font-semibold mb-5 md:mb-8">
+                      Структура, которая работает.
+                    </p>
                     <a
                       href="https://t.me/kolesnikov_uno"
                       target="_blank"
@@ -204,7 +248,11 @@ const Index = () => {
                     </a>
                     <a
                       href="/pricing"
-                      onClick={(e) => { e.preventDefault(); handleClose(); navigate("/pricing"); }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleClose();
+                        navigate("/pricing");
+                      }}
                       className="block text-[13px] text-primary/75 hover:text-primary/90 transition-colors"
                     >
                       Формат и стоимость →
@@ -212,11 +260,15 @@ const Index = () => {
                   </div>
 
                   <div className="hidden md:block">
-                    <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-4">как это происходит</p>
+                    <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-4">
+                      как это происходит
+                    </p>
                     <div className="space-y-5">
                       <div>
                         <p className="text-[13px] font-normal text-foreground">Анализ ситуации</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Определение контекста, конфигурации и связей.</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          Определение контекста, конфигурации и связей.
+                        </p>
                       </div>
                       <div>
                         <p className="text-[13px] font-normal text-foreground">Формирование идеи</p>
@@ -232,7 +284,9 @@ const Index = () => {
                       </div>
                       <div>
                         <p className="text-[13px] font-normal text-foreground">Контроль реализации</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Проверка соответствия и передача прав.</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          Проверка соответствия и передача прав.
+                        </p>
                       </div>
                     </div>
                   </div>
