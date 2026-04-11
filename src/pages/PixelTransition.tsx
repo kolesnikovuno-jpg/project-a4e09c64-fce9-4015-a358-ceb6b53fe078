@@ -185,7 +185,7 @@ const PixelTransition = () => {
           ctx.fillStyle = p.color;
           ctx.fillRect(p.x, p.y, PIXEL_SIZE - 1, PIXEL_SIZE - 1);
         }
-        if (elapsed > HOLD_DURATION) {
+        if (elapsed > HOLD_DURATION && state.morphCount < 2) {
           startMorph(state, now);
         }
       } else if (state.phase === "morph") {
