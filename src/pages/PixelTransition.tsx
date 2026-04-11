@@ -218,7 +218,7 @@ const PixelTransition = () => {
           }));
           state.dyingPixels = [];
           state.birthPixels = [];
-          state.phase = "hold";
+          state.phase = "idle";
           state.phaseStart = now;
         }
       }
@@ -248,8 +248,47 @@ const PixelTransition = () => {
   const handleClick = useCallback(() => {
     const state = animRef.current;
     if (state && state.phase === "idle") {
-      state.phase = "hold";
-      state.phaseStart = performance.now();
+      const now = performance.now();
+      const canvas = canvasRef.current!;
+      const nextImg = state.currentImage === 0 ? 1 : 0;
+      const nextData = state.imagesData[nextImg];
+
+      const dying: Pixel[] = state.holdPixels.map(p => ({
+        ...p,
+        startX: p.x,
+        startY: p.y,
+        targetX: -200 + Math.random() * -400,
+        targetY: p.y + (Math.random() - 0.5) * canvas.height * 0.8,
+        delay: Math.random() * 0.4,
+        dying: true,
+      }));
+
+      const birth: Pixel[] = [];
+      for (let row = 0; row < nextData.rows; row++) {
+        for (let col = 0; col < nextData.cols; col++) {
+          const tx = nextData.offsetX + col * PIXEL_SIZE;
+          const ty = nextData.offsetY + row * PIXEL_SIZE;
+          birth.push({
+            x: canvas.width + 200 + Math.random() * 400,
+            y: ty + (Math.random() - 0.5) * canvas.height * 0.8,
+            startX: canvas.width + 200 + Math.random() * 400,
+            startY: ty + (Math.random() - 0.5) * canvas.height * 0.8,
+            targetX: tx,
+            targetY: ty,
+            color: nextData.colors[row][col],
+            targetColor: nextData.colors[row][col],
+            delay: Math.random() * 0.4,
+            dying: false,
+          });
+        }
+      }
+
+      state.dyingPixels = dying;
+      state.birthPixels = birth;
+      state.holdPixels = [];
+      state.phase = "morph";
+      state.phaseStart = now;
+      state.currentImage = nextImg;
     }
   }, []);
 
