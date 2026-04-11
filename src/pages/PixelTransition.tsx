@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import photoA from "@/assets/photo-a.jpg";
 import photoB from "@/assets/photo-b.jpg";
 
-const PIXEL_SIZE = 8;
+const PIXEL_SIZE = 4;
 const TRANSITION_DURATION = 3000;
 const HOLD_DURATION = 3000;
 
