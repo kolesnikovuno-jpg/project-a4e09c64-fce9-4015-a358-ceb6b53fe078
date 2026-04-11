@@ -209,11 +209,18 @@ const PixelTransition = () => {
       const nextImg = state.currentImage === 0 ? 1 : 0;
       const nextData = state.imagesData[nextImg];
 
+      // A→B: scatter left, gather from right. B→A: scatter right, gather from left.
+      const goingRight = state.currentImage === 1;
+      const dyingOffX = goingRight ? canvas.width + 200 : -200;
+      const dyingRandX = goingRight ? 400 : -400;
+      const birthOffX = goingRight ? -200 + Math.random() * -400 : canvas.width + 200;
+      const birthRandX = goingRight ? -400 : 400;
+
       const dying: Pixel[] = state.holdPixels.map(p => ({
         ...p,
         startX: p.x,
         startY: p.y,
-        targetX: -200 + Math.random() * -400,
+        targetX: dyingOffX + Math.random() * dyingRandX,
         targetY: p.y + (Math.random() - 0.5) * canvas.height * 0.8,
         delay: Math.random() * 0.4,
         dying: true,
@@ -224,10 +231,11 @@ const PixelTransition = () => {
         for (let col = 0; col < nextData.cols; col++) {
           const tx = nextData.offsetX + col * PIXEL_SIZE;
           const ty = nextData.offsetY + row * PIXEL_SIZE;
+          const sx = goingRight ? -200 + Math.random() * -400 : canvas.width + 200 + Math.random() * 400;
           birth.push({
-            x: canvas.width + 200 + Math.random() * 400,
+            x: sx,
             y: ty + (Math.random() - 0.5) * canvas.height * 0.8,
-            startX: canvas.width + 200 + Math.random() * 400,
+            startX: sx,
             startY: ty + (Math.random() - 0.5) * canvas.height * 0.8,
             targetX: tx,
             targetY: ty,
