@@ -9,6 +9,7 @@ import Pricing from "./pages/Pricing";
 import UnoCalc from "./pages/UnoCalc";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import PixelTransition from "./pages/PixelTransition";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/doodle" element={<Canvas />} />
+          <Route path="/pixels" element={<PixelTransition />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/unocalc" element={<UnoCalc />} />
           <Route path="/about" element={<About />} />
