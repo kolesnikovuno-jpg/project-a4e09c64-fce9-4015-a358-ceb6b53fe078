@@ -177,13 +177,10 @@ const PixelTransition = () => {
       ctx.fillStyle = "rgba(255,255,255,1)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      if (state.phase === "idle" || state.phase === "hold") {
+      if (state.phase === "idle") {
         for (const p of state.holdPixels) {
           ctx.fillStyle = p.color;
           ctx.fillRect(p.x, p.y, PIXEL_SIZE - 1, PIXEL_SIZE - 1);
-        }
-        if (state.phase === "hold" && elapsed > HOLD_DURATION) {
-          startMorph(state, now);
         }
       } else if (state.phase === "morph") {
         const progress = Math.min(elapsed / TRANSITION_DURATION, 1);
