@@ -77,11 +77,10 @@ const PixelTransition = () => {
     dyingPixels: Pixel[];
     birthPixels: Pixel[];
     holdPixels: Pixel[];
-    phase: "hold" | "morph";
+    phase: "idle" | "hold" | "morph";
     phaseStart: number;
     currentImage: 0 | 1;
     imagesData: ReturnType<typeof getPixels>[];
-    morphCount: number;
   } | null>(null);
 
   const init = useCallback(async () => {
