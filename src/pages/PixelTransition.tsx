@@ -170,6 +170,7 @@ const PixelTransition = () => {
       state!.phase = "morph";
       state!.phaseStart = now;
       state!.currentImage = nextImg;
+      state!.morphCount++;
     };
 
     const animate = (now: number) => {
