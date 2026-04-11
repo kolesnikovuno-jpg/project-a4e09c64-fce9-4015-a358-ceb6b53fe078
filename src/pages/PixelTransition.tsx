@@ -168,7 +168,6 @@ const PixelTransition = () => {
       state!.phase = "morph";
       state!.phaseStart = now;
       state!.currentImage = nextImg;
-      };
     };
 
     const animate = (now: number) => {
