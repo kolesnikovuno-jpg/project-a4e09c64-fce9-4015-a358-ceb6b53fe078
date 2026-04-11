@@ -10,6 +10,7 @@ import UnoCalc from "./pages/UnoCalc";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import PixelTransition from "./pages/PixelTransition";
+import Lyra from "./pages/Lyra";
 
 const queryClient = new QueryClient();
 
