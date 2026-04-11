@@ -216,32 +216,39 @@ const PixelTransition = () => {
       const birthOffX = goingRight ? -200 + Math.random() * -400 : canvas.width + 200;
       const birthRandX = goingRight ? -400 : 400;
 
-      const dying: Pixel[] = state.holdPixels.map(p => ({
-        ...p,
-        startX: p.x,
-        startY: p.y,
-        targetX: dyingOffX + Math.random() * dyingRandX,
-        targetY: p.y + (Math.random() - 0.5) * canvas.height * 0.8,
-        delay: Math.random() * 0.4,
-        dying: true,
-      }));
+      const dying: Pixel[] = state.holdPixels.map(p => {
+        const angle = (Math.random() - 0.5) * Math.PI * 1.5;
+        const dist = 300 + Math.random() * 600;
+        return {
+          ...p,
+          startX: p.x,
+          startY: p.y,
+          targetX: (goingRight ? -200 : canvas.width + 200) + Math.cos(angle) * dist + (Math.random() - 0.5) * 400,
+          targetY: p.y + Math.sin(angle) * dist + (Math.random() - 0.5) * canvas.height * 0.6,
+          delay: Math.random() * 0.5,
+          dying: true,
+        };
+      });
 
       const birth: Pixel[] = [];
       for (let row = 0; row < nextData.rows; row++) {
         for (let col = 0; col < nextData.cols; col++) {
           const tx = nextData.offsetX + col * PIXEL_SIZE;
           const ty = nextData.offsetY + row * PIXEL_SIZE;
-          const sx = goingRight ? -200 + Math.random() * -400 : canvas.width + 200 + Math.random() * 400;
+          const angle = (Math.random() - 0.5) * Math.PI * 1.5;
+          const dist = 300 + Math.random() * 600;
+          const sx = (goingRight ? canvas.width + 200 : -200) + Math.cos(angle) * dist + (Math.random() - 0.5) * 400;
+          const sy = ty + Math.sin(angle) * dist + (Math.random() - 0.5) * canvas.height * 0.6;
           birth.push({
             x: sx,
-            y: ty + (Math.random() - 0.5) * canvas.height * 0.8,
+            y: sy,
             startX: sx,
-            startY: ty + (Math.random() - 0.5) * canvas.height * 0.8,
+            startY: sy,
             targetX: tx,
             targetY: ty,
             color: nextData.colors[row][col],
             targetColor: nextData.colors[row][col],
-            delay: Math.random() * 0.4,
+            delay: Math.random() * 0.5,
             dying: false,
           });
         }
