@@ -143,7 +143,7 @@ const Lyra = () => {
           {/* Model */}
           <model-viewer
             ref={modelRef as any}
-            src="https://my-uno-model.b-cdn.net/Nava.glb"
+            src="https://my-uno-model.b-cdn.net/VITA.glb"
             alt="Lyra — Kolesnikov.UNO"
             camera-controls
             interaction-prompt="none"
@@ -164,7 +164,7 @@ const Lyra = () => {
             ar
             ar-modes="webxr scene-viewer quick-look"
             ar-scale="auto"
-            ios-src="https://my-uno-model.b-cdn.net/Nava01.usdz"
+            ios-src="https://my-uno-model.b-cdn.net/VITA.usdz"
           >
             <img
               slot="poster"
