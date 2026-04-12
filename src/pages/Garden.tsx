@@ -127,7 +127,7 @@ const Garden = () => {
       >
         {/* Ground line — straight horizontal */}
         <line
-          x1="0" y1={gY} x2="900" y2={gY}
+          x1="0" y1={gY} x2="800" y2={gY}
           stroke="hsl(168 40% 52%)" strokeWidth={sw}
         />
 
