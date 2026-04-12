@@ -82,29 +82,7 @@ const Lyra = () => {
         <ChevronLeft size={24} strokeWidth={1} />
       </button>
 
-      {/* Stem 05 on the right */}
-      <svg
-        className="absolute right-4 bottom-0 h-[70vh] w-[80px] pointer-events-auto"
-        viewBox="0 0 80 500"
-        preserveAspectRatio="xMidYMax meet"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        {/* Ground line */}
-        <line x1="10" y1="498" x2="75" y2="498" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-        {/* Stem */}
-        <line x1="40" y1="498" x2="40" y2="88" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-        {/* Branch 1 — right, at y ~290 */}
-        <line x1="40" y1="288" x2="72" y2="288" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-        <circle cx="72" cy="288" r="9" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-        <circle cx="72" cy="288" r="15" fill="transparent" stroke="transparent" />
-        {/* Branch 2 — left, at y ~188 */}
-        <line x1="40" y1="188" x2="12" y2="188" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-        <circle cx="12" cy="188" r="6" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-        <circle cx="12" cy="188" r="12" fill="transparent" stroke="transparent" />
-        {/* Top bud — current page indicator (filled) */}
-        <circle cx="40" cy="88" r="14" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-        <circle cx="40" cy="88" r="20" fill="transparent" stroke="transparent" />
-      </svg>
+      
 
       <style>{`
         .uno-3d-wrap{
@@ -112,7 +90,6 @@ const Lyra = () => {
           width:min(1100px,100%);
           margin:0 auto;
           padding:var(--pad);
-          padding-right:calc(var(--pad) + 60px);
           box-sizing:border-box;
         }
         .uno-3d-stage{
@@ -177,9 +154,14 @@ const Lyra = () => {
         .uno-ar svg{stroke:#999;transition:stroke .25s ease;}
         .uno-ar:hover svg{stroke:#000;}
         @media(max-width:768px){
-          .uno-3d-wrap{padding-right:calc(var(--pad) + 40px);}
           .uno-ar{width:52px;height:52px;right:10px;top:10px;opacity:0.7;}
           .uno-ar svg{width:26px;height:26px;}
+        }
+        .uno-stem-05{
+          position:absolute;
+          right:14px;top:34px;bottom:32px;
+          width:60px;z-index:5;
+          pointer-events:auto;
         }
       `}</style>
 
@@ -238,6 +220,30 @@ const Lyra = () => {
               </svg>
             </button>
           </model-viewer>
+
+          {/* Stem 05 — centered on AR icon, ground at subtitle level */}
+          <svg
+            className="uno-stem-05"
+            viewBox="0 0 60 400"
+            preserveAspectRatio="xMidYMid meet"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Ground line */}
+            <line x1="5" y1="398" x2="55" y2="398" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+            {/* Stem */}
+            <line x1="30" y1="398" x2="30" y2="20" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+            {/* Branch 1 — right */}
+            <line x1="30" y1="270" x2="52" y2="270" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+            <circle cx="52" cy="270" r="9" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+            <circle cx="52" cy="270" r="15" fill="transparent" stroke="transparent" />
+            {/* Branch 2 — left */}
+            <line x1="30" y1="160" x2="8" y2="160" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+            <circle cx="8" cy="160" r="6" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+            <circle cx="8" cy="160" r="12" fill="transparent" stroke="transparent" />
+            {/* Top bud — current page */}
+            <circle cx="30" cy="20" r="14" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+            <circle cx="30" cy="20" r="20" fill="transparent" stroke="transparent" />
+          </svg>
         </div>
       </div>
     </div>
