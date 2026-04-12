@@ -34,7 +34,7 @@ const UnoCalc = () => {
       <div className="max-w-[640px] w-full">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 md:mb-8">
-          <h1 className="text-[17px] md:text-[19px] font-normal tracking-[0.12em] text-foreground">
+          <h1 className="text-[15px] md:text-[16px] font-normal tracking-[0.12em] text-foreground">
             unocalc
           </h1>
           <Link
@@ -75,7 +75,7 @@ const UnoCalc = () => {
         {/* Volume */}
         <div className="mt-5 mb-4 px-4 py-3 bg-muted/40 rounded-sm flex items-center justify-between text-[14px]">
           <span className="text-muted-foreground">объем</span>
-          <span className="text-[20px] text-foreground">{volume.toFixed(2)} м³</span>
+          <span className="text-[17px] text-foreground">{volume.toFixed(2)} м³</span>
         </div>
 
         {/* Level */}
@@ -117,9 +117,9 @@ const UnoCalc = () => {
         </div>
 
         {/* Result */}
-        <div className="mt-5 px-4 py-3 bg-[#93D6D0]/[0.12] border-l-[3px] border-[#6FC5BE] rounded-sm flex items-center justify-between text-[14px]">
+        <div className="mt-5 px-4 py-3 bg-primary/[0.12] border-l-[3px] border-primary rounded-sm flex items-center justify-between text-[14px]">
           <span className="text-muted-foreground">результат</span>
-          <span className="text-[20px] text-foreground">{energy ?? "—"} U.E.R.</span>
+          <span className="text-[17px] text-foreground">{energy ?? "—"} U.E.R.</span>
         </div>
 
         {/* Interpretation — visually separated */}

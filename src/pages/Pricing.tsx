@@ -4,7 +4,7 @@ const Pricing = () => (
   <div className="min-h-screen flex items-start md:items-center justify-center bg-background px-6 py-16 md:py-0">
     <div className="max-w-xl w-full">
       <div className="flex items-center justify-between mb-8 md:mb-10">
-        <h1 className="text-[17px] md:text-[19px] font-semibold tracking-tight text-foreground">
+        <h1 className="text-[15px] md:text-[16px] font-medium tracking-[0.04em] text-foreground">
           Стоимость и формат
         </h1>
         <Link
@@ -36,7 +36,7 @@ const Pricing = () => (
           с привязкой к фактическому ходу работ.
         </p>
 
-        <p className="text-foreground font-semibold tracking-tight text-[14px] md:text-[15px]">
+        <p className="text-foreground font-medium tracking-[0.02em] text-[13px] md:text-[14px]">
           Итоговая стоимость моей работы составляет 10–20% от общих затрат на
           реализацию проекта (включительно).
         </p>
