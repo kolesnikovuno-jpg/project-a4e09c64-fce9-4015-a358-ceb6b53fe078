@@ -141,11 +141,12 @@ const Lyra = () => {
         <div className="uno-3d-stage">
           <div className="uno-loader" ref={loaderRef}>
             <div className="uno-sphere" />
+          </div>
+
           <div className={`uno-overlay ${modelLoaded ? 'visible' : ''}`}>
             <h1>Контур отдыха</h1>
             <p>Чем меньше усилия — тем точнее поддержка.</p>
           </div>
-        </div>
 
           <model-viewer
             ref={modelRef as any}
