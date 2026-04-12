@@ -161,7 +161,7 @@ const Lyra = () => {
         .uno-stem-05{
           position:absolute;
           right:34px;
-          bottom:28px;
+          bottom:20px;
           height:calc(100% - 32px);
           width:0;
           z-index:5;
@@ -252,11 +252,11 @@ const Lyra = () => {
                 <circle cx="0" cy="150" r="14" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
                 <circle cx="0" cy="150" r="20" fill="transparent" stroke="transparent" />
               </g>
-              {/* Branch 05.2 (right→left shifted, outline): 190 from ground → y=370, r=9 */}
+              {/* Branch 05.2 — right (shorter to fit stage): 190 from ground → y=370, r=9, outline */}
               <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
-                <line x1="0" y1="370" x2="-42" y2="370" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-                <circle cx="-42" cy="370" r="9" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-                <circle cx="-42" cy="370" r="16" fill="transparent" stroke="transparent" />
+                <line x1="0" y1="370" x2="22" y2="370" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+                <circle cx="22" cy="370" r="9" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+                <circle cx="22" cy="370" r="16" fill="transparent" stroke="transparent" />
               </g>
               {/* Branch 2 — left (05.2, TBD): 310 from ground → y=250, len=28, r=6, filled */}
               <g className="stem-bud" role="button" tabIndex={0} onClick={() => console.log("05.2")}>
