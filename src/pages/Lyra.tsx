@@ -97,7 +97,7 @@ const Lyra = () => {
           position:relative;
           height:clamp(420px,62vw,640px);
           border-radius:18px;
-          overflow:hidden;
+          overflow:visible;
           background:#fff;
         }
         model-viewer::part(default-progress-bar){display:none;}
@@ -160,8 +160,8 @@ const Lyra = () => {
         .uno-stem-05{
           position:absolute;
           right:34px;
-          bottom:-24px;
-          height:calc(100% - 32px);
+          bottom:-70px;
+          height:calc(100% + 38px);
           width:0;
           z-index:5;
           overflow:visible;
@@ -184,7 +184,7 @@ const Lyra = () => {
         @media(max-width:768px){
           .uno-stem-05{
             right:36px;
-            bottom:6px;
+            bottom:-60px;
           }
         }
       `}</style>
