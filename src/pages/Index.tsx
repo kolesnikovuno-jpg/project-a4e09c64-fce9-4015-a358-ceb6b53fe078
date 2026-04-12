@@ -201,7 +201,7 @@ const Index = () => {
 
                 {/* Content */}
                 <div className="text-foreground leading-relaxed md:grid md:grid-cols-2 md:gap-10 mt-4">
-                  <div>
+                  <div className="flex flex-col">
                     <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1">что это</p>
                     <p className="text-[15px] md:text-[17px] font-semibold mb-6 md:mb-10">
                       Проектирование структуры и формы.
