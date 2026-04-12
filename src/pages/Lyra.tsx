@@ -129,8 +129,8 @@ const Lyra = () => {
         }
         .uno-overlay h1{
           font-family:'SF Pro Display',system-ui,-apple-system,sans-serif;
-          font-size:clamp(22px,3.2vw,38px);font-weight:300;
-          letter-spacing:0.04em;color:#222;margin:0 0 6px;
+          font-size:clamp(18px,2.6vw,30px);font-weight:200;
+          letter-spacing:0.06em;color:hsl(168 40% 52%);margin:0 0 6px;
           opacity:0;transform:translateY(12px);
           transition:opacity .8s ease, transform .8s ease;
         }
