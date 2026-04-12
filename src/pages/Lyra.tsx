@@ -86,7 +86,7 @@ const Lyra = () => {
 
       <style>{`
         .uno-3d-wrap{
-          --pad:clamp(12px,1.8vw,24px);
+          --pad:clamp(6px,0.9vw,12px);
           position:relative;
           width:min(1100px,100%);
           margin:0 auto;
