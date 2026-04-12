@@ -57,7 +57,7 @@ const Lyra = () => {
     const onLoad = () => {
       loader.classList.add("hide");
       (mv as any).cameraTarget = "auto";
-      (mv as any).cameraOrbit = "12deg 70deg 300%";
+      (mv as any).cameraOrbit = "-8deg 70deg 300%";
       (mv as any).fieldOfView = "28deg";
       const had = mv.hasAttribute("auto-rotate");
       mv.removeAttribute("auto-rotate");
@@ -124,7 +124,7 @@ const Lyra = () => {
         }
         @keyframes unoSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
         .uno-overlay-below{
-          padding:20px 4px 0;
+          padding:20px 20px 0;
         }
         .uno-overlay-below h1{
           font-family:'SF Pro Display',system-ui,-apple-system,sans-serif;
@@ -159,13 +159,14 @@ const Lyra = () => {
         }
         .uno-stem-05{
           position:absolute;
-          right:34px;
+          right:54px;
           bottom:-90px;
           height:calc(100% + 58px);
           width:0;
           z-index:5;
           overflow:visible;
           pointer-events:none;
+          opacity:0.55;
         }
         .uno-stem-05 svg{
           position:absolute;
@@ -185,6 +186,7 @@ const Lyra = () => {
           .uno-stem-05{
             right:36px;
             bottom:-80px;
+            opacity:0.65;
           }
         }
       `}</style>
@@ -208,7 +210,7 @@ const Lyra = () => {
             exposure="1.45"
             shadow-intensity="0"
             shadow-softness="0"
-            camera-orbit="12deg 70deg 300%"
+            camera-orbit="-8deg 70deg 300%"
             field-of-view="28deg"
             crossorigin="anonymous"
             referrerpolicy="no-referrer"
@@ -231,11 +233,10 @@ const Lyra = () => {
             <button slot="ar-button" className="uno-ar" aria-label="View in AR" title="AR">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
                 stroke="#888" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="7" height="7" rx="1" />
-                <rect x="14" y="3" width="7" height="7" rx="1" />
-                <rect x="3" y="14" width="7" height="7" rx="1" />
-                <rect x="14" y="14" width="7" height="7" rx="1" />
-                <path d="M7 7L17 17M17 7L7 17" stroke="#aaa" strokeWidth="1" />
+                <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
+                <path d="M12 12l8-4.5" />
+                <path d="M12 12v9" />
+                <path d="M12 12L4 7.5" />
               </svg>
             </button>
           </model-viewer>
