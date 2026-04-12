@@ -162,10 +162,15 @@ const Lyra = () => {
           position:absolute;
           right:calc(var(--pad) + 14px);
           top:calc(var(--pad) + 14px);
-          bottom:calc(var(--pad) + 38px);
+          bottom:calc(var(--pad) + 18px);
           width:68px;z-index:5;
           pointer-events:auto;
           overflow:visible;
+        }
+        .uno-stem-05 .stem-bud{cursor:pointer;}
+        .uno-stem-05 .stem-bud:hover circle:first-child{
+          stroke-width:1.8;
+          filter:drop-shadow(0 0 6px hsl(168 40% 72% / 0.5));
         }
       `}</style>
 
