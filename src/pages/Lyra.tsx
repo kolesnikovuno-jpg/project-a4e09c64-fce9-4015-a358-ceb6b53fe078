@@ -72,7 +72,7 @@ const Lyra = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center relative">
+    <div className="min-h-screen bg-white flex items-center justify-center relative overflow-x-hidden">
       {/* Back arrow */}
       <button
         onClick={() => navigate("/garden")}
@@ -92,6 +92,7 @@ const Lyra = () => {
           margin:0 auto;
           padding:var(--pad);
           box-sizing:border-box;
+          overflow:hidden;
         }
         .uno-3d-stage{
           position:relative;
@@ -124,18 +125,18 @@ const Lyra = () => {
         }
         @keyframes unoSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
         .uno-overlay-below{
-          padding:20px 20px 0;
+          padding:12px 20px 0;
         }
         .uno-overlay-below h1{
-          font-family:'SF Pro Display',system-ui,-apple-system,sans-serif;
-          font-size:clamp(22px,3.2vw,38px);font-weight:200;
-          letter-spacing:0.04em;color:#222;margin:0 0 6px;
+          font-family:'Manrope',system-ui,sans-serif;
+          font-size:clamp(16px,2.2vw,24px);font-weight:300;
+          letter-spacing:0.06em;color:#222;margin:0 0 4px;
           opacity:0;transform:translateY(12px);
           transition:opacity .8s ease, transform .8s ease;
         }
         .uno-overlay-below p{
-          font-family:'SF Pro Text',system-ui,-apple-system,sans-serif;
-          font-size:clamp(12px,1.6vw,16px);font-weight:300;
+          font-family:'Manrope',system-ui,sans-serif;
+          font-size:clamp(11px,1.4vw,14px);font-weight:300;
           letter-spacing:0.02em;color:#888;margin:0;
           opacity:0;transform:translateY(12px);
           transition:opacity .8s ease .25s, transform .8s ease .25s;
