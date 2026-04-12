@@ -128,9 +128,9 @@ const Lyra = () => {
           pointer-events:none;
         }
         @media(max-width:768px){
-          .uno-overlay{bottom:12px;left:16px;}
-          .uno-stem-05{bottom:12px;right:20px;}
-          .uno-3d-stage{height:clamp(320px,50vw,420px);}
+          .uno-overlay{bottom:4px;left:16px;}
+          .uno-stem-05{bottom:16px;right:20px;}
+          .uno-3d-stage{height:clamp(280px,44vw,380px);}
         
         }
         .uno-overlay h1{
