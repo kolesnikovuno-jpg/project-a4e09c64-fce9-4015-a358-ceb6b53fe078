@@ -223,31 +223,31 @@ const Lyra = () => {
               </svg>
             </button>
           </model-viewer>
-
-          {/* Stem 05 — centered on AR icon, ground at subtitle level */}
-          <svg
-            className="uno-stem-05"
-            viewBox="0 0 68 1000"
-            preserveAspectRatio="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Ground line — at ~95% from top (aligns with subtitle bottom ~bottom:32px of stage) */}
-            <line x1="6" y1="950" x2="62" y2="950" stroke="hsl(168 40% 52%)" strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
-            {/* Stem — from ground to top bud (~5% from top, aligns with AR icon center ~top:34px) */}
-            <line x1="34" y1="950" x2="34" y2="50" stroke="hsl(168 40% 52%)" strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
-            {/* Branch 1 — right, at ~55% */}
-            <line x1="34" y1="550" x2="58" y2="550" stroke="hsl(168 40% 52%)" strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
-            <circle cx="58" cy="550" r="9" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
-            <circle cx="58" cy="550" r="16" fill="transparent" stroke="transparent" />
-            {/* Branch 2 — left, at ~35% */}
-            <line x1="34" y1="350" x2="10" y2="350" stroke="hsl(168 40% 52%)" strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
-            <circle cx="10" cy="350" r="6" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
-            <circle cx="10" cy="350" r="13" fill="transparent" stroke="transparent" />
-            {/* Top bud — current page */}
-            <circle cx="34" cy="50" r="14" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
-            <circle cx="34" cy="50" r="20" fill="transparent" stroke="transparent" />
-          </svg>
         </div>
+
+        {/* Stem 05 — centered on AR icon, ground at subtitle level */}
+        <svg
+          className="uno-stem-05"
+          viewBox="0 0 68 500"
+          preserveAspectRatio="xMidYMin meet"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Ground line */}
+          <line x1="6" y1="498" x2="62" y2="498" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+          {/* Stem */}
+          <line x1="34" y1="498" x2="34" y2="20" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+          {/* Branch 1 — right */}
+          <line x1="34" y1="330" x2="58" y2="330" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+          <circle cx="58" cy="330" r="9" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+          <circle cx="58" cy="330" r="16" fill="transparent" stroke="transparent" />
+          {/* Branch 2 — left */}
+          <line x1="34" y1="190" x2="10" y2="190" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+          <circle cx="10" cy="190" r="6" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+          <circle cx="10" cy="190" r="13" fill="transparent" stroke="transparent" />
+          {/* Top bud — current page */}
+          <circle cx="34" cy="20" r="14" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+          <circle cx="34" cy="20" r="20" fill="transparent" stroke="transparent" />
+        </svg>
       </div>
     </div>
   );
