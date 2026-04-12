@@ -11,6 +11,7 @@ import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import PixelTransition from "./pages/PixelTransition";
 import Lyra from "./pages/Lyra";
+import Garden from "./pages/Garden";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/unocalc" element={<UnoCalc />} />
           <Route path="/about" element={<About />} />
           <Route path="/lyra" element={<Lyra />} />
+          <Route path="/garden" element={<Garden />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
