@@ -145,18 +145,6 @@ const Lyra = () => {
         .uno-overlay.visible p{
           opacity:1;transform:translateY(0);
         }
-        @media(max-width:768px){
-          .uno-overlay{
-            position:relative;bottom:auto;left:auto;
-            padding:20px 16px 0;
-          }
-          .uno-overlay h1{
-            font-size:20px;
-          }
-          .uno-overlay p{
-            font-size:13px;
-          }
-        }
         .uno-ar{
           position:absolute;right:14px;top:14px;
           width:40px;height:40px;border:none;border-radius:50%;
