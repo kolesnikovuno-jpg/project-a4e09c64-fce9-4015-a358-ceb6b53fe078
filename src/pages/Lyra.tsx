@@ -94,10 +94,18 @@ const Lyra = () => {
         }
         .uno-loader.hide{opacity:0;pointer-events:none;}
         .uno-sphere{
-          width:46px;height:46px;border-radius:50%;
-          background:radial-gradient(circle at 30% 30%,#e7e7e7 0%,#d9d9d9 60%,#c9c9c9 100%);
-          animation:unoSpin 2.2s linear infinite;
-          box-shadow:0 0 8px rgba(0,0,0,0.05);
+          width:52px;height:52px;border-radius:50%;
+          border:2.5px solid hsl(168 40% 72% / 0.18);
+          border-top-color:hsl(168 40% 72% / 0.85);
+          animation:unoSpin 1s cubic-bezier(.4,.15,.6,.85) infinite;
+          box-shadow:0 0 18px hsl(168 40% 72% / 0.12);
+          position:relative;
+        }
+        .uno-sphere::after{
+          content:'';position:absolute;inset:6px;border-radius:50%;
+          border:2px solid hsl(168 40% 72% / 0.1);
+          border-bottom-color:hsl(168 40% 72% / 0.5);
+          animation:unoSpin 1.6s cubic-bezier(.4,.15,.6,.85) infinite reverse;
         }
         @keyframes unoSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
         .uno-overlay{
