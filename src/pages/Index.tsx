@@ -202,8 +202,8 @@ const Index = () => {
                 {/* Content */}
                 <div className="text-foreground leading-relaxed md:grid md:grid-cols-2 md:gap-10 mt-4">
                   <div className="flex flex-col">
-                    <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1">что это</p>
-                    <p className="text-[15px] md:text-[17px] font-semibold mb-6 md:mb-10">
+                    <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/70 mb-1">что это</p>
+                    <p className="text-[15px] md:text-[16px] font-medium mb-4 md:mb-6">
                       Проектирование структуры и формы.
                     </p>
 
@@ -234,8 +234,8 @@ const Index = () => {
                       </div>
                     </div>
 
-                    <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1">результат</p>
-                    <p className="text-[15px] md:text-[17px] font-semibold mb-5 md:mb-8">
+                    <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/70 mb-1">результат</p>
+                    <p className="text-[15px] md:text-[16px] font-medium mb-4 md:mb-6">
                       Структура, которая работает.
                     </p>
                     <a
@@ -272,7 +272,7 @@ const Index = () => {
                   </div>
 
                   <div className="hidden md:block">
-                    <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-4">
+                    <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/70 mb-3">
                       как это происходит
                     </p>
                     <div className="space-y-5">
