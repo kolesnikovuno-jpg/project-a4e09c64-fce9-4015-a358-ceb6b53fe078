@@ -154,9 +154,14 @@ const Lyra = () => {
         .uno-ar svg{stroke:#999;transition:stroke .25s ease;}
         .uno-ar:hover svg{stroke:#000;}
         @media(max-width:768px){
-          .uno-3d-wrap{padding-right:calc(var(--pad) + 40px);}
           .uno-ar{width:52px;height:52px;right:10px;top:10px;opacity:0.7;}
           .uno-ar svg{width:26px;height:26px;}
+        }
+        .uno-stem-05{
+          position:absolute;
+          right:14px;top:34px;bottom:32px;
+          width:60px;z-index:5;
+          pointer-events:auto;
         }
       `}</style>
 
