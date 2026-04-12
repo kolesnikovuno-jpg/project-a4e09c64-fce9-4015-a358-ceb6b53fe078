@@ -207,15 +207,13 @@ const Garden = () => {
         preserveAspectRatio="xMidYMax meet"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* Ground line */}
+        {/* Ground line — fade in */}
         <line
           x1="0" y1={gY} x2={vbWidth} y2={gY}
           stroke="hsl(168 40% 52%)" strokeWidth={sw}
-          className="garden-ground"
           style={{
-            strokeDasharray: vbWidth,
-            strokeDashoffset: animated ? 0 : vbWidth,
-            transition: "stroke-dashoffset 0.8s ease-out",
+            opacity: animated ? 1 : 0,
+            transition: "opacity 0.6s ease-out",
           }}
         />
 
