@@ -206,7 +206,7 @@ const Garden = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center pt-[18vh] md:pt-[6vh] overflow-hidden relative">
-      <span className="absolute top-6 left-6 text-[11px] tracking-[0.18em] text-muted-foreground font-normal select-none" style={{ fontFamily: "var(--font-body)" }}>
+      <span className="absolute top-6 left-6 text-[11px] tracking-[0.15em] text-muted-foreground font-normal select-none" style={{ fontFamily: "var(--font-body)" }}>
         .uno<span className="text-foreground/70">Garden</span>
       </span>
       <svg
