@@ -183,6 +183,9 @@ const Lyra = () => {
           filter:drop-shadow(0 0 6px hsl(168 40% 72% / 0.5));
         }
         @media(max-width:768px){
+          .uno-3d-stage{
+            overflow:visible;
+          }
           .uno-stem-05{
             right:36px;
             bottom:-60px;
