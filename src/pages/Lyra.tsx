@@ -82,7 +82,7 @@ const Lyra = () => {
         <ChevronLeft size={24} strokeWidth={1} />
       </button>
 
-      {/* Stem 05 is rendered inside uno-3d-stage below */}
+      
 
       <style>{`
         .uno-3d-wrap{
