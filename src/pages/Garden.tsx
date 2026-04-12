@@ -63,6 +63,8 @@ const Bud = ({ cx, cy, r, filled, hatched, id, onClick }: BudProps) => {
 const Garden = () => {
   const navigate = useNavigate();
 
+  const isMobile = useIsMobile();
+
   const handleClick = (id: string) => {
     const routes: Record<string, string> = {
       "05": "/lyra",
@@ -76,10 +78,50 @@ const Garden = () => {
 
   // Ground Y
   const gY = 560;
-  const sw = "0.8"; // stroke width
+  const sw = "0.8";
 
-  // Stems: x, height, branches [{side, yOffset, length, budR, budStyle}], topBudR, topBudStyle
-  const stems = [
+  // Desktop stems (original)
+  const desktopStems = [
+    {
+      x: 180, h: 370,
+      branches: [{ side: -1, y: 160, len: 35, r: 8, style: "outline" as const }],
+      topR: 13, topStyle: "outline" as const, id: "01",
+    },
+    {
+      x: 290, h: 430,
+      branches: [
+        { side: -1, y: 200, len: 40, r: 9, style: "hatched" as const },
+        { side: 1, y: 320, len: 30, r: 7, style: "outline" as const },
+      ],
+      topR: 15, topStyle: "outline" as const, id: "02",
+    },
+    {
+      x: 410, h: 290,
+      branches: [{ side: 1, y: 140, len: 38, r: 7, style: "filled" as const }],
+      topR: 12, topStyle: "hatched" as const, id: "03",
+    },
+    {
+      x: 500, h: 180,
+      branches: [{ side: 1, y: 90, len: 32, r: 6, style: "outline" as const }],
+      topR: 10, topStyle: "filled" as const, id: "04",
+    },
+    {
+      x: 620, h: 410,
+      branches: [
+        { side: 1, y: 190, len: 42, r: 9, style: "outline" as const },
+        { side: -1, y: 310, len: 28, r: 6, style: "filled" as const },
+      ],
+      topR: 14, topStyle: "outline" as const, id: "05",
+    },
+    {
+      x: 760, h: 120,
+      branches: [],
+      topR: 9, topStyle: "outline" as const, id: "06",
+    },
+  ];
+
+  // Mobile stems (larger buds, taller, narrower layout)
+  const mobileStems = [
     {
       x: 100, h: 420,
       branches: [{ side: -1, y: 180, len: 40, r: 14, style: "outline" as const }],
@@ -118,17 +160,20 @@ const Garden = () => {
     },
   ];
 
+  const stems = isMobile ? mobileStems : desktopStems;
+  const vbWidth = isMobile ? 800 : 900;
+
   return (
     <div className="min-h-screen bg-background flex items-end justify-center pb-0 overflow-hidden">
       <svg
-        viewBox="0 0 800 600"
+        viewBox={`0 0 ${vbWidth} 600`}
         className="w-full max-w-[900px] h-auto"
         preserveAspectRatio="xMidYMax meet"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* Ground line — straight horizontal */}
+        {/* Ground line */}
         <line
-          x1="0" y1={gY} x2="800" y2={gY}
+          x1="0" y1={gY} x2={vbWidth} y2={gY}
           stroke="hsl(168 40% 52%)" strokeWidth={sw}
         />
 
