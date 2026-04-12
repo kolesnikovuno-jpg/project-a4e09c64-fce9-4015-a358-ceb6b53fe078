@@ -159,8 +159,8 @@ const Lyra = () => {
         }
         .uno-stem-05{
           position:absolute;
-          right:14px;top:34px;bottom:32px;
-          width:60px;z-index:5;
+          right:0;top:0;bottom:0;
+          width:68px;z-index:5;
           pointer-events:auto;
         }
       `}</style>
