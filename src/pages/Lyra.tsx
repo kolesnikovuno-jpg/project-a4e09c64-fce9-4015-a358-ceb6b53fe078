@@ -100,6 +100,28 @@ const Lyra = () => {
           box-shadow:0 0 8px rgba(0,0,0,0.05);
         }
         @keyframes unoSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+        .uno-overlay{
+          position:absolute;bottom:32px;left:32px;z-index:4;
+          pointer-events:none;
+        }
+        .uno-overlay h1{
+          font-family:'SF Pro Display',system-ui,-apple-system,sans-serif;
+          font-size:clamp(22px,3.2vw,38px);font-weight:300;
+          letter-spacing:0.04em;color:#222;margin:0 0 6px;
+          opacity:0;transform:translateY(12px);
+          transition:opacity .8s ease, transform .8s ease;
+        }
+        .uno-overlay p{
+          font-family:'SF Pro Text',system-ui,-apple-system,sans-serif;
+          font-size:clamp(12px,1.6vw,16px);font-weight:300;
+          letter-spacing:0.02em;color:#888;margin:0;
+          opacity:0;transform:translateY(12px);
+          transition:opacity .8s ease .25s, transform .8s ease .25s;
+        }
+        .uno-overlay.visible h1,
+        .uno-overlay.visible p{
+          opacity:1;transform:translateY(0);
+        }
         .uno-ar{
           position:absolute;right:14px;top:14px;
           width:40px;height:40px;border:none;border-radius:50%;
