@@ -185,7 +185,7 @@ const Lyra = () => {
         @media(max-width:768px){
           .uno-stem-05{
             right:36px;
-            bottom:-18px;
+            bottom:6px;
           }
         }
       `}</style>
