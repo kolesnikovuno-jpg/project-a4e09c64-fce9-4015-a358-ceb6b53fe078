@@ -208,7 +208,8 @@ const Lyra = () => {
             <div className="uno-sphere" />
           </div>
 
-          <div className={`uno-overlay ${modelLoaded ? 'visible' : ''}`}>
+          {/* Desktop overlay — inside stage */}
+          <div className={`uno-overlay hidden md:block ${modelLoaded ? 'visible' : ''}`}>
             <h1>Контур отдыха</h1>
             <p>Чем меньше усилия — тем точнее поддержка.</p>
           </div>
@@ -270,13 +271,13 @@ const Lyra = () => {
                 <circle cx="0" cy="150" r="14" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
                 <circle cx="0" cy="150" r="20" fill="transparent" stroke="transparent" />
               </g>
-              {/* Branch 05.2 — right (shorter to fit stage): 190 from ground → y=370, r=9, outline */}
+              {/* Branch 05.2 — right */}
               <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
                 <line x1="0" y1="370" x2="22" y2="370" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
                 <circle cx="22" cy="370" r="9" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
                 <circle cx="22" cy="370" r="16" fill="transparent" stroke="transparent" />
               </g>
-              {/* Branch 2 — left (05.2, TBD): 310 from ground → y=250, len=28, r=6, filled */}
+              {/* Branch 2 — left */}
               <g className="stem-bud" role="button" tabIndex={0} onClick={() => console.log("05.2")}>
                 <line x1="0" y1="250" x2="-28" y2="250" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
                 <circle cx="-28" cy="250" r="6" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
@@ -284,6 +285,12 @@ const Lyra = () => {
               </g>
             </svg>
           </div>
+        </div>
+
+        {/* Mobile overlay — below stage */}
+        <div className={`uno-overlay md:hidden ${modelLoaded ? 'visible' : ''}`}>
+          <h1>Контур отдыха</h1>
+          <p>Чем меньше усилия — тем точнее поддержка.</p>
         </div>
       </div>
     </div>
