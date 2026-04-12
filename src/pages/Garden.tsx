@@ -225,10 +225,9 @@ const Garden = () => {
           }}
         />
 
-        {stems.map((stem, stemIdx) => {
+        {stems.map((stem) => {
           const topY = gY - stem.h;
-          // Each stem grows with a slight stagger
-          const stemDelay = 0.15 + stemIdx * 0.12;
+          const stemDelay = stemDelays[stem.id] || 0.3;
           return (
             <g key={stem.id}>
               {/* Vertical stem — grows from ground up */}
