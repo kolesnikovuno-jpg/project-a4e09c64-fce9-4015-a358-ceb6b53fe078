@@ -257,6 +257,17 @@ const Index = () => {
                     >
                       Формат и стоимость →
                     </a>
+                    <a
+                      href="/garden"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleClose();
+                        navigate("/garden");
+                      }}
+                      className="block text-[11px] tracking-[0.18em] text-muted-foreground hover:text-foreground/70 transition-colors mt-6"
+                    >
+                      .uno<span className="text-foreground/70">Garden</span>
+                    </a>
                   </div>
 
                   <div className="hidden md:block">
