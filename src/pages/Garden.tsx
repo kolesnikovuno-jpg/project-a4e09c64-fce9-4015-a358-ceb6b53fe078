@@ -44,7 +44,7 @@ const Bud = ({ cx, cy, r, filled, hatched, id, onClick }: BudProps) => {
         r={r}
         fill={filled ? "hsl(168 40% 72%)" : hatched ? `url(#${hatchId})` : "none"}
         stroke="hsl(168 40% 52%)"
-        strokeWidth="1.2"
+        strokeWidth="0.8"
         className="transition-all duration-300"
       />
       <circle
@@ -59,23 +59,56 @@ const Bud = ({ cx, cy, r, filled, hatched, id, onClick }: BudProps) => {
   );
 };
 
-/*
-  Layout map (left→right):
-  Stem A: 01 (top) + 01.1 (branch bud)
-  Stem B: 02 (top) + 02.1 (branch bud)
-  Stem C: 03 (top, hatched) + 03.1 (branch bud)
-  Stem D: 04 (top) + 04.1 (branch bud)
-  Stem E: 05 (top) + 05.1 (branch bud)
-  Stem F: 06 (short, far right)
-*/
-
 const Garden = () => {
   const navigate = useNavigate();
 
   const handleClick = (id: string) => {
     console.log(`Clicked: ${id}`);
-    // links will be added later
   };
+
+  // Ground Y
+  const gY = 560;
+  const sw = "0.8"; // stroke width
+
+  // Stems: x, height, branches [{side, yOffset, length, budR, budStyle}], topBudR, topBudStyle
+  const stems = [
+    {
+      x: 180, h: 370,
+      branches: [{ side: -1, y: 160, len: 35, r: 8, style: "outline" as const }],
+      topR: 13, topStyle: "outline" as const, id: "01",
+    },
+    {
+      x: 290, h: 430,
+      branches: [
+        { side: -1, y: 200, len: 40, r: 9, style: "hatched" as const },
+        { side: 1, y: 320, len: 30, r: 7, style: "outline" as const },
+      ],
+      topR: 15, topStyle: "outline" as const, id: "02",
+    },
+    {
+      x: 410, h: 290,
+      branches: [{ side: 1, y: 140, len: 38, r: 7, style: "filled" as const }],
+      topR: 12, topStyle: "hatched" as const, id: "03",
+    },
+    {
+      x: 500, h: 180,
+      branches: [{ side: 1, y: 90, len: 32, r: 6, style: "outline" as const }],
+      topR: 10, topStyle: "filled" as const, id: "04",
+    },
+    {
+      x: 620, h: 410,
+      branches: [
+        { side: 1, y: 190, len: 42, r: 9, style: "outline" as const },
+        { side: -1, y: 310, len: 28, r: 6, style: "filled" as const },
+      ],
+      topR: 14, topStyle: "outline" as const, id: "05",
+    },
+    {
+      x: 760, h: 120,
+      branches: [],
+      topR: 9, topStyle: "outline" as const, id: "06",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background flex items-end justify-center pb-0 overflow-hidden">
@@ -85,98 +118,67 @@ const Garden = () => {
         preserveAspectRatio="xMidYMax meet"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* Ground line */}
-        <path
-          d="M 0 560 Q 80 555, 160 558 Q 300 562, 450 560 Q 600 557, 750 560 Q 850 562, 900 558"
-          fill="none"
-          stroke="hsl(168 40% 52%)"
-          strokeWidth="1.2"
+        {/* Ground line — straight horizontal */}
+        <line
+          x1="0" y1={gY} x2="900" y2={gY}
+          stroke="hsl(168 40% 52%)" strokeWidth={sw}
         />
 
-        {/* Stem A — tall left */}
-        <path
-          d="M 220 558 Q 218 480, 222 400 Q 225 340, 228 280 Q 230 240, 235 200"
-          fill="none" stroke="hsl(168 40% 52%)" strokeWidth="1.2"
-        />
-        {/* Branch 01.1 */}
-        <path
-          d="M 224 380 Q 210 360, 195 345"
-          fill="none" stroke="hsl(168 40% 52%)" strokeWidth="1.2"
-        />
-        <Bud cx={190} cy={338} r={10} id="01.1" onClick={() => handleClick("01.1")} />
-        {/* Top 01 */}
-        <Bud cx={237} cy={188} r={14} id="01" onClick={() => handleClick("01")} />
-
-        {/* Stem B */}
-        <path
-          d="M 310 558 Q 308 490, 312 420 Q 314 360, 318 300 Q 320 250, 315 190 Q 312 160, 318 130"
-          fill="none" stroke="hsl(168 40% 52%)" strokeWidth="1.2"
-        />
-        {/* Branch 02.1 */}
-        <path
-          d="M 314 350 Q 295 330, 280 310"
-          fill="none" stroke="hsl(168 40% 52%)" strokeWidth="1.2"
-        />
-        <Bud cx={274} cy={302} r={9} hatched id="02.1" onClick={() => handleClick("02.1")} />
-        {/* Top 02 */}
-        <Bud cx={320} cy={118} r={16} id="02" onClick={() => handleClick("02")} />
-
-        {/* Stem C — medium, center-left */}
-        <path
-          d="M 420 558 Q 418 500, 422 440 Q 425 390, 428 340 Q 430 310, 425 280"
-          fill="none" stroke="hsl(168 40% 52%)" strokeWidth="1.2"
-        />
-        {/* Branch 03.1 */}
-        <path
-          d="M 424 420 Q 440 400, 455 385"
-          fill="none" stroke="hsl(168 40% 52%)" strokeWidth="1.2"
-        />
-        <Bud cx={462} cy={378} r={8} filled id="03.1" onClick={() => handleClick("03.1")} />
-        {/* Top 03 — hatched */}
-        <Bud cx={423} cy={268} r={13} hatched id="03" onClick={() => handleClick("03")} />
-
-        {/* Stem D — short center */}
-        <path
-          d="M 490 558 Q 492 510, 495 460 Q 497 420, 500 380"
-          fill="none" stroke="hsl(168 40% 52%)" strokeWidth="1.2"
-        />
-        <Bud cx={501} cy={370} r={10} filled id="04" onClick={() => handleClick("04")} />
-        {/* Branch 04.1 */}
-        <path
-          d="M 496 450 Q 510 435, 525 425"
-          fill="none" stroke="hsl(168 40% 52%)" strokeWidth="1.2"
-        />
-        <Bud cx={532} cy={418} r={7} id="04.1" onClick={() => handleClick("04.1")} />
-
-        {/* Stem E — tall right */}
-        <path
-          d="M 620 558 Q 618 490, 622 420 Q 625 350, 630 280 Q 633 230, 628 180 Q 625 150, 630 120"
-          fill="none" stroke="hsl(168 40% 52%)" strokeWidth="1.2"
-        />
-        {/* Branch 05.1 */}
-        <path
-          d="M 625 360 Q 645 340, 660 325"
-          fill="none" stroke="hsl(168 40% 52%)" strokeWidth="1.2"
-        />
-        <Bud cx={666} cy={318} r={9} id="05.1" onClick={() => handleClick("05.1")} />
-        {/* Top 05 */}
-        <Bud cx={632} cy={108} r={14} id="05" onClick={() => handleClick("05")} />
-
-        {/* Stem F — short far right */}
-        <path
-          d="M 770 558 Q 772 530, 774 500 Q 775 480, 776 460"
-          fill="none" stroke="hsl(168 40% 52%)" strokeWidth="1.2"
-        />
-        <Bud cx={777} cy={450} r={10} id="06" onClick={() => handleClick("06")} />
+        {stems.map((stem) => {
+          const topY = gY - stem.h;
+          return (
+            <g key={stem.id}>
+              {/* Vertical stem */}
+              <line
+                x1={stem.x} y1={gY} x2={stem.x} y2={topY}
+                stroke="hsl(168 40% 52%)" strokeWidth={sw}
+              />
+              {/* Top bud */}
+              <Bud
+                cx={stem.x}
+                cy={topY}
+                r={stem.topR}
+                filled={stem.topStyle === "filled"}
+                hatched={stem.topStyle === "hatched"}
+                id={stem.id}
+                onClick={() => handleClick(stem.id)}
+              />
+              {/* Branches */}
+              {stem.branches.map((br, i) => {
+                const brY = gY - br.y;
+                const brEndX = stem.x + br.side * br.len;
+                const subId = `${stem.id}.${i + 1}`;
+                return (
+                  <g key={subId}>
+                    {/* Horizontal branch */}
+                    <line
+                      x1={stem.x} y1={brY} x2={brEndX} y2={brY}
+                      stroke="hsl(168 40% 52%)" strokeWidth={sw}
+                    />
+                    <Bud
+                      cx={brEndX}
+                      cy={brY}
+                      r={br.r}
+                      filled={br.style === "filled"}
+                      hatched={br.style === "hatched"}
+                      id={subId}
+                      onClick={() => handleClick(subId)}
+                    />
+                  </g>
+                );
+              })}
+            </g>
+          );
+        })}
       </svg>
 
       <style>{`
         .garden-bud:hover circle:first-of-type {
-          stroke-width: 2.2;
+          stroke-width: 1.8;
           filter: drop-shadow(0 0 6px hsl(168 40% 72% / 0.5));
         }
         .garden-bud:focus-visible circle:first-of-type {
-          stroke-width: 2.2;
+          stroke-width: 1.8;
           outline: none;
           filter: drop-shadow(0 0 6px hsl(168 40% 72% / 0.5));
         }
