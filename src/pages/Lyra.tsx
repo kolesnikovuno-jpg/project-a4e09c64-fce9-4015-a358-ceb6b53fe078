@@ -235,7 +235,7 @@ const Lyra = () => {
         <svg
           className="uno-stem-05"
           viewBox="0 0 68 500"
-          preserveAspectRatio="xMidYMin meet"
+          preserveAspectRatio="xMidYMax meet"
           xmlns="http://www.w3.org/2000/svg"
         >
           {/* Ground line */}
