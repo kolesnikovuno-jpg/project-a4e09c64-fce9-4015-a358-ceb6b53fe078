@@ -69,7 +69,7 @@ const Lyra = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex items-center justify-center">
       <style>{`
         .uno-3d-wrap{
           --pad:clamp(12px,1.8vw,24px);
