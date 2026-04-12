@@ -130,7 +130,7 @@ const Lyra = () => {
         .uno-overlay-below h1{
           font-family:'Manrope',system-ui,sans-serif;
           font-size:clamp(16px,2.2vw,24px);font-weight:300;
-          letter-spacing:0.06em;color:#222;margin:0 0 4px;
+          letter-spacing:0.06em;color:hsl(168 40% 42%);margin:0 0 4px;
           opacity:0;transform:translateY(12px);
           transition:opacity .8s ease, transform .8s ease;
         }
