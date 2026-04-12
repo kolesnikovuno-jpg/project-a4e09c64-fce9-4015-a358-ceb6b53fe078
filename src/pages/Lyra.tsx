@@ -123,26 +123,25 @@ const Lyra = () => {
           animation:unoSpin 1.6s cubic-bezier(.4,.15,.6,.85) infinite reverse;
         }
         @keyframes unoSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
-        .uno-overlay{
-          position:absolute;bottom:32px;left:32px;z-index:4;
-          pointer-events:none;
+        .uno-overlay-below{
+          padding:20px 4px 0;
         }
-        .uno-overlay h1{
+        .uno-overlay-below h1{
           font-family:'SF Pro Display',system-ui,-apple-system,sans-serif;
           font-size:clamp(22px,3.2vw,38px);font-weight:300;
           letter-spacing:0.04em;color:#222;margin:0 0 6px;
           opacity:0;transform:translateY(12px);
           transition:opacity .8s ease, transform .8s ease;
         }
-        .uno-overlay p{
+        .uno-overlay-below p{
           font-family:'SF Pro Text',system-ui,-apple-system,sans-serif;
           font-size:clamp(12px,1.6vw,16px);font-weight:300;
           letter-spacing:0.02em;color:#888;margin:0;
           opacity:0;transform:translateY(12px);
           transition:opacity .8s ease .25s, transform .8s ease .25s;
         }
-        .uno-overlay.visible h1,
-        .uno-overlay.visible p{
+        .uno-overlay-below.visible h1,
+        .uno-overlay-below.visible p{
           opacity:1;transform:translateY(0);
         }
         .uno-ar{
@@ -196,11 +195,6 @@ const Lyra = () => {
             <div className="uno-sphere" />
           </div>
 
-          <div className={`uno-overlay ${modelLoaded ? 'visible' : ''}`}>
-            <h1>Контур отдыха</h1>
-            <p>Чем меньше усилия — тем точнее поддержка.</p>
-          </div>
-
           <model-viewer
             ref={modelRef as any}
             src={GLB_URL}
@@ -246,25 +240,20 @@ const Lyra = () => {
             </button>
           </model-viewer>
 
-          {/* Stem 05 — garden proportions (viewBox 100×600, stem 410/600) */}
+          {/* Stem 05 */}
           <div className="uno-stem-05">
             <svg viewBox="-50 0 100 600" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">
-              {/* Ground line at y=560 (same as garden gY) */}
               <line x1="-30" y1="560" x2="30" y2="560" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-              {/* Vertical stem: from ground (560) to top (150 = 560-410) */}
               <line x1="0" y1="560" x2="0" y2="150" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-              {/* Top bud — 05 → /lyra, r=14, outline */}
               <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
                 <circle cx="0" cy="150" r="14" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
                 <circle cx="0" cy="150" r="20" fill="transparent" stroke="transparent" />
               </g>
-              {/* Branch 05.2 — right (shorter to fit stage): 190 from ground → y=370, r=9, outline */}
               <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
                 <line x1="0" y1="370" x2="22" y2="370" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
                 <circle cx="22" cy="370" r="9" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
                 <circle cx="22" cy="370" r="16" fill="transparent" stroke="transparent" />
               </g>
-              {/* Branch 2 — left (05.2, TBD): 310 from ground → y=250, len=28, r=6, filled */}
               <g className="stem-bud" role="button" tabIndex={0} onClick={() => console.log("05.2")}>
                 <line x1="0" y1="250" x2="-28" y2="250" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
                 <circle cx="-28" cy="250" r="6" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
@@ -272,6 +261,11 @@ const Lyra = () => {
               </g>
             </svg>
           </div>
+        </div>
+
+        <div className={`uno-overlay-below ${modelLoaded ? 'visible' : ''}`}>
+          <h1>Контур отдыха</h1>
+          <p>Чем меньше усилия — тем точнее поддержка.</p>
         </div>
       </div>
     </div>
