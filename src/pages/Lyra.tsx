@@ -266,6 +266,9 @@ const Lyra = () => {
               </g>
             </svg>
           </div>
-        </div>
+      </div>
+    </div>
+  );
+};
 
 export default Lyra;
