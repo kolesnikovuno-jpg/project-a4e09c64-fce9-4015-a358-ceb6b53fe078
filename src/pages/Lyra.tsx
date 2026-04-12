@@ -72,7 +72,7 @@ const Lyra = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center relative">
+    <div className="min-h-screen bg-white flex items-center justify-center relative overflow-x-hidden">
       {/* Back arrow */}
       <button
         onClick={() => navigate("/garden")}
