@@ -67,7 +67,7 @@ const UnoCalc = () => {
               type="number"
               value={f.value}
               onChange={(e) => f.set(e.target.value)}
-              className="w-full border-0 border-b border-border bg-transparent py-2 text-[16px] text-foreground outline-none transition-colors duration-300 focus:border-[#93D6D0]"
+              className="w-full border-0 border-b border-border bg-transparent py-2 text-[16px] text-foreground outline-none transition-colors duration-300 focus:border-primary"
             />
           </div>
         ))}
@@ -88,7 +88,7 @@ const UnoCalc = () => {
             <label
               key={lvl.value}
               className={`flex items-start cursor-pointer text-[14px] text-foreground/85 rounded-sm px-3 py-2.5 transition-colors duration-200 ${
-                q === lvl.value ? "bg-[#93D6D0]/[0.07]" : "hover:bg-muted/30"
+                q === lvl.value ? "bg-primary/[0.07]" : "hover:bg-muted/30"
               }`}
             >
               <input
@@ -101,11 +101,11 @@ const UnoCalc = () => {
               />
               <span
                 className={`mt-[3px] mr-2.5 flex-shrink-0 w-4 h-4 rounded-full border transition-colors duration-200 relative ${
-                  q === lvl.value ? "border-[#93D6D0]" : "border-border"
+                  q === lvl.value ? "border-primary" : "border-border"
                 }`}
               >
                 {q === lvl.value && (
-                  <span className="absolute top-[3px] left-[3px] w-2 h-2 rounded-full bg-[#93D6D0]" />
+                  <span className="absolute top-[3px] left-[3px] w-2 h-2 rounded-full bg-primary" />
                 )}
               </span>
               <div className="flex flex-col">
