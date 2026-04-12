@@ -57,7 +57,7 @@ const Lyra = () => {
     const onLoad = () => {
       loader.classList.add("hide");
       (mv as any).cameraTarget = "auto";
-      (mv as any).cameraOrbit = "12deg 70deg 300%";
+      (mv as any).cameraOrbit = "-8deg 70deg 300%";
       (mv as any).fieldOfView = "28deg";
       const had = mv.hasAttribute("auto-rotate");
       mv.removeAttribute("auto-rotate");
@@ -186,6 +186,7 @@ const Lyra = () => {
           .uno-stem-05{
             right:36px;
             bottom:-80px;
+            opacity:0.65;
           }
         }
       `}</style>
