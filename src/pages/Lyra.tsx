@@ -266,6 +266,7 @@ const Lyra = () => {
               </g>
             </svg>
           </div>
+        </div>
       </div>
     </div>
   );
