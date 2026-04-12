@@ -160,8 +160,8 @@ const Lyra = () => {
         .uno-stem-05{
           position:absolute;
           right:34px;
-          bottom:-70px;
-          height:calc(100% + 38px);
+          bottom:-90px;
+          height:calc(100% + 58px);
           width:0;
           z-index:5;
           overflow:visible;
@@ -184,7 +184,7 @@ const Lyra = () => {
         @media(max-width:768px){
           .uno-stem-05{
             right:36px;
-            bottom:-60px;
+            bottom:-80px;
           }
         }
       `}</style>
