@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useEffect, useMemo, useState } from "react";
 
 interface BudProps {
   cx: number;
@@ -9,9 +10,11 @@ interface BudProps {
   hatched?: boolean;
   id: string;
   onClick?: () => void;
+  delay: number;
+  visible: boolean;
 }
 
-const Bud = ({ cx, cy, r, filled, hatched, id, onClick }: BudProps) => {
+const Bud = ({ cx, cy, r, filled, hatched, id, onClick, delay, visible }: BudProps) => {
   const hatchId = `hatch-${id}`;
   return (
     <g
@@ -20,7 +23,13 @@ const Bud = ({ cx, cy, r, filled, hatched, id, onClick }: BudProps) => {
       role="button"
       tabIndex={0}
       aria-label={`Элемент ${id}`}
-      style={{ cursor: "pointer" }}
+      style={{
+        cursor: "pointer",
+        opacity: visible ? 1 : 0,
+        transform: visible ? "scale(1)" : "scale(0)",
+        transformOrigin: `${cx}px ${cy}px`,
+        transition: `opacity 0.6s ease ${delay}s, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}s`,
+      }}
     >
       {hatched && (
         <defs>
@@ -62,8 +71,14 @@ const Bud = ({ cx, cy, r, filled, hatched, id, onClick }: BudProps) => {
 
 const Garden = () => {
   const navigate = useNavigate();
-
   const isMobile = useIsMobile();
+  const [animated, setAnimated] = useState(false);
+
+  useEffect(() => {
+    // Trigger animation after mount
+    const t = requestAnimationFrame(() => setAnimated(true));
+    return () => cancelAnimationFrame(t);
+  }, []);
 
   const handleClick = (id: string) => {
     const routes: Record<string, string> = {
@@ -76,11 +91,9 @@ const Garden = () => {
     }
   };
 
-  // Ground Y
   const gY = 560;
   const sw = "0.8";
 
-  // Desktop stems (original)
   const desktopStems = [
     {
       x: 180, h: 370,
@@ -120,7 +133,6 @@ const Garden = () => {
     },
   ];
 
-  // Mobile stems (larger buds, taller, narrower layout)
   const mobileStems = [
     {
       x: 100, h: 420,
@@ -163,6 +175,27 @@ const Garden = () => {
   const stems = isMobile ? mobileStems : desktopStems;
   const vbWidth = isMobile ? 800 : 900;
 
+  // Generate random delays for buds (stable across renders)
+  const budDelays = useMemo(() => {
+    const delays: Record<string, number> = {};
+    let allBuds: string[] = [];
+    const src = isMobile ? mobileStems : desktopStems;
+    src.forEach((stem) => {
+      allBuds.push(stem.id);
+      stem.branches.forEach((_, i) => {
+        allBuds.push(`${stem.id}.${i + 1}`);
+      });
+    });
+    // Shuffle for random bloom order
+    const shuffled = [...allBuds].sort(() => Math.random() - 0.5);
+    shuffled.forEach((id, i) => {
+      // Buds start appearing after stems have grown (0.8s base) + staggered
+      delays[id] = 0.8 + i * 0.15 + Math.random() * 0.1;
+    });
+    return delays;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile]);
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center pt-[18vh] md:pt-[6vh] overflow-hidden relative">
       <span className="absolute top-6 left-6 text-[11px] tracking-[0.18em] text-muted-foreground font-normal select-none" style={{ fontFamily: "var(--font-body)" }}>
@@ -178,16 +211,29 @@ const Garden = () => {
         <line
           x1="0" y1={gY} x2={vbWidth} y2={gY}
           stroke="hsl(168 40% 52%)" strokeWidth={sw}
+          className="garden-ground"
+          style={{
+            strokeDasharray: vbWidth,
+            strokeDashoffset: animated ? 0 : vbWidth,
+            transition: "stroke-dashoffset 0.8s ease-out",
+          }}
         />
 
-        {stems.map((stem) => {
+        {stems.map((stem, stemIdx) => {
           const topY = gY - stem.h;
+          // Each stem grows with a slight stagger
+          const stemDelay = 0.15 + stemIdx * 0.12;
           return (
             <g key={stem.id}>
-              {/* Vertical stem */}
+              {/* Vertical stem — grows from ground up */}
               <line
                 x1={stem.x} y1={gY} x2={stem.x} y2={topY}
                 stroke="hsl(168 40% 52%)" strokeWidth={sw}
+                style={{
+                  strokeDasharray: stem.h,
+                  strokeDashoffset: animated ? 0 : stem.h,
+                  transition: `stroke-dashoffset 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${stemDelay}s`,
+                }}
               />
               {/* Top bud */}
               <Bud
@@ -198,18 +244,27 @@ const Garden = () => {
                 hatched={stem.topStyle === "hatched"}
                 id={stem.id}
                 onClick={() => handleClick(stem.id)}
+                delay={budDelays[stem.id] || 1}
+                visible={animated}
               />
               {/* Branches */}
               {stem.branches.map((br, i) => {
                 const brY = gY - br.y;
                 const brEndX = stem.x + br.side * br.len;
                 const subId = `${stem.id}.${i + 1}`;
+                // Branch appears after stem has grown past this point
+                const branchGrowDelay = stemDelay + (br.y / stem.h) * 0.9;
                 return (
                   <g key={subId}>
                     {/* Horizontal branch */}
                     <line
                       x1={stem.x} y1={brY} x2={brEndX} y2={brY}
                       stroke="hsl(168 40% 52%)" strokeWidth={sw}
+                      style={{
+                        strokeDasharray: br.len,
+                        strokeDashoffset: animated ? 0 : br.len,
+                        transition: `stroke-dashoffset 0.5s ease-out ${branchGrowDelay}s`,
+                      }}
                     />
                     <Bud
                       cx={brEndX}
@@ -219,6 +274,8 @@ const Garden = () => {
                       hatched={br.style === "hatched"}
                       id={subId}
                       onClick={() => handleClick(subId)}
+                      delay={budDelays[subId] || 1.2}
+                      visible={animated}
                     />
                   </g>
                 );
