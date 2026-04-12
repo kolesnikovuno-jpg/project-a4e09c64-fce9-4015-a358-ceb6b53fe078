@@ -90,7 +90,6 @@ const Lyra = () => {
           width:min(1100px,100%);
           margin:0 auto;
           padding:var(--pad);
-          padding-right:calc(var(--pad) + 60px);
           box-sizing:border-box;
         }
         .uno-3d-stage{
