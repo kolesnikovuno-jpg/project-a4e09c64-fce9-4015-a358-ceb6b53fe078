@@ -73,7 +73,6 @@ const Lyra = () => {
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center relative">
-      {/* Back arrow */}
       <button
         onClick={() => navigate("/garden")}
         className="absolute top-8 left-8 p-2 text-[hsl(168_40%_52%)] hover:text-[hsl(168_40%_72%)] transition-colors duration-300 z-10"
@@ -81,8 +80,6 @@ const Lyra = () => {
       >
         <ChevronLeft size={24} strokeWidth={1} />
       </button>
-
-      
 
       <style>{`
         .uno-3d-wrap{
@@ -123,27 +120,49 @@ const Lyra = () => {
           animation:unoSpin 1.6s cubic-bezier(.4,.15,.6,.85) infinite reverse;
         }
         @keyframes unoSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
-        .uno-overlay{
-          position:absolute;bottom:32px;left:32px;z-index:4;
+        .uno-overlay,
+        .uno-mobile-copy{
           pointer-events:none;
+          z-index:4;
         }
-        .uno-overlay h1{
+        .uno-overlay{
+          position:absolute;
+          bottom:32px;
+          left:32px;
+        }
+        .uno-overlay h1,
+        .uno-mobile-copy h1{
           font-family:'SF Pro Display',system-ui,-apple-system,sans-serif;
-          font-size:clamp(22px,3.2vw,38px);font-weight:300;
-          letter-spacing:0.04em;color:#222;margin:0 0 6px;
-          opacity:0;transform:translateY(12px);
+          font-size:clamp(22px,3.2vw,38px);
+          font-weight:300;
+          letter-spacing:0.04em;
+          color:#222;
+          margin:0 0 6px;
+          opacity:0;
+          transform:translateY(12px);
           transition:opacity .8s ease, transform .8s ease;
         }
-        .uno-overlay p{
+        .uno-overlay p,
+        .uno-mobile-copy p{
           font-family:'SF Pro Text',system-ui,-apple-system,sans-serif;
-          font-size:clamp(12px,1.6vw,16px);font-weight:300;
-          letter-spacing:0.02em;color:#888;margin:0;
-          opacity:0;transform:translateY(12px);
+          font-size:clamp(12px,1.6vw,16px);
+          font-weight:300;
+          letter-spacing:0.02em;
+          color:#888;
+          margin:0;
+          opacity:0;
+          transform:translateY(12px);
           transition:opacity .8s ease .25s, transform .8s ease .25s;
         }
         .uno-overlay.visible h1,
-        .uno-overlay.visible p{
-          opacity:1;transform:translateY(0);
+        .uno-overlay.visible p,
+        .uno-mobile-copy.visible h1,
+        .uno-mobile-copy.visible p{
+          opacity:1;
+          transform:translateY(0);
+        }
+        .uno-mobile-copy{
+          display:none;
         }
         .uno-ar{
           position:absolute;right:14px;top:14px;
@@ -154,10 +173,6 @@ const Lyra = () => {
         .uno-ar:hover{opacity:1;transform:scale(1.05);}
         .uno-ar svg{stroke:#999;transition:stroke .25s ease;}
         .uno-ar:hover svg{stroke:#000;}
-        @media(max-width:768px){
-          .uno-ar{width:52px;height:52px;right:10px;top:10px;opacity:0.7;}
-          .uno-ar svg{width:26px;height:26px;}
-        }
         .uno-stem-05{
           position:absolute;
           right:34px;
@@ -182,9 +197,20 @@ const Lyra = () => {
           stroke-width:1.8;
           filter:drop-shadow(0 0 6px hsl(168 40% 72% / 0.5));
         }
-        @media(max-width:768px){
-          .uno-3d-stage{
-            overflow:visible;
+        @media(max-width:767px){
+          .uno-ar{width:52px;height:52px;right:10px;top:10px;opacity:0.7;}
+          .uno-ar svg{width:26px;height:26px;}
+          .uno-3d-stage{overflow:visible;}
+          .uno-mobile-copy{
+            display:block;
+            margin-top:52px;
+            padding:0 84px 0 16px;
+          }
+          .uno-mobile-copy h1{
+            font-size:20px;
+          }
+          .uno-mobile-copy p{
+            font-size:13px;
           }
           .uno-stem-05{
             right:36px;
@@ -200,8 +226,7 @@ const Lyra = () => {
             <div className="uno-sphere" />
           </div>
 
-          {/* Desktop overlay — inside stage */}
-          <div className={`uno-overlay hidden md:block ${modelLoaded ? 'visible' : ''}`}>
+          <div className={`uno-overlay hidden md:block ${modelLoaded ? "visible" : ""}`}>
             <h1>Контур отдыха</h1>
             <p>Чем меньше усилия — тем точнее поддержка.</p>
           </div>
@@ -240,8 +265,7 @@ const Lyra = () => {
               src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
             />
             <button slot="ar-button" className="uno-ar" aria-label="View in AR" title="AR">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-                stroke="#888" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="3" width="7" height="7" rx="1" />
                 <rect x="14" y="3" width="7" height="7" rx="1" />
                 <rect x="3" y="14" width="7" height="7" rx="1" />
@@ -251,25 +275,19 @@ const Lyra = () => {
             </button>
           </model-viewer>
 
-          {/* Stem 05 — garden proportions (viewBox 100×600, stem 410/600) */}
           <div className="uno-stem-05">
             <svg viewBox="-50 0 100 600" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">
-              {/* Ground line at y=560 (same as garden gY) */}
               <line x1="-30" y1="560" x2="30" y2="560" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-              {/* Vertical stem: from ground (560) to top (150 = 560-410) */}
               <line x1="0" y1="560" x2="0" y2="150" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-              {/* Top bud — 05 → /lyra, r=14, outline */}
               <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
                 <circle cx="0" cy="150" r="14" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
                 <circle cx="0" cy="150" r="20" fill="transparent" stroke="transparent" />
               </g>
-              {/* Branch 05.2 — right */}
               <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
                 <line x1="0" y1="370" x2="22" y2="370" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
                 <circle cx="22" cy="370" r="9" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
                 <circle cx="22" cy="370" r="16" fill="transparent" stroke="transparent" />
               </g>
-              {/* Branch 2 — left */}
               <g className="stem-bud" role="button" tabIndex={0} onClick={() => console.log("05.2")}>
                 <line x1="0" y1="250" x2="-28" y2="250" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
                 <circle cx="-28" cy="250" r="6" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
@@ -279,8 +297,7 @@ const Lyra = () => {
           </div>
         </div>
 
-        {/* Mobile overlay — below stage */}
-        <div className={`uno-overlay md:hidden ${modelLoaded ? 'visible' : ''}`}>
+        <div className={`uno-mobile-copy md:hidden ${modelLoaded ? "visible" : ""}`}>
           <h1>Контур отдыха</h1>
           <p>Чем меньше усилия — тем точнее поддержка.</p>
         </div>
