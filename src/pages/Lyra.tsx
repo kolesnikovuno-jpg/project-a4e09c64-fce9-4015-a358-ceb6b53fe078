@@ -182,6 +182,12 @@ const Lyra = () => {
           stroke-width:1.8;
           filter:drop-shadow(0 0 6px hsl(168 40% 72% / 0.5));
         }
+        @media(max-width:768px){
+          .uno-stem-05{
+            right:36px;
+            bottom:-10px;
+          }
+        }
       `}</style>
 
       <div className="uno-3d-wrap">
