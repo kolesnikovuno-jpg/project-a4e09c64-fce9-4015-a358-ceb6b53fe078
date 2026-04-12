@@ -160,14 +160,24 @@ const Lyra = () => {
         }
         .uno-stem-05{
           position:absolute;
-          right:calc(var(--pad) + 14px);
-          top:calc(var(--pad) + 14px);
-          bottom:calc(var(--pad) + 4px);
-          width:68px;z-index:5;
-          pointer-events:auto;
+          right:34px;
+          top:34px;
+          bottom:32px;
+          width:0;
+          z-index:5;
           overflow:visible;
+          pointer-events:none;
         }
-        .uno-stem-05 .stem-bud{cursor:pointer;}
+        .uno-stem-05 svg{
+          position:absolute;
+          left:50%;
+          top:0;
+          height:100%;
+          transform:translateX(-50%);
+          overflow:visible;
+          pointer-events:none;
+        }
+        .uno-stem-05 .stem-bud{cursor:pointer;pointer-events:auto;}
         .uno-stem-05 .stem-bud:hover circle:first-child{
           stroke-width:1.8;
           filter:drop-shadow(0 0 6px hsl(168 40% 72% / 0.5));
@@ -229,37 +239,34 @@ const Lyra = () => {
               </svg>
             </button>
           </model-viewer>
-        </div>
 
-        {/* Stem 05 — centered on AR icon, ground at subtitle level */}
-        <svg
-          className="uno-stem-05"
-          viewBox="0 0 68 500"
-          preserveAspectRatio="xMidYMax meet"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          {/* Ground line */}
-          <line x1="6" y1="498" x2="62" y2="498" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-          {/* Stem */}
-          <line x1="34" y1="498" x2="34" y2="20" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-          {/* Branch 1 — right (05.1 = /lyra, current page) */}
-          <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
-            <line x1="34" y1="330" x2="58" y2="330" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-            <circle cx="58" cy="330" r="9" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-            <circle cx="58" cy="330" r="16" fill="transparent" stroke="transparent" />
-          </g>
-          {/* Branch 2 — left (05.2, TBD) */}
-          <g className="stem-bud" role="button" tabIndex={0} onClick={() => console.log("05.2")}>
-            <line x1="34" y1="190" x2="10" y2="190" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-            <circle cx="10" cy="190" r="6" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-            <circle cx="10" cy="190" r="13" fill="transparent" stroke="transparent" />
-          </g>
-          {/* Top bud — 05 → /lyra (current page, as in garden) */}
-          <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
-            <circle cx="34" cy="20" r="14" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-            <circle cx="34" cy="20" r="20" fill="transparent" stroke="transparent" />
-          </g>
-        </svg>
+          {/* Stem 05 — exact copy from garden */}
+          <div className="uno-stem-05">
+            <svg viewBox="-50 0 100 410" xmlns="http://www.w3.org/2000/svg">
+              {/* Ground line */}
+              <line x1="-30" y1="408" x2="30" y2="408" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+              {/* Vertical stem */}
+              <line x1="0" y1="408" x2="0" y2="0" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+              {/* Top bud — 05 → /lyra (same as garden) */}
+              <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
+                <circle cx="0" cy="0" r="14" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+                <circle cx="0" cy="0" r="20" fill="transparent" stroke="transparent" />
+              </g>
+              {/* Branch 1 — right (05.1 = /lyra) at y=100 from ground (garden: y=190 from ground → 408-190=218) */}
+              <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
+                <line x1="0" y1="218" x2="42" y2="218" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+                <circle cx="42" cy="218" r="9" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+                <circle cx="42" cy="218" r="16" fill="transparent" stroke="transparent" />
+              </g>
+              {/* Branch 2 — left (05.2, TBD) at y=310 from ground → 408-310=98 */}
+              <g className="stem-bud" role="button" tabIndex={0} onClick={() => console.log("05.2")}>
+                <line x1="0" y1="98" x2="-28" y2="98" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+                <circle cx="-28" cy="98" r="6" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+                <circle cx="-28" cy="98" r="13" fill="transparent" stroke="transparent" />
+              </g>
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
   );
