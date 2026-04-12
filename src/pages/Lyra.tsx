@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 
 declare global {
   namespace JSX {
@@ -78,7 +78,7 @@ const Lyra = () => {
         className="absolute top-8 left-8 p-2 text-[hsl(168_40%_52%)] hover:text-[hsl(168_40%_72%)] transition-colors duration-300"
         aria-label="Назад"
       >
-        <ArrowLeft size={24} strokeWidth={1.5} />
+        <ChevronLeft size={24} strokeWidth={1} />
       </button>
       <style>{`
         .uno-3d-wrap{
