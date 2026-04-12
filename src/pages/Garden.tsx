@@ -175,24 +175,32 @@ const Garden = () => {
   const stems = isMobile ? mobileStems : desktopStems;
   const vbWidth = isMobile ? 800 : 900;
 
-  // Generate random delays for buds (stable across renders)
-  const budDelays = useMemo(() => {
-    const delays: Record<string, number> = {};
-    let allBuds: string[] = [];
+  // Generate random delays for stems and buds (stable across renders)
+  const { budDelays, stemDelays } = useMemo(() => {
+    const budD: Record<string, number> = {};
+    const stemD: Record<string, number> = {};
     const src = isMobile ? mobileStems : desktopStems;
+    
+    // Randomize stem growth order
+    const stemIds = src.map(s => s.id);
+    const shuffledStems = [...stemIds].sort(() => Math.random() - 0.5);
+    shuffledStems.forEach((id, i) => {
+      stemD[id] = 0.3 + i * 0.2 + Math.random() * 0.15;
+    });
+
+    // Collect all buds and randomize bloom order
+    let allBuds: string[] = [];
     src.forEach((stem) => {
       allBuds.push(stem.id);
       stem.branches.forEach((_, i) => {
         allBuds.push(`${stem.id}.${i + 1}`);
       });
     });
-    // Shuffle for random bloom order
-    const shuffled = [...allBuds].sort(() => Math.random() - 0.5);
-    shuffled.forEach((id, i) => {
-      // Buds start appearing after stems have grown (0.8s base) + staggered
-      delays[id] = 0.8 + i * 0.15 + Math.random() * 0.1;
+    const shuffledBuds = [...allBuds].sort(() => Math.random() - 0.5);
+    shuffledBuds.forEach((id, i) => {
+      budD[id] = 1.2 + i * 0.15 + Math.random() * 0.1;
     });
-    return delays;
+    return { budDelays: budD, stemDelays: stemD };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile]);
 
