@@ -206,9 +206,14 @@ const Garden = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center pt-[18vh] md:pt-[6vh] overflow-hidden relative">
-      <span className="absolute top-6 left-6 text-[11px] tracking-[0.15em] text-muted-foreground font-normal select-none" style={{ fontFamily: "var(--font-body)" }}>
-        .uno<span className="text-foreground/70">Garden</span>
-      </span>
+      <div className="absolute top-6 left-6 right-6 flex items-center justify-between">
+        <span className="text-[11px] tracking-[0.15em] text-muted-foreground font-normal select-none">
+          Garden
+        </span>
+        <a href="/" onClick={(e) => { e.preventDefault(); navigate("/"); }} className="text-[13px] text-primary font-medium hover:text-primary/80 transition-colors">
+          .uno
+        </a>
+      </div>
       <svg
         viewBox={`0 0 ${vbWidth} 600`}
         className="w-full max-w-[900px] h-auto"
