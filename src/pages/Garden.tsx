@@ -120,7 +120,7 @@ const Garden = () => {
   return (
     <div className="min-h-screen bg-background flex items-end justify-center pb-0 overflow-hidden">
       <svg
-        viewBox="0 0 900 600"
+        viewBox="0 0 800 600"
         className="w-full max-w-[900px] h-auto"
         preserveAspectRatio="xMidYMax meet"
         xmlns="http://www.w3.org/2000/svg"
