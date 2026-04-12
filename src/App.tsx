@@ -11,6 +11,7 @@ import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import PixelTransition from "./pages/PixelTransition";
 import Lyra from "./pages/Lyra";
+import Garden from "./pages/Garden";
 
 const queryClient = new QueryClient();
 
