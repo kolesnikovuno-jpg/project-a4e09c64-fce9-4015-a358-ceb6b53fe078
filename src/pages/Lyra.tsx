@@ -87,6 +87,7 @@ const Lyra = () => {
       <style>{`
         .uno-3d-wrap{
           --pad:clamp(12px,1.8vw,24px);
+          position:relative;
           width:min(1100px,100%);
           margin:0 auto;
           padding:var(--pad);
@@ -159,9 +160,12 @@ const Lyra = () => {
         }
         .uno-stem-05{
           position:absolute;
-          right:14px;top:34px;bottom:32px;
-          width:60px;z-index:5;
+          right:calc(var(--pad) + 14px);
+          top:calc(var(--pad) + 14px);
+          bottom:calc(var(--pad) + 38px);
+          width:68px;z-index:5;
           pointer-events:auto;
+          overflow:visible;
         }
       `}</style>
 
@@ -220,31 +224,31 @@ const Lyra = () => {
               </svg>
             </button>
           </model-viewer>
-
-          {/* Stem 05 — centered on AR icon, ground at subtitle level */}
-          <svg
-            className="uno-stem-05"
-            viewBox="0 0 60 400"
-            preserveAspectRatio="xMidYMid meet"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Ground line */}
-            <line x1="5" y1="398" x2="55" y2="398" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-            {/* Stem */}
-            <line x1="30" y1="398" x2="30" y2="20" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-            {/* Branch 1 — right */}
-            <line x1="30" y1="270" x2="52" y2="270" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-            <circle cx="52" cy="270" r="9" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-            <circle cx="52" cy="270" r="15" fill="transparent" stroke="transparent" />
-            {/* Branch 2 — left */}
-            <line x1="30" y1="160" x2="8" y2="160" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-            <circle cx="8" cy="160" r="6" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-            <circle cx="8" cy="160" r="12" fill="transparent" stroke="transparent" />
-            {/* Top bud — current page */}
-            <circle cx="30" cy="20" r="14" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-            <circle cx="30" cy="20" r="20" fill="transparent" stroke="transparent" />
-          </svg>
         </div>
+
+        {/* Stem 05 — centered on AR icon, ground at subtitle level */}
+        <svg
+          className="uno-stem-05"
+          viewBox="0 0 68 500"
+          preserveAspectRatio="xMidYMin meet"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Ground line */}
+          <line x1="6" y1="498" x2="62" y2="498" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+          {/* Stem */}
+          <line x1="34" y1="498" x2="34" y2="20" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+          {/* Branch 1 — right */}
+          <line x1="34" y1="330" x2="58" y2="330" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+          <circle cx="58" cy="330" r="9" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+          <circle cx="58" cy="330" r="16" fill="transparent" stroke="transparent" />
+          {/* Branch 2 — left */}
+          <line x1="34" y1="190" x2="10" y2="190" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+          <circle cx="10" cy="190" r="6" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+          <circle cx="10" cy="190" r="13" fill="transparent" stroke="transparent" />
+          {/* Top bud — current page */}
+          <circle cx="34" cy="20" r="14" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+          <circle cx="34" cy="20" r="20" fill="transparent" stroke="transparent" />
+        </svg>
       </div>
     </div>
   );
