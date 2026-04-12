@@ -242,17 +242,23 @@ const Lyra = () => {
           <line x1="6" y1="498" x2="62" y2="498" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
           {/* Stem */}
           <line x1="34" y1="498" x2="34" y2="20" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-          {/* Branch 1 — right */}
-          <line x1="34" y1="330" x2="58" y2="330" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-          <circle cx="58" cy="330" r="9" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-          <circle cx="58" cy="330" r="16" fill="transparent" stroke="transparent" />
-          {/* Branch 2 — left */}
-          <line x1="34" y1="190" x2="10" y2="190" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-          <circle cx="10" cy="190" r="6" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-          <circle cx="10" cy="190" r="13" fill="transparent" stroke="transparent" />
-          {/* Top bud — current page */}
-          <circle cx="34" cy="20" r="14" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-          <circle cx="34" cy="20" r="20" fill="transparent" stroke="transparent" />
+          {/* Branch 1 — right (05.1 = /lyra, current page) */}
+          <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
+            <line x1="34" y1="330" x2="58" y2="330" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+            <circle cx="58" cy="330" r="9" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+            <circle cx="58" cy="330" r="16" fill="transparent" stroke="transparent" />
+          </g>
+          {/* Branch 2 — left (05.2, TBD) */}
+          <g className="stem-bud" role="button" tabIndex={0} onClick={() => console.log("05.2")}>
+            <line x1="34" y1="190" x2="10" y2="190" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+            <circle cx="10" cy="190" r="6" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+            <circle cx="10" cy="190" r="13" fill="transparent" stroke="transparent" />
+          </g>
+          {/* Top bud — 05 → /garden */}
+          <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/garden")}>
+            <circle cx="34" cy="20" r="14" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+            <circle cx="34" cy="20" r="20" fill="transparent" stroke="transparent" />
+          </g>
         </svg>
       </div>
     </div>
