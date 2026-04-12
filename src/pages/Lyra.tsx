@@ -35,6 +35,7 @@ const USDZ_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/pub
 const Lyra = () => {
   const modelRef = useRef<HTMLElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
+  const [modelLoaded, setModelLoaded] = useState(false);
 
   useEffect(() => {
     if (!customElements.get("model-viewer")) {
@@ -52,16 +53,15 @@ const Lyra = () => {
 
     const onLoad = () => {
       loader.classList.add("hide");
-      // Reset camera after load
       (mv as any).cameraTarget = "auto";
       (mv as any).cameraOrbit = "12deg 70deg 300%";
       (mv as any).fieldOfView = "28deg";
-      // Restart auto-rotate
       const had = mv.hasAttribute("auto-rotate");
       mv.removeAttribute("auto-rotate");
       requestAnimationFrame(() => {
         if (had) mv.setAttribute("auto-rotate", "");
       });
+      setTimeout(() => setModelLoaded(true), 600);
     };
 
     mv.addEventListener("load", onLoad);
