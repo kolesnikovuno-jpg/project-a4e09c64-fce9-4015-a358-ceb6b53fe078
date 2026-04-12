@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 declare global {
   namespace JSX {
@@ -33,6 +35,7 @@ const GLB_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/publ
 const USDZ_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/public/models/lyra.usdz";
 
 const Lyra = () => {
+  const navigate = useNavigate();
   const modelRef = useRef<HTMLElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
@@ -69,7 +72,14 @@ const Lyra = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
+    <div className="min-h-screen bg-white flex items-center justify-center relative">
+      <button
+        onClick={() => navigate("/garden")}
+        className="absolute top-8 left-8 p-2 text-[hsl(168_40%_52%)] hover:text-[hsl(168_40%_72%)] transition-colors duration-300"
+        aria-label="Назад"
+      >
+        <ArrowLeft size={24} strokeWidth={1.5} />
+      </button>
       <style>{`
         .uno-3d-wrap{
           --pad:clamp(12px,1.8vw,24px);
