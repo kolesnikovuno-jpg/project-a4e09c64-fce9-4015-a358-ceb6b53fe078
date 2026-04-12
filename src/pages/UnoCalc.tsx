@@ -34,7 +34,7 @@ const UnoCalc = () => {
       <div className="max-w-[640px] w-full">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 md:mb-8">
-          <h1 className="text-[17px] md:text-[19px] font-normal tracking-[0.12em] text-foreground">
+          <h1 className="text-[15px] md:text-[16px] font-normal tracking-[0.12em] text-foreground">
             unocalc
           </h1>
           <Link
@@ -67,7 +67,7 @@ const UnoCalc = () => {
               type="number"
               value={f.value}
               onChange={(e) => f.set(e.target.value)}
-              className="w-full border-0 border-b border-border bg-transparent py-2 text-[16px] text-foreground outline-none transition-colors duration-300 focus:border-[#93D6D0]"
+              className="w-full border-0 border-b border-border bg-transparent py-2 text-[16px] text-foreground outline-none transition-colors duration-300 focus:border-primary"
             />
           </div>
         ))}
@@ -75,7 +75,7 @@ const UnoCalc = () => {
         {/* Volume */}
         <div className="mt-5 mb-4 px-4 py-3 bg-muted/40 rounded-sm flex items-center justify-between text-[14px]">
           <span className="text-muted-foreground">объем</span>
-          <span className="text-[20px] text-foreground">{volume.toFixed(2)} м³</span>
+          <span className="text-[17px] text-foreground">{volume.toFixed(2)} м³</span>
         </div>
 
         {/* Level */}
@@ -88,7 +88,7 @@ const UnoCalc = () => {
             <label
               key={lvl.value}
               className={`flex items-start cursor-pointer text-[14px] text-foreground/85 rounded-sm px-3 py-2.5 transition-colors duration-200 ${
-                q === lvl.value ? "bg-[#93D6D0]/[0.07]" : "hover:bg-muted/30"
+                q === lvl.value ? "bg-primary/[0.07]" : "hover:bg-muted/30"
               }`}
             >
               <input
@@ -101,11 +101,11 @@ const UnoCalc = () => {
               />
               <span
                 className={`mt-[3px] mr-2.5 flex-shrink-0 w-4 h-4 rounded-full border transition-colors duration-200 relative ${
-                  q === lvl.value ? "border-[#93D6D0]" : "border-border"
+                  q === lvl.value ? "border-primary" : "border-border"
                 }`}
               >
                 {q === lvl.value && (
-                  <span className="absolute top-[3px] left-[3px] w-2 h-2 rounded-full bg-[#93D6D0]" />
+                  <span className="absolute top-[3px] left-[3px] w-2 h-2 rounded-full bg-primary" />
                 )}
               </span>
               <div className="flex flex-col">
@@ -117,9 +117,9 @@ const UnoCalc = () => {
         </div>
 
         {/* Result */}
-        <div className="mt-5 px-4 py-3 bg-[#93D6D0]/[0.12] border-l-[3px] border-[#6FC5BE] rounded-sm flex items-center justify-between text-[14px]">
+        <div className="mt-5 px-4 py-3 bg-primary/[0.12] border-l-[3px] border-primary rounded-sm flex items-center justify-between text-[14px]">
           <span className="text-muted-foreground">результат</span>
-          <span className="text-[20px] text-foreground">{energy ?? "—"} U.E.R.</span>
+          <span className="text-[17px] text-foreground">{energy ?? "—"} U.E.R.</span>
         </div>
 
         {/* Interpretation — visually separated */}
