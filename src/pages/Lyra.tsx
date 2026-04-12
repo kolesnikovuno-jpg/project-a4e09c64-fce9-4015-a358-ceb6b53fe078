@@ -160,7 +160,7 @@ const Lyra = () => {
         .uno-stem-05{
           position:absolute;
           right:34px;
-          bottom:-4px;
+          bottom:-24px;
           height:calc(100% - 32px);
           width:0;
           z-index:5;
