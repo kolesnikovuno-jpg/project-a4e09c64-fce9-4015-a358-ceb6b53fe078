@@ -63,7 +63,14 @@ const Garden = () => {
   const navigate = useNavigate();
 
   const handleClick = (id: string) => {
-    console.log(`Clicked: ${id}`);
+    const routes: Record<string, string> = {
+      "05": "/lyra",
+    };
+    if (routes[id]) {
+      navigate(routes[id]);
+    } else {
+      console.log(`Clicked: ${id}`);
+    }
   };
 
   // Ground Y
