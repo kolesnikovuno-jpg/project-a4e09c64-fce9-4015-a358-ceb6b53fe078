@@ -80,54 +80,54 @@ const Garden = () => {
   // Stems: x, height, branches [{side, yOffset, length, budR, budStyle}], topBudR, topBudStyle
   const stems = [
     {
-      x: 180, h: 370,
-      branches: [{ side: -1, y: 160, len: 35, r: 8, style: "outline" as const }],
-      topR: 13, topStyle: "outline" as const, id: "01",
+      x: 100, h: 420,
+      branches: [{ side: -1, y: 180, len: 40, r: 14, style: "outline" as const }],
+      topR: 20, topStyle: "outline" as const, id: "01",
     },
     {
-      x: 290, h: 430,
+      x: 220, h: 480,
       branches: [
-        { side: -1, y: 200, len: 40, r: 9, style: "hatched" as const },
-        { side: 1, y: 320, len: 30, r: 7, style: "outline" as const },
+        { side: -1, y: 220, len: 45, r: 15, style: "hatched" as const },
+        { side: 1, y: 360, len: 35, r: 12, style: "outline" as const },
       ],
-      topR: 15, topStyle: "outline" as const, id: "02",
+      topR: 22, topStyle: "outline" as const, id: "02",
     },
     {
-      x: 410, h: 290,
-      branches: [{ side: 1, y: 140, len: 38, r: 7, style: "filled" as const }],
-      topR: 12, topStyle: "hatched" as const, id: "03",
+      x: 350, h: 340,
+      branches: [{ side: 1, y: 160, len: 42, r: 12, style: "filled" as const }],
+      topR: 18, topStyle: "hatched" as const, id: "03",
     },
     {
-      x: 500, h: 180,
-      branches: [{ side: 1, y: 90, len: 32, r: 6, style: "outline" as const }],
-      topR: 10, topStyle: "filled" as const, id: "04",
+      x: 450, h: 220,
+      branches: [{ side: 1, y: 110, len: 36, r: 11, style: "outline" as const }],
+      topR: 16, topStyle: "filled" as const, id: "04",
     },
     {
-      x: 620, h: 410,
+      x: 570, h: 460,
       branches: [
-        { side: 1, y: 190, len: 42, r: 9, style: "outline" as const },
-        { side: -1, y: 310, len: 28, r: 6, style: "filled" as const },
+        { side: 1, y: 210, len: 48, r: 15, style: "outline" as const },
+        { side: -1, y: 350, len: 32, r: 11, style: "filled" as const },
       ],
-      topR: 14, topStyle: "outline" as const, id: "05",
+      topR: 21, topStyle: "outline" as const, id: "05",
     },
     {
-      x: 760, h: 120,
+      x: 700, h: 150,
       branches: [],
-      topR: 9, topStyle: "outline" as const, id: "06",
+      topR: 14, topStyle: "outline" as const, id: "06",
     },
   ];
 
   return (
     <div className="min-h-screen bg-background flex items-end justify-center pb-0 overflow-hidden">
       <svg
-        viewBox="0 0 900 600"
+        viewBox="0 0 800 600"
         className="w-full max-w-[900px] h-auto"
         preserveAspectRatio="xMidYMax meet"
         xmlns="http://www.w3.org/2000/svg"
       >
         {/* Ground line — straight horizontal */}
         <line
-          x1="0" y1={gY} x2="900" y2={gY}
+          x1="0" y1={gY} x2="800" y2={gY}
           stroke="hsl(168 40% 52%)" strokeWidth={sw}
         />
 
