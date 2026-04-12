@@ -162,7 +162,7 @@ const Lyra = () => {
           position:absolute;
           right:calc(var(--pad) + 14px);
           top:calc(var(--pad) + 14px);
-          bottom:calc(var(--pad) + 34px);
+          bottom:calc(var(--pad) + 4px);
           width:68px;z-index:5;
           pointer-events:auto;
           overflow:visible;
