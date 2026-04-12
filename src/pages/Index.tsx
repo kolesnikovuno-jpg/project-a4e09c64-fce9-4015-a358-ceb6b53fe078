@@ -257,6 +257,7 @@ const Index = () => {
                     >
                       Формат и стоимость →
                     </a>
+                    <div className="flex-1" />
                     <a
                       href="/garden"
                       onClick={(e) => {
@@ -264,9 +265,9 @@ const Index = () => {
                         handleClose();
                         navigate("/garden");
                       }}
-                      className="block text-[11px] tracking-[0.18em] text-muted-foreground hover:text-foreground/70 transition-colors mt-6"
+                      className="block text-[13px] tracking-[0.12em] text-primary hover:text-primary/80 transition-colors"
                     >
-                      .uno<span className="text-foreground/70">Garden</span>
+                      Garden
                     </a>
                   </div>
 
