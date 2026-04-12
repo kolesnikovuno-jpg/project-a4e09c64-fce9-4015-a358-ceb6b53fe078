@@ -162,7 +162,7 @@ const Lyra = () => {
           position:absolute;
           right:calc(var(--pad) + 14px);
           top:calc(var(--pad) + 14px);
-          bottom:calc(var(--pad) + 18px);
+          bottom:calc(var(--pad) + 34px);
           width:68px;z-index:5;
           pointer-events:auto;
           overflow:visible;
@@ -254,8 +254,8 @@ const Lyra = () => {
             <circle cx="10" cy="190" r="6" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
             <circle cx="10" cy="190" r="13" fill="transparent" stroke="transparent" />
           </g>
-          {/* Top bud — 05 → /garden */}
-          <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/garden")}>
+          {/* Top bud — 05 → /lyra (current page, as in garden) */}
+          <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
             <circle cx="34" cy="20" r="14" fill="hsl(168 40% 72%)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
             <circle cx="34" cy="20" r="20" fill="transparent" stroke="transparent" />
           </g>
