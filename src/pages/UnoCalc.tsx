@@ -34,7 +34,7 @@ const UnoCalc = () => {
       <div className="max-w-[640px] w-full">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 md:mb-8">
-          <h1 className="text-[15px] md:text-[16px] font-normal tracking-[0.12em] text-foreground">
+          <h1 className="text-[15px] md:text-[16px] font-normal tracking-[0.04em] text-foreground">
             unocalc
           </h1>
           <Link
