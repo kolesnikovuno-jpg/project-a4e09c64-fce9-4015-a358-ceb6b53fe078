@@ -96,9 +96,9 @@ const Garden = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [animated, setAnimated] = useState(false);
+  const [activeBud, setActiveBud] = useState<string | null>(null);
 
   useEffect(() => {
-    // Trigger animation after mount
     const t = requestAnimationFrame(() => setAnimated(true));
     return () => cancelAnimationFrame(t);
   }, []);
@@ -112,14 +112,22 @@ const Garden = () => {
     "06": "Эскиз",
   };
 
+  const routes: Record<string, string> = {
+    "05": "/lyra",
+  };
+
   const handleClick = (id: string) => {
-    const routes: Record<string, string> = {
-      "05": "/lyra",
-    };
-    if (routes[id]) {
-      navigate(routes[id]);
+    if (isMobile) {
+      if (activeBud === id) {
+        // Second tap — navigate if route exists
+        if (routes[id]) navigate(routes[id]);
+        setActiveBud(null);
+      } else {
+        // First tap — show label
+        setActiveBud(id);
+      }
     } else {
-      console.log(`Clicked: ${id}`);
+      if (routes[id]) navigate(routes[id]);
     }
   };
 
