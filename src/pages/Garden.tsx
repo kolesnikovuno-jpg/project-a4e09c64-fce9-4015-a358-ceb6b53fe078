@@ -217,6 +217,7 @@ const Garden = () => {
   }, [isMobile]);
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background flex items-center justify-center pt-[18vh] md:pt-[6vh] overflow-hidden relative">
       <div className="absolute top-6 left-6 right-6 flex items-center justify-between">
         <span className="text-sm tracking-[0.15em] text-foreground font-normal select-none">
@@ -265,6 +266,7 @@ const Garden = () => {
                 filled={stem.topStyle === "filled"}
                 hatched={stem.topStyle === "hatched"}
                 id={stem.id}
+                label={budLabels[stem.id]}
                 onClick={() => handleClick(stem.id)}
                 delay={budDelays[stem.id] || 1}
                 visible={animated}
@@ -319,6 +321,7 @@ const Garden = () => {
         }
       `}</style>
     </div>
+    </PageTransition>
   );
 };
 
