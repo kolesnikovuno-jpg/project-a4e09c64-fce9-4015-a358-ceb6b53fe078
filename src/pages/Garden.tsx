@@ -11,12 +11,13 @@ interface BudProps {
   hatched?: boolean;
   id: string;
   label?: string;
+  showLabel?: boolean;
   onClick?: () => void;
   delay: number;
   visible: boolean;
 }
 
-const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, delay, visible }: BudProps) => {
+const Bud = ({ cx, cy, r, filled, hatched, id, label, showLabel, onClick, delay, visible }: BudProps) => {
   const hatchId = `hatch-${id}`;
   return (
     <g
@@ -24,7 +25,7 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, delay, visible }:
       onClick={onClick}
       role="button"
       tabIndex={0}
-      aria-label={`Элемент ${id}`}
+      aria-label={label || `Элемент ${id}`}
       style={{
         cursor: "pointer",
         opacity: visible ? 1 : 0,
@@ -67,7 +68,26 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, delay, visible }:
         stroke="transparent"
         className="garden-hit"
       />
+      {/* Desktop: native tooltip */}
       {label && <title>{label}</title>}
+      {/* Mobile: visible label on first tap */}
+      {label && showLabel && (
+        <text
+          x={cx}
+          y={cy - r - 10}
+          textAnchor="middle"
+          fill="hsl(168 40% 72%)"
+          fontSize="11"
+          fontFamily="inherit"
+          style={{
+            opacity: 1,
+            transition: "opacity 0.3s ease",
+            pointerEvents: "none",
+          }}
+        >
+          {label}
+        </text>
+      )}
     </g>
   );
 };
@@ -76,9 +96,9 @@ const Garden = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [animated, setAnimated] = useState(false);
+  const [activeBud, setActiveBud] = useState<string | null>(null);
 
   useEffect(() => {
-    // Trigger animation after mount
     const t = requestAnimationFrame(() => setAnimated(true));
     return () => cancelAnimationFrame(t);
   }, []);
@@ -92,14 +112,22 @@ const Garden = () => {
     "06": "Эскиз",
   };
 
+  const routes: Record<string, string> = {
+    "05": "/lyra",
+  };
+
   const handleClick = (id: string) => {
-    const routes: Record<string, string> = {
-      "05": "/lyra",
-    };
-    if (routes[id]) {
-      navigate(routes[id]);
+    if (isMobile) {
+      if (activeBud === id) {
+        // Second tap — navigate if route exists
+        if (routes[id]) navigate(routes[id]);
+        setActiveBud(null);
+      } else {
+        // First tap — show label
+        setActiveBud(id);
+      }
     } else {
-      console.log(`Clicked: ${id}`);
+      if (routes[id]) navigate(routes[id]);
     }
   };
 
@@ -267,6 +295,7 @@ const Garden = () => {
                 hatched={stem.topStyle === "hatched"}
                 id={stem.id}
                 label={budLabels[stem.id]}
+                showLabel={activeBud === stem.id}
                 onClick={() => handleClick(stem.id)}
                 delay={budDelays[stem.id] || 1}
                 visible={animated}
@@ -298,6 +327,7 @@ const Garden = () => {
                       hatched={br.style === "hatched"}
                       id={subId}
                       onClick={() => handleClick(subId)}
+                      showLabel={activeBud === subId}
                       delay={budDelays[subId] || 1.2}
                       visible={animated}
                     />
