@@ -273,7 +273,7 @@ const Index = () => {
                         handleClose();
                         navigate("/garden");
                       }}
-                      className="block text-[13px] tracking-[0.12em] text-primary hover:text-primary/80 transition-colors mt-4 md:mt-0"
+                      className="block text-[15px] md:text-[16px] font-medium tracking-[0.12em] text-primary hover:text-primary/80 transition-colors mt-4 md:mt-0"
                     >
                       Garden
                     </a>
