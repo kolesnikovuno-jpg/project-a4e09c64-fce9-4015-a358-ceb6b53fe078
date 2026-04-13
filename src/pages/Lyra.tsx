@@ -235,11 +235,13 @@ const Lyra = () => {
             />
             <button slot="ar-button" className="uno-ar" aria-label="View in AR" title="AR">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-                stroke="#888" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                stroke="hsl(168 40% 52%)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
                 <path d="M12 12l8-4.5" />
                 <path d="M12 12v9" />
                 <path d="M12 12L4 7.5" />
+                <circle cx="12" cy="3" r="1.5" fill="hsl(168 40% 52%)" stroke="none" />
+                <line x1="12" y1="3" x2="12" y2="0.5" stroke="hsl(168 40% 52%)" strokeWidth="1" />
               </svg>
             </button>
           </model-viewer>
