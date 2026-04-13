@@ -11,12 +11,13 @@ interface BudProps {
   hatched?: boolean;
   id: string;
   label?: string;
+  showLabel?: boolean;
   onClick?: () => void;
   delay: number;
   visible: boolean;
 }
 
-const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, delay, visible }: BudProps) => {
+const Bud = ({ cx, cy, r, filled, hatched, id, label, showLabel, onClick, delay, visible }: BudProps) => {
   const hatchId = `hatch-${id}`;
   return (
     <g
@@ -24,7 +25,7 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, delay, visible }:
       onClick={onClick}
       role="button"
       tabIndex={0}
-      aria-label={`Элемент ${id}`}
+      aria-label={label || `Элемент ${id}`}
       style={{
         cursor: "pointer",
         opacity: visible ? 1 : 0,
@@ -67,7 +68,26 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, delay, visible }:
         stroke="transparent"
         className="garden-hit"
       />
+      {/* Desktop: native tooltip */}
       {label && <title>{label}</title>}
+      {/* Mobile: visible label on first tap */}
+      {label && showLabel && (
+        <text
+          x={cx}
+          y={cy - r - 10}
+          textAnchor="middle"
+          fill="hsl(168 40% 72%)"
+          fontSize="11"
+          fontFamily="inherit"
+          style={{
+            opacity: 1,
+            transition: "opacity 0.3s ease",
+            pointerEvents: "none",
+          }}
+        >
+          {label}
+        </text>
+      )}
     </g>
   );
 };
