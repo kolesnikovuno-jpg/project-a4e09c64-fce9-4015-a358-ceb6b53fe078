@@ -31,6 +31,7 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/lyra" element={<Lyra />} />
           <Route path="/garden" element={<Garden />} />
+          <Route path="/lyra-concept" element={<LyraConcept />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
