@@ -83,6 +83,15 @@ const Garden = () => {
     return () => cancelAnimationFrame(t);
   }, []);
 
+  const budLabels: Record<string, string> = {
+    "01": "Архитектура",
+    "02": "Интерьер",
+    "03": "Предмет",
+    "04": "Графика",
+    "05": "Lyra",
+    "06": "Эскиз",
+  };
+
   const handleClick = (id: string) => {
     const routes: Record<string, string> = {
       "05": "/lyra",
