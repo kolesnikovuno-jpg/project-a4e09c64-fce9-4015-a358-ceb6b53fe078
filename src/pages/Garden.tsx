@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useMemo, useState } from "react";
+import PageTransition from "@/components/PageTransition";
 
 interface BudProps {
   cx: number;
@@ -9,12 +10,13 @@ interface BudProps {
   filled?: boolean;
   hatched?: boolean;
   id: string;
+  label?: string;
   onClick?: () => void;
   delay: number;
   visible: boolean;
 }
 
-const Bud = ({ cx, cy, r, filled, hatched, id, onClick, delay, visible }: BudProps) => {
+const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, delay, visible }: BudProps) => {
   const hatchId = `hatch-${id}`;
   return (
     <g
