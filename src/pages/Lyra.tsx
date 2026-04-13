@@ -151,13 +151,13 @@ const Lyra = () => {
           position:absolute;right:14px;top:14px;
           width:40px;height:40px;border:none;border-radius:50%;
           background:transparent;display:flex;align-items:center;justify-content:center;
-          cursor:pointer;transition:all .25s ease;z-index:3;opacity:0.6;
+          cursor:pointer;transition:all .25s ease;z-index:3;opacity:0.7;
         }
         .uno-ar:hover{opacity:1;transform:scale(1.05);}
-        .uno-ar svg{stroke:#999;transition:stroke .25s ease;}
-        .uno-ar:hover svg{stroke:#000;}
+        .uno-ar svg{stroke:hsl(168 40% 52%);transition:stroke .25s ease;}
+        .uno-ar:hover svg{stroke:hsl(168 40% 42%);}
         @media(max-width:768px){
-          .uno-ar{width:52px;height:52px;right:10px;top:10px;opacity:0.7;}
+          .uno-ar{width:52px;height:52px;right:10px;top:10px;opacity:0.75;}
           .uno-ar svg{width:26px;height:26px;}
         }
         .uno-stem-05{
