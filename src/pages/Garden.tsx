@@ -74,10 +74,11 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, showLabel, onClick, delay,
       {label && showLabel && (
         <text
           x={cx}
-          y={cy - r - 10}
+          y={cy - r - 12}
           textAnchor="middle"
           fill="hsl(168 40% 72%)"
-          fontSize="11"
+          fontSize="16"
+          letterSpacing="0.06em"
           fontFamily="inherit"
           style={{
             opacity: 1,
