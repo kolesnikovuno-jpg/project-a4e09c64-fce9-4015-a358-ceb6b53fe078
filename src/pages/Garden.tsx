@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useMemo, useState } from "react";
+import PageTransition from "@/components/PageTransition";
 
 interface BudProps {
   cx: number;
@@ -9,12 +10,13 @@ interface BudProps {
   filled?: boolean;
   hatched?: boolean;
   id: string;
+  label?: string;
   onClick?: () => void;
   delay: number;
   visible: boolean;
 }
 
-const Bud = ({ cx, cy, r, filled, hatched, id, onClick, delay, visible }: BudProps) => {
+const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, delay, visible }: BudProps) => {
   const hatchId = `hatch-${id}`;
   return (
     <g
@@ -65,6 +67,7 @@ const Bud = ({ cx, cy, r, filled, hatched, id, onClick, delay, visible }: BudPro
         stroke="transparent"
         className="garden-hit"
       />
+      {label && <title>{label}</title>}
     </g>
   );
 };
@@ -79,6 +82,15 @@ const Garden = () => {
     const t = requestAnimationFrame(() => setAnimated(true));
     return () => cancelAnimationFrame(t);
   }, []);
+
+  const budLabels: Record<string, string> = {
+    "01": "Архитектура",
+    "02": "Интерьер",
+    "03": "Предмет",
+    "04": "Графика",
+    "05": "Lyra",
+    "06": "Эскиз",
+  };
 
   const handleClick = (id: string) => {
     const routes: Record<string, string> = {
@@ -205,6 +217,7 @@ const Garden = () => {
   }, [isMobile]);
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background flex items-center justify-center pt-[18vh] md:pt-[6vh] overflow-hidden relative">
       <div className="absolute top-6 left-6 right-6 flex items-center justify-between">
         <span className="text-sm tracking-[0.15em] text-foreground font-normal select-none">
@@ -253,6 +266,7 @@ const Garden = () => {
                 filled={stem.topStyle === "filled"}
                 hatched={stem.topStyle === "hatched"}
                 id={stem.id}
+                label={budLabels[stem.id]}
                 onClick={() => handleClick(stem.id)}
                 delay={budDelays[stem.id] || 1}
                 visible={animated}
@@ -307,6 +321,7 @@ const Garden = () => {
         }
       `}</style>
     </div>
+    </PageTransition>
   );
 };
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
+import PageTransition from "@/components/PageTransition";
 
 declare global {
   namespace JSX {
@@ -72,6 +73,7 @@ const Lyra = () => {
   }, []);
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-white flex items-center justify-center relative overflow-x-hidden">
       {/* Back arrow */}
       <button
@@ -271,6 +273,7 @@ const Lyra = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 
