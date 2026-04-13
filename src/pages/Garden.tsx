@@ -67,6 +67,7 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, delay, visible }:
         stroke="transparent"
         className="garden-hit"
       />
+      {label && <title>{label}</title>}
     </g>
   );
 };
