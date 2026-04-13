@@ -295,6 +295,7 @@ const Garden = () => {
                 hatched={stem.topStyle === "hatched"}
                 id={stem.id}
                 label={budLabels[stem.id]}
+                showLabel={activeBud === stem.id}
                 onClick={() => handleClick(stem.id)}
                 delay={budDelays[stem.id] || 1}
                 visible={animated}
@@ -326,6 +327,7 @@ const Garden = () => {
                       hatched={br.style === "hatched"}
                       id={subId}
                       onClick={() => handleClick(subId)}
+                      showLabel={activeBud === subId}
                       delay={budDelays[subId] || 1.2}
                       visible={animated}
                     />
