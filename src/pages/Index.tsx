@@ -58,8 +58,8 @@ const Index = () => {
               >
                 <svg width="28" height="28" viewBox="0 0 28 28">
                   <defs>
-                    <pattern id="hatch-toggle" patternUnits="userSpaceOnUse" width="3" height="3" patternTransform="rotate(45)">
-                      <line x1="0" y1="0" x2="0" y2="3" stroke="rgba(255,255,255,0.85)" strokeWidth="0.8" />
+                    <pattern id="hatch-toggle" patternUnits="userSpaceOnUse" width="2.2" height="2.2" patternTransform="rotate(45)">
+                      <line x1="0" y1="0" x2="0" y2="2.2" stroke="rgba(255,255,255,0.9)" strokeWidth="1" />
                     </pattern>
                   </defs>
                   <circle cx="14" cy="14" r="13" fill="url(#hatch-toggle)" stroke="rgba(255,255,255,0.6)" strokeWidth="0.8" />
