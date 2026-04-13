@@ -49,14 +49,22 @@ const Index = () => {
             className="group relative flex items-center bg-primary border border-primary/60 rounded-full w-[76px] h-9 hover:bg-primary/90 transition-colors cursor-pointer translate-x-[27px]"
           >
             {!open && (
-              <motion.span
+              <motion.div
                 layoutId="morph-circle"
-                className="absolute w-7 h-7 rounded-full shadow-sm"
-                style={{ backgroundColor: open ? "#93D6D0" : "rgba(255,255,255,0.8)" }}
+                className="absolute w-7 h-7"
                 initial={false}
                 transition={{ type: "spring", stiffness: 200, damping: 28, mass: 0.8 }}
                 animate={{ left: toggled ? 42 : 4 }}
-              />
+              >
+                <svg width="28" height="28" viewBox="0 0 28 28">
+                  <defs>
+                    <pattern id="hatch-toggle" patternUnits="userSpaceOnUse" width="3" height="3" patternTransform="rotate(45)">
+                      <line x1="0" y1="0" x2="0" y2="3" stroke="rgba(255,255,255,0.85)" strokeWidth="0.8" />
+                    </pattern>
+                  </defs>
+                  <circle cx="14" cy="14" r="13" fill="url(#hatch-toggle)" stroke="rgba(255,255,255,0.6)" strokeWidth="0.8" />
+                </svg>
+              </motion.div>
             )}
             <span
               className={`text-xs font-semibold text-white transition-all duration-300 ease-in-out ${toggled ? "ml-2" : "ml-9"}`}
