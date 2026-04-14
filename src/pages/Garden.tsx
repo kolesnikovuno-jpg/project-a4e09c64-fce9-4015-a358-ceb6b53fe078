@@ -117,20 +117,6 @@ const Garden = () => {
     "05": "/lyra",
   };
 
-  const handleClick = (id: string) => {
-    if (isMobile) {
-      if (activeBud === id) {
-        // Second tap — navigate if route exists
-        if (routes[id]) navigate(routes[id]);
-        setActiveBud(null);
-      } else {
-        // First tap — show label
-        setActiveBud(id);
-      }
-    } else {
-      if (routes[id]) navigate(routes[id]);
-    }
-  };
 
   const gY = 560;
   const sw = "0.8";
