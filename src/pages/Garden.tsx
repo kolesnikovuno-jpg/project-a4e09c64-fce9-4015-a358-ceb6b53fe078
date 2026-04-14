@@ -245,6 +245,57 @@ const Garden = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile]);
 
+  useEffect(() => {
+    const t = requestAnimationFrame(() => setAnimated(true));
+    return () => cancelAnimationFrame(t);
+  }, []);
+
+  const handlePassSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passInput === GARDEN_PASSWORD) {
+      sessionStorage.setItem("garden_unlocked", "true");
+      setUnlocked(true);
+    } else {
+      setError(true);
+      setPassInput("");
+    }
+  };
+
+  const handleClick = (id: string) => {
+    if (isMobile) {
+      if (activeBud === id) {
+        if (routes[id]) navigate(routes[id]);
+        setActiveBud(null);
+      } else {
+        setActiveBud(id);
+      }
+    } else {
+      if (routes[id]) navigate(routes[id]);
+    }
+  };
+
+  if (!unlocked) {
+    return (
+      <PageTransition>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <form onSubmit={handlePassSubmit} className="flex flex-col items-center gap-6">
+            <input
+              type="password"
+              value={passInput}
+              onChange={(e) => { setPassInput(e.target.value); setError(false); }}
+              placeholder="••••"
+              autoFocus
+              className="bg-transparent border-b border-primary/40 text-center text-lg tracking-[0.3em] text-foreground outline-none py-2 w-32 placeholder:text-muted-foreground/40"
+            />
+            {error && (
+              <span className="text-xs text-destructive tracking-wider">неверный пароль</span>
+            )}
+          </form>
+        </div>
+      </PageTransition>
+    );
+  }
+
   return (
     <PageTransition>
     <div className="min-h-screen bg-background flex items-center justify-center pt-[18vh] md:pt-[6vh] overflow-hidden relative">
