@@ -100,7 +100,11 @@ const Garden = () => {
   const isMobile = useIsMobile();
   const [animated, setAnimated] = useState(false);
   const [activeBud, setActiveBud] = useState<string | null>(null);
-  const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem("garden_unlocked") === "true");
+  // Password disabled until 2026-04-21 — then restore: sessionStorage.getItem("garden_unlocked") === "true"
+  const [unlocked, setUnlocked] = useState(() => {
+    const disableUntil = new Date("2026-04-21T00:00:00");
+    return new Date() < disableUntil ? true : sessionStorage.getItem("garden_unlocked") === "true";
+  });
   const [passInput, setPassInput] = useState("");
   const [error, setError] = useState(false);
 
