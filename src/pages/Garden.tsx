@@ -93,16 +93,54 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, showLabel, onClick, delay,
   );
 };
 
+const GARDEN_PASSWORD = "1111";
+
 const Garden = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [animated, setAnimated] = useState(false);
   const [activeBud, setActiveBud] = useState<string | null>(null);
+  const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem("garden_unlocked") === "true");
+  const [passInput, setPassInput] = useState("");
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const t = requestAnimationFrame(() => setAnimated(true));
     return () => cancelAnimationFrame(t);
   }, []);
+
+  const handlePassSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passInput === GARDEN_PASSWORD) {
+      sessionStorage.setItem("garden_unlocked", "true");
+      setUnlocked(true);
+    } else {
+      setError(true);
+      setPassInput("");
+    }
+  };
+
+  if (!unlocked) {
+    return (
+      <PageTransition>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <form onSubmit={handlePassSubmit} className="flex flex-col items-center gap-6">
+            <input
+              type="password"
+              value={passInput}
+              onChange={(e) => { setPassInput(e.target.value); setError(false); }}
+              placeholder="••••"
+              autoFocus
+              className="bg-transparent border-b border-primary/40 text-center text-lg tracking-[0.3em] text-foreground outline-none py-2 w-32 placeholder:text-muted-foreground/40"
+            />
+            {error && (
+              <span className="text-xs text-destructive tracking-wider">неверный пароль</span>
+            )}
+          </form>
+        </div>
+      </PageTransition>
+    );
+  }
 
   const budLabels: Record<string, string> = {
     "01": "Архитектура",
