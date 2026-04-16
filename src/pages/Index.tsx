@@ -55,6 +55,7 @@ const Index = () => {
                   <line x1="0" y1="0" x2="0" y2="2.2" stroke="hsl(var(--primary))" strokeWidth="1.3" />
                 </pattern>
               </defs>
+              <rect width="100%" height="100%" fill="hsl(var(--primary))" rx="18" />
               <rect width="100%" height="100%" rx="18" fill="url(#hatch-btn)" />
             </svg>
             {!open && (
@@ -76,7 +77,7 @@ const Index = () => {
               </motion.div>
             )}
             <span
-              className={`relative z-10 text-xs font-semibold text-primary transition-all duration-300 ease-in-out ${toggled ? "ml-2" : "ml-9"}`}
+              className={`relative z-10 text-xs font-semibold text-white transition-all duration-300 ease-in-out ${toggled ? "ml-2" : "ml-9"}`}
             >
               .uno
             </span>
