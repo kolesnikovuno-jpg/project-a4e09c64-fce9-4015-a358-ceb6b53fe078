@@ -55,6 +55,7 @@ const Index = () => {
                   <line x1="0" y1="0" x2="0" y2="2.2" stroke="hsl(var(--primary))" strokeWidth="1.3" />
                 </pattern>
               </defs>
+              <rect width="100%" height="100%" fill="hsl(var(--primary))" rx="18" />
               <rect width="100%" height="100%" rx="18" fill="url(#hatch-btn)" />
             </svg>
             {!open && (
