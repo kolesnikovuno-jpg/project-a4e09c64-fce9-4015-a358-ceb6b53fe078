@@ -52,8 +52,8 @@ const Index = () => {
             {/* Hatched background */}
             <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
               <defs>
-                <pattern id="hatch-btn" patternUnits="userSpaceOnUse" width="1.8" height="1.8" patternTransform="rotate(45)">
-                  <line x1="0" y1="0" x2="0" y2="1.8" stroke="hsl(var(--primary))" strokeWidth="0.7" />
+                <pattern id="hatch-btn" patternUnits="userSpaceOnUse" width="0.9" height="0.9" patternTransform="rotate(45)">
+                  <line x1="0" y1="0" x2="0" y2="0.9" stroke="hsl(var(--primary))" strokeWidth="0.35" />
                 </pattern>
               </defs>
               <rect width="100%" height="100%" fill="url(#hatch-btn)" />
