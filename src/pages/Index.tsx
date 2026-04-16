@@ -77,7 +77,7 @@ const Index = () => {
               </motion.div>
             )}
             <span
-              className={`relative z-10 text-xs font-semibold text-primary transition-all duration-300 ease-in-out ${toggled ? "ml-2" : "ml-9"}`}
+              className={`relative z-10 text-xs font-semibold text-white transition-all duration-300 ease-in-out ${toggled ? "ml-2" : "ml-9"}`}
             >
               .uno
             </span>
