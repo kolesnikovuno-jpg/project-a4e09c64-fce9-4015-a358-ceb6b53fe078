@@ -46,12 +46,22 @@ const Index = () => {
         <div className="flex items-center justify-center mt-[72px] md:mt-0">
           <button
             onClick={handleToggle}
-            className="group relative flex items-center bg-primary border border-primary/60 rounded-full w-[76px] h-9 hover:bg-primary/90 transition-colors cursor-pointer translate-x-[27px]"
+            className="group relative flex items-center rounded-full w-[76px] h-9 cursor-pointer translate-x-[27px] overflow-hidden"
+            style={{ border: "1px solid hsl(var(--primary) / 0.6)" }}
           >
+            {/* Hatched background */}
+            <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+              <defs>
+                <pattern id="hatch-btn" patternUnits="userSpaceOnUse" width="3" height="3" patternTransform="rotate(45)">
+                  <line x1="0" y1="0" x2="0" y2="3" stroke="hsl(var(--primary))" strokeWidth="1.5" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#hatch-btn)" />
+            </svg>
             {!open && (
               <motion.div
                 layoutId="morph-circle"
-                className="absolute w-7 h-7"
+                className="absolute w-7 h-7 z-10"
                 initial={false}
                 transition={{ type: "spring", stiffness: 200, damping: 28, mass: 0.8 }}
                 animate={{ left: toggled ? 42 : 4 }}
@@ -67,7 +77,7 @@ const Index = () => {
               </motion.div>
             )}
             <span
-              className={`text-xs font-semibold text-white transition-all duration-300 ease-in-out ${toggled ? "ml-2" : "ml-9"}`}
+              className={`relative z-10 text-xs font-semibold text-white transition-all duration-300 ease-in-out ${toggled ? "ml-2" : "ml-9"}`}
             >
               .uno
             </span>
