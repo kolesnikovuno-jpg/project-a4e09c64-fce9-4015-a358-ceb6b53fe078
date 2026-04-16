@@ -255,7 +255,7 @@ const Index = () => {
 
                     <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/70 mb-1">результат</p>
                     <p className="text-[15px] md:text-[16px] font-medium mb-4 md:mb-6">
-                      Структура, которая работает - форма которая звучит.
+                      Структура, которая работает. Форма которая звучит.
                     </p>
                     <a
                       href="https://t.me/kolesnikov_uno"
