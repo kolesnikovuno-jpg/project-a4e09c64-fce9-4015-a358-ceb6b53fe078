@@ -224,9 +224,7 @@ const Index = () => {
                 <div className="text-foreground leading-relaxed md:grid md:grid-cols-2 md:gap-10 mt-4">
                   <div className="flex flex-col">
                     <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/70 mb-1">что это</p>
-                    <p className="text-[15px] md:text-[16px] font-medium mb-4 md:mb-6">
-                      Проектирование структуры и формы.
-                    </p>
+                    <p className="text-[15px] md:text-[16px] font-medium mb-4 md:mb-6">Создание структуры и формы.</p>
 
                     <div className="md:hidden space-y-4 mb-6">
                       <div>
