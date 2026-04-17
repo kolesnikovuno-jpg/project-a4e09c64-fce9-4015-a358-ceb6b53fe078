@@ -1,11 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, LayoutGroup } from "motion/react";
+import { useIsNative } from "@/hooks/use-native";
 
 const Index = () => {
   const [open, setOpen] = useState(false);
   const [toggled, setToggled] = useState(false);
   const navigate = useNavigate();
+  const isNative = useIsNative();
+
+  // In the native iOS app, launch directly into the calculator.
+  useEffect(() => {
+    if (isNative) navigate("/unocalc", { replace: true });
+  }, [isNative, navigate]);
+
 
   const handleToggle = () => {
     if (!toggled) {
