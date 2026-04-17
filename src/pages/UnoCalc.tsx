@@ -30,7 +30,15 @@ const UnoCalc = () => {
     : null;
 
   return (
-    <div className="min-h-screen flex items-start md:items-center justify-center bg-background px-6 py-8 md:py-0">
+    <div
+      className="min-h-screen flex items-start md:items-center justify-center bg-background px-6 py-8 md:py-0"
+      style={{
+        paddingTop: "max(2rem, env(safe-area-inset-top))",
+        paddingBottom: "max(2rem, env(safe-area-inset-bottom))",
+        paddingLeft: "max(1.5rem, env(safe-area-inset-left))",
+        paddingRight: "max(1.5rem, env(safe-area-inset-right))",
+      }}
+    >
       <div className="max-w-[640px] w-full">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 md:mb-8">
