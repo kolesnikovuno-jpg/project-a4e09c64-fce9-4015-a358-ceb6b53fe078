@@ -249,8 +249,8 @@ const Lyra = () => {
           {/* Stem 05 */}
           <div className="uno-stem-05">
             <svg viewBox="-50 0 100 600" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">
-              <line x1="-30" y1="560" x2="30" y2="560" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-              <line x1="0" y1="560" x2="0" y2="150" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+              <line x1="-30" y1="555" x2="30" y2="555" stroke="hsl(168 40% 52%)" strokeWidth="1.2" strokeLinecap="round" />
+              <line x1="0" y1="555" x2="0" y2="150" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
               <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
                 <circle cx="0" cy="150" r="14" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
                 <circle cx="0" cy="150" r="20" fill="transparent" stroke="transparent" />
