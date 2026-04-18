@@ -126,39 +126,22 @@ const Lyra = () => {
           animation:unoSpin 1.6s cubic-bezier(.4,.15,.6,.85) infinite reverse;
         }
         @keyframes unoSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
-        .uno-overlay-left{
-          position:absolute;
-          left:24px;
-          top:50%;
-          transform:translateY(-50%);
-          z-index:4;
-          display:flex;
-          flex-direction:column;
-          align-items:flex-start;
-          gap:8px;
-          max-width:200px;
+        .uno-overlay-below{
+          padding:12px 20px 0;
         }
-        .uno-overlay-left h1,
-        .uno-overlay-left p{
+        .uno-overlay-below h1{
           font-family:'Manrope',system-ui,sans-serif;
-          margin:0;
-          opacity:0;
-          transform:translateX(-12px);
+          font-size:15px;font-weight:500;
+          letter-spacing:0.04em;color:hsl(168 40% 58%);margin:0 0 4px;
+          opacity:0;transform:translateY(12px);
           transition:opacity .8s ease, transform .8s ease;
         }
-        .uno-overlay-left h1{
-          font-size:15px;font-weight:500;
-          letter-spacing:0.04em;color:hsl(168 40% 58%);
-        }
-        .uno-overlay-left p{
-          font-size:clamp(11px,1.2vw,13px);font-weight:300;
-          letter-spacing:0.04em;color:hsl(16 40% 52% / 0.6);
+        .uno-overlay-below p{
+          font-family:'Manrope',system-ui,sans-serif;
+          font-size:clamp(11px,1.4vw,14px);font-weight:300;
+          letter-spacing:0.04em;color:hsl(16 40% 52% / 0.6);margin:0;
+          opacity:0;transform:translateY(12px);
           transition:opacity .8s ease .25s, transform .8s ease .25s;
-        }
-        .uno-overlay-left.visible h1,
-        .uno-overlay-left.visible p{opacity:1;transform:translateX(0);}
-        @media(max-width:768px){
-          .uno-overlay-left{left:12px;max-width:160px;}
         }
         .uno-overlay-below.visible h1,
         .uno-overlay-below.visible p{
@@ -213,10 +196,6 @@ const Lyra = () => {
 
       <div className="uno-3d-wrap">
         <div className="uno-3d-stage">
-          <div className={`uno-overlay-left ${modelLoaded ? 'visible' : ''}`}>
-            <h1>Контур отдыха</h1>
-            <p>Чем меньше усилия — тем точнее поддержка.</p>
-          </div>
           <div className="uno-loader" ref={loaderRef}>
             <div className="uno-sphere" />
           </div>
@@ -290,6 +269,10 @@ const Lyra = () => {
           </div>
         </div>
 
+        <div className={`uno-overlay-below ${modelLoaded ? 'visible' : ''}`}>
+          <h1>Контур отдыха</h1>
+          <p>Чем меньше усилия — тем точнее поддержка.</p>
+        </div>
       </div>
     </div>
     </PageTransition>
