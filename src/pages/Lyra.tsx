@@ -275,10 +275,11 @@ const Lyra = () => {
             transform: 'translateY(-100%) rotate(-90deg)',
             transformOrigin: 'left bottom',
             position: 'absolute',
-            left: '32px',
+            left: '48px',
             bottom: '24px',
             padding: 0,
             whiteSpace: 'nowrap',
+            zIndex: 4,
           }}
         >
           <h1>Контур отдыха</h1>
