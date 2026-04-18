@@ -139,7 +139,7 @@ const Lyra = () => {
         .uno-overlay-below p{
           font-family:'Manrope',system-ui,sans-serif;
           font-size:clamp(11px,1.4vw,14px);font-weight:300;
-          letter-spacing:0.04em;color:hsl(16 40% 52% / 0.6);margin:0;
+          letter-spacing:0.04em;color:hsl(0 0% 45%);margin:0;
           opacity:0;transform:translateY(12px);
           transition:opacity .8s ease .25s, transform .8s ease .25s;
         }
@@ -262,7 +262,7 @@ const Lyra = () => {
               </g>
               <g className="stem-bud" role="button" tabIndex={0} onClick={() => console.log("05.2")}>
                 <line x1="0" y1="250" x2="-28" y2="250" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-                <circle cx="-28" cy="250" r="6" fill="hsl(16 40% 52% / 0.45)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+                <circle cx="-28" cy="250" r="6" fill="hsl(168 40% 52% / 0.45)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
                 <circle cx="-28" cy="250" r="13" fill="transparent" stroke="transparent" />
               </g>
             </svg>
