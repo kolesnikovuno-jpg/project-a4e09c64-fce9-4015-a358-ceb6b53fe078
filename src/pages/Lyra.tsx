@@ -269,7 +269,18 @@ const Lyra = () => {
           </div>
         </div>
 
-        <div className={`uno-overlay-below ${modelLoaded ? 'visible' : ''}`}>
+        <div
+          className={`uno-overlay-below ${modelLoaded ? 'visible' : ''}`}
+          style={{
+            transform: 'rotate(-90deg)',
+            transformOrigin: 'left top',
+            position: 'absolute',
+            left: '32px',
+            top: '50%',
+            padding: 0,
+            whiteSpace: 'nowrap',
+          }}
+        >
           <h1>Контур отдыха</h1>
           <p>Чем меньше усилия — тем точнее поддержка.</p>
         </div>
