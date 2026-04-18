@@ -131,34 +131,34 @@ const Lyra = () => {
           left:24px;
           top:50%;
           transform:translateY(-50%);
-          writing-mode:vertical-rl;
-          transform-origin:center;
           z-index:4;
           display:flex;
-          align-items:center;
-          gap:18px;
+          flex-direction:column;
+          align-items:flex-start;
+          gap:8px;
+          max-width:200px;
         }
         .uno-overlay-left h1,
         .uno-overlay-left p{
           font-family:'Manrope',system-ui,sans-serif;
           margin:0;
-          transform:rotate(180deg);
           opacity:0;
-          transition:opacity .8s ease;
+          transform:translateX(-12px);
+          transition:opacity .8s ease, transform .8s ease;
         }
         .uno-overlay-left h1{
           font-size:15px;font-weight:500;
-          letter-spacing:0.18em;color:hsl(168 40% 58%);
+          letter-spacing:0.04em;color:hsl(168 40% 58%);
         }
         .uno-overlay-left p{
           font-size:clamp(11px,1.2vw,13px);font-weight:300;
-          letter-spacing:0.12em;color:hsl(16 40% 52% / 0.6);
-          transition:opacity .8s ease .25s;
+          letter-spacing:0.04em;color:hsl(16 40% 52% / 0.6);
+          transition:opacity .8s ease .25s, transform .8s ease .25s;
         }
         .uno-overlay-left.visible h1,
-        .uno-overlay-left.visible p{opacity:1;}
+        .uno-overlay-left.visible p{opacity:1;transform:translateX(0);}
         @media(max-width:768px){
-          .uno-overlay-left{left:12px;gap:14px;}
+          .uno-overlay-left{left:12px;max-width:160px;}
         }
         .uno-overlay-below.visible h1,
         .uno-overlay-below.visible p{
