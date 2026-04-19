@@ -276,7 +276,7 @@ const Lyra = () => {
             transformOrigin: 'left bottom',
             position: 'fixed',
             left: '48px',
-            bottom: '16px',
+            bottom: '148px',
             padding: 0,
             whiteSpace: 'nowrap',
             zIndex: 4,
