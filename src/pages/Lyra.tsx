@@ -113,20 +113,33 @@ const Lyra = () => {
         .uno-loader.hide{opacity:0;pointer-events:none;}
         .uno-pixel-cloud{
           position:relative;
-          width:88px;height:88px;
+          width:120px;height:120px;
         }
         .uno-pixel-cloud i{
           position:absolute;
-          width:4px;height:4px;
-          background:hsl(168 40% 62%);
+          width:1.3px;height:1.3px;
+          background:hsl(168 40% 58%);
+          border-radius:0;
           opacity:0;
-          animation:unoPixel 2.4s ease-in-out infinite;
+          animation:unoWave 3.6s ease-in-out infinite;
         }
-        @keyframes unoPixel{
-          0%,100%{opacity:0;transform:translate(0,0) scale(0.6);}
-          20%{opacity:0.85;transform:translate(var(--tx,0),var(--ty,0)) scale(1);}
-          50%{opacity:0.55;transform:translate(calc(var(--tx,0) * 0.4),calc(var(--ty,0) * 0.4)) scale(0.9);}
-          80%{opacity:0.2;transform:translate(0,0) scale(0.7);}
+        @keyframes unoWave{
+          0%,100%{
+            opacity:0;
+            transform:translate(var(--tx,0),var(--ty,0)) scale(0.6);
+          }
+          25%{
+            opacity:0.7;
+            transform:translate(calc(var(--tx,0) + var(--wx,0)),calc(var(--ty,0) + var(--wy,0))) scale(1);
+          }
+          50%{
+            opacity:0.45;
+            transform:translate(calc(var(--tx,0) - var(--wx,0) * 0.6),calc(var(--ty,0) - var(--wy,0) * 0.6)) scale(0.85);
+          }
+          75%{
+            opacity:0.6;
+            transform:translate(calc(var(--tx,0) + var(--wx,0) * 0.4),calc(var(--ty,0) + var(--wy,0) * 0.4)) scale(0.95);
+          }
         }
         .uno-overlay-below{
           padding:12px 20px 0;
@@ -217,11 +230,17 @@ const Lyra = () => {
         <div className="uno-3d-stage">
           <div className="uno-loader" ref={loaderRef}>
             <div className="uno-pixel-cloud">
-              {Array.from({ length: 28 }).map((_, i) => {
-                const angle = (i / 28) * Math.PI * 2;
-                const radius = 18 + (i % 4) * 8;
+              {Array.from({ length: 70 }).map((_, i) => {
+                const seed = (i * 9301 + 49297) % 233280;
+                const rand = seed / 233280;
+                const angle = rand * Math.PI * 2;
+                const radius = 8 + Math.sqrt((i * 53) % 100) * 5.5;
                 const tx = Math.cos(angle) * radius;
-                const ty = Math.sin(angle) * radius;
+                const ty = Math.sin(angle) * radius * 0.75;
+                const wAngle = angle + Math.PI / 2;
+                const wAmp = 4 + ((i * 17) % 7);
+                const wx = Math.cos(wAngle) * wAmp;
+                const wy = Math.sin(wAngle) * wAmp;
                 return (
                   <i
                     key={i}
@@ -230,7 +249,9 @@ const Lyra = () => {
                       top: "50%",
                       ["--tx" as any]: `${tx}px`,
                       ["--ty" as any]: `${ty}px`,
-                      animationDelay: `${(i * 0.08) % 2.4}s`,
+                      ["--wx" as any]: `${wx}px`,
+                      ["--wy" as any]: `${wy}px`,
+                      animationDelay: `${(i * 0.05) % 3.6}s`,
                     }}
                   />
                 );
