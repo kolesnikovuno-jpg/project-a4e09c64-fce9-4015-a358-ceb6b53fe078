@@ -230,11 +230,17 @@ const Lyra = () => {
         <div className="uno-3d-stage">
           <div className="uno-loader" ref={loaderRef}>
             <div className="uno-pixel-cloud">
-              {Array.from({ length: 28 }).map((_, i) => {
-                const angle = (i / 28) * Math.PI * 2;
-                const radius = 18 + (i % 4) * 8;
+              {Array.from({ length: 70 }).map((_, i) => {
+                const seed = (i * 9301 + 49297) % 233280;
+                const rand = seed / 233280;
+                const angle = rand * Math.PI * 2;
+                const radius = 8 + Math.sqrt((i * 53) % 100) * 5.5;
                 const tx = Math.cos(angle) * radius;
-                const ty = Math.sin(angle) * radius;
+                const ty = Math.sin(angle) * radius * 0.75;
+                const wAngle = angle + Math.PI / 2;
+                const wAmp = 4 + ((i * 17) % 7);
+                const wx = Math.cos(wAngle) * wAmp;
+                const wy = Math.sin(wAngle) * wAmp;
                 return (
                   <i
                     key={i}
@@ -243,7 +249,9 @@ const Lyra = () => {
                       top: "50%",
                       ["--tx" as any]: `${tx}px`,
                       ["--ty" as any]: `${ty}px`,
-                      animationDelay: `${(i * 0.08) % 2.4}s`,
+                      ["--wx" as any]: `${wx}px`,
+                      ["--wy" as any]: `${wy}px`,
+                      animationDelay: `${(i * 0.05) % 3.6}s`,
                     }}
                   />
                 );
