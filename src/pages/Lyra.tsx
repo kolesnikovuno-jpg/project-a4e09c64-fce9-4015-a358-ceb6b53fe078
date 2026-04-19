@@ -274,9 +274,9 @@ const Lyra = () => {
           style={{
             transform: 'translateY(-100%) rotate(-90deg)',
             transformOrigin: 'left bottom',
-            position: 'absolute',
+            position: 'fixed',
             left: '48px',
-            bottom: '24px',
+            bottom: '16px',
             padding: 0,
             whiteSpace: 'nowrap',
             zIndex: 4,
