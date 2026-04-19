@@ -129,23 +129,40 @@ const Lyra = () => {
         .uno-overlay-below{
           padding:12px 20px 0;
         }
-        .uno-overlay-below h1{
-          font-family:'Manrope',system-ui,sans-serif;
-          font-size:15px;font-weight:500;
-          letter-spacing:0.04em;color:hsl(168 40% 58%);margin:0 0 4px;
-          opacity:0;transform:translateY(12px);
-          transition:opacity .8s ease, transform .8s ease;
-        }
+        .uno-overlay-below h1,
         .uno-overlay-below p{
           font-family:'Manrope',system-ui,sans-serif;
-          font-size:clamp(11px,1.4vw,14px);font-weight:300;
-          letter-spacing:0.04em;color:hsl(0 0% 45%);margin:0;
-          opacity:0;transform:translateY(12px);
-          transition:opacity .8s ease .25s, transform .8s ease .25s;
+          margin:0;
+          overflow:hidden;
+          white-space:nowrap;
+          width:0;
+          border-right:1px solid transparent;
         }
-        .uno-overlay-below.visible h1,
+        .uno-overlay-below h1{
+          font-size:15px;font-weight:500;
+          letter-spacing:0.04em;color:hsl(168 40% 58%);
+          margin-top:4px;
+        }
+        .uno-overlay-below p{
+          font-size:clamp(11px,1.4vw,14px);font-weight:300;
+          letter-spacing:0.04em;color:hsl(0 0% 45%);
+        }
+        /* Order in DOM: <p> then <h1>. Rotated -90deg → first line visually appears at bottom.
+           Type <p> first, then <h1>. */
         .uno-overlay-below.visible p{
-          opacity:1;transform:translateY(0);
+          animation:unoType 1.4s steps(40,end) .2s forwards,
+                    unoCaret .7s step-end .2s 3;
+        }
+        .uno-overlay-below.visible h1{
+          animation:unoType 1s steps(20,end) 1.7s forwards,
+                    unoCaret .7s step-end 1.7s 2;
+        }
+        @keyframes unoType{
+          from{width:0;}
+          to{width:100%;}
+        }
+        @keyframes unoCaret{
+          50%{border-right-color:hsl(168 40% 58% / 0.6);}
         }
         .uno-ar{
           position:absolute;right:14px;top:14px;
