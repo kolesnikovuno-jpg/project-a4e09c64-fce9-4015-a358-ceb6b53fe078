@@ -94,7 +94,7 @@ const Lyra = () => {
           margin:0 auto;
           padding:var(--pad);
           box-sizing:border-box;
-          overflow:hidden;
+          overflow:visible;
         }
         .uno-3d-stage{
           position:relative;
