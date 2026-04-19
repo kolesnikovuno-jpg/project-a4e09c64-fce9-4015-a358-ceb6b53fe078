@@ -267,23 +267,23 @@ const Lyra = () => {
               </g>
             </svg>
           </div>
-        </div>
 
-        <div
-          className={`uno-overlay-below ${modelLoaded ? 'visible' : ''}`}
-          style={{
-            transform: 'translateY(-100%) rotate(-90deg)',
-            transformOrigin: 'left bottom',
-            position: 'fixed',
-            left: '48px',
-            bottom: '148px',
-            padding: 0,
-            whiteSpace: 'nowrap',
-            zIndex: 4,
-          }}
-        >
-          <p>Чем меньше усилия — тем точнее поддержка.</p>
-          <h1>Контур отдыха</h1>
+          <div
+            className={`uno-overlay-below ${modelLoaded ? 'visible' : ''}`}
+            style={{
+              transform: 'translateY(-100%) rotate(-90deg)',
+              transformOrigin: 'left bottom',
+              position: 'absolute',
+              left: '12px',
+              bottom: '-46px',
+              padding: 0,
+              whiteSpace: 'nowrap',
+              zIndex: 4,
+            }}
+          >
+            <p>Чем меньше усилия — тем точнее поддержка.</p>
+            <h1>контур отдыха</h1>
+          </div>
         </div>
       </div>
     </div>
