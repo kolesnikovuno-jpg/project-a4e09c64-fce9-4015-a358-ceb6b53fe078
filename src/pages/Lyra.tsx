@@ -275,14 +275,14 @@ const Lyra = () => {
               transformOrigin: 'left top',
               position: 'absolute',
               left: '12px',
-              bottom: '-46px',
+              bottom: '-86px',
               padding: 0,
               whiteSpace: 'nowrap',
               zIndex: 4,
             }}
           >
-            <h1>контур отдыха</h1>
             <p>Чем меньше усилия — тем точнее поддержка.</p>
+            <h1>контур отдыха</h1>
           </div>
         </div>
       </div>
