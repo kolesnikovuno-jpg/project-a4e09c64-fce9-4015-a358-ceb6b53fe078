@@ -111,21 +111,23 @@ const Lyra = () => {
           transition:opacity .6s ease;
         }
         .uno-loader.hide{opacity:0;pointer-events:none;}
-        .uno-sphere{
-          width:52px;height:52px;border-radius:50%;
-          border:2.5px solid hsl(168 40% 72% / 0.18);
-          border-top-color:hsl(168 40% 72% / 0.85);
-          animation:unoSpin 1s cubic-bezier(.4,.15,.6,.85) infinite;
-          box-shadow:0 0 18px hsl(168 40% 72% / 0.12);
+        .uno-pixel-cloud{
           position:relative;
+          width:88px;height:88px;
         }
-        .uno-sphere::after{
-          content:'';position:absolute;inset:6px;border-radius:50%;
-          border:2px solid hsl(168 40% 72% / 0.1);
-          border-bottom-color:hsl(168 40% 72% / 0.5);
-          animation:unoSpin 1.6s cubic-bezier(.4,.15,.6,.85) infinite reverse;
+        .uno-pixel-cloud i{
+          position:absolute;
+          width:4px;height:4px;
+          background:hsl(168 40% 62%);
+          opacity:0;
+          animation:unoPixel 2.4s ease-in-out infinite;
         }
-        @keyframes unoSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+        @keyframes unoPixel{
+          0%,100%{opacity:0;transform:translate(0,0) scale(0.6);}
+          20%{opacity:0.85;transform:translate(var(--tx,0),var(--ty,0)) scale(1);}
+          50%{opacity:0.55;transform:translate(calc(var(--tx,0) * 0.4),calc(var(--ty,0) * 0.4)) scale(0.9);}
+          80%{opacity:0.2;transform:translate(0,0) scale(0.7);}
+        }
         .uno-overlay-below{
           padding:12px 20px 0;
         }
@@ -214,7 +216,26 @@ const Lyra = () => {
       <div className="uno-3d-wrap">
         <div className="uno-3d-stage">
           <div className="uno-loader" ref={loaderRef}>
-            <div className="uno-sphere" />
+            <div className="uno-pixel-cloud">
+              {Array.from({ length: 28 }).map((_, i) => {
+                const angle = (i / 28) * Math.PI * 2;
+                const radius = 18 + (i % 4) * 8;
+                const tx = Math.cos(angle) * radius;
+                const ty = Math.sin(angle) * radius;
+                return (
+                  <i
+                    key={i}
+                    style={{
+                      left: "50%",
+                      top: "50%",
+                      ["--tx" as any]: `${tx}px`,
+                      ["--ty" as any]: `${ty}px`,
+                      animationDelay: `${(i * 0.08) % 2.4}s`,
+                    }}
+                  />
+                );
+              })}
+            </div>
           </div>
 
           <model-viewer
