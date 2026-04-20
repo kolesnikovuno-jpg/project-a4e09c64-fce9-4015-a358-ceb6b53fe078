@@ -338,7 +338,7 @@ const Lyra = () => {
               transformOrigin: 'left top',
               position: 'absolute',
               left: '12px',
-              bottom: '-86px',
+             bottom: '-110px',
               padding: 0,
               whiteSpace: 'nowrap',
               zIndex: 4,
