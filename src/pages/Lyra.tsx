@@ -143,6 +143,10 @@ const Lyra = () => {
         }
         .uno-overlay-below{
           padding:12px 20px 0;
+          display: flex;
+          flex-direction: row;
+          align-items: baseline;
+          gap: 8px;
         }
         .uno-overlay-below h1,
         .uno-overlay-below p{
@@ -152,11 +156,11 @@ const Lyra = () => {
           white-space:nowrap;
           width:0;
           border-right:1px solid transparent;
+          display: inline-block;
         }
         .uno-overlay-below h1{
           font-size:15px;font-weight:500;
           letter-spacing:0.04em;color:hsl(168 40% 58%);
-          margin-top:4px;
         }
         .uno-overlay-below p{
           font-size:clamp(11px,1.4vw,14px);font-weight:300;
