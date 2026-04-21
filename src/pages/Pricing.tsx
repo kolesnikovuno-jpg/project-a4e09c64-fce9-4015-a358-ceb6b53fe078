@@ -11,9 +11,9 @@ const Pricing = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen flex items-start md:items-center justify-center bg-background px-6 py-16 md:py-0">
-        <div className="max-w-xl w-full">
-          <div className="flex items-center justify-between mb-8 md:mb-10">
+      <div className="min-h-screen bg-background px-5 sm:px-6 pt-20 sm:pt-24 md:pt-28 pb-24 sm:pb-28 md:pb-32">
+        <div className="max-w-xl w-full mx-auto">
+          <div className="flex items-center justify-between mb-10 md:mb-12">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate(-1)}
