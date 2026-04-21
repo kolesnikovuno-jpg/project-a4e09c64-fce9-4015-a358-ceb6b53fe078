@@ -56,10 +56,10 @@ const Pricing = () => {
                 в зависимости от масштаба задачи и глубины проработки. Сумма входит в итоговую стоимость.
               </p>
               <p className="mt-4">Результат этапа:</p>
-              <ul className="mt-2 space-y-1 pl-4">
-                <li className="relative before:content-[''] before:absolute before:-left-4 before:top-[10px] before:w-2 before:h-px before:bg-muted-foreground/60">формирование концепции</li>
-                <li className="relative before:content-[''] before:absolute before:-left-4 before:top-[10px] before:w-2 before:h-px before:bg-muted-foreground/60">понимание реальной задачи</li>
-                <li className="relative before:content-[''] before:absolute before:-left-4 before:top-[10px] before:w-2 before:h-px before:bg-muted-foreground/60">оценка диапазона стоимости реализации</li>
+              <ul className="mt-2 space-y-1.5 pl-3">
+                <li className="relative before:content-[''] before:absolute before:-left-3 before:top-[11px] before:w-1.5 before:h-px before:bg-muted-foreground/60">формирование концепции</li>
+                <li className="relative before:content-[''] before:absolute before:-left-3 before:top-[11px] before:w-1.5 before:h-px before:bg-muted-foreground/60">понимание реальной задачи</li>
+                <li className="relative before:content-[''] before:absolute before:-left-3 before:top-[11px] before:w-1.5 before:h-px before:bg-muted-foreground/60">оценка диапазона стоимости реализации</li>
               </ul>
             </div>
 
