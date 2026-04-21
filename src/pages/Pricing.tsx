@@ -31,7 +31,7 @@ const Pricing = () => {
             </Link>
           </div>
 
-          <div className="space-y-10 text-[13px] md:text-[14px] text-muted-foreground leading-relaxed">
+          <div className="space-y-12 md:space-y-10 text-[13px] md:text-[14px] text-muted-foreground leading-[1.7] md:leading-relaxed">
             {/* Section: Process */}
             <div>
               <SectionLabel>Процесс</SectionLabel>
