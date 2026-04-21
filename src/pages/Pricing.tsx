@@ -36,8 +36,8 @@ const Pricing = () => {
             <div>
               <SectionLabel>Процесс</SectionLabel>
               <p>
-                Работа начинается с анализа ситуации — базовая консультация без обязательств. На данном этапе
-                определяется контекст, направление и принимается взаимное решение о дальнейшем сотрудничестве.
+                Работа начинается с анализа ситуации. На данном этапе определяется контекст, направление и принимается
+                взаимное решение о дальнейшем сотрудничестве.
               </p>
             </div>
 
@@ -55,9 +55,15 @@ const Pricing = () => {
 
               <p className="mt-6">Результат этапа:</p>
               <ul className="mt-2 space-y-1.5">
-                <li className="relative pl-4 before:content-['–'] before:absolute before:left-0">формирование концепции</li>
-                <li className="relative pl-4 before:content-['–'] before:absolute before:left-0">понимание реальной задачи</li>
-                <li className="relative pl-4 before:content-['–'] before:absolute before:left-0">оценка диапазона стоимости реализации</li>
+                <li className="relative pl-4 before:content-['–'] before:absolute before:left-0">
+                  формирование концепции
+                </li>
+                <li className="relative pl-4 before:content-['–'] before:absolute before:left-0">
+                  понимание реальной задачи
+                </li>
+                <li className="relative pl-4 before:content-['–'] before:absolute before:left-0">
+                  оценка диапазона стоимости реализации
+                </li>
               </ul>
             </div>
 
@@ -66,9 +72,7 @@ const Pricing = () => {
             {/* Calculation */}
             <div>
               <SectionLabel>Расчёт</SectionLabel>
-              <p>
-                Далее — разработка проекта и контроль реализации, поэтапно, с привязкой к фактическому ходу работ.
-              </p>
+              <p>Далее — разработка проекта и контроль реализации, поэтапно, с привязкой к фактическому ходу работ.</p>
               <p className="text-foreground font-medium mt-6 tabular-nums">
                 10–20 % от общих затрат на реализацию проекта
               </p>
@@ -103,9 +107,7 @@ const Pricing = () => {
             {/* Contact */}
             <div>
               <SectionLabel>Контакт</SectionLabel>
-              <p>
-                Когда появляется задача или чувствуете, что что-то не сходится — напишите, разберём.
-              </p>
+              <p>Когда появляется задача или чувствуете, что что-то не сходится — напишите, разберём.</p>
               <a
                 href="https://t.me/kolesnikov_uno"
                 target="_blank"
