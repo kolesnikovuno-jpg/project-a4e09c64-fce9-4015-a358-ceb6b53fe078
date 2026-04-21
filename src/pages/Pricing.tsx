@@ -11,9 +11,9 @@ const Pricing = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen flex items-start md:items-center justify-center bg-background px-6 py-16 md:py-0">
-        <div className="max-w-xl w-full">
-          <div className="flex items-center justify-between mb-8 md:mb-10">
+      <div className="min-h-screen bg-background px-5 sm:px-6 pt-20 sm:pt-24 md:pt-28 pb-24 sm:pb-28 md:pb-32">
+        <div className="max-w-xl w-full mx-auto">
+          <div className="flex items-center justify-between mb-10 md:mb-12">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate(-1)}
@@ -31,7 +31,7 @@ const Pricing = () => {
             </Link>
           </div>
 
-          <div className="space-y-10 text-[13px] md:text-[14px] text-muted-foreground leading-relaxed">
+          <div className="space-y-12 md:space-y-10 text-[13px] md:text-[14px] text-muted-foreground leading-[1.7] md:leading-relaxed">
             {/* Section: Process */}
             <div>
               <SectionLabel>Процесс</SectionLabel>
@@ -56,10 +56,10 @@ const Pricing = () => {
                 в зависимости от масштаба задачи и глубины проработки. Сумма входит в итоговую стоимость.
               </p>
               <p className="mt-4">Результат этапа:</p>
-              <ul className="mt-2 space-y-1 pl-4">
-                <li className="relative before:content-[''] before:absolute before:-left-4 before:top-[10px] before:w-2 before:h-px before:bg-muted-foreground/60">формирование концепции</li>
-                <li className="relative before:content-[''] before:absolute before:-left-4 before:top-[10px] before:w-2 before:h-px before:bg-muted-foreground/60">понимание реальной задачи</li>
-                <li className="relative before:content-[''] before:absolute before:-left-4 before:top-[10px] before:w-2 before:h-px before:bg-muted-foreground/60">оценка диапазона стоимости реализации</li>
+              <ul className="mt-2 space-y-1.5 pl-3">
+                <li className="relative before:content-[''] before:absolute before:-left-3 before:top-[11px] before:w-1.5 before:h-px before:bg-muted-foreground/60">формирование концепции</li>
+                <li className="relative before:content-[''] before:absolute before:-left-3 before:top-[11px] before:w-1.5 before:h-px before:bg-muted-foreground/60">понимание реальной задачи</li>
+                <li className="relative before:content-[''] before:absolute before:-left-3 before:top-[11px] before:w-1.5 before:h-px before:bg-muted-foreground/60">оценка диапазона стоимости реализации</li>
               </ul>
             </div>
 
