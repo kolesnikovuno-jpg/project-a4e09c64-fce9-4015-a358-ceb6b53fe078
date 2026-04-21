@@ -11,9 +11,9 @@ const Pricing = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background px-5 sm:px-6 pt-20 sm:pt-24 md:pt-28 pb-24 sm:pb-28 md:pb-32">
-        <div className="max-w-xl w-full mx-auto">
-          <div className="flex items-center justify-between mb-10 md:mb-12">
+      <div className="min-h-screen flex items-start md:items-center justify-center bg-background px-6 py-16 md:py-0">
+        <div className="max-w-xl w-full">
+          <div className="flex items-center justify-between mb-8 md:mb-10">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate(-1)}
@@ -31,53 +31,56 @@ const Pricing = () => {
             </Link>
           </div>
 
-          <div className="space-y-12 md:space-y-10 text-[13px] md:text-[14px] text-muted-foreground leading-[1.7] md:leading-relaxed">
+          <div className="space-y-8 text-[13px] md:text-[14px] text-muted-foreground leading-relaxed">
             {/* Section: Process */}
             <div>
               <SectionLabel>Процесс</SectionLabel>
               <p>
-                Работа начинается с анализа ситуации — базовая консультация без обязательств. На данном этапе
-                определяется контекст, направление и принимается взаимное решение о дальнейшем сотрудничестве.
+                Работа начинается с анализа ситуации. На данном этапе определяется контекст, направление и принимается
+                взаимное решение о дальнейшем сотрудничестве.
               </p>
             </div>
 
-            <div className="w-full h-px bg-border/30" />
+            <div className="w-full h-px bg-border/50" />
 
             {/* Section: Entry */}
             <div>
               <SectionLabel>Вход</SectionLabel>
-              <p>
-                Первый этап — анализ ситуации. Без его прохождения работа не продолжается.
+              <p className="text-foreground font-medium tracking-[0.02em]">Вход в работу:</p>
+              <p className="mt-3">Первый этап — анализ ситуации.</p>
+              <p className="mt-3">
+                Стоимость: 300–1000$
+                <br />
+                (в зависимости от масштаба задачи и глубины проработки)
+                <br />и входит в итоговую стоимость.
               </p>
-              <p className="text-foreground font-medium tracking-[0.02em] mt-4 tabular-nums">
-                Стоимость: 300–1000 $
+              <p className="mt-3">Результат этапа:</p>
+              <p className="mt-1">
+                — формирование концепции
+                <br />— понимание реальной задачи
+                <br />— оценка диапазона стоимости реализации
               </p>
-              <p className="mt-1 text-[12px] md:text-[13px]">
-                в зависимости от масштаба задачи и глубины проработки. Сумма входит в итоговую стоимость.
+              <p className="text-foreground font-medium tracking-[0.02em] mt-3">
+                Без прохождения этого этапа работа не продолжается.
               </p>
-              <p className="mt-4">Результат этапа:</p>
-              <ul className="mt-2 space-y-1.5 pl-3">
-                <li className="relative before:content-[''] before:absolute before:-left-3 before:top-[11px] before:w-1.5 before:h-px before:bg-muted-foreground/60">формирование концепции</li>
-                <li className="relative before:content-[''] before:absolute before:-left-3 before:top-[11px] before:w-1.5 before:h-px before:bg-muted-foreground/60">понимание реальной задачи</li>
-                <li className="relative before:content-[''] before:absolute before:-left-3 before:top-[11px] before:w-1.5 before:h-px before:bg-muted-foreground/60">оценка диапазона стоимости реализации</li>
-              </ul>
             </div>
 
-            <div className="w-full h-px bg-border/30" />
+            <div className="w-full h-px bg-border/50" />
 
-            {/* Section: Calculation */}
+            {/* Section: Cost */}
             <div>
-              <SectionLabel>Расчёт</SectionLabel>
+              <SectionLabel>Стоимость</SectionLabel>
               <p>Далее — разработка проекта и контроль реализации, поэтапно, с привязкой к фактическому ходу работ.</p>
-              <p className="text-foreground font-medium tracking-[0.02em] mt-4 tabular-nums">
-                10–20 % от общих затрат на реализацию проекта
+              <p className="text-foreground font-medium tracking-[0.02em] mt-3">
+                Итоговая стоимость моей работы составляет 10–20% от общих затрат на реализацию проекта (включительно).
               </p>
-              <p className="mt-1 text-[12px] md:text-[13px]">
-                Точный процент определяется после анализа, зависит от сложности, масштаба и уровня вовлечения, фиксируется до начала реализации.
+              <p className="mt-3">
+                Точный процент определяется после анализа, зависит от сложности, масштаба и уровня вовлечения и
+                фиксируется до начала реализации.
               </p>
             </div>
 
-            <div className="w-full h-px bg-border/30" />
+            <div className="w-full h-px bg-border/50" />
 
             {/* Section: Terms */}
             <div>
@@ -87,7 +90,7 @@ const Pricing = () => {
               </p>
             </div>
 
-            <div className="w-full h-px bg-border/30" />
+            <div className="w-full h-px bg-border/50" />
 
             {/* Section: Rights */}
             <div>
@@ -98,20 +101,18 @@ const Pricing = () => {
             </div>
           </div>
 
-          <div className="mt-14 md:mt-16">
-            <SectionLabel>Контакт</SectionLabel>
-            <p className="text-[13px] md:text-[14px] text-muted-foreground">
-              Когда появляется задача или чувствуете, что что-то не сходится — напишите, разберём.
-            </p>
-            <a
-              href="https://t.me/kolesnikov_uno"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block mt-4 text-[13px] text-primary font-medium border-b border-primary/40 hover:border-primary hover:text-primary/80 transition-colors pb-0.5"
-            >
-              Написать →
-            </a>
-          </div>
+          <p className="mt-10 md:mt-12 text-[13px] md:text-[14px] text-muted-foreground">
+            Когда появляется задача или чувствуете, что что-то не сходится — напишите, разберём
+          </p>
+
+          <a
+            href="https://t.me/kolesnikov_uno"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block mt-4 text-[13px] text-primary font-medium hover:text-primary/80 transition-colors"
+          >
+            Написать →
+          </a>
         </div>
       </div>
     </PageTransition>
