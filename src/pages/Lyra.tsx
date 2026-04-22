@@ -60,6 +60,11 @@ const Lyra = () => {
       (mv as any).cameraTarget = "auto";
       (mv as any).cameraOrbit = "-8deg 70deg 300%";
       (mv as any).fieldOfView = "28deg";
+      // Pause any baked-in GLB animation so only the camera orbits — keeps the shadow static.
+      try {
+        (mv as any).pause?.();
+        (mv as any).currentTime = 0;
+      } catch {}
       const had = mv.hasAttribute("auto-rotate");
       mv.removeAttribute("auto-rotate");
       requestAnimationFrame(() => {
@@ -263,7 +268,7 @@ const Lyra = () => {
             interaction-prompt="none"
             auto-rotate
             auto-rotate-delay="1200"
-            rotation-per-second="20deg"
+            rotation-per-second="12deg"
             environment-image="neutral"
             exposure="1.45"
             shadow-intensity="0.6"
