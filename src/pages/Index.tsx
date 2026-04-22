@@ -305,7 +305,7 @@ const Index = () => {
                     </p>
                     <div className="space-y-5">
                       <div>
-                        <p className="text-[13px] font-normal text-foreground">Анализ ситуации</p>
+                        <p className="text-[13px] font-normal text-foreground">Считывание состояния и структуры.</p>
                         <p className="text-[11px] text-muted-foreground mt-0.5">
                           Определение контекста, конфигурации и связей.
                         </p>
