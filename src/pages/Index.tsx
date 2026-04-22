@@ -315,15 +315,15 @@ const Index = () => {
                         <p className="text-[11px] text-muted-foreground mt-0.5">Выбор принципа решения.</p>
                       </div>
                       <div>
-                        <p className="text-[13px] font-normal text-foreground">Создание концепции</p>
+                        <p className="text-[13px] font-normal text-foreground">Формирование формы.</p>
                         <p className="text-[11px] text-muted-foreground mt-0.5">Сборка формы и логики.</p>
                       </div>
                       <div>
-                        <p className="text-[13px] font-normal text-foreground">Разработка проекта</p>
+                        <p className="text-[13px] font-normal text-foreground">Перевод в проект.</p>
                         <p className="text-[11px] text-muted-foreground mt-0.5">Рабочая документация и проекции.</p>
                       </div>
                       <div>
-                        <p className="text-[13px] font-normal text-foreground">Контроль реализации</p>
+                        <p className="text-[13px] font-normal text-foreground">Контроль соответствия.</p>
                         <p className="text-[11px] text-muted-foreground mt-0.5">
                           Проверка соответствия и передача прав.
                         </p>
