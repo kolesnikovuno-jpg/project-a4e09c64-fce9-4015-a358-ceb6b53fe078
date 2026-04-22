@@ -276,7 +276,7 @@ const Lyra = () => {
               width: "100%",
               height: "100%",
               display: "block",
-              background: "#fff",
+              background: "hsl(24 26% 94%)",
             }}
             ar
             ar-modes="webxr scene-viewer quick-look"
