@@ -263,7 +263,7 @@ const Lyra = () => {
             interaction-prompt="none"
             auto-rotate
             auto-rotate-delay="1200"
-            rotation-per-second="20deg"
+            rotation-per-second="12deg"
             environment-image="neutral"
             exposure="1.45"
             shadow-intensity="0.6"
