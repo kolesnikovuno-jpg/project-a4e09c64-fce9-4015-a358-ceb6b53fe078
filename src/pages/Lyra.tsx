@@ -39,6 +39,7 @@ const Lyra = () => {
   const navigate = useNavigate();
   const modelRef = useRef<HTMLElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
+  const animRef = useRef<number>(0);
   const rotateRef = useRef(0);
   const lastFrameRef = useRef<number | null>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
@@ -83,7 +84,10 @@ const Lyra = () => {
     };
 
     mv.addEventListener("load", onLoad);
-    return () => mv.removeEventListener("load", onLoad);
+    return () => {
+      cancelAnimationFrame(animRef.current);
+      mv.removeEventListener("load", onLoad);
+    };
   }, []);
 
   return (
