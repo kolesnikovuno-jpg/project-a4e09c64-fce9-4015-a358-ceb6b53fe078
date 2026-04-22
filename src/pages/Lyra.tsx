@@ -277,6 +277,8 @@ const Lyra = () => {
             </div>
           </div>
 
+          <div className="uno-static-shadow" aria-hidden="true" />
+
           <model-viewer
             ref={modelRef as any}
             src={GLB_URL}
@@ -285,11 +287,11 @@ const Lyra = () => {
             interaction-prompt="none"
             auto-rotate
             auto-rotate-delay="1200"
-            rotation-per-second="12deg"
+            rotation-per-second="9deg"
             environment-image="neutral"
             exposure="1.45"
-            shadow-intensity="0.6"
-            shadow-softness="1"
+            shadow-intensity="0"
+            shadow-softness="0"
             camera-orbit="-8deg 70deg 300%"
             field-of-view="28deg"
             crossorigin="anonymous"
@@ -299,6 +301,8 @@ const Lyra = () => {
               height: "100%",
               display: "block",
               background: "hsl(24 26% 94%)",
+              position: "relative",
+              zIndex: 1,
             }}
             ar
             ar-modes="webxr scene-viewer quick-look"
