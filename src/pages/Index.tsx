@@ -47,7 +47,7 @@ const Index = () => {
   return (
     <LayoutGroup>
       <div
-        className="relative min-h-screen flex items-center justify-center bg-white/90 cursor-pointer"
+        className="relative min-h-screen flex items-center justify-center bg-background cursor-pointer"
         onClick={handleBackgroundClick}
       >
         {/* Toggle button */}
