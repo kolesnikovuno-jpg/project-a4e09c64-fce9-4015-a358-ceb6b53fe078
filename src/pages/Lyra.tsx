@@ -160,7 +160,7 @@ const Lyra = () => {
         }
         .uno-overlay-below p{
           font-size:clamp(9px,1.1vw,11px);font-weight:300;
-          letter-spacing:0.04em;color:hsl(0 0% 45%);
+          letter-spacing:0.54em;color:hsl(0 0% 45%);
         }
         /* Order in DOM: <p> then <h1>. Rotated -90deg → first line visually appears at bottom.
            Type <p> first, then <h1>. */
