@@ -39,6 +39,9 @@ const Lyra = () => {
   const navigate = useNavigate();
   const modelRef = useRef<HTMLElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
+  const animRef = useRef<number>(0);
+  const rotateRef = useRef(0);
+  const lastFrameRef = useRef<number | null>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
 
   useEffect(() => {
@@ -65,16 +68,26 @@ const Lyra = () => {
         (mv as any).pause?.();
         (mv as any).currentTime = 0;
       } catch {}
-      const had = mv.hasAttribute("auto-rotate");
-      mv.removeAttribute("auto-rotate");
-      requestAnimationFrame(() => {
-        if (had) mv.setAttribute("auto-rotate", "");
-      });
+
+      const rotateModel = (timestamp: number) => {
+        if (lastFrameRef.current == null) lastFrameRef.current = timestamp;
+        const delta = (timestamp - lastFrameRef.current) / 1000;
+        lastFrameRef.current = timestamp;
+        rotateRef.current = (rotateRef.current + delta * 7) % 360;
+        (mv as any).orientation = `0deg ${rotateRef.current}deg 0deg`;
+        animRef.current = requestAnimationFrame(rotateModel);
+      };
+
+      cancelAnimationFrame(animRef.current);
+      animRef.current = requestAnimationFrame(rotateModel);
       setTimeout(() => setModelLoaded(true), 600);
     };
 
     mv.addEventListener("load", onLoad);
-    return () => mv.removeEventListener("load", onLoad);
+    return () => {
+      cancelAnimationFrame(animRef.current);
+      mv.removeEventListener("load", onLoad);
+    };
   }, []);
 
   return (
@@ -116,6 +129,23 @@ const Lyra = () => {
           transition:opacity .6s ease;
         }
         .uno-loader.hide{opacity:0;pointer-events:none;}
+        .uno-static-shadow{
+          position:absolute;
+          left:50%;
+          bottom:56px;
+          width:clamp(180px,24vw,260px);
+          height:clamp(42px,5vw,58px);
+          transform:translateX(-50%);
+          border-radius:9999px;
+          background:radial-gradient(ellipse at center,
+            hsl(var(--foreground) / 0.22) 0%,
+            hsl(var(--foreground) / 0.14) 32%,
+            hsl(var(--foreground) / 0.08) 54%,
+            transparent 76%);
+          filter:blur(18px);
+          pointer-events:none;
+          z-index:0;
+        }
         .uno-pixel-cloud{
           position:relative;
           width:120px;height:120px;
@@ -260,19 +290,18 @@ const Lyra = () => {
             </div>
           </div>
 
+          <div className="uno-static-shadow" aria-hidden="true" />
+
           <model-viewer
             ref={modelRef as any}
             src={GLB_URL}
             alt="Lyra — Kolesnikov.UNO"
             camera-controls
             interaction-prompt="none"
-            auto-rotate
-            auto-rotate-delay="1200"
-            rotation-per-second="12deg"
             environment-image="neutral"
             exposure="1.45"
-            shadow-intensity="0.6"
-            shadow-softness="1"
+            shadow-intensity="0"
+            shadow-softness="0"
             camera-orbit="-8deg 70deg 300%"
             field-of-view="28deg"
             crossorigin="anonymous"
@@ -282,6 +311,8 @@ const Lyra = () => {
               height: "100%",
               display: "block",
               background: "hsl(24 26% 94%)",
+              position: "relative",
+              zIndex: 1,
             }}
             ar
             ar-modes="webxr scene-viewer quick-look"
