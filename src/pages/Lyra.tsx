@@ -74,7 +74,7 @@ const Lyra = () => {
 
   return (
     <PageTransition>
-    <div className="min-h-screen bg-white flex items-center justify-center relative overflow-x-hidden">
+    <div className="min-h-screen bg-background flex items-center justify-center relative overflow-x-hidden">
       {/* Back arrow */}
       <button
         onClick={() => navigate("/garden")}
@@ -101,13 +101,13 @@ const Lyra = () => {
           height:clamp(420px,62vw,640px);
           border-radius:18px;
           overflow:visible;
-          background:#fff;
+          background:hsl(24 26% 94%);
         }
         model-viewer::part(default-progress-bar){display:none;}
         .uno-loader{
           position:absolute;inset:0;
           display:flex;align-items:center;justify-content:center;
-          background:#fff;z-index:2;
+          background:hsl(24 26% 94%);z-index:2;
           transition:opacity .6s ease;
         }
         .uno-loader.hide{opacity:0;pointer-events:none;}
@@ -276,7 +276,7 @@ const Lyra = () => {
               width: "100%",
               height: "100%",
               display: "block",
-              background: "#fff",
+              background: "hsl(24 26% 94%)",
             }}
             ar
             ar-modes="webxr scene-viewer quick-look"

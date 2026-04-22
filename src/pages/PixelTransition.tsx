@@ -264,7 +264,7 @@ const PixelTransition = () => {
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-white cursor-pointer" onClick={handleClick}>
+    <div className="fixed inset-0 bg-background cursor-pointer" onClick={handleClick}>
       <canvas ref={canvasRef} className="block w-full h-full pointer-events-none" />
       <button
         onClick={(e) => { e.stopPropagation(); navigate("/"); }}
