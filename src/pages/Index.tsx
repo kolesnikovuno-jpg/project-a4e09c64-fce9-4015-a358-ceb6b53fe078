@@ -14,7 +14,6 @@ const Index = () => {
     if (isNative) navigate("/unocalc", { replace: true });
   }, [isNative, navigate]);
 
-
   const handleToggle = () => {
     if (!toggled) {
       setToggled(true);
@@ -223,7 +222,7 @@ const Index = () => {
                     </a>
                   </div>
                   <p className="text-muted-foreground text-[12px] leading-relaxed mt-1">
-                    выявляю структуру → формирую идею →<br />
+                    выявляю структуру → вывожу решение →<br />
                     разворачиваю в проект → контролирую реализацию.
                   </p>
                 </div>
