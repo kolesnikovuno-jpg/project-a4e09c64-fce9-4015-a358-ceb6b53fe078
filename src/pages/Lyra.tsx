@@ -39,6 +39,8 @@ const Lyra = () => {
   const navigate = useNavigate();
   const modelRef = useRef<HTMLElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
+  const rotateRef = useRef(0);
+  const lastFrameRef = useRef<number | null>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
 
   useEffect(() => {
@@ -65,11 +67,18 @@ const Lyra = () => {
         (mv as any).pause?.();
         (mv as any).currentTime = 0;
       } catch {}
-      const had = mv.hasAttribute("auto-rotate");
-      mv.removeAttribute("auto-rotate");
-      requestAnimationFrame(() => {
-        if (had) mv.setAttribute("auto-rotate", "");
-      });
+
+      const rotateModel = (timestamp: number) => {
+        if (lastFrameRef.current == null) lastFrameRef.current = timestamp;
+        const delta = (timestamp - lastFrameRef.current) / 1000;
+        lastFrameRef.current = timestamp;
+        rotateRef.current = (rotateRef.current + delta * 7) % 360;
+        (mv as any).orientation = `0deg ${rotateRef.current}deg 0deg`;
+        animRef.current = requestAnimationFrame(rotateModel);
+      };
+
+      cancelAnimationFrame(animRef.current);
+      animRef.current = requestAnimationFrame(rotateModel);
       setTimeout(() => setModelLoaded(true), 600);
     };
 
@@ -285,9 +294,6 @@ const Lyra = () => {
             alt="Lyra — Kolesnikov.UNO"
             camera-controls
             interaction-prompt="none"
-            auto-rotate
-            auto-rotate-delay="1200"
-            rotation-per-second="9deg"
             environment-image="neutral"
             exposure="1.45"
             shadow-intensity="0"
