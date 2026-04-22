@@ -116,6 +116,23 @@ const Lyra = () => {
           transition:opacity .6s ease;
         }
         .uno-loader.hide{opacity:0;pointer-events:none;}
+        .uno-static-shadow{
+          position:absolute;
+          left:50%;
+          bottom:56px;
+          width:clamp(180px,24vw,260px);
+          height:clamp(42px,5vw,58px);
+          transform:translateX(-50%);
+          border-radius:9999px;
+          background:radial-gradient(ellipse at center,
+            hsl(var(--foreground) / 0.22) 0%,
+            hsl(var(--foreground) / 0.14) 32%,
+            hsl(var(--foreground) / 0.08) 54%,
+            transparent 76%);
+          filter:blur(18px);
+          pointer-events:none;
+          z-index:0;
+        }
         .uno-pixel-cloud{
           position:relative;
           width:120px;height:120px;
