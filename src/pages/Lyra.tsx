@@ -159,7 +159,7 @@ const Lyra = () => {
           margin-top:4px;
         }
         .uno-overlay-below p{
-          font-size:clamp(11px,1.4vw,14px);font-weight:300;
+          font-size:clamp(9px,1.1vw,11px);font-weight:300;
           letter-spacing:0.04em;color:hsl(0 0% 45%);
         }
         /* Order in DOM: <p> then <h1>. Rotated -90deg → first line visually appears at bottom.
@@ -167,10 +167,6 @@ const Lyra = () => {
         .uno-overlay-below.visible p{
           animation:unoType 1.4s steps(40,end) .2s forwards,
                     unoCaret .7s step-end .2s 3;
-        }
-        .uno-overlay-below.visible h1{
-          animation:unoType 1s steps(20,end) 1.7s forwards,
-                    unoCaret .7s step-end 1.7s 2;
         }
         @keyframes unoType{
           from{width:0;}
@@ -341,7 +337,6 @@ const Lyra = () => {
             }}
           >
             <p>Чем меньше усилия — тем точнее поддержка.</p>
-            <h1>контур отдыха</h1>
           </div>
         </div>
       </div>
