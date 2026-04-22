@@ -311,7 +311,7 @@ const Index = () => {
                         </p>
                       </div>
                       <div>
-                        <p className="text-[13px] font-normal text-foreground">Формирование идеи</p>
+                        <p className="text-[13px] font-normal text-foreground">Выведение решения из структуры.</p>
                         <p className="text-[11px] text-muted-foreground mt-0.5">Выбор принципа решения.</p>
                       </div>
                       <div>
