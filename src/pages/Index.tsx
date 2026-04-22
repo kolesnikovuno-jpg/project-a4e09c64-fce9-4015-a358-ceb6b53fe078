@@ -322,9 +322,7 @@ const Index = () => {
                       </div>
                       <div>
                         <p className="text-[13px] font-normal text-foreground">Контроль соответствия. </p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
-                          Проверка соответствия и передача прав.
-                        </p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Проверка реализации.</p>
                       </div>
                     </div>
                   </div>
