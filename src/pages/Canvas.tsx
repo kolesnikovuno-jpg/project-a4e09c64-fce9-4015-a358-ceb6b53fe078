@@ -29,7 +29,7 @@ class Particle {
   draw(c: CanvasRenderingContext2D) {
     c.beginPath();
     c.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    c.fillStyle = `rgba(147,214,208,${this.alpha})`;
+    c.fillStyle = `rgba(86,124,141,${this.alpha})`;
     c.fill();
   }
 }
@@ -94,7 +94,7 @@ const Canvas = () => {
           const dist = distance(particles[a], particles[b]);
           if (dist < maxDist) {
             const opacity = (1 - dist / maxDist) * 0.15;
-            c!.strokeStyle = `rgba(147,214,208,${opacity})`;
+            c!.strokeStyle = `rgba(86,124,141,${opacity})`;
             c!.lineWidth = 0.4;
             c!.beginPath();
             c!.moveTo(particles[a].x, particles[a].y);
