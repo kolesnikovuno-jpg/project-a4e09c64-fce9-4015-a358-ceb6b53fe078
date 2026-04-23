@@ -154,16 +154,16 @@ const Index = () => {
                     />
                   </svg>
                   <a
-                    href="/unocalc"
+                    href="/garden"
                     onClick={(e) => {
                       e.preventDefault();
                       handleClose();
-                      navigate("/unocalc");
+                      navigate("/garden");
                     }}
                     className="pointer-events-auto absolute flex items-center justify-center w-[60px] h-[60px] rounded-full border border-primary/30 text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
                     style={{ left: "52px", top: "38px" }}
                   >
-                    unocalc
+                    garden
                   </a>
                 </div>
 
@@ -172,17 +172,6 @@ const Index = () => {
                   {/* Mobile header */}
                   <div className="md:hidden overflow-visible">
                     <div className="flex items-baseline gap-3">
-                      <a
-                        href="/about"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleClose();
-                          navigate("/about");
-                        }}
-                        className="text-sm tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors"
-                      >
-                        R.Yury Kolesnikov
-                      </a>
                       <span className="text-sm tracking-[0.15em] font-normal text-foreground">
                         .uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span>
                       </span>
@@ -190,17 +179,6 @@ const Index = () => {
                   </div>
                   {/* Desktop header */}
                   <div className="hidden md:flex relative items-baseline overflow-visible">
-                    <a
-                      href="/about"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleClose();
-                        navigate("/about");
-                      }}
-                      className="text-sm tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors"
-                    >
-                      R.Yury Kolesnikov
-                    </a>
                     <span className="absolute left-1/2 -translate-x-1/2 text-sm tracking-[0.15em] font-normal whitespace-nowrap">
                       .uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span>
                     </span>
@@ -210,15 +188,15 @@ const Index = () => {
                       architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
                     </p>
                     <a
-                      href="/unocalc"
+                      href="/garden"
                       onClick={(e) => {
                         e.preventDefault();
                         handleClose();
-                        navigate("/unocalc");
+                        navigate("/garden");
                       }}
                       className="md:hidden ml-auto text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
                     >
-                      unocalc
+                      garden
                     </a>
                   </div>
                   <p className="text-muted-foreground text-[12px] leading-relaxed mt-1">
