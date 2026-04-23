@@ -273,7 +273,7 @@ const Index = () => {
                       }}
                       className="block text-sm tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors mt-4 md:mt-0"
                     >
-                      R.Yury Kolesnikov
+                      © 2026 R.Yury Kolesnikov
                     </a>
                   </div>
 
