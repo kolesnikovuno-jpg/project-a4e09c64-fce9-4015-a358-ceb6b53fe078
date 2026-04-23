@@ -31,7 +31,7 @@ const Pricing = () => {
             </Link>
           </div>
 
-          <div className="space-y-12 md:space-y-14 text-[13px] md:text-[14px] text-muted-foreground leading-[1.7]">
+          <div className="space-y-7 md:space-y-9 text-[13px] md:text-[14px] text-muted-foreground leading-[1.7]">
             {/* Process */}
             <div>
               <SectionLabel>Процесс</SectionLabel>
