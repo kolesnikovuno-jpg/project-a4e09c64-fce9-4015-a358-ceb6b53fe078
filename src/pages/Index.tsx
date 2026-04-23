@@ -171,33 +171,34 @@ const Index = () => {
                 <div className="flex flex-col space-y-1.5 text-left overflow-visible">
                   {/* Mobile header */}
                   <div className="md:hidden overflow-visible">
-                    <div className="flex items-baseline gap-3">
+                    <div className="flex items-baseline gap-3 flex-wrap">
                       <span className="text-sm tracking-[0.15em] font-normal text-foreground">
                         .uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span>
                       </span>
+                      <p className="text-foreground tracking-[0.12em] text-[13px]">
+                        architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
+                      </p>
+                      <a
+                        href="/garden"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleClose();
+                          navigate("/garden");
+                        }}
+                        className="ml-auto text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
+                      >
+                        garden
+                      </a>
                     </div>
                   </div>
                   {/* Desktop header */}
-                  <div className="hidden md:flex relative items-baseline overflow-visible">
-                    <span className="absolute left-1/2 -translate-x-1/2 text-sm tracking-[0.15em] font-normal whitespace-nowrap">
+                  <div className="hidden md:flex items-baseline gap-4 overflow-visible">
+                    <span className="text-sm tracking-[0.15em] font-normal whitespace-nowrap">
                       .uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span>
                     </span>
-                  </div>
-                  <div className="flex items-baseline mt-2">
                     <p className="text-foreground tracking-[0.12em] text-[13px]">
                       architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
                     </p>
-                    <a
-                      href="/garden"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleClose();
-                        navigate("/garden");
-                      }}
-                      className="md:hidden ml-auto text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
-                    >
-                      garden
-                    </a>
                   </div>
                   <p className="text-muted-foreground text-[12px] leading-relaxed mt-1">
                     выявляю структуру → вывожу решение →<br />
