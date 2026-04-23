@@ -171,11 +171,11 @@ const Index = () => {
                 <div className="flex flex-col space-y-1.5 text-left overflow-visible">
                   {/* Mobile header */}
                   <div className="md:hidden overflow-visible">
-                    <div className="flex items-baseline gap-3 flex-wrap">
-                      <span className="text-sm tracking-[0.15em] font-normal text-foreground">
-                        .uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span>
+                    <div className="flex items-baseline gap-3 flex-wrap -ml-[0.35em]">
+                      <span className="text-base tracking-[0.15em] font-normal text-foreground">
+                        .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">studio</span>
                       </span>
-                      <p className="text-foreground tracking-[0.12em] text-[13px]">
+                      <p className="text-foreground tracking-[0.12em] text-[15px]">
                         architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
                       </p>
                       <a
@@ -192,11 +192,11 @@ const Index = () => {
                     </div>
                   </div>
                   {/* Desktop header */}
-                  <div className="hidden md:flex items-baseline gap-4 overflow-visible">
-                    <span className="text-sm tracking-[0.15em] font-normal whitespace-nowrap">
-                      .uno<span className="text-[8px] tracking-[0.08em] text-muted-foreground">studio</span>
+                  <div className="hidden md:flex items-baseline gap-4 overflow-visible -ml-[0.35em]">
+                    <span className="text-base tracking-[0.15em] font-normal whitespace-nowrap">
+                      .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">studio</span>
                     </span>
-                    <p className="text-foreground tracking-[0.12em] text-[13px]">
+                    <p className="text-foreground tracking-[0.12em] text-[15px]">
                       architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
                     </p>
                   </div>
