@@ -265,15 +265,15 @@ const Index = () => {
                     </a>
                     <div className="flex-1" />
                     <a
-                      href="/garden"
+                      href="/about"
                       onClick={(e) => {
                         e.preventDefault();
                         handleClose();
-                        navigate("/garden");
+                        navigate("/about");
                       }}
-                      className="block text-[15px] md:text-[16px] font-medium tracking-[0.12em] text-primary hover:text-primary/80 transition-colors mt-4 md:mt-0"
+                      className="block text-sm tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors mt-4 md:mt-0"
                     >
-                      Garden
+                      R.Yury Kolesnikov
                     </a>
                   </div>
 
