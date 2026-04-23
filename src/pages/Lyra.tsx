@@ -118,7 +118,7 @@ const Lyra = () => {
         .uno-pixel-cloud i{
           position:absolute;
           width:1.3px;height:1.3px;
-          background:hsl(168 40% 58%);
+          background:hsl(203 24% 40%);
           border-radius:0;
           opacity:0;
           animation:unoWave 3.6s ease-in-out infinite;
@@ -155,7 +155,7 @@ const Lyra = () => {
         }
         .uno-overlay-below h1{
           font-size:15px;font-weight:500;
-          letter-spacing:0.04em;color:hsl(168 40% 58%);
+          letter-spacing:0.04em;color:hsl(203 24% 40%);
           margin-top:4px;
         }
         .uno-overlay-below p{
@@ -173,7 +173,7 @@ const Lyra = () => {
           to{width:100%;}
         }
         @keyframes unoCaret{
-          50%{border-right-color:hsl(168 40% 58% / 0.6);}
+          50%{border-right-color:hsl(203 24% 40% / 0.6);}
         }
         .uno-ar{
           position:absolute;right:14px;top:14px;
@@ -182,8 +182,8 @@ const Lyra = () => {
           cursor:pointer;transition:all .25s ease;z-index:3;opacity:0.7;
         }
         .uno-ar:hover{opacity:1;transform:scale(1.05);}
-        .uno-ar svg{stroke:hsl(168 40% 52%);transition:stroke .25s ease;}
-        .uno-ar:hover svg{stroke:hsl(168 40% 42%);}
+        .uno-ar svg{stroke:hsl(203 24% 35%);transition:stroke .25s ease;}
+        .uno-ar:hover svg{stroke:hsl(203 24% 28%);}
         @media(max-width:768px){
           .uno-ar{width:52px;height:52px;right:10px;top:10px;opacity:0.75;}
           .uno-ar svg{width:26px;height:26px;}
@@ -211,7 +211,7 @@ const Lyra = () => {
         .uno-stem-05 .stem-bud{cursor:pointer;pointer-events:auto;}
         .uno-stem-05 .stem-bud:hover circle:first-child{
           stroke-width:1.8;
-          filter:drop-shadow(0 0 6px hsl(168 40% 72% / 0.5));
+          filter:drop-shadow(0 0 6px hsl(203 24% 45% / 0.5));
         }
         @media(max-width:768px){
           .uno-stem-05{
@@ -290,13 +290,13 @@ const Lyra = () => {
             />
             <button slot="ar-button" className="uno-ar" aria-label="View in AR" title="AR">
               <svg width="22" height="22" viewBox="-1 -2 26 26" fill="none"
-                stroke="hsl(168 40% 52%)" strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round">
+                stroke="hsl(203 24% 35%)" strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
                 <path d="M12 12l8-4.5" />
                 <path d="M12 12v9" />
                 <path d="M12 12L4 7.5" />
-                <line x1="12" y1="3" x2="12" y2="-1" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-                <circle cx="12" cy="-1" r="1.2" fill="hsl(168 40% 52%)" stroke="none" />
+                <line x1="12" y1="3" x2="12" y2="-1" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
+                <circle cx="12" cy="-1" r="1.2" fill="hsl(203 24% 35%)" stroke="none" />
               </svg>
             </button>
           </model-viewer>
@@ -304,20 +304,20 @@ const Lyra = () => {
           {/* Stem 05 */}
           <div className="uno-stem-05">
             <svg viewBox="-50 0 100 600" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">
-              <line x1="-30" y1="555" x2="30" y2="555" stroke="hsl(168 40% 52%)" strokeWidth="1.2" strokeLinecap="round" />
-              <line x1="0" y1="555" x2="0" y2="150" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+              <line x1="-30" y1="555" x2="30" y2="555" stroke="hsl(203 24% 35%)" strokeWidth="1.2" strokeLinecap="round" />
+              <line x1="0" y1="555" x2="0" y2="150" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
               <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
-                <circle cx="0" cy="150" r="14" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+                <circle cx="0" cy="150" r="14" fill="none" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
                 <circle cx="0" cy="150" r="20" fill="transparent" stroke="transparent" />
               </g>
               <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
-                <line x1="0" y1="370" x2="22" y2="370" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-                <circle cx="22" cy="370" r="9" fill="none" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+                <line x1="0" y1="370" x2="22" y2="370" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
+                <circle cx="22" cy="370" r="9" fill="none" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
                 <circle cx="22" cy="370" r="16" fill="transparent" stroke="transparent" />
               </g>
               <g className="stem-bud" role="button" tabIndex={0} onClick={() => console.log("05.2")}>
-                <line x1="0" y1="250" x2="-28" y2="250" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
-                <circle cx="-28" cy="250" r="6" fill="hsl(168 40% 52% / 0.45)" stroke="hsl(168 40% 52%)" strokeWidth="0.8" />
+                <line x1="0" y1="250" x2="-28" y2="250" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
+                <circle cx="-28" cy="250" r="6" fill="hsl(203 24% 35% / 0.45)" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
                 <circle cx="-28" cy="250" r="13" fill="transparent" stroke="transparent" />
               </g>
             </svg>

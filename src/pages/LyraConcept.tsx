@@ -146,7 +146,7 @@ const LyraConcept = () => {
         const alpha = 0.15 + organize * 0.55;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(147,214,208,${alpha})`;
+        ctx.fillStyle = `rgba(86,124,141,${alpha})`;
         ctx.fill();
       }
 
@@ -160,7 +160,7 @@ const LyraConcept = () => {
             const d = dx * dx + dy * dy;
             if (d < LINE_DIST * LINE_DIST) {
               const alpha = (1 - Math.sqrt(d) / LINE_DIST) * inf * 0.2;
-              ctx.strokeStyle = `rgba(147,214,208,${alpha})`;
+              ctx.strokeStyle = `rgba(86,124,141,${alpha})`;
               ctx.beginPath();
               ctx.moveTo(pts[i].x, pts[i].y);
               ctx.lineTo(pts[j].x, pts[j].y);
@@ -194,7 +194,7 @@ const LyraConcept = () => {
           fontSize: "clamp(11px, 1.4vw, 14px)",
           fontWeight: 300,
           letterSpacing: "0.12em",
-          color: "rgba(147,214,208,0.35)",
+          color: "rgba(86,124,141,0.35)",
         }}
       >
         Form emerges at the boundary of forces

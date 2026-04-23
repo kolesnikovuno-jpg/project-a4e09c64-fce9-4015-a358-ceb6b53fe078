@@ -45,7 +45,7 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, showLabel, onClick, delay,
           >
             <line
               x1="0" y1="0" x2="0" y2="4"
-              stroke="hsl(168 40% 72%)"
+              stroke="hsl(203 24% 45%)"
               strokeWidth="1"
             />
           </pattern>
@@ -55,8 +55,8 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, showLabel, onClick, delay,
         cx={cx}
         cy={cy}
         r={r}
-        fill={filled ? "hsl(168 40% 72%)" : hatched ? `url(#${hatchId})` : "none"}
-        stroke="hsl(168 40% 52%)"
+        fill={filled ? "hsl(203 24% 45%)" : hatched ? `url(#${hatchId})` : "none"}
+        stroke="hsl(203 24% 35%)"
         strokeWidth="0.8"
         className="transition-all duration-300"
       />
@@ -76,7 +76,7 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, showLabel, onClick, delay,
           x={cx}
           y={cy - r - 12}
           textAnchor="middle"
-          fill="hsl(168 40% 72%)"
+          fill="hsl(203 24% 45%)"
           fontSize="16"
           letterSpacing="0.06em"
           fontFamily="inherit"
@@ -306,7 +306,7 @@ const Garden = () => {
         {/* Ground line — fade in */}
         <line
           x1="0" y1={gY} x2={vbWidth} y2={gY}
-          stroke="hsl(168 40% 52%)" strokeWidth={sw}
+          stroke="hsl(203 24% 35%)" strokeWidth={sw}
           style={{
             opacity: animated ? 1 : 0,
             transition: "opacity 0.6s ease-out",
@@ -321,7 +321,7 @@ const Garden = () => {
               {/* Vertical stem — grows from ground up */}
               <line
                 x1={stem.x} y1={gY} x2={stem.x} y2={topY}
-                stroke="hsl(168 40% 52%)" strokeWidth={sw}
+                stroke="hsl(203 24% 35%)" strokeWidth={sw}
                 style={{
                   strokeDasharray: stem.h,
                   strokeDashoffset: animated ? 0 : stem.h,
@@ -354,7 +354,7 @@ const Garden = () => {
                     {/* Horizontal branch */}
                     <line
                       x1={stem.x} y1={brY} x2={brEndX} y2={brY}
-                      stroke="hsl(168 40% 52%)" strokeWidth={sw}
+                      stroke="hsl(203 24% 35%)" strokeWidth={sw}
                       style={{
                         strokeDasharray: br.len,
                         strokeDashoffset: animated ? 0 : br.len,
@@ -384,12 +384,12 @@ const Garden = () => {
       <style>{`
         .garden-bud:hover circle:first-of-type {
           stroke-width: 1.8;
-          filter: drop-shadow(0 0 6px hsl(168 40% 72% / 0.5));
+          filter: drop-shadow(0 0 6px hsl(203 24% 45% / 0.5));
         }
         .garden-bud:focus-visible circle:first-of-type {
           stroke-width: 1.8;
           outline: none;
-          filter: drop-shadow(0 0 6px hsl(168 40% 72% / 0.5));
+          filter: drop-shadow(0 0 6px hsl(203 24% 45% / 0.5));
         }
       `}</style>
     </div>
