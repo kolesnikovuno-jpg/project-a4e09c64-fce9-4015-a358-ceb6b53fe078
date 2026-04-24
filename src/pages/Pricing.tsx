@@ -22,9 +22,7 @@ const Pricing = () => {
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <h1 className="text-[12px] md:text-[13px] font-medium tracking-[0.04em] text-foreground">
-                формат и стоимость
-              </h1>
+              <h1 className="text-[12px] md:text-[13px] tracking-[0.04em] text-foreground">формат и стоимость</h1>
             </div>
             <Link to="/" className="text-[13px] text-primary font-medium hover:text-primary/80 transition-colors">
               .uno
