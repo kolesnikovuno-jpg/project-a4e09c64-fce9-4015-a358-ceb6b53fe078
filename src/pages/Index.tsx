@@ -170,7 +170,7 @@ const Index = () => {
                 <div className="flex flex-col space-y-1.5 text-left overflow-visible">
                   {/* Mobile header */}
                   <div className="md:hidden overflow-visible">
-                    <div className="flex items-baseline gap-3 flex-wrap -ml-[0.35em]">
+                    <div className="flex flex-col gap-1 -ml-[0.35em] pr-10">
                       <a
                         href="/gateway"
                         onClick={(e) => {
@@ -182,7 +182,7 @@ const Index = () => {
                       >
                         .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">studio</span>
                       </a>
-                      <p className="text-foreground tracking-[0.12em] text-[15px]">
+                      <p className="text-foreground tracking-[0.12em] text-[12px]">
                         architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
                       </p>
                     </div>
