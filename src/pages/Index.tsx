@@ -72,7 +72,7 @@ const Index = () => {
                       height="2.2"
                       patternTransform="rotate(45)"
                     >
-                      <line x1="0" y1="0" x2="0" y2="2.2" stroke="rgba(255,255,255,0.9)" strokeWidth="1.3" />
+                      <line x1="0" y1="0" x2="0" y2="2.2" stroke="hsl(var(--background))" strokeWidth="1.3" />
                     </pattern>
                   </defs>
                   <circle
