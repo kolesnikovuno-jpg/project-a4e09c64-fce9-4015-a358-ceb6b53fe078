@@ -107,7 +107,7 @@ const Pricing = () => {
             <div className="w-full h-px bg-border/20 mb-8 md:mb-10" />
 
             {/* Further work / Final cost */}
-            <section className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-12 mb-8 md:mb-10">
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8 mb-8 md:mb-10">
               <div>
                 <SectionLabel>Дальнейшая работа</SectionLabel>
                 <p>
@@ -140,7 +140,7 @@ const Pricing = () => {
             <div className="w-full h-px bg-border/20 mb-8 md:mb-10" />
 
             {/* Terms / Rights */}
-            <section className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-12 mb-8 md:mb-10">
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8 mb-8 md:mb-10">
               <div>
                 <SectionLabel>Условия</SectionLabel>
                 <p>
