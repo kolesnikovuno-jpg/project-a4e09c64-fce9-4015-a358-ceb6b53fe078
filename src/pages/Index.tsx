@@ -210,7 +210,7 @@ const Index = () => {
                 <div className="text-foreground leading-relaxed mt-7 flex flex-col">
                   <div className="text-left text-foreground leading-[1.7]">
                     <p className="text-[12px] md:text-[13px] font-light text-foreground/80 mt-6 mb-1">
-                      Иногда проблема не в решении, а в отсутствии структуры.
+                      Нет структуры - нет решения.
                     </p>
                     <p className="text-[14px] md:text-[15px]">
                       Я выявляю структуру и перевожу её в форму, которая работает.
