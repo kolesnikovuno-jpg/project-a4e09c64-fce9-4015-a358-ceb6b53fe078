@@ -53,7 +53,7 @@ const Index = () => {
         <div className="flex items-center justify-center mt-[72px] md:mt-0 translate-x-[22vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
           <button
             onClick={handleToggle}
-            className="group relative flex items-center bg-primary border border-primary/60 rounded-full w-[76px] h-9 hover:bg-primary/90 transition-colors cursor-pointer"
+            className="group relative flex items-center bg-primary/70 border border-primary/40 rounded-full w-[76px] h-9 hover:bg-primary/85 transition-colors cursor-pointer"
           >
             {!open && (
               <motion.div
