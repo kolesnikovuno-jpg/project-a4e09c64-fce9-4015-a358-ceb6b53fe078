@@ -209,7 +209,7 @@ const Index = () => {
                 {/* Content */}
                 <div className="text-foreground leading-relaxed mt-7 flex flex-col">
                   <div className="text-left text-foreground">
-                    <p className="text-[12px] md:text-[13px] font-light text-foreground/80 mt-6 mb-1">
+                    <p className="text-[12px] md:text-[13px] font-light text-foreground/80 tracking-[0.1em] mt-6 mb-1">
                       нет структуры - нет решения.
                     </p>
                     <p className="text-[14px] md:text-[15px] leading-[1.65]">
