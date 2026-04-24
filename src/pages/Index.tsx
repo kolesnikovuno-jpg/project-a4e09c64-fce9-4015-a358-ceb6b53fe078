@@ -182,7 +182,7 @@ const Index = () => {
                       >
                         .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">studio</span>
                       </a>
-                      <p className="text-foreground tracking-[0.12em] text-[12px]">
+                      <p className="text-foreground tracking-[0.08em] text-[9px] font-light">
                         architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
                       </p>
                     </div>
@@ -200,7 +200,7 @@ const Index = () => {
                     >
                       .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">studio</span>
                     </a>
-                    <p className="text-foreground tracking-[0.12em] text-[15px]">
+                    <p className="text-foreground tracking-[0.08em] text-[9px] font-light self-end pb-[3px]">
                       architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
                     </p>
                   </div>
@@ -208,9 +208,13 @@ const Index = () => {
 
                 {/* Content */}
                 <div className="text-foreground leading-relaxed mt-7 flex flex-col">
-                  <div className="text-left text-[14px] md:text-[15px] text-foreground leading-[1.7] space-y-4">
-                    <p>Иногда проблема не в решении, а в отсутствии структуры.</p>
-                    <p>Я выявляю структуру и перевожу её в форму, которая работает.</p>
+                  <div className="text-left text-foreground leading-[1.7]">
+                    <p className="text-[12px] md:text-[13px] font-light text-foreground/80 mt-6 mb-1">
+                      Иногда проблема не в решении, а в отсутствии структуры.
+                    </p>
+                    <p className="text-[14px] md:text-[15px]">
+                      Я выявляю структуру и перевожу её в форму, которая работает.
+                    </p>
                   </div>
                   <a
                     href="/pricing"
@@ -232,7 +236,7 @@ const Index = () => {
                         handleClose();
                         navigate("/about");
                       }}
-                      className="text-base tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors"
+                      className="text-[11px] tracking-[0.12em] font-normal text-primary hover:text-primary/80 transition-colors"
                     >
                       R.Yury Kolesnikov ⟶
                     </a>
