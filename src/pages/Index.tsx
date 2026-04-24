@@ -24,7 +24,7 @@ const Index = () => {
     } else {
       controls.set("hidden");
     }
-  }, [open]);
+  }, [open, controls]);
   const handleToggle = () => {
     if (!toggled) {
       setToggled(true);
