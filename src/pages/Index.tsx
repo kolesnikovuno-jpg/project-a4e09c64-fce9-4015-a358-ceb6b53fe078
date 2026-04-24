@@ -109,7 +109,7 @@ const Index = () => {
               {/* Backdrop */}
               <motion.div
                 data-overlay
-                className="absolute inset-0 bg-background/60 backdrop-blur-sm"
+                className="absolute inset-0 bg-background/70 backdrop-blur-sm"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
