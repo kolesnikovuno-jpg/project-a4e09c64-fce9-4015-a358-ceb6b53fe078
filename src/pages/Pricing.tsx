@@ -3,7 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 
 const SectionLabel = ({ children }: { children: string }) => (
-  <p className="text-[10px] tracking-[0.22em] uppercase text-primary/60 font-medium mb-4">{children}</p>
+  <p className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground/70 font-normal mb-4">
 );
 
 const Pricing = () => {
@@ -22,7 +22,7 @@ const Pricing = () => {
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <h1 className="text-[12px] md:text-[13px] tracking-[0.04em] text-foreground">формат и стоимость</h1>
+              <h1 className="text-[13px] md:text-[14px] tracking-[0.06em] text-muted-foreground">формат и стоимость</h1>
             </div>
             <Link to="/" className="text-[13px] text-primary font-medium hover:text-primary/80 transition-colors">
               .uno
@@ -33,7 +33,7 @@ const Pricing = () => {
             {/* Essence */}
             <section className="mb-8 md:mb-10">
               <SectionLabel>Суть работы</SectionLabel>
-              <p className="text-foreground text-[14px] md:text-[16px] leading-[1] max-w-xl">
+              <p className="text-foreground text-[14px] md:text-[16px] leading-[1.6] max-w-xl">
                 Иногда проблема не в решении,
                 <br />а в отсутствии структуры.
               </p>
@@ -60,7 +60,7 @@ const Pricing = () => {
             <div className="w-full h-px bg-border/20 mb-8 md:mb-10" />
 
             {/* Entry / Result of stage */}
-            <section className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-12 mb-8 md:mb-10">
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8 md:gap-y-10 mb-8 md:mb-10">
               <div>
                 <SectionLabel>Вход</SectionLabel>
                 <p>
@@ -71,7 +71,7 @@ const Pricing = () => {
                   работа не продолжается.
                 </p>
 
-                <div className="mt-10">
+                <div className="mt-6">
                   <SectionLabel>Результат этапа:</SectionLabel>
                   <ul className="space-y-1.5">
                     <li className="relative pl-4 before:content-['—'] before:absolute before:left-0">
@@ -97,7 +97,7 @@ const Pricing = () => {
                   Сумма входит в итоговую стоимость.
                 </p>
 
-                <p className="mt-10">
+                <p className="mt-6">
                   После анализа принимается решение
                   <br />о формате дальнейшей работы.
                 </p>
