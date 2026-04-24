@@ -3,7 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 
 const SectionLabel = ({ children }: { children: string }) => (
-  <p className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground/70 font-normal mb-4">
+  <p className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground/70 font-normal mb-4">{children}</p>
 );
 
 const Pricing = () => {
