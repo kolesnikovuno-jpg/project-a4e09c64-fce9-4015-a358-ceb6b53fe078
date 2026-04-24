@@ -212,9 +212,8 @@ const Index = () => {
                     <p className="text-[12px] md:text-[13px] font-light text-foreground/80 mt-6 mb-1">
                       нет структуры - нет решения.
                     </p>
-                    <p className="text-[14px] md:text-[15px] leading-[1.6]">
-                      выявляю структуру <br />
-                      и собираю форму, <br />в которой всё становится на место.
+                    <p className="text-[14px] md:text-[15px]">
+                      выявляю структуру и собираю форму, в которой всё становится на место.
                     </p>
                   </div>
                   <a
