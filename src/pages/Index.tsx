@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState const controls = useAnimation();} from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, LayoutGroup, useAnimation } from "motion/react";
 import { useIsNative } from "@/hooks/use-native";
