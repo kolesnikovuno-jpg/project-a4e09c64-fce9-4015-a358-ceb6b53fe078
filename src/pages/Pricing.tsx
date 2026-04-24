@@ -22,7 +22,7 @@ const Pricing = () => {
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <h1 className="text-[15px] md:text-[16px] font-medium tracking-[0.04em] text-foreground">
+              <h1 className="text-[12px] md:text-[13px] font-medium tracking-[0.04em] text-foreground">
                 формат и стоимость
               </h1>
             </div>
