@@ -122,7 +122,7 @@ const Pricing = () => {
               </div>
               <div>
                 <SectionLabel>Итоговая стоимость</SectionLabel>
-                <p className="text-foreground text-[15px] md:text-[16px] font-medium tabular-nums leading-[1.5]">
+                <p className="text-foreground text-[14px] md:text-[15px] font-medium tabular-nums leading-[1.5]">
                   10–20 % от общих затрат
                   <br />
                   на реализацию проекта
