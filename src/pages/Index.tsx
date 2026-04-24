@@ -195,7 +195,23 @@ const Index = () => {
     }
   }}
 >
-                    garden
+                    <motion.span
+  initial={{ opacity: 0, y: 4 }}
+  animate={controls}
+  variants={{
+    hidden: { opacity: 0, y: 4 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: 0.5,
+        duration: 0.2
+      }
+    }
+  }}
+>
+  garden
+</motion.span>
                   </a>
                 </div>
 
