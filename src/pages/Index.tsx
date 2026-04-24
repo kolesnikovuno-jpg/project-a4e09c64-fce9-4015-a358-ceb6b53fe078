@@ -13,7 +13,17 @@ const Index = () => {
   useEffect(() => {
     if (isNative) navigate("/unocalc", { replace: true });
   }, [isNative, navigate]);
+  useEffect(() => {
+    if (open) {
+      const timer = setTimeout(() => {
+        controls.start("visible");
+      }, 300); // синхронизация с morph-circle
 
+      return () => clearTimeout(timer);
+    } else {
+      controls.set("hidden");
+    }
+  }, [open]);
   const handleToggle = () => {
     if (!toggled) {
       setToggled(true);
@@ -142,7 +152,7 @@ const Index = () => {
                   style={{ top: "8px", right: "8px", width: "160px", height: "110px" }}
                 >
                   <svg className="absolute inset-0 w-full h-full" viewBox="0 0 160 110" fill="none">
-                    <line
+                    <motion.line
                       x1="148"
                       y1="12"
                       x2="98"
@@ -150,6 +160,15 @@ const Index = () => {
                       stroke="hsl(var(--primary))"
                       strokeWidth="0.75"
                       opacity="0.55"
+                      initial={{ pathLength: 0 }}
+                      animate={controls}
+                      variants={{
+                        hidden: { pathLength: 0 },
+                        visible: {
+                          pathLength: 1,
+                          transition: { duration: 0.4, ease: "easeOut" },
+                        },
+                      }}
                     />
                   </svg>
                   <a
