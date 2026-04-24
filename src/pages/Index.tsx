@@ -177,17 +177,6 @@ const Index = () => {
                       <p className="text-foreground tracking-[0.12em] text-[15px]">
                         architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
                       </p>
-                      <a
-                        href="/garden"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleClose();
-                          navigate("/garden");
-                        }}
-                        className="ml-auto text-[11px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors"
-                      >
-                        garden
-                      </a>
                     </div>
                   </div>
                   {/* Desktop header */}
@@ -199,111 +188,42 @@ const Index = () => {
                       architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
                     </p>
                   </div>
-                  <p className="text-muted-foreground text-[12px] leading-relaxed mt-1">
-                    выявляю структуру → вывожу решение →<br />
-                    разворачиваю в проект → контролирую реализацию.
-                  </p>
                 </div>
 
                 {/* Content */}
-                <div className="text-foreground leading-relaxed md:grid md:grid-cols-2 md:gap-10 mt-4">
-                  <div className="flex flex-col">
-                    <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/70 mb-1">что это</p>
-                    <p className="text-[15px] md:text-[16px] font-medium mb-4 md:mb-6">
-                      Выявление структуры и первод в форму.
+                <div className="text-foreground leading-relaxed mt-8 flex flex-col">
+                  <div className="text-right text-[14px] md:text-[15px] text-foreground leading-[1.7] space-y-4">
+                    <p>
+                      Иногда проблема не в решении,<br />
+                      а в отсутствии структуры.
                     </p>
-
-                    <div className="md:hidden space-y-4 mb-6">
-                      <div>
-                        <p className="text-[13px] font-normal text-foreground">Анализ ситуации</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
-                          Определение контекста, конфигурации и связей.
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[13px] font-normal text-foreground">Формирование идеи</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Выбор принципа решения.</p>
-                      </div>
-                      <div>
-                        <p className="text-[13px] font-normal text-foreground">Создание концепции</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Сборка формы и логики.</p>
-                      </div>
-                      <div>
-                        <p className="text-[13px] font-normal text-foreground">Разработка проекта</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Рабочая документация и проекции.</p>
-                      </div>
-                      <div>
-                        <p className="text-[13px] font-normal text-foreground">Контроль реализации</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
-                          Проверка соответствия и передача прав.
-                        </p>
-                      </div>
-                    </div>
-
-                    <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/70 mb-1">результат</p>
-                    <p className="text-[15px] md:text-[16px] font-medium mb-4 md:mb-6">
-                      Структура, которая работает. Форма, которая звучит.
+                    <p>
+                      Я выявляю структуру и перевожу её в форму,<br />
+                      которая работает.
                     </p>
-                    <a
-                      href="https://t.me/kolesnikov_uno"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block text-[13px] text-primary font-medium hover:text-primary/80 transition-colors mb-1.5"
-                    >
-                      Написать в Telegram →
-                    </a>
-                    <a
-                      href="/pricing"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleClose();
-                        navigate("/pricing");
-                      }}
-                      className="block text-[13px] text-primary/75 hover:text-primary/90 transition-colors"
-                    >
-                      Формат и стоимость →
-                    </a>
-                    <div className="flex-1" />
-                    <a
-                      href="/about"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleClose();
-                        navigate("/about");
-                      }}
-                      className="block text-sm tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors mt-4 md:mt-0"
-                    >
-                      © 2026 R.Yury Kolesnikov ⟶
-                    </a>
                   </div>
-
-                  <div className="hidden md:block">
-                    <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/70 mb-3">
-                      как это происходит
-                    </p>
-                    <div className="space-y-5">
-                      <div>
-                        <p className="text-[13px] font-normal text-foreground">Считывание состояния и структуры.</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Выявление контекста и связей</p>
-                      </div>
-                      <div>
-                        <p className="text-[13px] font-normal text-foreground">Выведение решения из структуры.</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Фиксация принципа</p>
-                      </div>
-                      <div>
-                        <p className="text-[13px] font-normal text-foreground">Формирование формы.</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Сборка формы и логики</p>
-                      </div>
-                      <div>
-                        <p className="text-[13px] font-normal text-foreground">Перевод в проект.</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Рабочая документация и проекции.</p>
-                      </div>
-                      <div>
-                        <p className="text-[13px] font-normal text-foreground">Контроль соответствия. </p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Проверка реализации.</p>
-                      </div>
-                    </div>
-                  </div>
+                  <a
+                    href="/pricing"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleClose();
+                      navigate("/pricing");
+                    }}
+                    className="block text-right text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-8"
+                  >
+                    Формат и стоимость →
+                  </a>
+                  <a
+                    href="/about"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleClose();
+                      navigate("/about");
+                    }}
+                    className="block text-sm tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors mt-10"
+                  >
+                    © 2026 R.Yury Kolesnikov ⟶
+                  </a>
                 </div>
               </motion.div>
             </motion.div>
