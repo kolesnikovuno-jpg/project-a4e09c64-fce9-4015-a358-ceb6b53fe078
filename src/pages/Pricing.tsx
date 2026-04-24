@@ -44,7 +44,7 @@ const Pricing = () => {
               </p>
             </section>
 
-            <div className="w-full h-px bg-border/40 mb-8 md:mb-10" />
+            <div className="w-full h-px bg-border/20 mb-8 md:mb-10" />
 
             {/* Process */}
             <section className="mb-8 md:mb-10">
@@ -57,7 +57,7 @@ const Pricing = () => {
               </p>
             </section>
 
-            <div className="w-full h-px bg-border/40 mb-8 md:mb-10" />
+            <div className="w-full h-px bg-border/20 mb-8 md:mb-10" />
 
             {/* Entry / Result of stage */}
             <section className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-12 mb-8 md:mb-10">
@@ -104,7 +104,7 @@ const Pricing = () => {
               </div>
             </section>
 
-            <div className="w-full h-px bg-border/40 mb-8 md:mb-10" />
+            <div className="w-full h-px bg-border/20 mb-8 md:mb-10" />
 
             {/* Further work / Final cost */}
             <section className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-12 mb-8 md:mb-10">
@@ -137,7 +137,7 @@ const Pricing = () => {
               </div>
             </section>
 
-            <div className="w-full h-px bg-border/40 mb-8 md:mb-10" />
+            <div className="w-full h-px bg-border/20 mb-8 md:mb-10" />
 
             {/* Terms / Rights */}
             <section className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-12 mb-8 md:mb-10">
@@ -165,7 +165,7 @@ const Pricing = () => {
               </div>
             </section>
 
-            <div className="w-full h-px bg-border/40 mb-8 md:mb-10" />
+            <div className="w-full h-px bg-border/20 mb-8 md:mb-10" />
 
             {/* Contact */}
             <section>
