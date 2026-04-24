@@ -47,7 +47,7 @@ const Pricing = () => {
             <div className="w-full h-px bg-border/40 mb-14 md:mb-16" />
 
             {/* Process */}
-            <section className="mb-14 md:mb-16">
+            <section className="mb-8 md:mb-10">
               <SectionLabel>Процесс</SectionLabel>
               <p className="max-w-xl">
                 Работа начинается с анализа ситуации.
