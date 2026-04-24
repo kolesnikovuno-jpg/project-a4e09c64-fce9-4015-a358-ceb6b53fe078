@@ -175,7 +175,7 @@ const Pricing = () => {
                 <br />
                 Работа начинается с анализа ситуации.
               </p>
-              <div className="mt-10 flex items-center justify-between">
+              <div className="mt-6 flex items-center justify-between">
                 <a
                   href="https://t.me/kolesnikov_uno"
                   target="_blank"
