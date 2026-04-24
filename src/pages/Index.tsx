@@ -192,15 +192,9 @@ const Index = () => {
 
                 {/* Content */}
                 <div className="text-foreground leading-relaxed mt-8 flex flex-col">
-                  <div className="text-right text-[14px] md:text-[15px] text-foreground leading-[1.7] space-y-4">
-                    <p>
-                      Иногда проблема не в решении,<br />
-                      а в отсутствии структуры.
-                    </p>
-                    <p>
-                      Я выявляю структуру и перевожу её в форму,<br />
-                      которая работает.
-                    </p>
+                  <div className="text-left text-[14px] md:text-[15px] text-foreground leading-[1.7] space-y-4">
+                    <p>Иногда проблема не в решении, а в отсутствии структуры.</p>
+                    <p>Я выявляю структуру и перевожу её в форму, которая работает.</p>
                   </div>
                   <a
                     href="/pricing"
@@ -209,7 +203,7 @@ const Index = () => {
                       handleClose();
                       navigate("/pricing");
                     }}
-                    className="block text-right text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-8"
+                    className="block text-left text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-8"
                   >
                     Формат и стоимость →
                   </a>
