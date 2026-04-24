@@ -31,7 +31,7 @@ const Pricing = () => {
 
           <div className="text-[13px] md:text-[14px] text-muted-foreground leading-[1.7]">
             {/* Essence */}
-            <section className="mb-14 md:mb-16">
+            <section className="mb-8 md:mb-10">
               <SectionLabel>Суть работы</SectionLabel>
               <p className="text-foreground text-[14px] md:text-[16px] leading-[1] max-w-xl">
                 Иногда проблема не в решении,
