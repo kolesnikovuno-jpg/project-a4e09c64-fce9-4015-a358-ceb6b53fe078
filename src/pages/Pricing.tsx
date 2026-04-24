@@ -33,7 +33,7 @@ const Pricing = () => {
             {/* Essence */}
             <section className="mb-8 md:mb-10">
               <SectionLabel>Суть работы</SectionLabel>
-              <p className="text-foreground text-[14px] md:text-[16px] leading-[1.6] max-w-xl">
+              <p className="text-foreground text-[14px] md:text-[15px] leading-[1.6] max-w-xl">
                 Иногда проблема не в решении,
                 <br />а в отсутствии структуры.
               </p>
