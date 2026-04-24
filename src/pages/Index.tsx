@@ -171,9 +171,17 @@ const Index = () => {
                   {/* Mobile header */}
                   <div className="md:hidden overflow-visible">
                     <div className="flex items-baseline gap-3 flex-wrap -ml-[0.35em]">
-                      <span className="text-base tracking-[0.15em] font-normal text-foreground">
+                      <a
+                        href="/gateway"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleClose();
+                          navigate("/gateway");
+                        }}
+                        className="text-base tracking-[0.15em] font-normal text-foreground hover:text-primary transition-colors"
+                      >
                         .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">studio</span>
-                      </span>
+                      </a>
                       <p className="text-foreground tracking-[0.12em] text-[15px]">
                         architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
                       </p>
@@ -181,9 +189,17 @@ const Index = () => {
                   </div>
                   {/* Desktop header */}
                   <div className="hidden md:flex items-baseline gap-4 overflow-visible -ml-[0.35em]">
-                    <span className="text-base tracking-[0.15em] font-normal whitespace-nowrap">
+                    <a
+                      href="/gateway"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleClose();
+                        navigate("/gateway");
+                      }}
+                      className="text-base tracking-[0.15em] font-normal whitespace-nowrap hover:text-primary transition-colors"
+                    >
                       .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">studio</span>
-                    </span>
+                    </a>
                     <p className="text-foreground tracking-[0.12em] text-[15px]">
                       architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
                     </p>
@@ -191,7 +207,7 @@ const Index = () => {
                 </div>
 
                 {/* Content */}
-                <div className="text-foreground leading-relaxed mt-8 flex flex-col">
+                <div className="text-foreground leading-relaxed mt-7 flex flex-col">
                   <div className="text-left text-[14px] md:text-[15px] text-foreground leading-[1.7] space-y-4">
                     <p>Иногда проблема не в решении, а в отсутствии структуры.</p>
                     <p>Я выявляю структуру и перевожу её в форму, которая работает.</p>
@@ -203,21 +219,24 @@ const Index = () => {
                       handleClose();
                       navigate("/pricing");
                     }}
-                    className="block text-left text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-8"
+                    className="block text-left text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-7"
                   >
                     Формат и стоимость →
                   </a>
-                  <a
-                    href="/about"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleClose();
-                      navigate("/about");
-                    }}
-                    className="block text-sm tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors mt-10"
-                  >
-                    © 2026 R.Yury Kolesnikov ⟶
-                  </a>
+                  <div className="mt-10 pt-4 border-t border-border/20 flex items-baseline gap-2">
+                    <span className="text-[9px] tracking-[0.08em] text-muted-foreground">© 2026</span>
+                    <a
+                      href="/about"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleClose();
+                        navigate("/about");
+                      }}
+                      className="text-base tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors"
+                    >
+                      R.Yury Kolesnikov ⟶
+                    </a>
+                  </div>
                 </div>
               </motion.div>
             </motion.div>
