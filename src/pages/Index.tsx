@@ -200,7 +200,7 @@ const Index = () => {
                     >
                       .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">studio</span>
                     </a>
-                    <p className="text-foreground tracking-[0.08em] text-[9px] font-light">
+                    <p className="text-muted-foreground tracking-[0.08em] text-[9px] font-light">
                       architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
                     </p>
                   </div>
