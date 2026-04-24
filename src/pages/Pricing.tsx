@@ -44,7 +44,7 @@ const Pricing = () => {
               </p>
             </section>
 
-            <div className="w-full h-px bg-border/40 mb-14 md:mb-16" />
+            <div className="w-full h-px bg-border/40 mb-8 md:mb-10" />
 
             {/* Process */}
             <section className="mb-8 md:mb-10">
