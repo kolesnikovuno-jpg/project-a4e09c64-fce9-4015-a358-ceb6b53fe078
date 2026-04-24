@@ -80,7 +80,7 @@ const Index = () => {
                     cy="14"
                     r="13"
                     fill="url(#hatch-toggle)"
-                    stroke="rgba(255,255,255,0.6)"
+                    stroke="hsl(var(--background))"
                     strokeWidth="0.8"
                   />
                 </svg>
