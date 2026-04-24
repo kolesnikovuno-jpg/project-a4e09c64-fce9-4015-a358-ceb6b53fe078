@@ -131,7 +131,7 @@ const Index = () => {
                 >
                   <motion.span
                     layoutId="morph-circle"
-                    className="block w-5 h-5 rounded-full bg-primary/70"
+                    className="block w-5 h-5 rounded-full bg-primary/80"
                     transition={{ type: "spring", stiffness: 200, damping: 28, mass: 0.8 }}
                   />
                 </button>
