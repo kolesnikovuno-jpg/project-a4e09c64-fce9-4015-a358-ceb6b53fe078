@@ -171,16 +171,30 @@ const Index = () => {
                       }}
                     />
                   </svg>
-                  <a
-                    href="/garden"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleClose();
-                      navigate("/garden");
-                    }}
-                    className="pointer-events-auto absolute flex items-center justify-center w-[60px] h-[60px] rounded-full border border-primary/30 text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
-                    style={{ left: "52px", top: "38px" }}
-                  >
+                  <motion.a
+  href="/garden"
+  onClick={(e) => {
+    e.preventDefault();
+    handleClose();
+    navigate("/garden");
+  }}
+  className="pointer-events-auto absolute flex items-center justify-center w-[60px] h-[60px] rounded-full border border-primary/30 text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
+  style={{ left: "52px", top: "38px" }}
+  initial={{ scale: 0, opacity: 0 }}
+  animate={controls}
+  variants={{
+    hidden: { scale: 0, opacity: 0 },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        delay: 0.35,
+        duration: 0.25,
+        ease: "easeOut"
+      }
+    }
+  }}
+>
                     garden
                   </a>
                 </div>
