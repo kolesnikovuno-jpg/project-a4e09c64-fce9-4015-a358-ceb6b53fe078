@@ -182,7 +182,7 @@ const Index = () => {
                       >
                         .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">studio</span>
                       </a>
-                      <p className="text-foreground tracking-[0.12em] text-[12px]">
+                      <p className="text-foreground tracking-[0.08em] text-[9px] font-light">
                         architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
                       </p>
                     </div>
@@ -200,7 +200,7 @@ const Index = () => {
                     >
                       .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">studio</span>
                     </a>
-                    <p className="text-foreground tracking-[0.12em] text-[15px]">
+                    <p className="text-foreground tracking-[0.08em] text-[9px] font-light self-end pb-[3px]">
                       architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
                     </p>
                   </div>
@@ -232,7 +232,7 @@ const Index = () => {
                         handleClose();
                         navigate("/about");
                       }}
-                      className="text-base tracking-[0.15em] font-normal text-primary hover:text-primary/80 transition-colors"
+                      className="text-[11px] tracking-[0.12em] font-normal text-primary hover:text-primary/80 transition-colors"
                     >
                       R.Yury Kolesnikov ⟶
                     </a>
