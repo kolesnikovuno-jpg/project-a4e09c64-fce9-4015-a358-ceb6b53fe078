@@ -13,6 +13,8 @@ import PixelTransition from "./pages/PixelTransition";
 import Lyra from "./pages/Lyra";
 import LyraConcept from "./pages/LyraConcept";
 import Garden from "./pages/Garden";
+import Gateway from "./pages/Gateway";
+import UnoStudio from "./pages/UnoStudio";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +34,8 @@ const App = () => (
           <Route path="/lyra" element={<Lyra />} />
           <Route path="/garden" element={<Garden />} />
           <Route path="/lyra-concept" element={<LyraConcept />} />
+          <Route path="/gateway" element={<Gateway />} />
+          <Route path="/unostudio" element={<UnoStudio />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
