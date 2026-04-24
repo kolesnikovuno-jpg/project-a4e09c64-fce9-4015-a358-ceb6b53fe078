@@ -88,7 +88,7 @@ const Pricing = () => {
               </div>
 
               <div>
-                <p className="text-foreground font-medium tabular-nums">Стоимость: 300–1000 $</p>
+                <p className="text-foreground font-medium tabular-nums">Стоимость: 300⟶1000+ $</p>
                 <p className="mt-2">
                   в зависимости от масштаба задачи
                   <br />
