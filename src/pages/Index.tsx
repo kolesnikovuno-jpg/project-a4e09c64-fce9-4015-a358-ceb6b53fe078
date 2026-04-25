@@ -241,7 +241,7 @@ const Index = () => {
                           r="29"
                           fill="none"
                           stroke="hsl(var(--primary))"
-                          strokeWidth="1"
+                          strokeWidth="0.6"
                           strokeDasharray="182"
                           initial={{ strokeDashoffset: 182 }}
                           animate={controls}
