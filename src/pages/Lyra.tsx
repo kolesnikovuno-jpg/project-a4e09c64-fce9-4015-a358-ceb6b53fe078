@@ -359,7 +359,7 @@ const Lyra = () => {
                 transform: "rotate(-90deg) translateX(-12px)",
                 transformOrigin: "left top",
                 position: "absolute",
-                left: "-80px",
+                left: "-70px",
                 bottom: "-48px",
                 padding: 0,
                 whiteSpace: "nowrap",
