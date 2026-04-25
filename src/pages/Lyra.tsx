@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
+import lyraHero from "@/assets/lyra-hero.png";
 
 declare global {
   namespace JSX {
@@ -74,6 +75,14 @@ const Lyra = () => {
 
   return (
     <PageTransition>
+    <section className="relative w-screen h-screen overflow-hidden">
+      <img
+        src={lyraHero}
+        alt="Lyra chair — woman reclining in a sunlit concrete interior"
+        className="absolute inset-0 w-full h-full object-cover"
+        loading="eager"
+      />
+    </section>
     <div className="min-h-screen bg-background flex items-center justify-center relative overflow-x-hidden">
       {/* Back arrow */}
       <button
