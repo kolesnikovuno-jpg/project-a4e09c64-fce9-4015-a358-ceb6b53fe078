@@ -220,16 +220,15 @@ const Index = () => {
                         navigate("/garden");
                       }}
                       className="pointer-events-auto absolute flex items-center justify-center w-[46px] h-[46px] md:w-[60px] md:h-[60px] top-[44px] right-[44px] md:top-[56px] md:right-[56px] rounded-full border border-primary/30 text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
-                      initial={{ scale: 0, opacity: 0 }}
+                      initial={{ opacity: 0 }}
                       animate={controls}
                       variants={{
-                        hidden: { scale: 0, opacity: 0 },
+                        hidden: { opacity: 0 },
                         visible: {
-                          scale: 1,
                           opacity: 1,
                           transition: {
                             delay: 0.3,
-                            duration: 0.4,
+                            duration: 0.35,
                             ease: [0.22, 1, 0.36, 1],
                           },
                         },
