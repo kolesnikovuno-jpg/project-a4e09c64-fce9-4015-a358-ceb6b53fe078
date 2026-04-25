@@ -136,108 +136,117 @@ const Index = () => {
                 exit={{ opacity: 0, scale: 0.96 }}
                 transition={{ duration: 0.2 }}
               >
-                {/* Close button — morphing circle */}
-                <button
-                  onClick={handleClose}
-                  className="absolute right-4 top-4 w-5 h-5 flex items-center justify-center cursor-pointer focus:outline-none"
-                >
-                  <motion.span
-                    layoutId="morph-circle"
-                    className="block w-5 h-5 rounded-full bg-primary/80"
-                    transition={{ type: "spring", stiffness: 200, damping: 28, mass: 0.8 }}
-                  />
-                </button>
-
-                {/* Circle menu — line from close to unocalc */}
-                <div
-                  className="absolute pointer-events-none top-3 right-3 w-[120px] h-[92px] md:top-2 md:right-2 md:w-[160px] md:h-[110px]"
-                >
-                  {/* Mobile SVG: origin at close-button corner → circle center */}
-                  <svg
-                    className="absolute inset-0 w-full h-full md:hidden"
-                    viewBox="0 0 120 92"
-                    fill="none"
-                    preserveAspectRatio="none"
-                  >
-                    <motion.line
-                      x1="110"
-                      y1="14"
-                      x2="68"
-                      y2="50"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth="0.75"
-                      opacity="0.55"
-                      initial={{ pathLength: 0 }}
-                      animate={controls}
-                      variants={{
-                        hidden: { pathLength: 0 },
-                        visible: {
-                          pathLength: 1,
-                          transition: { duration: 0.4, ease: "easeOut" },
-                        },
-                      }}
-                    />
-                  </svg>
-                  {/* Desktop SVG */}
-                  <svg
-                    className="absolute inset-0 w-full h-full hidden md:block"
-                    viewBox="0 0 160 110"
-                    fill="none"
-                    preserveAspectRatio="none"
-                  >
-                    <motion.line
-                      x1="148"
-                      y1="12"
-                      x2="98"
-                      y2="58"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth="0.75"
-                      opacity="0.55"
-                      initial={{ pathLength: 0 }}
-                      animate={controls}
-                      variants={{
-                        hidden: { pathLength: 0 },
-                        visible: {
-                          pathLength: 1,
-                          transition: { duration: 0.4, ease: "easeOut" },
-                        },
-                      }}
-                    />
-                  </svg>
-                  <motion.a
-                    href="/garden"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleClose();
-                      navigate("/garden");
-                    }}
-                    className="pointer-events-auto absolute flex items-center justify-center w-[46px] h-[46px] md:w-[60px] md:h-[60px] left-[45px] top-[27px] md:left-[52px] md:top-[38px] rounded-full border border-primary/30 text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={controls}
-                    variants={{
-                      hidden: { scale: 0, opacity: 0 },
-                      visible: {
-                        scale: 1,
-                        opacity: 1,
-                        transition: { delay: 0.3, duration: 0.25, ease: "easeOut" },
-                      },
-                    }}
+                {/* Close button + circle menu — shared coordinate system anchored at top-right */}
+                <div className="absolute top-4 right-4">
+                  {/* Close button = origin (0,0) of this system */}
+                  <button
+                    onClick={handleClose}
+                    className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center cursor-pointer focus:outline-none z-10"
                   >
                     <motion.span
-                      initial={{ opacity: 0, y: 4 }}
+                      layoutId="morph-circle"
+                      className="block w-5 h-5 rounded-full bg-primary/80"
+                      transition={{ type: "spring", stiffness: 200, damping: 28, mass: 0.8 }}
+                    />
+                  </button>
+
+                  {/* Connector line + circle, positioned relative to the button */}
+                  {/*
+                    Mobile geometry (button is 20x20 at top:0, right:0):
+                      - button center  = (right: 10, top: 10)
+                      - circle (46x46) at top: 44, right: 44 → center (right: 67, top: 67)
+                      - line from button center to circle center
+                    Desktop geometry (button 20x20):
+                      - circle (60x60) at top: 56, right: 56 → center (right: 86, top: 86)
+                  */}
+                  <div className="pointer-events-none">
+                    {/* Mobile SVG */}
+                    <svg
+                      className="absolute md:hidden"
+                      style={{ top: 10, right: 10, width: 57, height: 57 }}
+                      viewBox="0 0 57 57"
+                      fill="none"
+                    >
+                      <motion.line
+                        x1="57"
+                        y1="0"
+                        x2="0"
+                        y2="57"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth="0.75"
+                        opacity="0.55"
+                        initial={{ pathLength: 0 }}
+                        animate={controls}
+                        variants={{
+                          hidden: { pathLength: 0 },
+                          visible: {
+                            pathLength: 1,
+                            transition: { duration: 0.4, ease: "easeOut" },
+                          },
+                        }}
+                      />
+                    </svg>
+                    {/* Desktop SVG */}
+                    <svg
+                      className="absolute hidden md:block"
+                      style={{ top: 10, right: 10, width: 76, height: 76 }}
+                      viewBox="0 0 76 76"
+                      fill="none"
+                    >
+                      <motion.line
+                        x1="76"
+                        y1="0"
+                        x2="0"
+                        y2="76"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth="0.75"
+                        opacity="0.55"
+                        initial={{ pathLength: 0 }}
+                        animate={controls}
+                        variants={{
+                          hidden: { pathLength: 0 },
+                          visible: {
+                            pathLength: 1,
+                            transition: { duration: 0.4, ease: "easeOut" },
+                          },
+                        }}
+                      />
+                    </svg>
+                    <motion.a
+                      href="/garden"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleClose();
+                        navigate("/garden");
+                      }}
+                      className="pointer-events-auto absolute flex items-center justify-center w-[46px] h-[46px] md:w-[60px] md:h-[60px] top-[44px] right-[44px] md:top-[56px] md:right-[56px] rounded-full border border-primary/30 text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
+                      initial={{ scale: 0, opacity: 0 }}
                       animate={controls}
                       variants={{
-                        hidden: { opacity: 0, y: 4 },
+                        hidden: { scale: 0, opacity: 0 },
                         visible: {
+                          scale: 1,
                           opacity: 1,
-                          y: 0,
-                          transition: { delay: 0.45, duration: 0.2 },
+                          transition: { delay: 0.3, duration: 0.25, ease: "easeOut" },
                         },
                       }}
                     >
-                      garden
-                    </motion.span>
-                  </motion.a>
+                      <motion.span
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={controls}
+                        variants={{
+                          hidden: { opacity: 0, y: 4 },
+                          visible: {
+                            opacity: 1,
+                            y: 0,
+                            transition: { delay: 0.45, duration: 0.2 },
+                          },
+                        }}
+                      >
+                        garden
+                      </motion.span>
+                    </motion.a>
+                  </div>
                 </div>
 
                 {/* Header */}
