@@ -196,8 +196,8 @@ const Index = () => {
                       <motion.line
                         x1="76"
                         y1="0"
-                        x2="16"
-                        y2="60"
+                        x2="18"
+                        y2="58"
                         stroke="hsl(var(--primary))"
                         strokeWidth="0.75"
                         opacity="0.55"
