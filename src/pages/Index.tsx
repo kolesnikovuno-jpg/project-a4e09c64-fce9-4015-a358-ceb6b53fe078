@@ -150,10 +150,14 @@ const Index = () => {
 
                 {/* Circle menu — line from close to unocalc */}
                 <div
-                  className="hidden md:block absolute pointer-events-none"
-                  style={{ top: "8px", right: "8px", width: "160px", height: "110px" }}
+                  className="absolute pointer-events-none top-2 right-2 w-[120px] h-[88px] md:w-[160px] md:h-[110px]"
                 >
-                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 160 110" fill="none">
+                  <svg
+                    className="absolute inset-0 w-full h-full"
+                    viewBox="0 0 160 110"
+                    fill="none"
+                    preserveAspectRatio="none"
+                  >
                     <motion.line
                       x1="148"
                       y1="12"
@@ -180,8 +184,7 @@ const Index = () => {
                       handleClose();
                       navigate("/garden");
                     }}
-                    className="pointer-events-auto absolute flex items-center justify-center w-[60px] h-[60px] rounded-full border border-primary/30 text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
-                    style={{ left: "52px", top: "38px" }}
+                    className="pointer-events-auto absolute flex items-center justify-center w-[46px] h-[46px] md:w-[60px] md:h-[60px] left-[34px] top-[28px] md:left-[52px] md:top-[38px] rounded-full border border-primary/30 text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
                     initial={{ scale: 0, opacity: 0 }}
                     animate={controls}
                     variants={{
