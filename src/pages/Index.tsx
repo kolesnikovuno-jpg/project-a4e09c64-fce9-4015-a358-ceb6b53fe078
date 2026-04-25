@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence, LayoutGroup } from "motion/react";
+import { motion, AnimatePresence, LayoutGroup, useAnimation } from "motion/react";
 import { useIsNative } from "@/hooks/use-native";
 
 const Index = () => {
@@ -8,6 +8,18 @@ const Index = () => {
   const [toggled, setToggled] = useState(false);
   const navigate = useNavigate();
   const isNative = useIsNative();
+  const controls = useAnimation();
+
+  useEffect(() => {
+    if (open) {
+      const t = setTimeout(() => {
+        controls.start("visible");
+      }, 400);
+      return () => clearTimeout(t);
+    } else {
+      controls.start("hidden");
+    }
+  }, [open, controls]);
 
   // In the native iOS app, launch directly into the calculator.
   useEffect(() => {
@@ -142,7 +154,7 @@ const Index = () => {
                   style={{ top: "8px", right: "8px", width: "160px", height: "110px" }}
                 >
                   <svg className="absolute inset-0 w-full h-full" viewBox="0 0 160 110" fill="none">
-                    <line
+                    <motion.line
                       x1="148"
                       y1="12"
                       x2="98"
@@ -150,9 +162,18 @@ const Index = () => {
                       stroke="hsl(var(--primary))"
                       strokeWidth="0.75"
                       opacity="0.55"
+                      initial={{ pathLength: 0 }}
+                      animate={controls}
+                      variants={{
+                        hidden: { pathLength: 0 },
+                        visible: {
+                          pathLength: 1,
+                          transition: { duration: 0.4, ease: "easeOut" },
+                        },
+                      }}
                     />
                   </svg>
-                  <a
+                  <motion.a
                     href="/garden"
                     onClick={(e) => {
                       e.preventDefault();
@@ -161,9 +182,32 @@ const Index = () => {
                     }}
                     className="pointer-events-auto absolute flex items-center justify-center w-[60px] h-[60px] rounded-full border border-primary/30 text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
                     style={{ left: "52px", top: "38px" }}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={controls}
+                    variants={{
+                      hidden: { scale: 0, opacity: 0 },
+                      visible: {
+                        scale: 1,
+                        opacity: 1,
+                        transition: { delay: 0.3, duration: 0.25, ease: "easeOut" },
+                      },
+                    }}
                   >
-                    garden
-                  </a>
+                    <motion.span
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={controls}
+                      variants={{
+                        hidden: { opacity: 0, y: 4 },
+                        visible: {
+                          opacity: 1,
+                          y: 0,
+                          transition: { delay: 0.45, duration: 0.2 },
+                        },
+                      }}
+                    >
+                      garden
+                    </motion.span>
+                  </motion.a>
                 </div>
 
                 {/* Header */}
