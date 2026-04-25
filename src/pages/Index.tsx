@@ -150,10 +150,37 @@ const Index = () => {
 
                 {/* Circle menu — line from close to unocalc */}
                 <div
-                  className="absolute pointer-events-none top-2 right-2 w-[120px] h-[88px] md:w-[160px] md:h-[110px]"
+                  className="absolute pointer-events-none top-3 right-3 w-[120px] h-[92px] md:top-2 md:right-2 md:w-[160px] md:h-[110px]"
                 >
+                  {/* Mobile SVG: origin at close-button corner → circle center */}
                   <svg
-                    className="absolute inset-0 w-full h-full"
+                    className="absolute inset-0 w-full h-full md:hidden"
+                    viewBox="0 0 120 92"
+                    fill="none"
+                    preserveAspectRatio="none"
+                  >
+                    <motion.line
+                      x1="110"
+                      y1="14"
+                      x2="68"
+                      y2="50"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth="0.75"
+                      opacity="0.55"
+                      initial={{ pathLength: 0 }}
+                      animate={controls}
+                      variants={{
+                        hidden: { pathLength: 0 },
+                        visible: {
+                          pathLength: 1,
+                          transition: { duration: 0.4, ease: "easeOut" },
+                        },
+                      }}
+                    />
+                  </svg>
+                  {/* Desktop SVG */}
+                  <svg
+                    className="absolute inset-0 w-full h-full hidden md:block"
                     viewBox="0 0 160 110"
                     fill="none"
                     preserveAspectRatio="none"
@@ -184,7 +211,7 @@ const Index = () => {
                       handleClose();
                       navigate("/garden");
                     }}
-                    className="pointer-events-auto absolute flex items-center justify-center w-[46px] h-[46px] md:w-[60px] md:h-[60px] left-[34px] top-[28px] md:left-[52px] md:top-[38px] rounded-full border border-primary/30 text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
+                    className="pointer-events-auto absolute flex items-center justify-center w-[46px] h-[46px] md:w-[60px] md:h-[60px] left-[45px] top-[27px] md:left-[52px] md:top-[38px] rounded-full border border-primary/30 text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
                     initial={{ scale: 0, opacity: 0 }}
                     animate={controls}
                     variants={{
