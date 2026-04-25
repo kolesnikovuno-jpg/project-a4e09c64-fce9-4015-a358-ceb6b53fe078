@@ -75,27 +75,25 @@ const Lyra = () => {
 
   return (
     <PageTransition>
-    <section className="relative w-screen h-screen overflow-hidden">
-      <img
-        src={lyraHero}
-        alt="Lyra chair — woman reclining in a sunlit concrete interior"
-        className="absolute inset-0 w-full h-full object-cover"
-        loading="eager"
-      />
-    </section>
-    <div className="min-h-screen bg-background flex items-center justify-center relative overflow-x-hidden">
-      {/* Back arrow */}
-      <button
-        onClick={() => navigate("/garden")}
-        className="absolute top-8 left-8 p-2 text-[hsl(168_40%_52%)] hover:text-[#C97A63] transition-colors duration-300 z-10"
-        aria-label="Назад"
-      >
-        <ChevronLeft size={24} strokeWidth={1} />
-      </button>
+      <section className="relative w-screen h-screen overflow-hidden">
+        <img
+          src={lyraHero}
+          alt="Lyra chair — woman reclining in a sunlit concrete interior"
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="eager"
+        />
+      </section>
+      <div className="min-h-screen bg-background flex items-center justify-center relative overflow-x-hidden">
+        {/* Back arrow */}
+        <button
+          onClick={() => navigate("/garden")}
+          className="absolute top-8 left-8 p-2 text-[hsl(168_40%_52%)] hover:text-[#C97A63] transition-colors duration-300 z-10"
+          aria-label="Назад"
+        >
+          <ChevronLeft size={24} strokeWidth={1} />
+        </button>
 
-      
-
-      <style>{`
+        <style>{`
         .uno-3d-wrap{
           --pad:clamp(6px,0.9vw,12px);
           position:relative;
@@ -231,125 +229,148 @@ const Lyra = () => {
         }
       `}</style>
 
-      <div className="uno-3d-wrap">
-        <div className="uno-3d-stage">
-          <div className="uno-loader" ref={loaderRef}>
-            <div className="uno-pixel-cloud">
-              {Array.from({ length: 70 }).map((_, i) => {
-                const seed = (i * 9301 + 49297) % 233280;
-                const rand = seed / 233280;
-                const angle = rand * Math.PI * 2;
-                const radius = 8 + Math.sqrt((i * 53) % 100) * 5.5;
-                const tx = Math.cos(angle) * radius;
-                const ty = Math.sin(angle) * radius * 0.75;
-                const wAngle = angle + Math.PI / 2;
-                const wAmp = 4 + ((i * 17) % 7);
-                const wx = Math.cos(wAngle) * wAmp;
-                const wy = Math.sin(wAngle) * wAmp;
-                return (
-                  <i
-                    key={i}
-                    style={{
-                      left: "50%",
-                      top: "50%",
-                      ["--tx" as any]: `${tx}px`,
-                      ["--ty" as any]: `${ty}px`,
-                      ["--wx" as any]: `${wx}px`,
-                      ["--wy" as any]: `${wy}px`,
-                      animationDelay: `${(i * 0.05) % 3.6}s`,
-                    }}
-                  />
-                );
-              })}
+        <div className="uno-3d-wrap">
+          <div className="uno-3d-stage">
+            <div className="uno-loader" ref={loaderRef}>
+              <div className="uno-pixel-cloud">
+                {Array.from({ length: 70 }).map((_, i) => {
+                  const seed = (i * 9301 + 49297) % 233280;
+                  const rand = seed / 233280;
+                  const angle = rand * Math.PI * 2;
+                  const radius = 8 + Math.sqrt((i * 53) % 100) * 5.5;
+                  const tx = Math.cos(angle) * radius;
+                  const ty = Math.sin(angle) * radius * 0.75;
+                  const wAngle = angle + Math.PI / 2;
+                  const wAmp = 4 + ((i * 17) % 7);
+                  const wx = Math.cos(wAngle) * wAmp;
+                  const wy = Math.sin(wAngle) * wAmp;
+                  return (
+                    <i
+                      key={i}
+                      style={{
+                        left: "50%",
+                        top: "50%",
+                        ["--tx" as any]: `${tx}px`,
+                        ["--ty" as any]: `${ty}px`,
+                        ["--wx" as any]: `${wx}px`,
+                        ["--wy" as any]: `${wy}px`,
+                        animationDelay: `${(i * 0.05) % 3.6}s`,
+                      }}
+                    />
+                  );
+                })}
+              </div>
             </div>
-          </div>
 
-          <model-viewer
-            ref={modelRef as any}
-            src={GLB_URL}
-            alt="Lyra — Kolesnikov.UNO"
-            camera-controls
-            interaction-prompt="none"
-            auto-rotate
-            auto-rotate-delay="1200"
-            rotation-per-second="20deg"
-            environment-image="neutral"
-            exposure="1.45"
-            shadow-intensity="0.6"
-            shadow-softness="1"
-            camera-orbit="-8deg 70deg 300%"
-            field-of-view="28deg"
-            crossorigin="anonymous"
-            referrerpolicy="no-referrer"
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "block",
-              background: "hsl(24 26% 94%)",
-            }}
-            ar
-            ar-modes="webxr scene-viewer quick-look"
-            ar-scale="auto"
-            ios-src={USDZ_URL}
-          >
-            <img
-              slot="poster"
-              alt=""
-              src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-            />
-            <button slot="ar-button" className="uno-ar" aria-label="View in AR" title="AR">
-              <svg width="22" height="22" viewBox="-1 -2 26 26" fill="none"
-                stroke="hsl(203 24% 35%)" strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
-                <path d="M12 12l8-4.5" />
-                <path d="M12 12v9" />
-                <path d="M12 12L4 7.5" />
-                <line x1="12" y1="3" x2="12" y2="-1" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
-                <circle cx="12" cy="-1" r="1.2" fill="hsl(203 24% 35%)" stroke="none" />
+            <model-viewer
+              ref={modelRef as any}
+              src={GLB_URL}
+              alt="Lyra — Kolesnikov.UNO"
+              camera-controls
+              interaction-prompt="none"
+              auto-rotate
+              auto-rotate-delay="1200"
+              rotation-per-second="20deg"
+              environment-image="neutral"
+              exposure="1.45"
+              shadow-intensity="0.6"
+              shadow-softness="1"
+              camera-orbit="-8deg 70deg 300%"
+              field-of-view="28deg"
+              crossorigin="anonymous"
+              referrerpolicy="no-referrer"
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "block",
+                background: "hsl(24 26% 94%)",
+              }}
+              ar
+              ar-modes="webxr scene-viewer quick-look"
+              ar-scale="auto"
+              ios-src={USDZ_URL}
+            >
+              <img
+                slot="poster"
+                alt=""
+                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
+              />
+              <button slot="ar-button" className="uno-ar" aria-label="View in AR" title="AR">
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="-1 -2 26 26"
+                  fill="none"
+                  stroke="hsl(203 24% 35%)"
+                  strokeWidth="0.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
+                  <path d="M12 12l8-4.5" />
+                  <path d="M12 12v9" />
+                  <path d="M12 12L4 7.5" />
+                  <line x1="12" y1="3" x2="12" y2="-1" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
+                  <circle cx="12" cy="-1" r="1.2" fill="hsl(203 24% 35%)" stroke="none" />
+                </svg>
+              </button>
+            </model-viewer>
+
+            {/* Stem 05 */}
+            <div className="uno-stem-05">
+              <svg viewBox="-50 0 100 600" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">
+                <line
+                  x1="-30"
+                  y1="555"
+                  x2="30"
+                  y2="555"
+                  stroke="hsl(203 24% 35%)"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                />
+                <line x1="0" y1="555" x2="0" y2="150" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
+                <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
+                  <circle cx="0" cy="150" r="14" fill="none" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
+                  <circle cx="0" cy="150" r="20" fill="transparent" stroke="transparent" />
+                </g>
+                <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
+                  <line x1="0" y1="370" x2="22" y2="370" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
+                  <circle cx="22" cy="370" r="9" fill="none" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
+                  <circle cx="22" cy="370" r="16" fill="transparent" stroke="transparent" />
+                </g>
+                <g className="stem-bud" role="button" tabIndex={0} onClick={() => console.log("05.2")}>
+                  <line x1="0" y1="250" x2="-28" y2="250" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
+                  <circle
+                    cx="-28"
+                    cy="250"
+                    r="6"
+                    fill="hsl(203 24% 35% / 0.45)"
+                    stroke="hsl(203 24% 35%)"
+                    strokeWidth="0.8"
+                  />
+                  <circle cx="-28" cy="250" r="13" fill="transparent" stroke="transparent" />
+                </g>
               </svg>
-            </button>
-          </model-viewer>
+            </div>
 
-          {/* Stem 05 */}
-          <div className="uno-stem-05">
-            <svg viewBox="-50 0 100 600" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">
-              <line x1="-30" y1="555" x2="30" y2="555" stroke="hsl(203 24% 35%)" strokeWidth="1.2" strokeLinecap="round" />
-              <line x1="0" y1="555" x2="0" y2="150" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
-              <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
-                <circle cx="0" cy="150" r="14" fill="none" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
-                <circle cx="0" cy="150" r="20" fill="transparent" stroke="transparent" />
-              </g>
-              <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
-                <line x1="0" y1="370" x2="22" y2="370" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
-                <circle cx="22" cy="370" r="9" fill="none" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
-                <circle cx="22" cy="370" r="16" fill="transparent" stroke="transparent" />
-              </g>
-              <g className="stem-bud" role="button" tabIndex={0} onClick={() => console.log("05.2")}>
-                <line x1="0" y1="250" x2="-28" y2="250" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
-                <circle cx="-28" cy="250" r="6" fill="hsl(203 24% 35% / 0.45)" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
-                <circle cx="-28" cy="250" r="13" fill="transparent" stroke="transparent" />
-              </g>
-            </svg>
-          </div>
-
-          <div
-            className={`uno-overlay-below ${modelLoaded ? 'visible' : ''}`}
-            style={{
-              transform: 'rotate(-90deg)',
-              transformOrigin: 'left top',
-              position: 'absolute',
-              left: '12px',
-              bottom: '-86px',
-              padding: 0,
-              whiteSpace: 'nowrap',
-              zIndex: 4,
-            }}
-          >
-            <p>Чем меньше усилия — тем точнее поддержка.</p>
+            <div
+              className={`uno-overlay-below ${modelLoaded ? "visible" : ""}`}
+              style={{
+                transform: "rotate(-90deg)",
+                transformOrigin: "left top",
+                position: "absolute",
+                left: "12px",
+                bottom: "-46px",
+                padding: 0,
+                whiteSpace: "nowrap",
+                zIndex: 4,
+              }}
+            >
+              <p>Чем меньше усилия — тем точнее поддержка.</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </PageTransition>
   );
 };
