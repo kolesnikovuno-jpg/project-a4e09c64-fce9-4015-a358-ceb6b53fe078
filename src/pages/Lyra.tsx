@@ -360,7 +360,7 @@ const Lyra = () => {
                 transformOrigin: "left top",
                 position: "absolute",
                 left: "12px",
-                bottom: "-52px",
+                bottom: "-54px",
                 padding: 0,
                 whiteSpace: "nowrap",
                 zIndex: 4,
