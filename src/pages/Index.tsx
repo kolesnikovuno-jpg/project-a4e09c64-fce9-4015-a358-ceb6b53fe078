@@ -163,15 +163,15 @@ const Index = () => {
                     {/* Mobile SVG */}
                     <svg
                       className="absolute md:hidden"
-                      style={{ top: 10, right: 10, width: 57, height: 57 }}
-                      viewBox="0 0 57 57"
+                      style={{ top: 10, right: 10, width: 47, height: 47 }}
+                      viewBox="0 0 47 47"
                       fill="none"
                     >
                       <motion.line
-                        x1="57"
+                        x1="47"
                         y1="0"
-                        x2="0"
-                        y2="57"
+                        x2="16.3"
+                        y2="30.7"
                         stroke="hsl(var(--primary))"
                         strokeWidth="0.75"
                         opacity="0.55"
@@ -189,15 +189,15 @@ const Index = () => {
                     {/* Desktop SVG */}
                     <svg
                       className="absolute hidden md:block"
-                      style={{ top: 10, right: 10, width: 76, height: 76 }}
-                      viewBox="0 0 76 76"
+                      style={{ top: 10, right: 10, width: 62, height: 62 }}
+                      viewBox="0 0 62 62"
                       fill="none"
                     >
                       <motion.line
-                        x1="76"
+                        x1="62"
                         y1="0"
-                        x2="0"
-                        y2="76"
+                        x2="20.79"
+                        y2="41.21"
                         stroke="hsl(var(--primary))"
                         strokeWidth="0.75"
                         opacity="0.55"
@@ -219,7 +219,7 @@ const Index = () => {
                         handleClose();
                         navigate("/garden");
                       }}
-                      className="pointer-events-auto absolute flex items-center justify-center w-[46px] h-[46px] md:w-[60px] md:h-[60px] top-[44px] right-[44px] md:top-[56px] md:right-[56px] rounded-full border border-primary/30 text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
+                      className="pointer-events-auto absolute flex items-center justify-center w-[46px] h-[46px] md:w-[60px] md:h-[60px] top-[34px] right-[34px] md:top-[42px] md:right-[42px] rounded-full border border-primary/30 text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
                       initial={{ scale: 0, opacity: 0 }}
                       animate={controls}
                       variants={{
