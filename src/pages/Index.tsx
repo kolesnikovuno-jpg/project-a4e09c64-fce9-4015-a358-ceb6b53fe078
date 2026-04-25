@@ -111,7 +111,7 @@ const Index = () => {
           {open && (
             <motion.div
               data-overlay
-              className="fixed inset-0 z-50 flex items-start md:items-center justify-center overflow-y-auto"
+              className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
