@@ -234,19 +234,19 @@ const Index = () => {
                         },
                       }}
                     >
-                      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 60 60">
                         <motion.circle
-                          cx="50"
-                          cy="50"
-                          r="48"
+                          cx="30"
+                          cy="30"
+                          r="29"
                           fill="none"
                           stroke="hsl(var(--primary))"
                           strokeWidth="1"
-                          strokeDasharray="300"
-                          initial={{ strokeDashoffset: 300 }}
+                          strokeDasharray="182"
+                          initial={{ strokeDashoffset: 182 }}
                           animate={controls}
                           variants={{
-                            hidden: { strokeDashoffset: 300 },
+                            hidden: { strokeDashoffset: 182 },
                             visible: {
                               strokeDashoffset: 0,
                               transition: {
