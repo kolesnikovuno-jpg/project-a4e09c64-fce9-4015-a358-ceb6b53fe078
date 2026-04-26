@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import lyraHero from "@/assets/lyra-hero.png";
-import PixelAssemble from "@/components/PixelAssemble";
 
 declare global {
   namespace JSX {
@@ -42,8 +41,6 @@ const Lyra = () => {
   const modelRef = useRef<HTMLElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
-  const [heroAssembled, setHeroAssembled] = useState(false);
-  const [hideCanvas, setHideCanvas] = useState(false);
 
   useEffect(() => {
     if (!customElements.get("model-viewer")) {
@@ -83,26 +80,8 @@ const Lyra = () => {
           src={lyraHero}
           alt="Lyra chair — woman reclining in a sunlit concrete interior"
           className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center"
-          style={{
-            opacity: heroAssembled ? 1 : 0,
-            transition: "opacity 700ms ease",
-          }}
           loading="eager"
         />
-        {!hideCanvas && (
-          <PixelAssemble
-            src={lyraHero}
-            pixelSize={2}
-            duration={2400}
-            onComplete={() => {
-              // 1) reveal underlying <img> while canvas still fully painted
-              setHeroAssembled(true);
-              // 2) once <img> is fully opaque, drop canvas — no visible jump
-              setTimeout(() => setHideCanvas(true), 750);
-            }}
-            className="absolute inset-0 w-full h-full"
-          />
-        )}
       </section>
       <div className="min-h-screen bg-background flex items-center justify-center relative overflow-x-hidden">
         {/* Back arrow */}

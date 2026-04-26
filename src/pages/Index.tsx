@@ -173,15 +173,15 @@ const Index = () => {
                         x2="12"
                         y2="45"
                         stroke="hsl(var(--primary))"
-                        strokeWidth="0.4"
-                        opacity="0.45"
+                        strokeWidth="0.5"
+                        opacity="0.5"
                         initial={{ pathLength: 0 }}
                         animate={controls}
                         variants={{
                           hidden: { pathLength: 0 },
                           visible: {
                             pathLength: 1,
-                            transition: { duration: 0.28, ease: [0.7, 0, 0.84, 0] },
+                            transition: { duration: 0.32, ease: [0.4, 0, 0.2, 1] },
                           },
                         }}
                       />
@@ -199,15 +199,15 @@ const Index = () => {
                         x2="18"
                         y2="58"
                         stroke="hsl(var(--primary))"
-                        strokeWidth="0.4"
-                        opacity="0.45"
+                        strokeWidth="0.5"
+                        opacity="0.5"
                         initial={{ pathLength: 0 }}
                         animate={controls}
                         variants={{
                           hidden: { pathLength: 0 },
                           visible: {
                             pathLength: 1,
-                            transition: { duration: 0.28, ease: [0.7, 0, 0.84, 0] },
+                            transition: { duration: 0.32, ease: [0.4, 0, 0.2, 1] },
                           },
                         }}
                       />
@@ -219,7 +219,7 @@ const Index = () => {
                         handleClose();
                         navigate("/garden");
                       }}
-                      className="pointer-events-auto absolute flex items-center justify-center w-[52px] h-[52px] md:w-[60px] md:h-[60px] top-[40px] right-[46px] md:top-[52px] md:right-[58px] rounded-full text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors cursor-pointer"
+                      className="pointer-events-auto absolute flex items-center justify-center w-[52px] h-[52px] md:w-[60px] md:h-[60px] top-[39px] right-[45px] md:top-[51px] md:right-[57px] rounded-full text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors cursor-pointer"
                       initial={{ opacity: 0 }}
                       animate={controls}
                       variants={{
@@ -227,7 +227,7 @@ const Index = () => {
                         visible: {
                           opacity: 1,
                           transition: {
-                            delay: 0.62,
+                            delay: 0.5,
                             duration: 0.35,
                             ease: [0.22, 1, 0.36, 1],
                           },
@@ -241,7 +241,7 @@ const Index = () => {
                           r="29"
                           fill="none"
                           stroke="hsl(var(--primary))"
-                          strokeWidth="1.25"
+                          strokeWidth="1.1"
                           strokeDasharray="182"
                           initial={{ strokeDashoffset: 182 }}
                           animate={controls}
@@ -250,8 +250,8 @@ const Index = () => {
                             visible: {
                               strokeDashoffset: 0,
                               transition: {
-                                delay: 0.46,
-                                duration: 0.66,
+                                delay: 0.48,
+                                duration: 0.6,
                                 ease: [0.16, 1, 0.3, 1],
                               },
                             },
@@ -267,7 +267,7 @@ const Index = () => {
                           visible: {
                             opacity: 1,
                             y: 0,
-                            transition: { delay: 0.92, duration: 0.28, ease: [0.22, 1, 0.36, 1] },
+                            transition: { delay: 0.75, duration: 0.25, ease: [0.22, 1, 0.36, 1] },
                           },
                         }}
                       >
