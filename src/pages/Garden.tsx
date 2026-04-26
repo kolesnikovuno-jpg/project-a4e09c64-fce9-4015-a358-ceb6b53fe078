@@ -83,6 +83,7 @@ const Garden = () => {
   const isMobile = useIsMobile();
   const [animated, setAnimated] = useState(false);
   const [activeBud, setActiveBud] = useState<string | null>(null);
+  const [leaving, setLeaving] = useState(false);
   // Password disabled until 2026-04-29 — then restore: sessionStorage.getItem("garden_unlocked") === "true"
   const [unlocked, setUnlocked] = useState(() => {
     const disableUntil = new Date("2026-04-29T00:00:00");
@@ -270,15 +271,23 @@ const Garden = () => {
   };
 
   const handleClick = (id: string) => {
+    const go = (path: string) => {
+      // soft fade-out before navigating to give the destination room to assemble
+      setLeaving(true);
+      setTimeout(() => navigate(path), 420);
+    };
     if (isMobile) {
       if (activeBud === id) {
-        if (routes[id]) navigate(routes[id]);
+        if (routes[id]) {
+          go(routes[id]);
+          return;
+        }
         setActiveBud(null);
       } else {
         setActiveBud(id);
       }
     } else {
-      if (routes[id]) navigate(routes[id]);
+      if (routes[id]) go(routes[id]);
     }
   };
 
@@ -307,7 +316,13 @@ const Garden = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background flex items-center justify-center pt-[18vh] md:pt-[6vh] overflow-hidden relative">
+      <div
+        className="min-h-screen bg-background flex items-center justify-center pt-[18vh] md:pt-[6vh] overflow-hidden relative"
+        style={{
+          opacity: leaving ? 0 : 1,
+          transition: "opacity 420ms ease",
+        }}
+      >
         <div className="absolute top-6 left-6 right-6 flex items-center justify-between">
           <span className="text-sm tracking-[0.15em] text-foreground font-normal select-none">Garden</span>
           <a
