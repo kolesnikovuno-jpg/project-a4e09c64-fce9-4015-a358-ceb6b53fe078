@@ -24,7 +24,6 @@ const PixelAssemble = ({
   className,
 }: PixelAssembleProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [fading, setFading] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -131,9 +130,8 @@ const PixelAssemble = ({
         if (globalT < 1) {
           rafId = requestAnimationFrame(tick);
         } else {
-          // assembled — fade canvas out, reveal underlying <img>
-          setFading(true);
-          setTimeout(() => onComplete?.(), 450);
+          // assembled — let parent reveal the underlying <img>; keep canvas painted
+          onComplete?.();
         }
       };
       rafId = requestAnimationFrame(tick);
@@ -155,11 +153,7 @@ const PixelAssemble = ({
     <canvas
       ref={canvasRef}
       className={className}
-      style={{
-        opacity: fading ? 0 : 1,
-        transition: "opacity 450ms ease",
-        pointerEvents: "none",
-      }}
+      style={{ pointerEvents: "none" }}
     />
   );
 };
