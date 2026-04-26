@@ -43,6 +43,7 @@ const Lyra = () => {
   const loaderRef = useRef<HTMLDivElement>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
   const [heroAssembled, setHeroAssembled] = useState(false);
+  const [hideCanvas, setHideCanvas] = useState(false);
 
   useEffect(() => {
     if (!customElements.get("model-viewer")) {
@@ -84,16 +85,21 @@ const Lyra = () => {
           className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center"
           style={{
             opacity: heroAssembled ? 1 : 0,
-            transition: "opacity 600ms ease",
+            transition: "opacity 700ms ease",
           }}
           loading="eager"
         />
-        {!heroAssembled && (
+        {!hideCanvas && (
           <PixelAssemble
             src={lyraHero}
-            pixelSize={6}
-            duration={1700}
-            onComplete={() => setHeroAssembled(true)}
+            pixelSize={2}
+            duration={1800}
+            onComplete={() => {
+              // 1) reveal underlying <img> while canvas still fully painted
+              setHeroAssembled(true);
+              // 2) once <img> is fully opaque, drop canvas — no visible jump
+              setTimeout(() => setHideCanvas(true), 750);
+            }}
             className="absolute inset-0 w-full h-full"
           />
         )}
