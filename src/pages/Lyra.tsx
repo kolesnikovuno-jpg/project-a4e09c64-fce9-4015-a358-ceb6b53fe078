@@ -93,7 +93,7 @@ const Lyra = () => {
           <PixelAssemble
             src={lyraHero}
             pixelSize={2}
-            duration={1800}
+            duration={2400}
             onComplete={() => {
               // 1) reveal underlying <img> while canvas still fully painted
               setHeroAssembled(true);
