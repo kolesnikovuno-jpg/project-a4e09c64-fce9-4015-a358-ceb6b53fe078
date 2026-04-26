@@ -79,7 +79,7 @@ const Lyra = () => {
         <img
           src={lyraHero}
           alt="Lyra chair — woman reclining in a sunlit concrete interior"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center"
           loading="eager"
         />
       </section>
