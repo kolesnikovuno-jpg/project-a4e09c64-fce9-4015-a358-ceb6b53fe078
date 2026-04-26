@@ -18,7 +18,7 @@ function easeOutCubic(t: number) {
  */
 const PixelAssemble = ({
   src,
-  pixelSize = 6,
+  pixelSize = 2,
   duration = 1600,
   onComplete,
   className,
@@ -86,17 +86,19 @@ const PixelAssemble = ({
           const i = (syIdx * cw + sxIdx) * 4;
           const a = data[i + 3];
           if (a < 8) continue;
-          // scatter origin: random across viewport, biased outward
+          // scatter origin: from all sides — pick a point outside the viewport edges
           const angle = Math.random() * Math.PI * 2;
-          const dist = 200 + Math.random() * Math.max(cw, ch) * 0.6;
+          // distance beyond the diagonal so origin is always off-screen
+          const maxR = Math.hypot(cw, ch) * 0.6;
+          const dist = maxR + Math.random() * maxR * 0.5;
           pixels.push({
             tx: px,
             ty: py,
-            sx: cw / 2 + Math.cos(angle) * dist + (Math.random() - 0.5) * cw,
-            sy: ch / 2 + Math.sin(angle) * dist + (Math.random() - 0.5) * ch,
+            sx: cw / 2 + Math.cos(angle) * dist,
+            sy: ch / 2 + Math.sin(angle) * dist,
             color: `rgb(${data[i]},${data[i + 1]},${data[i + 2]})`,
-            // diagonal-ish reveal: top-left arrives first
-            delay: ((c / cols) * 0.45 + (r / rows) * 0.25) + Math.random() * 0.25,
+            // mostly random arrival so the image converges from every side at once
+            delay: Math.random() * 0.55,
           });
         }
       }
