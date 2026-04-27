@@ -229,7 +229,7 @@ const Index = () => {
                         handleClose();
                         navigate("/garden");
                       }}
-                      className="pointer-events-auto absolute flex items-center justify-center w-[114px] h-[114px] md:w-[114px] md:h-[114px] top-[20px] right-[20px] md:top-[30px] md:right-[30px] rounded-full text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors cursor-pointer"
+                      className="pointer-events-auto absolute flex items-center justify-center w-[98px] h-[98px] md:w-[98px] md:h-[98px] top-[28px] right-[28px] md:top-[38px] md:right-[38px] rounded-full text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors cursor-pointer"
                       initial={{ opacity: 0 }}
                       animate={controls}
                       variants={{
@@ -244,19 +244,19 @@ const Index = () => {
                         },
                       }}
                     >
-                      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 114 114">
+                      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 98 98">
                         <motion.circle
-                          cx="57"
-                          cy="57"
-                          r="55"
+                          cx="49"
+                          cy="49"
+                          r="47"
                           fill="none"
                           stroke="hsl(var(--primary))"
                           strokeWidth="1"
-                          strokeDasharray="346"
-                          initial={{ strokeDashoffset: 346 }}
+                          strokeDasharray="295"
+                          initial={{ strokeDashoffset: 295 }}
                           animate={controls}
                           variants={{
-                            hidden: { strokeDashoffset: 346 },
+                            hidden: { strokeDashoffset: 295 },
                             visible: {
                               strokeDashoffset: 0,
                               transition: {
