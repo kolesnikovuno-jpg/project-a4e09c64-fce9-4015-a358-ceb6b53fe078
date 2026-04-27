@@ -327,17 +327,20 @@ const Lyra = () => {
           {/* Layer 2: 3D scene */}
           <div
             ref={modelLayerRef}
-            className="absolute inset-0 w-full h-full bg-background flex items-center justify-center"
+            className="absolute inset-0 w-full h-full bg-background flex items-center justify-center overflow-x-hidden"
             style={{ opacity: 0, willChange: "opacity", pointerEvents: "none" }}
           >
-            <div className="uno-3d-wrap-fixed w-full h-full">
-              {/* slot — actual 3D content rendered below in normal flow */}
-            </div>
+            <ModelLayerContent
+              navigate={navigate}
+              modelRef={modelRef}
+              loaderRef={loaderRef}
+              modelLoaded={modelLoaded}
+            />
           </div>
         </div>
       </div>
 
-      <div className="min-h-screen bg-background flex items-center justify-center relative overflow-x-hidden">
+      <div className="hidden">
         {/* Back arrow */}
         <button
           onClick={() => navigate("/garden")}
