@@ -73,7 +73,7 @@ const Index = () => {
                 className="absolute w-7 h-7 top-1/2 -translate-y-1/2"
                 initial={false}
                 transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-                animate={{ left: toggled ? 42 : 4 }}
+                animate={{ left: toggled ? 42 : 24 }}
               >
                 <svg width="28" height="28" viewBox="0 0 28 28">
                   <defs>
