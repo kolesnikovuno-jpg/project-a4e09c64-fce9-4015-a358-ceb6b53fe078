@@ -79,6 +79,40 @@ const Lyra = () => {
     return () => mv.removeEventListener("load", onLoad);
   }, []);
 
+  // Scroll-driven crossfade between hero image (layer 1) and 3D scene (layer 2)
+  useEffect(() => {
+    const zone = crossfadeRef.current;
+    const hero = heroLayerRef.current;
+    const model = modelLayerRef.current;
+    if (!zone || !hero || !model) return;
+
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const rect = zone.getBoundingClientRect();
+      const total = zone.offsetHeight - window.innerHeight;
+      const scrolled = Math.max(0, Math.min(total, -rect.top));
+      const p = total > 0 ? scrolled / total : 0; // 0..1
+      // Crossfade with slight overlap in the middle
+      const heroOp = Math.max(0, Math.min(1, 1 - p * 1.4));
+      const modelOp = Math.max(0, Math.min(1, (p - 0.15) * 1.4));
+      hero.style.opacity = String(heroOp);
+      model.style.opacity = String(modelOp);
+      model.style.pointerEvents = modelOp > 0.5 ? "auto" : "none";
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
   // Responsive medium — LOCALIZED around a focal point (cursor / tilt vector).
   // - Base image stays perfectly still.
   // - A duplicate "lens" layer is masked by a radial gradient at the focal
