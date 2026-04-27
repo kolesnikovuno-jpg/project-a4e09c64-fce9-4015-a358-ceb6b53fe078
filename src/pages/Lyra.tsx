@@ -281,15 +281,13 @@ const Lyra = () => {
         <div
           ref={heroLensRef}
           aria-hidden
-          className="absolute inset-0 w-full h-full pointer-events-none"
+          className="hero-lens absolute inset-0 w-full h-full pointer-events-none bg-cover bg-[position:75%_center] md:bg-center"
           style={{
             willChange: "transform, mask-image, opacity",
             transformOrigin: "50% 100%",
             backfaceVisibility: "hidden",
             opacity: 0,
             backgroundImage: `url(${lyraHero})`,
-            backgroundSize: "cover",
-            backgroundPosition: "75% center",
           }}
         />
       </section>
