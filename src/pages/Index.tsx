@@ -65,7 +65,7 @@ const Index = () => {
         <div className="flex items-center justify-center mt-[72px] md:mt-0 translate-x-[22vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
           <button
             onClick={handleToggle}
-            className="group relative flex items-center justify-center bg-primary/70 rounded-full w-[56px] h-[56px] hover:bg-primary/85 transition-colors cursor-pointer"
+            className="group relative flex items-center bg-primary/70 rounded-full w-[76px] h-9 hover:bg-primary/85 transition-colors cursor-pointer"
           >
             {!open && (
               <motion.div
@@ -73,8 +73,7 @@ const Index = () => {
                 className="absolute w-7 h-7"
                 initial={false}
                 transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-                animate={{ left: 14 }}
-                style={{ left: "50%", top: "50%", translateX: "-50%", translateY: "-50%" }}
+                animate={{ left: toggled ? 42 : 4 }}
               >
                 <svg width="28" height="28" viewBox="0 0 28 28">
                   <defs>
@@ -100,7 +99,7 @@ const Index = () => {
               </motion.div>
             )}
             <span
-              className="text-xs font-semibold text-background text-center"
+              className={`text-xs font-semibold text-background transition-all duration-300 ease-in-out ${toggled ? "ml-3" : "ml-10"}`}
             >
               .uno
             </span>
