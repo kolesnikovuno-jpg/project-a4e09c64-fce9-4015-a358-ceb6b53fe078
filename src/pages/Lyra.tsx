@@ -44,6 +44,9 @@ const Lyra = () => {
   const heroRef = useRef<HTMLElement>(null);
   const heroImgRef = useRef<HTMLImageElement>(null);
   const heroLensRef = useRef<HTMLDivElement>(null);
+  const crossfadeRef = useRef<HTMLDivElement>(null);
+  const heroLayerRef = useRef<HTMLDivElement>(null);
+  const modelLayerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!customElements.get("model-viewer")) {
@@ -74,6 +77,40 @@ const Lyra = () => {
 
     mv.addEventListener("load", onLoad);
     return () => mv.removeEventListener("load", onLoad);
+  }, []);
+
+  // Scroll-driven crossfade between hero image (layer 1) and 3D scene (layer 2)
+  useEffect(() => {
+    const zone = crossfadeRef.current;
+    const hero = heroLayerRef.current;
+    const model = modelLayerRef.current;
+    if (!zone || !hero || !model) return;
+
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const rect = zone.getBoundingClientRect();
+      const total = zone.offsetHeight - window.innerHeight;
+      const scrolled = Math.max(0, Math.min(total, -rect.top));
+      const p = total > 0 ? scrolled / total : 0; // 0..1
+      // Crossfade with slight overlap in the middle
+      const heroOp = Math.max(0, Math.min(1, 1 - p * 1.4));
+      const modelOp = Math.max(0, Math.min(1, (p - 0.15) * 1.4));
+      hero.style.opacity = String(heroOp);
+      model.style.opacity = String(modelOp);
+      model.style.pointerEvents = modelOp > 0.5 ? "auto" : "none";
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, []);
 
   // Responsive medium — LOCALIZED around a focal point (cursor / tilt vector).
@@ -280,40 +317,58 @@ const Lyra = () => {
 
   return (
     <PageTransition>
-      <section
-        ref={heroRef}
-        className="relative w-screen h-screen overflow-hidden"
+      {/* Crossfade scroll zone: hero image fades out, 3D fades in */}
+      <div
+        ref={crossfadeRef}
+        className="relative w-screen"
+        style={{ height: "200vh" }}
       >
-        <img
-          ref={heroImgRef}
-          src={lyraHero}
-          alt="Lyra chair — woman reclining in a sunlit concrete interior"
-          className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center"
-          loading="eager"
-          style={{
-            willChange: "transform",
-            transformOrigin: "50% 100%",
-            backfaceVisibility: "hidden",
-          }}
-        />
-        <div
-          ref={heroLensRef}
-          aria-hidden
-          className="hero-lens absolute inset-0 w-full h-full pointer-events-none bg-cover bg-[position:75%_center] md:bg-center"
-          style={{
-            willChange: "transform, mask-image, opacity",
-            transformOrigin: "50% 100%",
-            backfaceVisibility: "hidden",
-            opacity: 0,
-            backgroundImage: `url(${lyraHero})`,
-          }}
-        />
-      </section>
-      <div className="min-h-screen bg-background flex items-center justify-center relative overflow-x-hidden">
-        {/* Back arrow */}
-        <button
+        <div className="sticky top-0 w-screen h-screen overflow-hidden">
+          {/* Layer 1: hero image */}
+          <section
+            ref={heroRef}
+            className="absolute inset-0 w-full h-full overflow-hidden"
+            style={{ willChange: "opacity" }}
+          >
+            <div ref={heroLayerRef} className="absolute inset-0 w-full h-full">
+              <img
+                ref={heroImgRef}
+                src={lyraHero}
+                alt="Lyra chair — woman reclining in a sunlit concrete interior"
+                className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center"
+                loading="eager"
+                style={{
+                  willChange: "transform",
+                  transformOrigin: "50% 100%",
+                  backfaceVisibility: "hidden",
+                }}
+              />
+              <div
+                ref={heroLensRef}
+                aria-hidden
+                className="hero-lens absolute inset-0 w-full h-full pointer-events-none bg-cover bg-[position:75%_center] md:bg-center"
+                style={{
+                  willChange: "transform, mask-image, opacity",
+                  transformOrigin: "50% 100%",
+                  backfaceVisibility: "hidden",
+                  opacity: 0,
+                  backgroundImage: `url(${lyraHero})`,
+                }}
+              />
+            </div>
+          </section>
+
+          {/* Layer 2: 3D scene */}
+          <div
+            ref={modelLayerRef}
+            className="absolute inset-0 w-full h-full bg-background flex items-center justify-center overflow-x-hidden"
+            style={{ opacity: 0, willChange: "opacity", pointerEvents: "none" }}
+          >
+            {/* Back arrow */}
+            <button
           onClick={() => navigate("/garden")}
-          className="absolute top-8 left-8 p-2 text-[hsl(168_40%_52%)] hover:text-[#C97A63] transition-colors duration-300 z-10"
+              className="absolute top-8 left-8 p-2 text-[hsl(168_40%_52%)] hover:text-[#C97A63] transition-colors duration-300 z-10"
+              style={{ pointerEvents: "auto" }}
           aria-label="Назад"
         >
           <ChevronLeft size={24} strokeWidth={1} />
@@ -455,7 +510,7 @@ const Lyra = () => {
         }
       `}</style>
 
-        <div className="uno-3d-wrap">
+            <div className="uno-3d-wrap" style={{ pointerEvents: "auto" }}>
           <div className="uno-3d-stage">
             <div className="uno-loader" ref={loaderRef}>
               <div className="uno-pixel-cloud">
@@ -594,6 +649,8 @@ const Lyra = () => {
             >
               <p>Чем меньше усилия — тем точнее поддержка.</p>
             </div>
+          </div>
+        </div>
           </div>
         </div>
       </div>
