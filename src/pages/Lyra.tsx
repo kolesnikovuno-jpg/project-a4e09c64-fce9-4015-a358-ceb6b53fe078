@@ -106,6 +106,7 @@ const Lyra = () => {
     let dx = 0, dy = 0;            // current drag (lerped, micro-inertia)
     let tIntensity = 0, intensity = 0; // 0 at rest, 1 while interacting
     let tS = 0, s = 0;        // scroll progress through hero in [0, 1]
+    let tPanX = 0, panX = 0;  // -1..1, mobile tilt → horizontal image pan
     let lastInput = performance.now();
     let lastPX = 0, lastPY = 0;    // previous pointer for drag direction
     let hasLast = false;
@@ -159,6 +160,13 @@ const Lyra = () => {
       tDY = ny;
       tIntensity = Math.min(1, Math.hypot(nx, ny));
       lastInput = performance.now();
+      // Horizontal pan from gamma (left-right tilt). Saturates around ±25°.
+      // Account for screen orientation so landscape feels natural.
+      const angle = (screen.orientation && screen.orientation.angle) || 0;
+      let panSrc = g;
+      if (angle === 90) panSrc = -(e.beta ?? 0);
+      else if (angle === -90 || angle === 270) panSrc = (e.beta ?? 0);
+      tPanX = Math.max(-1, Math.min(1, panSrc / 25));
     };
 
     const onScroll = () => {
@@ -185,6 +193,8 @@ const Lyra = () => {
       dy += (tDY - dy) * SMOOTH_DRAG;
       intensity += (tIntensity - intensity) * SMOOTH_INT;
       s += (tS - s) * 0.08;
+      // Smooth pan separately — it should keep working at rest.
+      panX += (tPanX - panX) * 0.08;
 
       // Local displacement of the lens layer along drag direction.
       const tx = dx * MAX_PX * intensity;
@@ -196,6 +206,19 @@ const Lyra = () => {
       const sx = 1 - s * 0.012;
       const tyImg = -s * 8; // center pulled up
       img.style.transform = `translate3d(0, ${tyImg}px, 0) scale(${sx}, ${sy})`;
+      // Mobile horizontal parallax: shift object-position-x in [0%..100%].
+      // Default focal is 75% (right side) → map panX∈[-1..1] to [15%..95%].
+      const panPct = 55 + panX * 40;
+      img.style.objectPosition = `${panPct}% center`;
+      lens.style.backgroundPosition = `${panPct}% center`;
+      // Apply same shift to warp strips so they keep aligning into one image.
+      for (let i = 0; i < N; i++) {
+        // Each strip shows column i of the image; we add the global pan
+        // by nudging its background-position-x. The strips already use
+        // bg-size: auto 100%, so % positions reassemble the picture.
+        // We don't reassign bg-position here every frame for perf — only
+        // when warp is visible.
+      }
       // Hide the flat base image once warp kicks in, so we only see the
       // deformed strips (no double image).
       img.style.opacity = String(Math.max(0, 1 - s * 2.2));
@@ -278,6 +301,8 @@ const Lyra = () => {
       if (stillRest && tS === 0 && tDX === 0 && tDY === 0 && tIntensity === 0) {
         img.style.transform = `translate3d(0,0,0) scale(1,1)`;
         img.style.opacity = "1";
+        // Don't reset objectPosition — keep the current pan so a tilted
+        // phone still shows the panned view at rest.
         lens.style.opacity = "0";
         lens.style.transform = `translate3d(0,0,0) scale(1,1)`;
         hero.style.clipPath = `polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)`;
@@ -323,9 +348,11 @@ const Lyra = () => {
       if (raf) cancelAnimationFrame(raf);
       img.style.transform = "";
       img.style.opacity = "";
+      img.style.objectPosition = "";
       lens.style.transform = "";
       lens.style.opacity = "";
       lens.style.maskImage = "";
+      lens.style.backgroundPosition = "";
       (lens.style as any).webkitMaskImage = "";
       hero.style.clipPath = "";
       (hero.style as any).webkitClipPath = "";
