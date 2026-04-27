@@ -382,8 +382,6 @@ const Lyra = () => {
           {Array.from({ length: 28 }).map((_, i) => {
             const N = 28;
             const stripW = 100 / N;
-            // Shift bg horizontally so strips align into one continuous image.
-            // bg sized to cover hero (width = N * stripW%, i.e. 100%/strip * N).
             return (
               <i
                 key={i}
@@ -392,7 +390,10 @@ const Lyra = () => {
                   width: `${stripW}%`,
                   height: "100%",
                   backgroundImage: `url(${lyraHero})`,
-                  backgroundSize: `${N * 100}% 100%`,
+                  // Each strip shows its own slice of the same image.
+                  // bg sized to cover the WHOLE hero (N * 100% wide), then
+                  // shifted so strip i shows its corresponding column.
+                  backgroundSize: `${N * 100}% cover`,
                   backgroundPosition: `${(i / (N - 1)) * 100}% center`,
                   backgroundRepeat: "no-repeat",
                   transformOrigin: "50% 100%",
