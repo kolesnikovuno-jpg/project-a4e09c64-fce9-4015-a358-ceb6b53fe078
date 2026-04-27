@@ -102,7 +102,6 @@ const Garden = () => {
 
   const routes: Record<string, string> = {
     "05": "/lyra",
-    "05.1": "/unocalc",
   };
 
   const gY = 560;
