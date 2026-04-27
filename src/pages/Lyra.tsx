@@ -44,6 +44,8 @@ const Lyra = () => {
   const heroRef = useRef<HTMLElement>(null);
   const heroImgRef = useRef<HTMLImageElement>(null);
   const heroLensRef = useRef<HTMLDivElement>(null);
+  const heroFoldRef = useRef<HTMLDivElement>(null);
+  const heroWarpRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!customElements.get("model-viewer")) {
@@ -87,7 +89,12 @@ const Lyra = () => {
     const hero = heroRef.current;
     const img = heroImgRef.current;
     const lens = heroLensRef.current;
-    if (!hero || !img || !lens) return;
+    const fold = heroFoldRef.current;
+    const warp = heroWarpRef.current;
+    if (!hero || !img || !lens || !fold || !warp) return;
+
+    const strips = Array.from(warp.children) as HTMLElement[];
+    const N = strips.length;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;
@@ -193,23 +200,97 @@ const Lyra = () => {
       const tx = dx * MAX_PX * intensity;
       const ty = dy * MAX_PX * intensity;
 
-      img.style.transform = `translate3d(0, 0, 0)`;
+      // Scroll-driven "fabric pull": center lifts up slightly, edges sag less.
+      // Vertical stretch + tiny upward translate to suggest tension toward top.
+      const sy = 1 + s * 0.05;
+      const sx = 1 - s * 0.012;
+      const tyImg = -s * 8; // center pulled up
+      img.style.transform = `translate3d(0, ${tyImg}px, 0) scale(${sx}, ${sy})`;
       // Mobile horizontal parallax: shift object-position-x in [0%..100%].
       // Default focal is 75% (right side) → map panX∈[-1..1] to [15%..95%].
       const panPct = 55 + panX * 40;
       img.style.objectPosition = `${panPct}% center`;
       lens.style.backgroundPosition = `${panPct}% center`;
-      img.style.opacity = "1";
+      // Apply same shift to warp strips so they keep aligning into one image.
+      for (let i = 0; i < N; i++) {
+        // Each strip shows column i of the image; we add the global pan
+        // by nudging its background-position-x. The strips already use
+        // bg-size: auto 100%, so % positions reassemble the picture.
+        // We don't reassign bg-position here every frame for perf — only
+        // when warp is visible.
+      }
+      // Hide the flat base image once warp kicks in, so we only see the
+      // deformed strips (no double image).
+      img.style.opacity = String(Math.max(0, 1 - s * 2.2));
 
       // Lens layer = duplicate, displaced + radially masked at focal point.
       // Smooth falloff curve via radial-gradient stops (non-linear, soft edge).
       const rect = hero.getBoundingClientRect();
       const radius = Math.max(120, Math.min(rect.width, rect.height) * 0.22);
       const a = Math.max(0, Math.min(1, intensity));
-      lens.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
+      lens.style.transform = `translate3d(${tx}px, ${ty + tyImg}px, 0) scale(${sx}, ${sy})`;
       lens.style.opacity = String(a);
       lens.style.maskImage = `radial-gradient(circle ${radius}px at ${fx}px ${fy}px, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 0.85) 18%, hsl(0 0% 0% / 0.45) 45%, hsl(0 0% 0% / 0.12) 75%, hsl(0 0% 0% / 0) 100%)`;
       (lens.style as any).webkitMaskImage = lens.style.maskImage;
+
+      // "Fabric fold": bottom edge is no longer straight — it curves inward
+      // toward center, with the midpoint pulled UP (concave) to suggest
+      // material being gathered. Top edge stays rigid.
+      // We build an SVG-style path() with a smooth cubic curve along the bottom.
+      const W = rect.width;
+      const H = rect.height;
+      // Horizontal pinch at bottom corners (px) — grows with scroll.
+      const pinch = s * (W * 0.18);
+      // Vertical lift of the bottom-center (px) — the "fold" depth.
+      const lift = s * (H * 0.12);
+      // Control points sit ~25% from each side, pulled up by `lift`.
+      const blX = pinch;
+      const brX = W - pinch;
+      const cy = H - lift; // center-bottom y
+      const c1x = W * 0.28;
+      const c2x = W * 0.72;
+      const c1y = H - lift * 0.55;
+      const c2y = H - lift * 0.55;
+      // Path: top-left → top-right → bottom-right corner → cubic curve to
+      // bottom-left corner (passing through lifted center) → close.
+      const path =
+        `M 0 0 L ${W} 0 L ${brX} ${H} ` +
+        `C ${c2x} ${c2y}, ${c1x} ${c1y}, ${blX} ${H} Z`;
+      hero.style.clipPath = `path('${path}')`;
+      (hero.style as any).webkitClipPath = `path('${path}')`;
+
+      // ===== Real image deformation via vertical strip warp =====
+      // Each strip shows the same image but offset by background-position-x
+      // and is deformed individually: lifted in the center, stretched at the
+      // edges. This bends the actual pixels (not just clips them).
+      // Activates progressively with `s`.
+      const warpAmt = Math.min(1, s * 1.4);
+      warp.style.opacity = String(warpAmt);
+      if (warpAmt > 0.001) {
+        for (let i = 0; i < N; i++) {
+          const u = (i + 0.5) / N;       // 0..1 across width
+          const d = (u - 0.5) * 2;       // -1..1 from center
+          // Cosine profile: center lifts up most, edges stay near bottom.
+          const lift = Math.cos(d * Math.PI * 0.5); // 1 at center, 0 at edges
+          const sag = -lift * H * 0.10 * s;          // upward translate
+          // Edges shrink vertically (gathered/folded), center stays tall.
+          const stripSY = 1 - (1 - lift) * 0.18 * s;
+          // Slight horizontal pull toward center.
+          const stripTX = -d * W * 0.04 * s;
+          const el = strips[i];
+          el.style.transform =
+            `translate3d(${stripTX}px, ${sag}px, 0) scaleY(${stripSY})`;
+        }
+      }
+
+      // Soft darkening gradient that strengthens the fold (bottom-center shadow).
+      // Opacity grows with scroll; radial focus near the lifted midpoint.
+      const foldA = Math.min(0.22, s * 0.28);
+      fold.style.opacity = String(s);
+      fold.style.background =
+        `radial-gradient(ellipse 70% 38% at 50% ${100 - (lift / H) * 100}%, ` +
+        `hsl(0 0% 0% / ${foldA}) 0%, hsl(0 0% 0% / 0) 70%), ` +
+        `linear-gradient(to bottom, transparent 55%, hsl(0 0% 0% / ${foldA * 0.6}) 100%)`;
 
       // Stop the loop only when fully at rest AND scrolled to top.
       const stillRest =
@@ -223,12 +304,16 @@ const Lyra = () => {
           raf = requestAnimationFrame(tick);
           return;
         }
-        img.style.transform = `translate3d(0,0,0)`;
+        img.style.transform = `translate3d(0,0,0) scale(1,1)`;
         img.style.opacity = "1";
         // Don't reset objectPosition — keep the current pan so a tilted
         // phone still shows the panned view at rest.
         lens.style.opacity = "0";
-        lens.style.transform = `translate3d(0,0,0)`;
+        lens.style.transform = `translate3d(0,0,0) scale(1,1)`;
+        hero.style.clipPath = `polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)`;
+        (hero.style as any).webkitClipPath = `polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)`;
+        fold.style.opacity = "0";
+        warp.style.opacity = "0";
         raf = 0;
         return;
       }
@@ -292,6 +377,16 @@ const Lyra = () => {
       lens.style.maskImage = "";
       lens.style.backgroundPosition = "";
       (lens.style as any).webkitMaskImage = "";
+      hero.style.clipPath = "";
+      (hero.style as any).webkitClipPath = "";
+      if (fold) {
+        fold.style.opacity = "";
+        fold.style.background = "";
+      }
+      if (warp) {
+        warp.style.opacity = "";
+        strips.forEach((el) => (el.style.transform = ""));
+      }
     };
   }, []);
 
@@ -300,6 +395,7 @@ const Lyra = () => {
       <section
         ref={heroRef}
         className="relative w-screen h-screen overflow-hidden"
+        style={{ willChange: "clip-path" }}
       >
         <img
           ref={heroImgRef}
@@ -323,6 +419,51 @@ const Lyra = () => {
             backfaceVisibility: "hidden",
             opacity: 0,
             backgroundImage: `url(${lyraHero})`,
+          }}
+        />
+        {/* Warp grid: vertical strips of the same image, deformed per-strip
+            to bend the actual pixels (fabric gather effect). */}
+        <div
+          ref={heroWarpRef}
+          aria-hidden
+          className="absolute inset-0 w-full h-full pointer-events-none flex"
+          style={{ willChange: "opacity", opacity: 0 }}
+        >
+          {Array.from({ length: 28 }).map((_, i) => {
+            const N = 28;
+            const stripW = 100 / N;
+            return (
+              <i
+                key={i}
+                style={{
+                  display: "block",
+                  width: `${stripW}%`,
+                  height: "100%",
+                  backgroundImage: `url(${lyraHero})`,
+                  // Fit image by HEIGHT (like object-fit: cover vertically).
+                  // Then background-position-x with percentage automatically
+                  // shifts each strip to show its own column of the same image,
+                  // because % positions align "image overflow" with "container
+                  // overflow" — i.e. the strips reassemble the full picture.
+                  backgroundSize: "auto 100%",
+                  backgroundPosition: `${(i / (N - 1)) * 100}% center`,
+                  backgroundRepeat: "no-repeat",
+                  transformOrigin: "50% 100%",
+                  willChange: "transform",
+                  backfaceVisibility: "hidden",
+                }}
+              />
+            );
+          })}
+        </div>
+        <div
+          ref={heroFoldRef}
+          aria-hidden
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          style={{
+            willChange: "opacity, background",
+            opacity: 0,
+            mixBlendMode: "multiply",
           }}
         />
       </section>
