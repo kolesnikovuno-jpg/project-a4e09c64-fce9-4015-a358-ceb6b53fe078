@@ -43,6 +43,7 @@ const Lyra = () => {
   const [modelLoaded, setModelLoaded] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
   const heroImgRef = useRef<HTMLImageElement>(null);
+  const heroLensRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!customElements.get("model-viewer")) {
@@ -75,91 +76,142 @@ const Lyra = () => {
     return () => mv.removeEventListener("load", onLoad);
   }, []);
 
-  // Responsive medium: deterministic, smooth, silent at rest.
-  // - mouse (desktop) / device tilt (mobile) → tiny translate (≤2px)
-  // - scroll within hero → vertical stretch + bottom "neck" via clip-path
-  // - lerp toward target each frame; target decays to 0 when input stops.
+  // Responsive medium — LOCALIZED around a focal point (cursor / tilt vector).
+  // - Base image stays perfectly still.
+  // - A duplicate "lens" layer is masked by a radial gradient at the focal
+  //   point and translated 1–2px along the drag direction (smooth falloff).
+  // - Scroll within hero → vertical stretch + bottom "neck" via clip-path
+  //   (kept as a separate, global guidance — not the local distortion).
+  // - Lerp + micro-inertia (≈40ms) toward target; decays to 0 → silence.
   useEffect(() => {
     const hero = heroRef.current;
     const img = heroImgRef.current;
-    if (!hero || !img) return;
+    const lens = heroLensRef.current;
+    if (!hero || !img || !lens) return;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;
 
-    // Targets (set by input handlers) and current (lerped each frame).
-    let tMX = 0, tMY = 0;     // normalized pointer/tilt in [-1, 1]
-    let mx = 0, my = 0;
+    // Focal point in hero coordinates (px). Drag vector in normalized [-1, 1].
+    let tFX = 0, tFY = 0;          // target focal point (px from hero top-left)
+    let fx = 0, fy = 0;            // current focal point (lerped)
+    let tDX = 0, tDY = 0;          // target drag direction in [-1, 1]
+    let dx = 0, dy = 0;            // current drag (lerped, micro-inertia)
+    let tIntensity = 0, intensity = 0; // 0 at rest, 1 while interacting
     let tS = 0, s = 0;        // scroll progress through hero in [0, 1]
     let lastInput = performance.now();
+    let lastPX = 0, lastPY = 0;    // previous pointer for drag direction
+    let hasLast = false;
     let raf = 0;
 
-    const MAX_PX = 2;          // max translation in pixels — "barely there"
-    const SMOOTH = 0.08;       // lerp factor — smooth, never jittery
-    const REST_AFTER_MS = 600; // after input stops → glide back to rest
+    const MAX_PX = 2;          // strict cap on local displacement
+    const SMOOTH_FOCAL = 0.18; // focal point follows cursor briskly
+    const SMOOTH_DRAG = 0.12;  // drag has slight inertia (~40ms perceived)
+    const SMOOTH_INT = 0.10;   // intensity fades smoothly
+    const REST_AFTER_MS = 120; // brief idle window before fading
 
-    const onMouse = (e: MouseEvent) => {
+    const setFocalFromClient = (clientX: number, clientY: number) => {
       const rect = hero.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      tMX = Math.max(-1, Math.min(1, (e.clientX - cx) / (rect.width / 2)));
-      tMY = Math.max(-1, Math.min(1, (e.clientY - cy) / (rect.height / 2)));
+      const px = clientX - rect.left;
+      const py = clientY - rect.top;
+      // Only respond when pointer is over hero.
+      if (px < 0 || py < 0 || px > rect.width || py > rect.height) return;
+      tFX = px;
+      tFY = py;
+      // Drag direction = pointer delta, normalized & clamped.
+      if (hasLast) {
+        const ddx = px - lastPX;
+        const ddy = py - lastPY;
+        const mag = Math.hypot(ddx, ddy);
+        if (mag > 0.0001) {
+          // Normalize by a small reference speed → saturates quickly.
+          const k = Math.min(1, mag / 24);
+          tDX = (ddx / mag) * k;
+          tDY = (ddy / mag) * k;
+        }
+      }
+      lastPX = px; lastPY = py; hasLast = true;
+      tIntensity = 1;
       lastInput = performance.now();
     };
 
+    const onMouse = (e: MouseEvent) => {
+      setFocalFromClient(e.clientX, e.clientY);
+    };
+
     const onTilt = (e: DeviceOrientationEvent) => {
-      // gamma: left/right [-90, 90], beta: front/back [-180, 180]
+      // Mobile: tilt sets focal point relative to hero center, drag = tilt vector.
+      const rect = hero.getBoundingClientRect();
       const g = e.gamma ?? 0;
-      const b = (e.beta ?? 0) - 30; // ~natural holding angle
-      tMX = Math.max(-1, Math.min(1, g / 25));
-      tMY = Math.max(-1, Math.min(1, b / 25));
+      const b = (e.beta ?? 0) - 30;
+      const nx = Math.max(-1, Math.min(1, g / 20));
+      const ny = Math.max(-1, Math.min(1, b / 20));
+      tFX = rect.width / 2 + nx * (rect.width * 0.35);
+      tFY = rect.height / 2 + ny * (rect.height * 0.35);
+      tDX = nx;
+      tDY = ny;
+      tIntensity = Math.min(1, Math.hypot(nx, ny));
       lastInput = performance.now();
     };
 
     const onScroll = () => {
       const rect = hero.getBoundingClientRect();
-      // 0 when hero fully in view, 1 when fully scrolled past its top edge.
       const progress = Math.max(0, Math.min(1, -rect.top / rect.height));
       tS = progress;
     };
 
     const tick = () => {
       const now = performance.now();
-      // Pointer/tilt target decays to 0 once user stops interacting → silence.
+      // After idle window: fade drag + intensity to 0 → perfect stillness.
       if (now - lastInput > REST_AFTER_MS) {
-        tMX *= 0.92;
-        tMY *= 0.92;
-        if (Math.abs(tMX) < 0.001) tMX = 0;
-        if (Math.abs(tMY) < 0.001) tMY = 0;
+        tDX *= 0.85;
+        tDY *= 0.85;
+        tIntensity *= 0.88;
+        hasLast = false;
+        if (Math.abs(tDX) < 0.001) tDX = 0;
+        if (Math.abs(tDY) < 0.001) tDY = 0;
+        if (tIntensity < 0.002) tIntensity = 0;
       }
-      mx += (tMX - mx) * SMOOTH;
-      my += (tMY - my) * SMOOTH;
-      s += (tS - s) * SMOOTH;
+      fx += (tFX - fx) * SMOOTH_FOCAL;
+      fy += (tFY - fy) * SMOOTH_FOCAL;
+      dx += (tDX - dx) * SMOOTH_DRAG;
+      dy += (tDY - dy) * SMOOTH_DRAG;
+      intensity += (tIntensity - intensity) * SMOOTH_INT;
+      s += (tS - s) * 0.08;
 
-      // Translation: max ~MAX_PX. No rotation, no oscillation.
-      const tx = mx * MAX_PX;
-      const ty = my * MAX_PX;
+      // Local displacement of the lens layer along drag direction.
+      const tx = dx * MAX_PX * intensity;
+      const ty = dy * MAX_PX * intensity;
 
-      // Scroll-driven medium guidance:
-      //  - vertical stretch up to 1.06 (controlled, not liquid)
-      //  - slight horizontal compression toward center
+      // Scroll-driven global guidance applies to base image only.
       const sy = 1 + s * 0.06;
       const sx = 1 - s * 0.015;
+      img.style.transform = `scale(${sx}, ${sy})`;
 
-      img.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${sx}, ${sy})`;
+      // Lens layer = duplicate, displaced + radially masked at focal point.
+      // Smooth falloff curve via radial-gradient stops (non-linear, soft edge).
+      const rect = hero.getBoundingClientRect();
+      const radius = Math.max(120, Math.min(rect.width, rect.height) * 0.22);
+      const a = Math.max(0, Math.min(1, intensity));
+      lens.style.transform = `scale(${sx}, ${sy}) translate3d(${tx}px, ${ty}px, 0)`;
+      lens.style.opacity = String(a);
+      lens.style.maskImage = `radial-gradient(circle ${radius}px at ${fx}px ${fy}px, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 0.85) 18%, hsl(0 0% 0% / 0.45) 45%, hsl(0 0% 0% / 0.12) 75%, hsl(0 0% 0% / 0) 100%)`;
+      (lens.style as any).webkitMaskImage = lens.style.maskImage;
 
       // "Neck": bottom edge narrows toward the center as scroll grows.
-      // Top stays full-width; bottom inset grows from 0% → 22% per side.
       const inset = s * 22;
       hero.style.clipPath = `polygon(0% 0%, 100% 0%, ${100 - inset}% 100%, ${inset}% 100%)`;
 
       // Stop the loop only when fully at rest AND scrolled to top.
       const stillRest =
-        Math.abs(mx) < 0.0005 &&
-        Math.abs(my) < 0.0005 &&
+        Math.abs(dx) < 0.0005 &&
+        Math.abs(dy) < 0.0005 &&
+        intensity < 0.002 &&
         Math.abs(s - tS) < 0.0005;
-      if (stillRest && tS === 0 && tMX === 0 && tMY === 0) {
-        img.style.transform = `translate3d(0,0,0) scale(1,1)`;
+      if (stillRest && tS === 0 && tDX === 0 && tDY === 0 && tIntensity === 0) {
+        img.style.transform = `scale(1,1)`;
+        lens.style.opacity = "0";
+        lens.style.transform = `scale(1,1) translate3d(0,0,0)`;
         hero.style.clipPath = `polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)`;
         raf = 0;
         return;
@@ -172,23 +224,37 @@ const Lyra = () => {
     };
 
     const onMouseWake = (e: MouseEvent) => { onMouse(e); ensureLoop(); };
+    const onLeave = () => {
+      tDX = 0; tDY = 0; tIntensity = 0; hasLast = false;
+      lastInput = 0; // force fade immediately
+      ensureLoop();
+    };
     const onTiltWake = (e: DeviceOrientationEvent) => { onTilt(e); ensureLoop(); };
     const onScrollWake = () => { onScroll(); ensureLoop(); };
 
     window.addEventListener("mousemove", onMouseWake, { passive: true });
+    hero.addEventListener("mouseleave", onLeave);
     window.addEventListener("scroll", onScrollWake, { passive: true });
     window.addEventListener("deviceorientation", onTiltWake);
 
     // Initial sync.
     onScroll();
+    const r0 = hero.getBoundingClientRect();
+    fx = tFX = r0.width / 2;
+    fy = tFY = r0.height / 2;
     ensureLoop();
 
     return () => {
       window.removeEventListener("mousemove", onMouseWake);
+      hero.removeEventListener("mouseleave", onLeave);
       window.removeEventListener("scroll", onScrollWake);
       window.removeEventListener("deviceorientation", onTiltWake);
       if (raf) cancelAnimationFrame(raf);
       img.style.transform = "";
+      lens.style.transform = "";
+      lens.style.opacity = "";
+      lens.style.maskImage = "";
+      (lens.style as any).webkitMaskImage = "";
       hero.style.clipPath = "";
     };
   }, []);
@@ -210,6 +276,18 @@ const Lyra = () => {
             willChange: "transform",
             transformOrigin: "50% 100%",
             backfaceVisibility: "hidden",
+          }}
+        />
+        <div
+          ref={heroLensRef}
+          aria-hidden
+          className="hero-lens absolute inset-0 w-full h-full pointer-events-none bg-cover bg-[position:75%_center] md:bg-center"
+          style={{
+            willChange: "transform, mask-image, opacity",
+            transformOrigin: "50% 100%",
+            backfaceVisibility: "hidden",
+            opacity: 0,
+            backgroundImage: `url(${lyraHero})`,
           }}
         />
       </section>
