@@ -63,14 +63,56 @@ const Index = () => {
       >
         {/* Toggle button — asymmetric placement, shifted right */}
         <div className="flex items-center justify-center mt-[72px] md:mt-0 translate-x-[22vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
+          <div className="group/uno relative flex items-center justify-center">
+            {/* Surrounding circle — same fill as button, mirrors hover/toggled state */}
+            <span
+              aria-hidden
+              className={`pointer-events-none absolute rounded-full w-[76px] h-[76px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/85 ${
+                toggled ? "bg-primary/85" : "bg-primary/70"
+              }`}
+            />
           <button
             onClick={handleToggle}
-            className="relative flex items-center justify-center bg-primary/70 rounded-full w-[76px] h-[76px] hover:bg-primary/85 transition-colors cursor-pointer"
+            className="group/uno relative flex items-center bg-primary/70 rounded-full w-[76px] h-9 hover:bg-primary/85 transition-colors cursor-pointer"
           >
-            <span className="text-xs font-semibold text-background">
+            {!open && (
+              <motion.div
+                layoutId="morph-circle"
+                className="absolute w-7 h-7"
+                initial={false}
+                transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                animate={{ left: toggled ? 42 : 4 }}
+              >
+                <svg width="28" height="28" viewBox="0 0 28 28">
+                  <defs>
+                    <pattern
+                      id="hatch-toggle"
+                      patternUnits="userSpaceOnUse"
+                      width="2.2"
+                      height="2.2"
+                      patternTransform="rotate(45)"
+                    >
+                      <line x1="0" y1="0" x2="0" y2="2.2" stroke="hsl(var(--background))" strokeWidth="1.3" />
+                    </pattern>
+                  </defs>
+                  <circle
+                    cx="14"
+                    cy="14"
+                    r="13"
+                    fill="url(#hatch-toggle)"
+                    stroke="hsl(var(--background))"
+                    strokeWidth="0.8"
+                  />
+                </svg>
+              </motion.div>
+            )}
+            <span
+              className={`text-xs font-semibold text-background transition-all duration-300 ease-in-out ${toggled ? "ml-3" : "ml-10"}`}
+            >
               .uno
             </span>
           </button>
+          </div>
         </div>
 
         {/* Custom overlay popup */}
