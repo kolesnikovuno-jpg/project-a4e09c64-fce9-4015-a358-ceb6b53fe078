@@ -299,6 +299,11 @@ const Lyra = () => {
         intensity < 0.002 &&
         Math.abs(s - tS) < 0.0005;
       if (stillRest && tS === 0 && tDX === 0 && tDY === 0 && tIntensity === 0) {
+        // Keep looping if there's still tilt-pan to settle.
+        if (Math.abs(tPanX - panX) > 0.001) {
+          raf = requestAnimationFrame(tick);
+          return;
+        }
         img.style.transform = `translate3d(0,0,0) scale(1,1)`;
         img.style.opacity = "1";
         // Don't reset objectPosition — keep the current pan so a tilted
@@ -333,6 +338,23 @@ const Lyra = () => {
     window.addEventListener("scroll", onScrollWake, { passive: true });
     window.addEventListener("deviceorientation", onTiltWake);
 
+    // iOS 13+ requires explicit permission for DeviceOrientationEvent.
+    // Request it on the first user touch anywhere on the page.
+    const DOE: any = (window as any).DeviceOrientationEvent;
+    const needsPerm = DOE && typeof DOE.requestPermission === "function";
+    const requestTilt = () => {
+      window.removeEventListener("touchend", requestTilt);
+      if (!needsPerm) return;
+      DOE.requestPermission().then((state: string) => {
+        if (state === "granted") {
+          window.addEventListener("deviceorientation", onTiltWake);
+        }
+      }).catch(() => {});
+    };
+    if (needsPerm) {
+      window.addEventListener("touchend", requestTilt, { once: true });
+    }
+
     // Initial sync.
     onScroll();
     const r0 = hero.getBoundingClientRect();
@@ -345,6 +367,7 @@ const Lyra = () => {
       hero.removeEventListener("mouseleave", onLeave);
       window.removeEventListener("scroll", onScrollWake);
       window.removeEventListener("deviceorientation", onTiltWake);
+      window.removeEventListener("touchend", requestTilt);
       if (raf) cancelAnimationFrame(raf);
       img.style.transform = "";
       img.style.opacity = "";
