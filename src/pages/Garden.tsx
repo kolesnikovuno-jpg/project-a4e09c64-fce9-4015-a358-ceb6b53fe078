@@ -102,6 +102,7 @@ const Garden = () => {
 
   const routes: Record<string, string> = {
     "05": "/lyra",
+    "06.1": "/unocalc",
   };
 
   const gY = 560;
@@ -157,7 +158,7 @@ const Garden = () => {
     {
       x: 760,
       h: 120,
-      branches: [],
+      branches: [{ side: -1, y: 60, len: 32, r: 6, style: "outline" as const }],
       topR: 9,
       topStyle: "outline" as const,
       id: "06",
@@ -214,7 +215,7 @@ const Garden = () => {
     {
       x: 700,
       h: 150,
-      branches: [],
+      branches: [{ side: -1, y: 75, len: 36, r: 11, style: "outline" as const }],
       topR: 14,
       topStyle: "outline" as const,
       id: "06",
