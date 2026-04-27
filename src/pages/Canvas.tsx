@@ -107,7 +107,7 @@ const Canvas = () => {
 
     let animId: number;
     function animate() {
-      c!.fillStyle = "rgba(255,255,255,0.2)";
+      c!.fillStyle = "rgba(245,240,235,0.2)";
       c!.fillRect(0, 0, canvas!.width, canvas!.height);
 
       for (let i = 0; i < particles.length; i++) {
