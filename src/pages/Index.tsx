@@ -29,7 +29,7 @@ const Index = () => {
   const handleToggle = () => {
     if (!toggled) {
       setToggled(true);
-      setTimeout(() => setOpen(true), 350);
+      setTimeout(() => setOpen(true), 250);
     } else {
       setOpen(false);
     }
@@ -319,15 +319,31 @@ const Index = () => {
 
                 {/* Content */}
                 <div className="text-foreground leading-relaxed mt-7 flex flex-col">
-                  <div className="text-left text-foreground">
+                  <motion.div
+                    className="text-left text-foreground"
+                    initial="hidden"
+                    animate={controls}
+                    variants={{
+                      hidden: { opacity: 0, y: 10 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                          delay: 0.65,
+                          duration: 0.35,
+                          ease: [0.22, 1, 0.36, 1],
+                        },
+                      },
+                    }}
+                  >
                     <p className="text-[12px] md:text-[13px] font-light text-foreground/80 tracking-[0.1em] mt-6 mb-1">
                       нет структуры - нет решения.
                     </p>
                     <p className="text-[14px] md:text-[15px] leading-[1.65]">
                       выявляю структуру и собираю форму, в которой всё становится на место.
                     </p>
-                  </div>
-                  <a
+                  </motion.div>
+                  <motion.a
                     href="/pricing"
                     onClick={(e) => {
                       e.preventDefault();
@@ -335,10 +351,37 @@ const Index = () => {
                       navigate("/pricing");
                     }}
                     className="block text-left text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-7"
+                    initial="hidden"
+                    animate={controls}
+                    variants={{
+                      hidden: { opacity: 0, y: 6 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                          delay: 0.85,
+                          duration: 0.3,
+                        },
+                      },
+                    }}
                   >
                     Формат и стоимость →
-                  </a>
-                  <div className="mt-10 pt-4 border-t border-border/20 flex items-baseline gap-2">
+                  </motion.a>
+                  <motion.div
+                    className="mt-10 pt-4 border-t border-border/20 flex items-baseline gap-2"
+                    initial="hidden"
+                    animate={controls}
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: {
+                        opacity: 1,
+                        transition: {
+                          delay: 1.05,
+                          duration: 0.3,
+                        },
+                      },
+                    }}
+                  >
                     <span className="text-[9px] tracking-[0.08em] text-muted-foreground">© 2026</span>
                     <a
                       href="/about"
@@ -351,7 +394,7 @@ const Index = () => {
                     >
                       R.Yury Kolesnikov ⟶
                     </a>
-                  </div>
+                  </motion.div>
                 </div>
               </motion.div>
             </motion.div>
