@@ -330,21 +330,11 @@ const Lyra = () => {
             className="absolute inset-0 w-full h-full bg-background flex items-center justify-center overflow-x-hidden"
             style={{ opacity: 0, willChange: "opacity", pointerEvents: "none" }}
           >
-            <ModelLayerContent
-              navigate={navigate}
-              modelRef={modelRef}
-              loaderRef={loaderRef}
-              modelLoaded={modelLoaded}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="hidden">
-        {/* Back arrow */}
-        <button
+            {/* Back arrow */}
+            <button
           onClick={() => navigate("/garden")}
-          className="absolute top-8 left-8 p-2 text-[hsl(168_40%_52%)] hover:text-[#C97A63] transition-colors duration-300 z-10"
+              className="absolute top-8 left-8 p-2 text-[hsl(168_40%_52%)] hover:text-[#C97A63] transition-colors duration-300 z-10"
+              style={{ pointerEvents: "auto" }}
           aria-label="Назад"
         >
           <ChevronLeft size={24} strokeWidth={1} />
@@ -486,7 +476,7 @@ const Lyra = () => {
         }
       `}</style>
 
-        <div className="uno-3d-wrap">
+            <div className="uno-3d-wrap" style={{ pointerEvents: "auto" }}>
           <div className="uno-3d-stage">
             <div className="uno-loader" ref={loaderRef}>
               <div className="uno-pixel-cloud">
@@ -625,6 +615,8 @@ const Lyra = () => {
             >
               <p>Чем меньше усилия — тем точнее поддержка.</p>
             </div>
+          </div>
+        </div>
           </div>
         </div>
       </div>
