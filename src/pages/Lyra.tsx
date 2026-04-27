@@ -44,6 +44,9 @@ const Lyra = () => {
   const heroRef = useRef<HTMLElement>(null);
   const heroImgRef = useRef<HTMLImageElement>(null);
   const heroLensRef = useRef<HTMLDivElement>(null);
+  const crossfadeRef = useRef<HTMLDivElement>(null);
+  const heroLayerRef = useRef<HTMLDivElement>(null);
+  const modelLayerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!customElements.get("model-viewer")) {
@@ -280,35 +283,60 @@ const Lyra = () => {
 
   return (
     <PageTransition>
-      <section
-        ref={heroRef}
-        className="relative w-screen h-screen overflow-hidden"
+      {/* Crossfade scroll zone: hero image fades out, 3D fades in */}
+      <div
+        ref={crossfadeRef}
+        className="relative w-screen"
+        style={{ height: "200vh" }}
       >
-        <img
-          ref={heroImgRef}
-          src={lyraHero}
-          alt="Lyra chair — woman reclining in a sunlit concrete interior"
-          className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center"
-          loading="eager"
-          style={{
-            willChange: "transform",
-            transformOrigin: "50% 100%",
-            backfaceVisibility: "hidden",
-          }}
-        />
-        <div
-          ref={heroLensRef}
-          aria-hidden
-          className="hero-lens absolute inset-0 w-full h-full pointer-events-none bg-cover bg-[position:75%_center] md:bg-center"
-          style={{
-            willChange: "transform, mask-image, opacity",
-            transformOrigin: "50% 100%",
-            backfaceVisibility: "hidden",
-            opacity: 0,
-            backgroundImage: `url(${lyraHero})`,
-          }}
-        />
-      </section>
+        <div className="sticky top-0 w-screen h-screen overflow-hidden">
+          {/* Layer 1: hero image */}
+          <section
+            ref={heroRef}
+            className="absolute inset-0 w-full h-full overflow-hidden"
+            style={{ willChange: "opacity" }}
+          >
+            <div ref={heroLayerRef} className="absolute inset-0 w-full h-full">
+              <img
+                ref={heroImgRef}
+                src={lyraHero}
+                alt="Lyra chair — woman reclining in a sunlit concrete interior"
+                className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center"
+                loading="eager"
+                style={{
+                  willChange: "transform",
+                  transformOrigin: "50% 100%",
+                  backfaceVisibility: "hidden",
+                }}
+              />
+              <div
+                ref={heroLensRef}
+                aria-hidden
+                className="hero-lens absolute inset-0 w-full h-full pointer-events-none bg-cover bg-[position:75%_center] md:bg-center"
+                style={{
+                  willChange: "transform, mask-image, opacity",
+                  transformOrigin: "50% 100%",
+                  backfaceVisibility: "hidden",
+                  opacity: 0,
+                  backgroundImage: `url(${lyraHero})`,
+                }}
+              />
+            </div>
+          </section>
+
+          {/* Layer 2: 3D scene */}
+          <div
+            ref={modelLayerRef}
+            className="absolute inset-0 w-full h-full bg-background flex items-center justify-center"
+            style={{ opacity: 0, willChange: "opacity", pointerEvents: "none" }}
+          >
+            <div className="uno-3d-wrap-fixed w-full h-full">
+              {/* slot — actual 3D content rendered below in normal flow */}
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="min-h-screen bg-background flex items-center justify-center relative overflow-x-hidden">
         {/* Back arrow */}
         <button
