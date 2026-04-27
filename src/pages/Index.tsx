@@ -37,7 +37,7 @@ const Index = () => {
 
   const handleClose = () => {
     setOpen(false);
-    setToggled(false);
+    setTimeout(() => setToggled(false), 400);
   };
 
   const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -65,12 +65,12 @@ const Index = () => {
         <div className="flex items-center justify-center mt-[72px] md:mt-0 translate-x-[22vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
           <button
             onClick={handleToggle}
-            className="group relative flex items-center justify-center bg-primary/70 rounded-full w-[76px] h-[76px] hover:bg-primary/85 transition-colors cursor-pointer"
+            className="group relative flex items-center bg-primary/70 rounded-full w-[76px] h-9 hover:bg-primary/85 transition-colors cursor-pointer"
           >
             {!open && (
               <motion.div
                 layoutId="morph-circle"
-                className="absolute w-7 h-7 top-[24px]"
+                className="absolute w-7 h-7"
                 initial={false}
                 transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
                 animate={{ left: toggled ? 42 : 4 }}
