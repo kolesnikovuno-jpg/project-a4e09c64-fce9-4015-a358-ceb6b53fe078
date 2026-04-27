@@ -44,6 +44,7 @@ const Lyra = () => {
   const heroRef = useRef<HTMLElement>(null);
   const heroImgRef = useRef<HTMLImageElement>(null);
   const heroLensRef = useRef<HTMLDivElement>(null);
+  const heroFoldRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!customElements.get("model-viewer")) {
@@ -87,7 +88,8 @@ const Lyra = () => {
     const hero = heroRef.current;
     const img = heroImgRef.current;
     const lens = heroLensRef.current;
-    if (!hero || !img || !lens) return;
+    const fold = heroFoldRef.current;
+    if (!hero || !img || !lens || !fold) return;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;
@@ -183,24 +185,57 @@ const Lyra = () => {
       const tx = dx * MAX_PX * intensity;
       const ty = dy * MAX_PX * intensity;
 
-      // Scroll-driven global guidance applies to base image only.
-      const sy = 1 + s * 0.06;
-      const sx = 1 - s * 0.015;
-      img.style.transform = `scale(${sx}, ${sy})`;
+      // Scroll-driven "fabric pull": center lifts up slightly, edges sag less.
+      // Vertical stretch + tiny upward translate to suggest tension toward top.
+      const sy = 1 + s * 0.05;
+      const sx = 1 - s * 0.012;
+      const tyImg = -s * 8; // center pulled up
+      img.style.transform = `translate3d(0, ${tyImg}px, 0) scale(${sx}, ${sy})`;
 
       // Lens layer = duplicate, displaced + radially masked at focal point.
       // Smooth falloff curve via radial-gradient stops (non-linear, soft edge).
       const rect = hero.getBoundingClientRect();
       const radius = Math.max(120, Math.min(rect.width, rect.height) * 0.22);
       const a = Math.max(0, Math.min(1, intensity));
-      lens.style.transform = `scale(${sx}, ${sy}) translate3d(${tx}px, ${ty}px, 0)`;
+      lens.style.transform = `translate3d(${tx}px, ${ty + tyImg}px, 0) scale(${sx}, ${sy})`;
       lens.style.opacity = String(a);
       lens.style.maskImage = `radial-gradient(circle ${radius}px at ${fx}px ${fy}px, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 0.85) 18%, hsl(0 0% 0% / 0.45) 45%, hsl(0 0% 0% / 0.12) 75%, hsl(0 0% 0% / 0) 100%)`;
       (lens.style as any).webkitMaskImage = lens.style.maskImage;
 
-      // "Neck": bottom edge narrows toward the center as scroll grows.
-      const inset = s * 22;
-      hero.style.clipPath = `polygon(0% 0%, 100% 0%, ${100 - inset}% 100%, ${inset}% 100%)`;
+      // "Fabric fold": bottom edge is no longer straight — it curves inward
+      // toward center, with the midpoint pulled UP (concave) to suggest
+      // material being gathered. Top edge stays rigid.
+      // We build an SVG-style path() with a smooth cubic curve along the bottom.
+      const W = rect.width;
+      const H = rect.height;
+      // Horizontal pinch at bottom corners (px) — grows with scroll.
+      const pinch = s * (W * 0.18);
+      // Vertical lift of the bottom-center (px) — the "fold" depth.
+      const lift = s * (H * 0.12);
+      // Control points sit ~25% from each side, pulled up by `lift`.
+      const blX = pinch;
+      const brX = W - pinch;
+      const cy = H - lift; // center-bottom y
+      const c1x = W * 0.28;
+      const c2x = W * 0.72;
+      const c1y = H - lift * 0.55;
+      const c2y = H - lift * 0.55;
+      // Path: top-left → top-right → bottom-right corner → cubic curve to
+      // bottom-left corner (passing through lifted center) → close.
+      const path =
+        `M 0 0 L ${W} 0 L ${brX} ${H} ` +
+        `C ${c2x} ${c2y}, ${c1x} ${c1y}, ${blX} ${H} Z`;
+      hero.style.clipPath = `path('${path}')`;
+      (hero.style as any).webkitClipPath = `path('${path}')`;
+
+      // Soft darkening gradient that strengthens the fold (bottom-center shadow).
+      // Opacity grows with scroll; radial focus near the lifted midpoint.
+      const foldA = Math.min(0.22, s * 0.28);
+      fold.style.opacity = String(s);
+      fold.style.background =
+        `radial-gradient(ellipse 70% 38% at 50% ${100 - (lift / H) * 100}%, ` +
+        `hsl(0 0% 0% / ${foldA}) 0%, hsl(0 0% 0% / 0) 70%), ` +
+        `linear-gradient(to bottom, transparent 55%, hsl(0 0% 0% / ${foldA * 0.6}) 100%)`;
 
       // Stop the loop only when fully at rest AND scrolled to top.
       const stillRest =
@@ -209,10 +244,12 @@ const Lyra = () => {
         intensity < 0.002 &&
         Math.abs(s - tS) < 0.0005;
       if (stillRest && tS === 0 && tDX === 0 && tDY === 0 && tIntensity === 0) {
-        img.style.transform = `scale(1,1)`;
+        img.style.transform = `translate3d(0,0,0) scale(1,1)`;
         lens.style.opacity = "0";
-        lens.style.transform = `scale(1,1) translate3d(0,0,0)`;
+        lens.style.transform = `translate3d(0,0,0) scale(1,1)`;
         hero.style.clipPath = `polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)`;
+        (hero.style as any).webkitClipPath = `polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)`;
+        fold.style.opacity = "0";
         raf = 0;
         return;
       }
@@ -256,6 +293,11 @@ const Lyra = () => {
       lens.style.maskImage = "";
       (lens.style as any).webkitMaskImage = "";
       hero.style.clipPath = "";
+      (hero.style as any).webkitClipPath = "";
+      if (fold) {
+        fold.style.opacity = "";
+        fold.style.background = "";
+      }
     };
   }, []);
 
@@ -288,6 +330,16 @@ const Lyra = () => {
             backfaceVisibility: "hidden",
             opacity: 0,
             backgroundImage: `url(${lyraHero})`,
+          }}
+        />
+        <div
+          ref={heroFoldRef}
+          aria-hidden
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          style={{
+            willChange: "opacity, background",
+            opacity: 0,
+            mixBlendMode: "multiply",
           }}
         />
       </section>
