@@ -41,6 +41,8 @@ const Lyra = () => {
   const modelRef = useRef<HTMLElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
+  const heroRef = useRef<HTMLElement>(null);
+  const heroImgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     if (!customElements.get("model-viewer")) {
@@ -73,14 +75,142 @@ const Lyra = () => {
     return () => mv.removeEventListener("load", onLoad);
   }, []);
 
+  // Responsive medium: deterministic, smooth, silent at rest.
+  // - mouse (desktop) / device tilt (mobile) → tiny translate (≤2px)
+  // - scroll within hero → vertical stretch + bottom "neck" via clip-path
+  // - lerp toward target each frame; target decays to 0 when input stops.
+  useEffect(() => {
+    const hero = heroRef.current;
+    const img = heroImgRef.current;
+    if (!hero || !img) return;
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+
+    // Targets (set by input handlers) and current (lerped each frame).
+    let tMX = 0, tMY = 0;     // normalized pointer/tilt in [-1, 1]
+    let mx = 0, my = 0;
+    let tS = 0, s = 0;        // scroll progress through hero in [0, 1]
+    let lastInput = performance.now();
+    let raf = 0;
+
+    const MAX_PX = 2;          // max translation in pixels — "barely there"
+    const SMOOTH = 0.08;       // lerp factor — smooth, never jittery
+    const REST_AFTER_MS = 600; // after input stops → glide back to rest
+
+    const onMouse = (e: MouseEvent) => {
+      const rect = hero.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      tMX = Math.max(-1, Math.min(1, (e.clientX - cx) / (rect.width / 2)));
+      tMY = Math.max(-1, Math.min(1, (e.clientY - cy) / (rect.height / 2)));
+      lastInput = performance.now();
+    };
+
+    const onTilt = (e: DeviceOrientationEvent) => {
+      // gamma: left/right [-90, 90], beta: front/back [-180, 180]
+      const g = e.gamma ?? 0;
+      const b = (e.beta ?? 0) - 30; // ~natural holding angle
+      tMX = Math.max(-1, Math.min(1, g / 25));
+      tMY = Math.max(-1, Math.min(1, b / 25));
+      lastInput = performance.now();
+    };
+
+    const onScroll = () => {
+      const rect = hero.getBoundingClientRect();
+      // 0 when hero fully in view, 1 when fully scrolled past its top edge.
+      const progress = Math.max(0, Math.min(1, -rect.top / rect.height));
+      tS = progress;
+    };
+
+    const tick = () => {
+      const now = performance.now();
+      // Pointer/tilt target decays to 0 once user stops interacting → silence.
+      if (now - lastInput > REST_AFTER_MS) {
+        tMX *= 0.92;
+        tMY *= 0.92;
+        if (Math.abs(tMX) < 0.001) tMX = 0;
+        if (Math.abs(tMY) < 0.001) tMY = 0;
+      }
+      mx += (tMX - mx) * SMOOTH;
+      my += (tMY - my) * SMOOTH;
+      s += (tS - s) * SMOOTH;
+
+      // Translation: max ~MAX_PX. No rotation, no oscillation.
+      const tx = mx * MAX_PX;
+      const ty = my * MAX_PX;
+
+      // Scroll-driven medium guidance:
+      //  - vertical stretch up to 1.06 (controlled, not liquid)
+      //  - slight horizontal compression toward center
+      const sy = 1 + s * 0.06;
+      const sx = 1 - s * 0.015;
+
+      img.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${sx}, ${sy})`;
+
+      // "Neck": bottom edge narrows toward the center as scroll grows.
+      // Top stays full-width; bottom inset grows from 0% → 22% per side.
+      const inset = s * 22;
+      hero.style.clipPath = `polygon(0% 0%, 100% 0%, ${100 - inset}% 100%, ${inset}% 100%)`;
+
+      // Stop the loop only when fully at rest AND scrolled to top.
+      const stillRest =
+        Math.abs(mx) < 0.0005 &&
+        Math.abs(my) < 0.0005 &&
+        Math.abs(s - tS) < 0.0005;
+      if (stillRest && tS === 0 && tMX === 0 && tMY === 0) {
+        img.style.transform = `translate3d(0,0,0) scale(1,1)`;
+        hero.style.clipPath = `polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)`;
+        raf = 0;
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+
+    const ensureLoop = () => {
+      if (!raf) raf = requestAnimationFrame(tick);
+    };
+
+    const onMouseWake = (e: MouseEvent) => { onMouse(e); ensureLoop(); };
+    const onTiltWake = (e: DeviceOrientationEvent) => { onTilt(e); ensureLoop(); };
+    const onScrollWake = () => { onScroll(); ensureLoop(); };
+
+    window.addEventListener("mousemove", onMouseWake, { passive: true });
+    window.addEventListener("scroll", onScrollWake, { passive: true });
+    window.addEventListener("deviceorientation", onTiltWake);
+
+    // Initial sync.
+    onScroll();
+    ensureLoop();
+
+    return () => {
+      window.removeEventListener("mousemove", onMouseWake);
+      window.removeEventListener("scroll", onScrollWake);
+      window.removeEventListener("deviceorientation", onTiltWake);
+      if (raf) cancelAnimationFrame(raf);
+      img.style.transform = "";
+      hero.style.clipPath = "";
+    };
+  }, []);
+
   return (
     <PageTransition>
-      <section className="relative w-screen h-screen overflow-hidden">
+      <section
+        ref={heroRef}
+        className="relative w-screen h-screen overflow-hidden"
+        style={{ willChange: "clip-path" }}
+      >
         <img
+          ref={heroImgRef}
           src={lyraHero}
           alt="Lyra chair — woman reclining in a sunlit concrete interior"
           className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center"
           loading="eager"
+          style={{
+            willChange: "transform",
+            transformOrigin: "50% 100%",
+            backfaceVisibility: "hidden",
+          }}
         />
       </section>
       <div className="min-h-screen bg-background flex items-center justify-center relative overflow-x-hidden">
