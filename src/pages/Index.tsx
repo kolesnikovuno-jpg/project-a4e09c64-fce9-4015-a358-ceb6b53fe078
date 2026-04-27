@@ -37,7 +37,7 @@ const Index = () => {
 
   const handleClose = () => {
     setOpen(false);
-    setToggled(false);
+    setTimeout(() => setToggled(false), 400);
   };
 
   const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
