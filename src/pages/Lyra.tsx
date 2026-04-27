@@ -45,6 +45,7 @@ const Lyra = () => {
   const heroImgRef = useRef<HTMLImageElement>(null);
   const heroLensRef = useRef<HTMLDivElement>(null);
   const heroFoldRef = useRef<HTMLDivElement>(null);
+  const heroWarpRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!customElements.get("model-viewer")) {
@@ -89,7 +90,11 @@ const Lyra = () => {
     const img = heroImgRef.current;
     const lens = heroLensRef.current;
     const fold = heroFoldRef.current;
-    if (!hero || !img || !lens || !fold) return;
+    const warp = heroWarpRef.current;
+    if (!hero || !img || !lens || !fold || !warp) return;
+
+    const strips = Array.from(warp.children) as HTMLElement[];
+    const N = strips.length;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;
@@ -191,6 +196,9 @@ const Lyra = () => {
       const sx = 1 - s * 0.012;
       const tyImg = -s * 8; // center pulled up
       img.style.transform = `translate3d(0, ${tyImg}px, 0) scale(${sx}, ${sy})`;
+      // Hide the flat base image once warp kicks in, so we only see the
+      // deformed strips (no double image).
+      img.style.opacity = String(Math.max(0, 1 - s * 2.2));
 
       // Lens layer = duplicate, displaced + radially masked at focal point.
       // Smooth falloff curve via radial-gradient stops (non-linear, soft edge).
@@ -228,6 +236,30 @@ const Lyra = () => {
       hero.style.clipPath = `path('${path}')`;
       (hero.style as any).webkitClipPath = `path('${path}')`;
 
+      // ===== Real image deformation via vertical strip warp =====
+      // Each strip shows the same image but offset by background-position-x
+      // and is deformed individually: lifted in the center, stretched at the
+      // edges. This bends the actual pixels (not just clips them).
+      // Activates progressively with `s`.
+      const warpAmt = Math.min(1, s * 1.4);
+      warp.style.opacity = String(warpAmt);
+      if (warpAmt > 0.001) {
+        for (let i = 0; i < N; i++) {
+          const u = (i + 0.5) / N;       // 0..1 across width
+          const d = (u - 0.5) * 2;       // -1..1 from center
+          // Cosine profile: center lifts up most, edges stay near bottom.
+          const lift = Math.cos(d * Math.PI * 0.5); // 1 at center, 0 at edges
+          const sag = -lift * H * 0.10 * s;          // upward translate
+          // Edges shrink vertically (gathered/folded), center stays tall.
+          const stripSY = 1 - (1 - lift) * 0.18 * s;
+          // Slight horizontal pull toward center.
+          const stripTX = -d * W * 0.04 * s;
+          const el = strips[i];
+          el.style.transform =
+            `translate3d(${stripTX}px, ${sag}px, 0) scaleY(${stripSY})`;
+        }
+      }
+
       // Soft darkening gradient that strengthens the fold (bottom-center shadow).
       // Opacity grows with scroll; radial focus near the lifted midpoint.
       const foldA = Math.min(0.22, s * 0.28);
@@ -245,11 +277,13 @@ const Lyra = () => {
         Math.abs(s - tS) < 0.0005;
       if (stillRest && tS === 0 && tDX === 0 && tDY === 0 && tIntensity === 0) {
         img.style.transform = `translate3d(0,0,0) scale(1,1)`;
+        img.style.opacity = "1";
         lens.style.opacity = "0";
         lens.style.transform = `translate3d(0,0,0) scale(1,1)`;
         hero.style.clipPath = `polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)`;
         (hero.style as any).webkitClipPath = `polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)`;
         fold.style.opacity = "0";
+        warp.style.opacity = "0";
         raf = 0;
         return;
       }
@@ -288,6 +322,7 @@ const Lyra = () => {
       window.removeEventListener("deviceorientation", onTiltWake);
       if (raf) cancelAnimationFrame(raf);
       img.style.transform = "";
+      img.style.opacity = "";
       lens.style.transform = "";
       lens.style.opacity = "";
       lens.style.maskImage = "";
@@ -297,6 +332,10 @@ const Lyra = () => {
       if (fold) {
         fold.style.opacity = "";
         fold.style.background = "";
+      }
+      if (warp) {
+        warp.style.opacity = "";
+        strips.forEach((el) => (el.style.transform = ""));
       }
     };
   }, []);
@@ -332,6 +371,41 @@ const Lyra = () => {
             backgroundImage: `url(${lyraHero})`,
           }}
         />
+        {/* Warp grid: vertical strips of the same image, deformed per-strip
+            to bend the actual pixels (fabric gather effect). */}
+        <div
+          ref={heroWarpRef}
+          aria-hidden
+          className="absolute inset-0 w-full h-full pointer-events-none flex"
+          style={{ willChange: "opacity", opacity: 0 }}
+        >
+          {Array.from({ length: 28 }).map((_, i) => {
+            const N = 28;
+            const stripW = 100 / N;
+            return (
+              <i
+                key={i}
+                style={{
+                  display: "block",
+                  width: `${stripW}%`,
+                  height: "100%",
+                  backgroundImage: `url(${lyraHero})`,
+                  // Fit image by HEIGHT (like object-fit: cover vertically).
+                  // Then background-position-x with percentage automatically
+                  // shifts each strip to show its own column of the same image,
+                  // because % positions align "image overflow" with "container
+                  // overflow" — i.e. the strips reassemble the full picture.
+                  backgroundSize: "auto 100%",
+                  backgroundPosition: `${(i / (N - 1)) * 100}% center`,
+                  backgroundRepeat: "no-repeat",
+                  transformOrigin: "50% 100%",
+                  willChange: "transform",
+                  backfaceVisibility: "hidden",
+                }}
+              />
+            );
+          })}
+        </div>
         <div
           ref={heroFoldRef}
           aria-hidden
