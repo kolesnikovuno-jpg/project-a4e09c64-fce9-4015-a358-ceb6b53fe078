@@ -70,7 +70,7 @@ const Index = () => {
             {!open && (
               <motion.div
                 layoutId="morph-circle"
-                className="absolute w-7 h-7 top-1/2 -translate-y-1/2"
+                className="absolute w-7 h-7 top-[24px]"
                 initial={false}
                 transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
                 animate={{ left: toggled ? 42 : 4 }}
