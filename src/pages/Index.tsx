@@ -29,7 +29,7 @@ const Index = () => {
   const handleToggle = () => {
     if (!toggled) {
       setToggled(true);
-      setTimeout(() => setOpen(true), 350);
+      setTimeout(() => setOpen(true), 250);
     } else {
       setOpen(false);
     }
