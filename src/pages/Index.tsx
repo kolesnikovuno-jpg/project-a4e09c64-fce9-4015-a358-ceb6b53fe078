@@ -130,7 +130,7 @@ const Index = () => {
               {/* Backdrop */}
               <motion.div
                 data-overlay
-                className="absolute inset-0 bg-background/65 backdrop-blur-sm"
+                className="absolute inset-0 bg-background/80 backdrop-blur-sm"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -140,7 +140,7 @@ const Index = () => {
               {/* Content card */}
               <motion.div
                 data-popup
-                className="relative z-10 w-full max-w-2xl mx-2 md:mx-4 my-4 border border-border/30 bg-background/65 backdrop-blur-sm p-4 md:p-8 overflow-visible max-h-[calc(100vh-2rem)] overflow-y-auto"
+                className="relative z-10 w-full max-w-2xl mx-2 md:mx-4 my-4 border border-border/30 bg-background/80 backdrop-blur-sm p-4 md:p-8 overflow-visible max-h-[calc(100vh-2rem)] overflow-y-auto"
                 initial={{ opacity: 0, scale: 0.97, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.97, y: 10 }}
