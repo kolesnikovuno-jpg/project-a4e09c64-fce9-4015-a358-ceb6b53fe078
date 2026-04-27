@@ -390,10 +390,12 @@ const Lyra = () => {
                   width: `${stripW}%`,
                   height: "100%",
                   backgroundImage: `url(${lyraHero})`,
-                  // Each strip shows its own slice of the same image.
-                  // bg sized to cover the WHOLE hero (N * 100% wide), then
-                  // shifted so strip i shows its corresponding column.
-                  backgroundSize: `${N * 100}% cover`,
+                  // Fit image by HEIGHT (like object-fit: cover vertically).
+                  // Then background-position-x with percentage automatically
+                  // shifts each strip to show its own column of the same image,
+                  // because % positions align "image overflow" with "container
+                  // overflow" — i.e. the strips reassemble the full picture.
+                  backgroundSize: "auto 100%",
                   backgroundPosition: `${(i / (N - 1)) * 100}% center`,
                   backgroundRepeat: "no-repeat",
                   transformOrigin: "50% 100%",
