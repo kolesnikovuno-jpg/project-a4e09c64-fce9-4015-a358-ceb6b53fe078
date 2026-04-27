@@ -63,9 +63,17 @@ const Index = () => {
       >
         {/* Toggle button — asymmetric placement, shifted right */}
         <div className="flex items-center justify-center mt-[72px] md:mt-0 translate-x-[22vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
+          <div className="group/uno relative flex items-center justify-center">
+            {/* Surrounding circle — same fill as button, mirrors hover/toggled state */}
+            <span
+              aria-hidden
+              className={`pointer-events-none absolute rounded-full w-[120px] h-[120px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/85 ${
+                toggled ? "bg-primary/85" : "bg-primary/70"
+              }`}
+            />
           <button
             onClick={handleToggle}
-            className="group relative flex items-center bg-primary/70 rounded-full w-[76px] h-9 hover:bg-primary/85 transition-colors cursor-pointer"
+            className="group/uno relative flex items-center bg-primary/70 rounded-full w-[76px] h-9 hover:bg-primary/85 transition-colors cursor-pointer"
           >
             {!open && (
               <motion.div
@@ -104,6 +112,7 @@ const Index = () => {
               .uno
             </span>
           </button>
+          </div>
         </div>
 
         {/* Custom overlay popup */}
