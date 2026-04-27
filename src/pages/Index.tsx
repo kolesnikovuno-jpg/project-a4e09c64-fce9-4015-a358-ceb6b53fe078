@@ -342,17 +342,30 @@ const Index = () => {
     выявляю структуру и собираю форму, в которой всё становится на место.
   </p>
 </motion.div>
-                  <a
-                    href="/pricing"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleClose();
-                      navigate("/pricing");
-                    }}
-                    className="block text-left text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-7"
-                  >
-                    Формат и стоимость →
-                  </a>
+                  <motion.a
+  href="/pricing"
+  onClick={(e) => {
+    e.preventDefault();
+    handleClose();
+    navigate("/pricing");
+  }}
+  className="block text-left text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-7"
+  initial="hidden"
+  animate={controls}
+  variants={{
+    hidden: { opacity: 0, y: 6 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: 0.85,
+        duration: 0.3,
+      },
+    },
+  }}
+>
+  Формат и стоимость →
+</motion.a>
                   <div className="mt-10 pt-4 border-t border-border/20 flex items-baseline gap-2">
                     <span className="text-[9px] tracking-[0.08em] text-muted-foreground">© 2026</span>
                     <a
