@@ -67,7 +67,7 @@ const Index = () => {
             {/* Surrounding circle — same fill as button, mirrors hover/toggled state */}
             <span
               aria-hidden
-              className={`pointer-events-none absolute rounded-full w-[120px] h-[120px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/85 ${
+              className={`pointer-events-none absolute rounded-full w-[76px] h-[76px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/85 ${
                 toggled ? "bg-primary/85" : "bg-primary/70"
               }`}
             />
