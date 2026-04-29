@@ -100,6 +100,9 @@ const Lyra = () => {
       hero.style.opacity = String(heroOp);
       model.style.opacity = String(modelOp);
       model.style.pointerEvents = modelOp > 0.5 ? "auto" : "none";
+      if (modelOp >= 0.99) {
+        setModelFullyVisible(true);
+      }
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
