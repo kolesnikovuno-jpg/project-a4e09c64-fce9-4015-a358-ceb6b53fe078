@@ -437,6 +437,14 @@ const Lyra = () => {
         .uno-overlay-below{
           padding:12px 20px 0;
         }
+        .uno-overlay-below{
+          /* Desktop: push closer to the viewport's left edge,
+             past the .uno-3d-wrap horizontal padding (clamp 6-12px). */
+          left:-14px !important;
+        }
+        @media(max-width:768px){
+          .uno-overlay-below{ left:0px !important; }
+        }
         .uno-overlay-below h1,
         .uno-overlay-below p{
           font-family:'Manrope',system-ui,sans-serif;
