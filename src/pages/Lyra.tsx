@@ -639,7 +639,7 @@ const Lyra = () => {
             </div>
 
             <div
-              className={`uno-overlay-below ${modelLoaded ? "visible" : ""}`}
+              className={`uno-overlay-below ${modelLoaded && modelFullyVisible ? "visible" : ""}`}
               style={{
                 transform: "rotate(-90deg) translateX(-12px)",
                 transformOrigin: "left top",
