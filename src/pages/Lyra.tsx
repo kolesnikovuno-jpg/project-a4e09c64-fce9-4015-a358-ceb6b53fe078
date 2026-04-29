@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import lyraHero from "@/assets/lyra-hero.png";
 import LyraInfo from "@/components/LyraInfo";
