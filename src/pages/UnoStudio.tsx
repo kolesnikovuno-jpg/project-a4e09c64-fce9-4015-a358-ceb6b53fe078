@@ -19,7 +19,7 @@ const UnoStudio = () => {
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="grid grid-cols-3 gap-[3%] aspect-square w-[20vw] min-w-[180px]"
+        className="grid grid-cols-3 gap-[4%] aspect-square w-[20vw] min-w-[180px]"
       >
         {squares.map((_, i) => (
           <a
