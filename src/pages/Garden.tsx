@@ -60,6 +60,34 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, onHover, delay, v
 
 const GARDEN_PASSWORD = "1111";
 
+const TypewriterLabel = ({ text }: { text: string | null }) => {
+  const [displayed, setDisplayed] = useState("");
+
+  useEffect(() => {
+    if (!text) {
+      setDisplayed("");
+      return;
+    }
+    setDisplayed("");
+    let i = 0;
+    const interval = setInterval(() => {
+      i++;
+      setDisplayed(text.slice(0, i));
+      if (i >= text.length) clearInterval(interval);
+    }, 55);
+    return () => clearInterval(interval);
+  }, [text]);
+
+  return (
+    <span
+      className="text-sm text-foreground font-normal"
+      style={{ letterSpacing: "0.35em" }}
+    >
+      {displayed || "\u00A0"}
+    </span>
+  );
+};
+
 const Garden = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -312,17 +340,9 @@ const Garden = () => {
         {/* Floating label above stems, aligned to right edge */}
         <div
           className="absolute right-6 left-6 text-right pointer-events-none select-none z-10"
-          style={{ top: "calc(18vh - 2.5rem)" }}
+          style={{ top: "calc(18vh - 2.5rem + 15px)" }}
         >
-          <span
-            className="text-sm tracking-[0.15em] text-foreground font-normal"
-            style={{
-              opacity: displayedLabel ? 1 : 0,
-              transition: "opacity 0.25s ease",
-            }}
-          >
-            {displayedLabel || "\u00A0"}
-          </span>
+          <TypewriterLabel text={displayedLabel} />
         </div>
         <svg
           viewBox={`0 0 ${vbWidth} 600`}
