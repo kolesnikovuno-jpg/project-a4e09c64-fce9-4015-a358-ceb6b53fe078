@@ -41,6 +41,7 @@ const Lyra = () => {
   const modelRef = useRef<HTMLElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
+  const [modelFullyVisible, setModelFullyVisible] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
   const heroImgRef = useRef<HTMLImageElement>(null);
   const heroLensRef = useRef<HTMLDivElement>(null);
@@ -99,6 +100,9 @@ const Lyra = () => {
       hero.style.opacity = String(heroOp);
       model.style.opacity = String(modelOp);
       model.style.pointerEvents = modelOp > 0.5 ? "auto" : "none";
+      if (modelOp >= 0.99) {
+        setModelFullyVisible(true);
+      }
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
@@ -635,7 +639,7 @@ const Lyra = () => {
             </div>
 
             <div
-              className={`uno-overlay-below ${modelLoaded ? "visible" : ""}`}
+              className={`uno-overlay-below ${modelLoaded && modelFullyVisible ? "visible" : ""}`}
               style={{
                 transform: "rotate(-90deg) translateX(-12px)",
                 transformOrigin: "left top",
