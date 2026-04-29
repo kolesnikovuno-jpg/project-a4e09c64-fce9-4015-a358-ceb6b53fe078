@@ -11,20 +11,25 @@ const UnoStudio = () => {
     }
   }, [navigate]);
 
+  const squares = Array.from({ length: 9 });
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-6">
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-xl w-full text-left -ml-[0.35em]"
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="grid grid-cols-3 gap-[6%] aspect-square w-[20vw] min-w-[180px]"
       >
-        <span className="text-base tracking-[0.15em] font-normal text-foreground">
-          .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">studio</span>
-        </span>
-        <p className="mt-8 text-foreground/80 text-[15px] leading-[1.7] ml-[0.35em]">
-          Закрытое пространство студии.
-        </p>
+        {squares.map((_, i) => (
+          <a
+            key={i}
+            href="#"
+            aria-label={`Раздел ${i + 1}`}
+            className="block w-full aspect-square transition-all duration-300 hover:brightness-110 hover:shadow-[0_0_24px_rgba(200,217,230,0.5)] active:brightness-125"
+            style={{ backgroundColor: "#C8D9E6" }}
+          />
+        ))}
       </motion.div>
     </div>
   );
