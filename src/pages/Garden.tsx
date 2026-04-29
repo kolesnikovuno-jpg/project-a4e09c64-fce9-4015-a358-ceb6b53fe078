@@ -55,7 +55,16 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, onHover, delay, v
         fill={filled ? "hsl(203 24% 45%)" : hatched ? `url(#${hatchId})` : "none"}
         stroke="hsl(203 24% 35%)"
         strokeWidth="0.8"
-        className="transition-all duration-300"
+      />
+      {/* Highlight overlay — appears on hover/active without touching base fill */}
+      <circle
+        className="garden-bud-highlight"
+        cx={cx}
+        cy={cy}
+        r={r}
+        fill="#C8D9E6"
+        stroke="#A8BDD0"
+        strokeWidth="1.4"
       />
       <circle cx={cx} cy={cy} r={r + 6} fill="transparent" stroke="transparent" className="garden-hit" />
     </g>
@@ -458,17 +467,17 @@ const Garden = () => {
           0%,100%{border-right-color:transparent;}
           50%{border-right-color:hsl(203 24% 40% / 0.6);}
         }
-        .garden-bud circle:first-of-type{
-          transition: fill 0.35s ease, stroke 0.35s ease, stroke-width 0.35s ease;
+        .garden-bud-highlight{
+          opacity:0;
+          pointer-events:none;
+          transition: opacity 0.35s ease;
         }
-        .garden-bud.is-active circle:first-of-type,
-        .garden-bud:hover circle:first-of-type,
-        .garden-bud:focus-visible circle:first-of-type{
-          fill:#C8D9E6;
-          stroke:#A8BDD0;
-          stroke-width:1.4;
-          outline:none;
+        .garden-bud.is-active .garden-bud-highlight,
+        .garden-bud:hover .garden-bud-highlight,
+        .garden-bud:focus-visible .garden-bud-highlight{
+          opacity:1;
         }
+        .garden-bud:focus-visible{ outline:none; }
       `}</style>
       </div>
     </PageTransition>
