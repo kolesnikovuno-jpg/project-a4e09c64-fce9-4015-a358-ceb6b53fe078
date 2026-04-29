@@ -41,6 +41,7 @@ const Lyra = () => {
   const modelRef = useRef<HTMLElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
+  const [modelFullyVisible, setModelFullyVisible] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
   const heroImgRef = useRef<HTMLImageElement>(null);
   const heroLensRef = useRef<HTMLDivElement>(null);
