@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import lyraHero from "@/assets/lyra-hero.png";
+import LyraInfo from "@/components/LyraInfo";
 
 declare global {
   namespace JSX {
@@ -658,6 +659,7 @@ const Lyra = () => {
           </div>
         </div>
       </div>
+      <LyraInfo />
     </PageTransition>
   );
 };
