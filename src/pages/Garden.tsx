@@ -18,11 +18,15 @@ interface BudProps {
   visible: boolean;
 }
 
-const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, onHover, delay, visible }: BudProps) => {
+interface BudPropsExt extends BudProps {
+  active?: boolean;
+}
+
+const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, onHover, delay, visible, active }: BudPropsExt) => {
   const hatchId = `hatch-${id}`;
   return (
     <g
-      className="garden-bud"
+      className={`garden-bud${active ? " is-active" : ""}`}
       onClick={onClick}
       onMouseEnter={() => onHover?.(id)}
       onMouseLeave={() => onHover?.(null)}
