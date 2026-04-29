@@ -467,19 +467,36 @@ const Lyra = () => {
         @keyframes unoCaret{
           50%{border-right-color:hsl(203 24% 40% / 0.6);}
         }
-        .uno-ar{
-          position:fixed; right:22px; bottom:64px;
-          z-index:60;
-          width:34px; height:34px; border-radius:50%;
-          background:#C8D9E6; border:none; padding:0;
-          display:flex; align-items:center; justify-content:center;
-          cursor:pointer; transition:background .25s ease, opacity .25s ease;
-          opacity:0.95;
+        /* Minimal text buttons — gallery-style.
+           A barely-there blurred backdrop ensures legibility over photo & model. */
+        .uno-mini-btn{
+          font-family:ui-monospace,'SF Mono','JetBrains Mono',monospace;
+          font-size:11px;
+          letter-spacing:0.14em;
+          text-transform:lowercase;
+          color:hsl(0 0% 18%);
+          background:hsl(0 0% 100% / 0.45);
+          backdrop-filter:blur(8px) saturate(1.1);
+          -webkit-backdrop-filter:blur(8px) saturate(1.1);
+          border:none;
+          padding:7px 11px;
+          border-radius:2px;
+          cursor:pointer;
+          line-height:1;
+          transition:color .25s ease, background .25s ease, opacity .25s ease;
+          opacity:0.85;
         }
-        .uno-ar:hover{ background:#bcd0e0; opacity:1; }
-        .uno-ar svg{ display:block; }
+        .uno-mini-btn:hover{ color:hsl(0 0% 0%); opacity:1; background:hsl(0 0% 100% / 0.6); }
+        .uno-mini-btn--back{
+          position:absolute; top:16px; left:16px; z-index:10;
+        }
+        .uno-mini-btn--ar{
+          position:fixed; right:18px; bottom:60px; z-index:60;
+        }
         @media(max-width:768px){
-          .uno-ar{ width:38px; height:38px; right:16px; bottom:64px; }
+          .uno-mini-btn{ font-size:11px; padding:8px 12px; }
+          .uno-mini-btn--ar{ right:14px; bottom:60px; }
+          .uno-mini-btn--back{ top:12px; left:12px; }
         }
         model-viewer::part(default-ar-button){ display:none !important; }
         model-viewer [slot="ar-button"]{ display:none !important; }
@@ -556,7 +573,7 @@ const Lyra = () => {
             {modelFullyVisible && (
               <button
                 type="button"
-                className="uno-ar"
+                className="uno-mini-btn uno-mini-btn--ar"
                 aria-label="View in AR"
                 title="AR"
                 onClick={() => {
@@ -566,18 +583,7 @@ const Lyra = () => {
                   }
                 }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path
-                    d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"
-                    stroke="#567C8D"
-                    strokeWidth="1.4"
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                  />
-                  <path d="M12 12l8-4.5" stroke="#567C8D" strokeWidth="1.4" strokeLinecap="round" />
-                  <path d="M12 12v9" stroke="#567C8D" strokeWidth="1.4" strokeLinecap="round" />
-                  <path d="M12 12L4 7.5" stroke="#567C8D" strokeWidth="1.4" strokeLinecap="round" />
-                </svg>
+                ar
               </button>
             )}
 
