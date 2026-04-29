@@ -585,10 +585,10 @@ const Lyra = () => {
             <div
               className={`uno-overlay-below ${modelLoaded && modelFullyVisible ? "visible" : ""}`}
               style={{
-                transform: "rotate(-90deg) translateX(-12px)",
+                transform: "rotate(-90deg)",
                 transformOrigin: "left top",
                 position: "absolute",
-                left: "calc((min(1100px, 100%) - 100vw) / 2 - var(--pad, 12px))",
+                left: "calc((min(1100px, 100%) - 100vw) / 2 - var(--pad, 12px) + 8px)",
                 bottom: "-54px",
                 padding: 0,
                 whiteSpace: "nowrap",
