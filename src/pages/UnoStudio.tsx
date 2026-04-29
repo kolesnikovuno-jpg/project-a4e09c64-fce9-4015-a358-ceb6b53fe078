@@ -19,14 +19,14 @@ const UnoStudio = () => {
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="grid grid-cols-3 gap-[6%] aspect-square w-[20vw] min-w-[180px]"
+        className="grid grid-cols-3 gap-[3%] aspect-square w-[20vw] min-w-[180px]"
       >
         {squares.map((_, i) => (
           <a
             key={i}
             href="#"
             aria-label={`Раздел ${i + 1}`}
-            className="block w-full aspect-square transition-all duration-300 hover:brightness-110 hover:shadow-[0_0_24px_rgba(200,217,230,0.5)] active:brightness-125"
+            className="block w-full aspect-square transition-all duration-300 hover:brightness-90 active:brightness-75"
             style={{ backgroundColor: "#C8D9E6" }}
           />
         ))}
