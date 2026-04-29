@@ -85,7 +85,7 @@ const Garden = () => {
   const [activeBud, setActiveBud] = useState<string | null>(null);
   // Password disabled until 2026-04-29 — then restore: sessionStorage.getItem("garden_unlocked") === "true"
   const [unlocked, setUnlocked] = useState(() => {
-    const disableUntil = new Date("2026-04-29T00:00:00");
+    const disableUntil = new Date("2026-05-29T00:00:00");
     return new Date() < disableUntil ? true : sessionStorage.getItem("garden_unlocked") === "true";
   });
   const [passInput, setPassInput] = useState("");
