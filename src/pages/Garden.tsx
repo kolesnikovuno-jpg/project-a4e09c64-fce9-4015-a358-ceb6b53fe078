@@ -18,11 +18,15 @@ interface BudProps {
   visible: boolean;
 }
 
-const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, onHover, delay, visible }: BudProps) => {
+interface BudPropsExt extends BudProps {
+  active?: boolean;
+}
+
+const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, onHover, delay, visible, active }: BudPropsExt) => {
   const hatchId = `hatch-${id}`;
   return (
     <g
-      className="garden-bud"
+      className={`garden-bud${active ? " is-active" : ""}`}
       onClick={onClick}
       onMouseEnter={() => onHover?.(id)}
       onMouseLeave={() => onHover?.(null)}
@@ -90,7 +94,7 @@ const Garden = () => {
     "02": "Интерьер",
     "03": "Предмет",
     "04": "Графика",
-    "05": "Lyra: Форма, где тело не держит себя",
+    "05": "Lyra — кресло",
     "06": "Эскиз",
     "06.1": "unocalc",
   };
@@ -380,6 +384,7 @@ const Garden = () => {
                   onHover={setHoveredBud}
                   delay={budDelays[stem.id] || 1}
                   visible={animated}
+                  active={displayedLabelId === stem.id}
                 />
                 {/* Branches */}
                 {stem.branches.map((br, i) => {
@@ -416,6 +421,7 @@ const Garden = () => {
                         showLabel={activeBud === subId}
                         delay={budDelays[subId] || 1.2}
                         visible={animated}
+                        active={displayedLabelId === subId}
                       />
                     </g>
                   );
@@ -429,10 +435,10 @@ const Garden = () => {
         .garden-typewriter{
           display:inline-block;
           font-family:'Manrope',system-ui,sans-serif;
-          font-size:13px;
+          font-size:14px;
           font-weight:300;
-          letter-spacing:0.54em;
-          color:hsl(0 0% 45%);
+          letter-spacing:0.28em;
+          color:hsl(0 0% 55%);
           overflow:hidden;
           white-space:nowrap;
           width:0;
@@ -441,15 +447,20 @@ const Garden = () => {
           vertical-align:bottom;
         }
         .garden-typewriter.visible{
-          animation:gardenType 1.4s steps(40,end) .2s forwards,
-                    gardenCaret .7s step-end .2s 3;
+          animation:gardenType 1.2s steps(32,end) .15s forwards,
+                    gardenCaret .7s step-end .15s 1 forwards;
         }
         @keyframes gardenType{
           from{width:0;}
           to{width:100%;}
         }
         @keyframes gardenCaret{
+          0%,100%{border-right-color:transparent;}
           50%{border-right-color:hsl(203 24% 40% / 0.6);}
+        }
+        .garden-bud.is-active circle:first-of-type{
+          stroke-width:1.8;
+          filter:drop-shadow(0 0 6px hsl(203 24% 45% / 0.55));
         }
         .garden-bud:hover circle:first-of-type {
           stroke-width: 1.8;
