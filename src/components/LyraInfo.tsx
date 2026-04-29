@@ -25,24 +25,48 @@ const LyraInfo = () => {
       <style>{`
         .lyra-info-btn{
           position:fixed; right:22px; bottom:22px; z-index:60;
-          width:34px; height:34px; border-radius:50%;
-          background:rgba(255,255,255,0.55);
+          width:38px; height:38px; border-radius:50%;
+          background:
+            radial-gradient(circle at 32% 28%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.55) 22%, rgba(255,255,255,0.18) 55%, rgba(220,228,232,0.25) 100%),
+            radial-gradient(circle at 65% 85%, rgba(86,124,141,0.18) 0%, rgba(86,124,141,0) 60%);
           backdrop-filter:blur(10px);
           -webkit-backdrop-filter:blur(10px);
-          border:1px solid rgba(86,124,141,0.35);
-          padding:0; cursor:pointer;
+          border:1px solid rgba(86,124,141,0.25);
+          box-shadow:
+            inset 0 1px 1.5px rgba(255,255,255,0.9),
+            inset 0 -2px 3px rgba(86,124,141,0.18),
+            0 4px 10px rgba(86,124,141,0.18),
+            0 1px 2px rgba(0,0,0,0.06);
+          padding:0; cursor:pointer; position:fixed;
           display:flex; align-items:center; justify-content:center;
-          transition:background .25s ease, border-color .25s ease;
-          opacity:0.85;
+          transition:transform .25s ease, box-shadow .25s ease;
+          opacity:0.95;
         }
         .lyra-info-btn:hover{
-          background:rgba(255,255,255,0.8);
-          border-color:rgba(86,124,141,0.55);
+          transform:translateY(-1px);
+          box-shadow:
+            inset 0 1px 1.5px rgba(255,255,255,0.95),
+            inset 0 -2px 3px rgba(86,124,141,0.22),
+            0 6px 14px rgba(86,124,141,0.25),
+            0 1px 2px rgba(0,0,0,0.08);
           opacity:1;
+        }
+        .lyra-info-btn:active{
+          transform:translateY(0);
+          box-shadow:
+            inset 0 1px 1px rgba(255,255,255,0.7),
+            inset 0 -1px 2px rgba(86,124,141,0.15),
+            0 2px 6px rgba(86,124,141,0.18);
+        }
+        .lyra-info-btn .icon-wrap{
+          position:relative;
+          display:flex; align-items:center; justify-content:center;
+          filter: drop-shadow(0 1px 1px rgba(86,124,141,0.35));
+          transform: translateY(-0.5px);
         }
         .lyra-info-btn svg{ display:block; }
         @media(max-width:768px){
-          .lyra-info-btn{ width:38px; height:38px; right:16px; bottom:16px; }
+          .lyra-info-btn{ width:42px; height:42px; right:16px; bottom:16px; }
         }
         .lyra-info-overlay{
           position:fixed; inset:0; background:rgba(0,0,0,0.1);
@@ -100,10 +124,12 @@ const LyraInfo = () => {
         aria-label="info"
         onClick={() => setOpen(true)}
       >
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <circle cx="7" cy="3" r="0.85" fill="#567C8D" />
-          <line x1="7" y1="6" x2="7" y2="11" stroke="#567C8D" strokeWidth="0.9" strokeLinecap="round" />
-        </svg>
+        <span className="icon-wrap">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <circle cx="7" cy="3" r="0.9" fill="#567C8D" />
+            <line x1="7" y1="6" x2="7" y2="11" stroke="#567C8D" strokeWidth="1" strokeLinecap="round" />
+          </svg>
+        </span>
       </button>
 
       <div
