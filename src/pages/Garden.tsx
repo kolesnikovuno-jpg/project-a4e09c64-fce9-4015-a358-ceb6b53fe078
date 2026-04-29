@@ -79,10 +79,7 @@ const TypewriterLabel = ({ text }: { text: string | null }) => {
   }, [text]);
 
   return (
-    <span
-      className="text-[13px] text-foreground font-medium"
-      style={{ letterSpacing: "0.35em" }}
-    >
+    <span className="text-[13px] text-foreground font-medium" style={{ letterSpacing: "0.35em" }}>
       {displayed || "\u00A0"}
     </span>
   );
@@ -107,7 +104,7 @@ const Garden = () => {
     "02": "Интерьер",
     "03": "Предмет",
     "04": "Графика",
-    "05": "Lyra",
+    "05": "Lyra: Форма, где тело не держит себя",
     "06": "Эскиз",
     "06.1": "unocalc",
   };
