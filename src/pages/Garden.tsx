@@ -81,6 +81,7 @@ const Garden = () => {
     "04": "Графика",
     "05": "Lyra",
     "06": "Эскиз",
+    "06.1": "unocalc",
   };
 
   const routes: Record<string, string> = {
