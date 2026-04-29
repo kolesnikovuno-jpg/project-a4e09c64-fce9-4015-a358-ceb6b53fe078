@@ -588,7 +588,7 @@ const Lyra = () => {
                 transform: "rotate(-90deg)",
                 transformOrigin: "left top",
                 position: "absolute",
-                left: "calc((min(1100px, 100%) - 100vw) / 2 - var(--pad, 12px) + 8px)",
+                left: "calc((min(1100px, 100%) - 100vw) / 2 - var(--pad, 12px) + 11px)",
                 bottom: "-54px",
                 padding: 0,
                 whiteSpace: "nowrap",
