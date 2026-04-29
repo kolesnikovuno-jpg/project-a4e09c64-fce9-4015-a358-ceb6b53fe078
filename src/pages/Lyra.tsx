@@ -469,20 +469,18 @@ const Lyra = () => {
           50%{border-right-color:hsl(203 24% 40% / 0.6);}
         }
         .uno-ar{
-        .uno-ar{
-          position:fixed !important; right:22px !important; bottom:64px !important;
-          top:auto !important; left:auto !important;
+          position:fixed; right:22px; bottom:64px;
           z-index:60;
-          width:34px !important; height:34px !important; border-radius:50% !important;
-          background:#C8D9E6 !important; border:none !important; padding:0 !important;
-          display:flex !important; align-items:center; justify-content:center;
+          width:34px; height:34px; border-radius:50%;
+          background:#C8D9E6; border:none; padding:0;
+          display:flex; align-items:center; justify-content:center;
           cursor:pointer; transition:background .25s ease, opacity .25s ease;
-          opacity:0.95; box-shadow:none !important;
+          opacity:0.95;
         }
         .uno-ar:hover{ background:#bcd0e0; opacity:1; }
         .uno-ar svg{ display:block; }
         @media(max-width:768px){
-          .uno-ar{ width:38px !important; height:38px !important; right:16px !important; bottom:64px !important; }
+          .uno-ar{ width:38px; height:38px; right:16px; bottom:64px; }
         }
       `}</style>
 
@@ -552,7 +550,21 @@ const Lyra = () => {
                 alt=""
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
               />
-              <button slot="ar-button" className="uno-ar" aria-label="View in AR" title="AR">
+            </model-viewer>
+
+            {modelFullyVisible && (
+              <button
+                type="button"
+                className="uno-ar"
+                aria-label="View in AR"
+                title="AR"
+                onClick={() => {
+                  const mv: any = modelRef.current;
+                  if (mv && typeof mv.activateAR === "function") {
+                    try { mv.activateAR(); } catch (e) { /* no-op */ }
+                  }
+                }}
+              >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path
                     d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"
@@ -566,7 +578,7 @@ const Lyra = () => {
                   <path d="M12 12L4 7.5" stroke="#567C8D" strokeWidth="1.4" strokeLinecap="round" />
                 </svg>
               </button>
-            </model-viewer>
+            )}
 
             <div
               className={`uno-overlay-below ${modelLoaded && modelFullyVisible ? "visible" : ""}`}
