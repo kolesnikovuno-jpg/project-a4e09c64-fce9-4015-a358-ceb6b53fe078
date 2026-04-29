@@ -458,18 +458,16 @@ const Garden = () => {
           0%,100%{border-right-color:transparent;}
           50%{border-right-color:hsl(203 24% 40% / 0.6);}
         }
-        .garden-bud.is-active circle:first-of-type{
-          stroke-width:1.8;
-          filter:drop-shadow(0 0 6px hsl(203 24% 45% / 0.55));
+        .garden-bud circle:first-of-type{
+          transition: fill 0.35s ease, stroke 0.35s ease, stroke-width 0.35s ease;
         }
-        .garden-bud:hover circle:first-of-type {
-          stroke-width: 1.8;
-          filter: drop-shadow(0 0 6px hsl(203 24% 45% / 0.5));
-        }
-        .garden-bud:focus-visible circle:first-of-type {
-          stroke-width: 1.8;
-          outline: none;
-          filter: drop-shadow(0 0 6px hsl(203 24% 45% / 0.5));
+        .garden-bud.is-active circle:first-of-type,
+        .garden-bud:hover circle:first-of-type,
+        .garden-bud:focus-visible circle:first-of-type{
+          fill:#C8D9E6;
+          stroke:#A8BDD0;
+          stroke-width:1.4;
+          outline:none;
         }
       `}</style>
       </div>
