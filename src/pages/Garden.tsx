@@ -55,7 +55,16 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, onHover, delay, v
         fill={filled ? "hsl(203 24% 45%)" : hatched ? `url(#${hatchId})` : "none"}
         stroke="hsl(203 24% 35%)"
         strokeWidth="0.8"
-        className="transition-all duration-300"
+      />
+      {/* Highlight overlay — appears on hover/active without touching base fill */}
+      <circle
+        className="garden-bud-highlight"
+        cx={cx}
+        cy={cy}
+        r={r}
+        fill="#C8D9E6"
+        stroke="#A8BDD0"
+        strokeWidth="1.4"
       />
       <circle cx={cx} cy={cy} r={r + 6} fill="transparent" stroke="transparent" className="garden-hit" />
     </g>
