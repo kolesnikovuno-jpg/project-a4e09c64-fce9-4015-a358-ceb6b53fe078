@@ -438,9 +438,9 @@ const Lyra = () => {
           padding:12px 20px 0;
         }
         .uno-overlay-below{
-          /* Desktop: push closer to the viewport's left edge,
-             past the .uno-3d-wrap horizontal padding (clamp 6-12px). */
-          left:-14px !important;
+          /* Desktop: align with viewport's left edge.
+             Compensate for .uno-3d-wrap centering (max 1100px) + its padding. */
+          left:calc((min(1100px, 100%) - 100vw)/2 - var(--pad, 12px)) !important;
         }
         @media(max-width:768px){
           .uno-overlay-below{ left:0px !important; }
