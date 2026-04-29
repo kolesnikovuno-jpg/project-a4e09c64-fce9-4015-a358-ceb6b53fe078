@@ -61,26 +61,12 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, onHover, delay, v
 const GARDEN_PASSWORD = "1111";
 
 const TypewriterLabel = ({ text }: { text: string | null }) => {
-  const [displayed, setDisplayed] = useState("");
-
-  useEffect(() => {
-    if (!text) {
-      setDisplayed("");
-      return;
-    }
-    setDisplayed("");
-    let i = 0;
-    const interval = setInterval(() => {
-      i++;
-      setDisplayed(text.slice(0, i));
-      if (i >= text.length) clearInterval(interval);
-    }, 90);
-    return () => clearInterval(interval);
-  }, [text]);
-
+  if (!text) {
+    return <span className="garden-typewriter">&nbsp;</span>;
+  }
   return (
-    <span className="text-[11px] text-foreground font-light" style={{ letterSpacing: "0.22em" }}>
-      {displayed || "\u00A0"}
+    <span key={text} className="garden-typewriter visible">
+      {text}
     </span>
   );
 };
