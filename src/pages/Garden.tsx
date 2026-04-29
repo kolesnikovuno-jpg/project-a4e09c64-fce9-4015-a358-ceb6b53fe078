@@ -13,16 +13,19 @@ interface BudProps {
   label?: string;
   showLabel?: boolean;
   onClick?: () => void;
+  onHover?: (id: string | null) => void;
   delay: number;
   visible: boolean;
 }
 
-const Bud = ({ cx, cy, r, filled, hatched, id, label, showLabel, onClick, delay, visible }: BudProps) => {
+const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, onHover, delay, visible }: BudProps) => {
   const hatchId = `hatch-${id}`;
   return (
     <g
       className="garden-bud"
       onClick={onClick}
+      onMouseEnter={() => onHover?.(id)}
+      onMouseLeave={() => onHover?.(null)}
       role="button"
       tabIndex={0}
       aria-label={label || `Элемент ${id}`}
@@ -51,27 +54,6 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, showLabel, onClick, delay,
         className="transition-all duration-300"
       />
       <circle cx={cx} cy={cy} r={r + 6} fill="transparent" stroke="transparent" className="garden-hit" />
-      {/* Desktop: native tooltip */}
-      {label && <title>{label}</title>}
-      {/* Mobile: visible label on first tap */}
-      {label && showLabel && (
-        <text
-          x={cx}
-          y={cy - r - 12}
-          textAnchor="middle"
-          fill="hsl(203 24% 45%)"
-          fontSize="16"
-          letterSpacing="0.06em"
-          fontFamily="inherit"
-          style={{
-            opacity: 1,
-            transition: "opacity 0.3s ease",
-            pointerEvents: "none",
-          }}
-        >
-          {label}
-        </text>
-      )}
     </g>
   );
 };
@@ -83,6 +65,7 @@ const Garden = () => {
   const isMobile = useIsMobile();
   const [animated, setAnimated] = useState(false);
   const [activeBud, setActiveBud] = useState<string | null>(null);
+  const [hoveredBud, setHoveredBud] = useState<string | null>(null);
   // Password disabled until 2026-04-29 — then restore: sessionStorage.getItem("garden_unlocked") === "true"
   const [unlocked, setUnlocked] = useState(() => {
     const disableUntil = new Date("2026-05-29T00:00:00");
@@ -283,6 +266,9 @@ const Garden = () => {
     }
   };
 
+  const displayedLabelId = isMobile ? activeBud : hoveredBud;
+  const displayedLabel = displayedLabelId ? budLabels[displayedLabelId] : null;
+
   if (!unlocked) {
     return (
       <PageTransition>
@@ -321,6 +307,21 @@ const Garden = () => {
           >
             .uno
           </a>
+        </div>
+        {/* Floating label above stems, aligned to right edge */}
+        <div
+          className="absolute right-6 left-6 text-right pointer-events-none select-none z-10"
+          style={{ top: "calc(18vh - 2.5rem)" }}
+        >
+          <span
+            className="text-sm tracking-[0.15em] text-foreground font-normal"
+            style={{
+              opacity: displayedLabel ? 1 : 0,
+              transition: "opacity 0.25s ease",
+            }}
+          >
+            {displayedLabel || "\u00A0"}
+          </span>
         </div>
         <svg
           viewBox={`0 0 ${vbWidth} 600`}
@@ -372,6 +373,7 @@ const Garden = () => {
                   label={budLabels[stem.id]}
                   showLabel={activeBud === stem.id}
                   onClick={() => handleClick(stem.id)}
+                  onHover={setHoveredBud}
                   delay={budDelays[stem.id] || 1}
                   visible={animated}
                 />
@@ -406,6 +408,7 @@ const Garden = () => {
                         hatched={br.style === "hatched"}
                         id={subId}
                         onClick={() => handleClick(subId)}
+                        onHover={setHoveredBud}
                         showLabel={activeBud === subId}
                         delay={budDelays[subId] || 1.2}
                         visible={animated}
