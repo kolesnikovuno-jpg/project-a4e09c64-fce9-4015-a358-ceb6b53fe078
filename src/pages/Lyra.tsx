@@ -437,14 +437,6 @@ const Lyra = () => {
         .uno-overlay-below{
           padding:12px 20px 0;
         }
-        .uno-overlay-below{
-          /* Desktop: align with viewport's left edge.
-             Compensate for .uno-3d-wrap centering (max 1100px) + its padding. */
-          left:calc((min(1100px, 100%) - 100vw)/2 - var(--pad, 12px)) !important;
-        }
-        @media(max-width:768px){
-          .uno-overlay-below{ left:0px !important; }
-        }
         .uno-overlay-below h1,
         .uno-overlay-below p{
           font-family:'Manrope',system-ui,sans-serif;
@@ -596,7 +588,7 @@ const Lyra = () => {
                 transform: "rotate(-90deg) translateX(-12px)",
                 transformOrigin: "left top",
                 position: "absolute",
-                left: "0px",
+                left: "calc((min(1100px, 100%) - 100vw) / 2 - var(--pad, 12px))",
                 bottom: "-54px",
                 padding: 0,
                 whiteSpace: "nowrap",
