@@ -80,7 +80,7 @@ const TypewriterLabel = ({ text }: { text: string | null }) => {
 
   return (
     <span
-      className="text-sm text-foreground font-normal"
+      className="text-[13px] text-foreground font-medium"
       style={{ letterSpacing: "0.35em" }}
     >
       {displayed || "\u00A0"}
