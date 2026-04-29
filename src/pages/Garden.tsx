@@ -312,17 +312,9 @@ const Garden = () => {
         {/* Floating label above stems, aligned to right edge */}
         <div
           className="absolute right-6 left-6 text-right pointer-events-none select-none z-10"
-          style={{ top: "calc(18vh - 2.5rem)" }}
+          style={{ top: "calc(18vh - 2.5rem + 15px)" }}
         >
-          <span
-            className="text-sm tracking-[0.15em] text-foreground font-normal"
-            style={{
-              opacity: displayedLabel ? 1 : 0,
-              transition: "opacity 0.25s ease",
-            }}
-          >
-            {displayedLabel || "\u00A0"}
-          </span>
+          <TypewriterLabel text={displayedLabel} />
         </div>
         <svg
           viewBox={`0 0 ${vbWidth} 600`}
