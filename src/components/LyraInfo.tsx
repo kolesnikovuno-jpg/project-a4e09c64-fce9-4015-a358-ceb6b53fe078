@@ -24,26 +24,24 @@ const LyraInfo = () => {
     <>
       <style>{`
         .lyra-info-btn{
-          position:fixed; right:18px; bottom:18px; z-index:60;
-          font-family:ui-monospace,'SF Mono','JetBrains Mono',monospace;
-          font-size:11px;
-          letter-spacing:0.14em;
-          text-transform:lowercase;
-          color:hsl(0 0% 18%);
-          background:hsl(0 0% 100% / 0.45);
-          backdrop-filter:blur(8px) saturate(1.1);
-          -webkit-backdrop-filter:blur(8px) saturate(1.1);
+          position:fixed; right:22px; bottom:22px; z-index:60;
+          width:34px; height:34px; border-radius:50%;
+          background:#C8D9E6;
+          backdrop-filter:blur(10px);
+          -webkit-backdrop-filter:blur(10px);
           border:none;
-          padding:7px 11px;
-          border-radius:2px;
-          cursor:pointer;
-          line-height:1;
-          transition:color .25s ease, background .25s ease, opacity .25s ease;
-          opacity:0.85;
+          padding:0; cursor:pointer;
+          display:flex; align-items:center; justify-content:center;
+          transition:background .25s ease, opacity .25s ease;
+          opacity:0.95;
         }
-        .lyra-info-btn:hover{ color:hsl(0 0% 0%); opacity:1; background:hsl(0 0% 100% / 0.6); }
+        .lyra-info-btn:hover{
+          background:#bcd0e0;
+          opacity:1;
+        }
+        .lyra-info-btn svg{ display:block; }
         @media(max-width:768px){
-          .lyra-info-btn{ right:14px; bottom:14px; padding:8px 12px; }
+          .lyra-info-btn{ width:38px; height:38px; right:16px; bottom:16px; }
         }
         .lyra-info-overlay{
           position:fixed; inset:0; background:rgba(0,0,0,0.1);
@@ -101,7 +99,10 @@ const LyraInfo = () => {
         aria-label="info"
         onClick={() => setOpen(true)}
       >
-        info
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <circle cx="7" cy="3" r="1.1" fill="#567C8D" />
+          <line x1="7" y1="5.8" x2="7" y2="11.2" stroke="#567C8D" strokeWidth="1.4" strokeLinecap="round" />
+        </svg>
       </button>
 
       <div
@@ -116,12 +117,25 @@ const LyraInfo = () => {
 
         <div className="section-title">specifications</div>
 
+        <div className="section-title">dimensions</div>
+        <div className="row"><span>height</span><span>…</span></div>
+        <div className="row"><span>width</span><span>…</span></div>
+
         <div className="section-title">structure</div>
         <div>tension system</div>
         <div>flexible support</div>
 
+        <div className="section-title">material</div>
+        <div className="row"><span>textile</span><span>…</span></div>
+        <div className="row"><span>frame</span><span>…</span></div>
+
         <div className="section-title">color</div>
         <div>customizable</div>
+
+        <hr />
+
+        <div className="section-title">price</div>
+        <div>from …</div>
 
         <hr />
 
