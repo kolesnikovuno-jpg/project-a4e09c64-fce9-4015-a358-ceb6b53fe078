@@ -482,6 +482,8 @@ const Lyra = () => {
         @media(max-width:768px){
           .uno-ar{ width:38px; height:38px; right:16px; bottom:64px; }
         }
+        model-viewer::part(default-ar-button){ display:none !important; }
+        model-viewer [slot="ar-button"]{ display:none !important; }
       `}</style>
 
             <div className="uno-3d-wrap" style={{ pointerEvents: "auto" }}>
