@@ -383,7 +383,7 @@ const Lyra = () => {
         .uno-3d-wrap{
           --pad:clamp(6px,0.9vw,12px);
           position:relative;
-          width:min(1100px,100%);
+          width:min(1250px,100%);
           margin:0 auto;
           padding:var(--pad);
           box-sizing:border-box;
@@ -391,7 +391,7 @@ const Lyra = () => {
         }
         .uno-3d-stage{
           position:relative;
-          height:clamp(420px,62vw,640px);
+          height:clamp(420px,68vw,720px);
           border-radius:18px;
           overflow:visible;
           background:hsl(24 26% 94%);
