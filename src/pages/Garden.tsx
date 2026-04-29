@@ -74,12 +74,12 @@ const TypewriterLabel = ({ text }: { text: string | null }) => {
       i++;
       setDisplayed(text.slice(0, i));
       if (i >= text.length) clearInterval(interval);
-    }, 55);
+    }, 90);
     return () => clearInterval(interval);
   }, [text]);
 
   return (
-    <span className="text-[13px] text-foreground font-medium" style={{ letterSpacing: "0.35em" }}>
+    <span className="text-[11px] text-foreground font-light" style={{ letterSpacing: "0.22em" }}>
       {displayed || "\u00A0"}
     </span>
   );
