@@ -470,17 +470,19 @@ const Lyra = () => {
         }
         .uno-ar{
         .uno-ar{
-          position:fixed; right:22px; bottom:64px; z-index:60;
-          width:34px; height:34px; border-radius:50%;
-          background:#C8D9E6; border:none; padding:0;
-          display:flex; align-items:center; justify-content:center;
+          position:fixed !important; right:22px !important; bottom:64px !important;
+          top:auto !important; left:auto !important;
+          z-index:60;
+          width:34px !important; height:34px !important; border-radius:50% !important;
+          background:#C8D9E6 !important; border:none !important; padding:0 !important;
+          display:flex !important; align-items:center; justify-content:center;
           cursor:pointer; transition:background .25s ease, opacity .25s ease;
-          opacity:0.95;
+          opacity:0.95; box-shadow:none !important;
         }
         .uno-ar:hover{ background:#bcd0e0; opacity:1; }
         .uno-ar svg{ display:block; }
         @media(max-width:768px){
-          .uno-ar{ width:38px; height:38px; right:16px; bottom:62px; }
+          .uno-ar{ width:38px !important; height:38px !important; right:16px !important; bottom:64px !important; }
         }
       `}</style>
 
