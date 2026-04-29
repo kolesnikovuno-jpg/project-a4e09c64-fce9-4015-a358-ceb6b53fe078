@@ -13,16 +13,19 @@ interface BudProps {
   label?: string;
   showLabel?: boolean;
   onClick?: () => void;
+  onHover?: (id: string | null) => void;
   delay: number;
   visible: boolean;
 }
 
-const Bud = ({ cx, cy, r, filled, hatched, id, label, showLabel, onClick, delay, visible }: BudProps) => {
+const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, onHover, delay, visible }: BudProps) => {
   const hatchId = `hatch-${id}`;
   return (
     <g
       className="garden-bud"
       onClick={onClick}
+      onMouseEnter={() => onHover?.(id)}
+      onMouseLeave={() => onHover?.(null)}
       role="button"
       tabIndex={0}
       aria-label={label || `Элемент ${id}`}
@@ -51,27 +54,6 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, showLabel, onClick, delay,
         className="transition-all duration-300"
       />
       <circle cx={cx} cy={cy} r={r + 6} fill="transparent" stroke="transparent" className="garden-hit" />
-      {/* Desktop: native tooltip */}
-      {label && <title>{label}</title>}
-      {/* Mobile: visible label on first tap */}
-      {label && showLabel && (
-        <text
-          x={cx}
-          y={cy - r - 12}
-          textAnchor="middle"
-          fill="hsl(203 24% 45%)"
-          fontSize="16"
-          letterSpacing="0.06em"
-          fontFamily="inherit"
-          style={{
-            opacity: 1,
-            transition: "opacity 0.3s ease",
-            pointerEvents: "none",
-          }}
-        >
-          {label}
-        </text>
-      )}
     </g>
   );
 };
