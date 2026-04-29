@@ -371,11 +371,11 @@ const Lyra = () => {
             {/* Back arrow */}
             <button
           onClick={() => navigate("/garden")}
-              className="absolute top-4 left-4 md:top-5 md:left-5 p-2 text-[hsl(168_40%_52%)] hover:text-[#C97A63] transition-colors duration-300 z-10"
+              className="uno-mini-btn uno-mini-btn--back"
               style={{ pointerEvents: "auto" }}
           aria-label="Назад"
         >
-          <ChevronLeft size={24} strokeWidth={1} />
+          ← back
         </button>
 
         <style>{`
