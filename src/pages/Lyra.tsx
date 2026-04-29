@@ -372,7 +372,7 @@ const Lyra = () => {
             {/* Back arrow */}
             <button
           onClick={() => navigate("/garden")}
-              className="absolute top-8 left-8 p-2 text-[hsl(168_40%_52%)] hover:text-[#C97A63] transition-colors duration-300 z-10"
+              className="absolute top-4 left-4 md:top-5 md:left-5 p-2 text-[hsl(168_40%_52%)] hover:text-[#C97A63] transition-colors duration-300 z-10"
               style={{ pointerEvents: "auto" }}
           aria-label="Назад"
         >
@@ -469,49 +469,18 @@ const Lyra = () => {
           50%{border-right-color:hsl(203 24% 40% / 0.6);}
         }
         .uno-ar{
-          position:absolute;right:14px;top:14px;
-          width:40px;height:40px;border:none;border-radius:50%;
-          background:transparent;display:flex;align-items:center;justify-content:center;
-          cursor:pointer;transition:all .25s ease;z-index:3;opacity:0.7;
+        .uno-ar{
+          position:fixed; right:22px; bottom:64px; z-index:60;
+          width:34px; height:34px; border-radius:50%;
+          background:#C8D9E6; border:none; padding:0;
+          display:flex; align-items:center; justify-content:center;
+          cursor:pointer; transition:background .25s ease, opacity .25s ease;
+          opacity:0.95;
         }
-        .uno-ar:hover{opacity:1;transform:scale(1.05);}
-        .uno-ar svg{stroke:hsl(203 24% 35%);transition:stroke .25s ease;}
-        .uno-ar:hover svg{stroke:hsl(203 24% 28%);}
+        .uno-ar:hover{ background:#bcd0e0; opacity:1; }
+        .uno-ar svg{ display:block; }
         @media(max-width:768px){
-          .uno-ar{width:52px;height:52px;right:10px;top:10px;opacity:0.75;}
-          .uno-ar svg{width:26px;height:26px;}
-        }
-        .uno-stem-05{
-          position:absolute;
-          right:34px;
-          bottom:-90px;
-          height:calc(100% + 58px);
-          width:0;
-          z-index:5;
-          overflow:visible;
-          pointer-events:none;
-          opacity:0.55;
-        }
-        .uno-stem-05 svg{
-          position:absolute;
-          left:50%;
-          bottom:0;
-          height:100%;
-          transform:translateX(-50%);
-          overflow:visible;
-          pointer-events:none;
-        }
-        .uno-stem-05 .stem-bud{cursor:pointer;pointer-events:auto;}
-        .uno-stem-05 .stem-bud:hover circle:first-child{
-          stroke-width:1.8;
-          filter:drop-shadow(0 0 6px hsl(203 24% 45% / 0.5));
-        }
-        @media(max-width:768px){
-          .uno-stem-05{
-            right:36px;
-            bottom:-80px;
-            opacity:0.65;
-          }
+          .uno-ar{ width:38px; height:38px; right:16px; bottom:62px; }
         }
       `}</style>
 
@@ -582,62 +551,20 @@ const Lyra = () => {
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
               />
               <button slot="ar-button" className="uno-ar" aria-label="View in AR" title="AR">
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="-1 -2 26 26"
-                  fill="none"
-                  stroke="hsl(203 24% 35%)"
-                  strokeWidth="0.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
-                  <path d="M12 12l8-4.5" />
-                  <path d="M12 12v9" />
-                  <path d="M12 12L4 7.5" />
-                  <line x1="12" y1="3" x2="12" y2="-1" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
-                  <circle cx="12" cy="-1" r="1.2" fill="hsl(203 24% 35%)" stroke="none" />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"
+                    stroke="#567C8D"
+                    strokeWidth="1.4"
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                  />
+                  <path d="M12 12l8-4.5" stroke="#567C8D" strokeWidth="1.4" strokeLinecap="round" />
+                  <path d="M12 12v9" stroke="#567C8D" strokeWidth="1.4" strokeLinecap="round" />
+                  <path d="M12 12L4 7.5" stroke="#567C8D" strokeWidth="1.4" strokeLinecap="round" />
                 </svg>
               </button>
             </model-viewer>
-
-            {/* Stem 05 */}
-            <div className="uno-stem-05">
-              <svg viewBox="-50 0 100 600" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">
-                <line
-                  x1="-30"
-                  y1="555"
-                  x2="30"
-                  y2="555"
-                  stroke="hsl(203 24% 35%)"
-                  strokeWidth="1.2"
-                  strokeLinecap="round"
-                />
-                <line x1="0" y1="555" x2="0" y2="150" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
-                <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
-                  <circle cx="0" cy="150" r="14" fill="none" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
-                  <circle cx="0" cy="150" r="20" fill="transparent" stroke="transparent" />
-                </g>
-                <g className="stem-bud" role="button" tabIndex={0} onClick={() => navigate("/lyra")}>
-                  <line x1="0" y1="370" x2="22" y2="370" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
-                  <circle cx="22" cy="370" r="9" fill="none" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
-                  <circle cx="22" cy="370" r="16" fill="transparent" stroke="transparent" />
-                </g>
-                <g className="stem-bud" role="button" tabIndex={0} onClick={() => console.log("05.2")}>
-                  <line x1="0" y1="250" x2="-28" y2="250" stroke="hsl(203 24% 35%)" strokeWidth="0.8" />
-                  <circle
-                    cx="-28"
-                    cy="250"
-                    r="6"
-                    fill="hsl(203 24% 35% / 0.45)"
-                    stroke="hsl(203 24% 35%)"
-                    strokeWidth="0.8"
-                  />
-                  <circle cx="-28" cy="250" r="13" fill="transparent" stroke="transparent" />
-                </g>
-              </svg>
-            </div>
 
             <div
               className={`uno-overlay-below ${modelLoaded && modelFullyVisible ? "visible" : ""}`}
