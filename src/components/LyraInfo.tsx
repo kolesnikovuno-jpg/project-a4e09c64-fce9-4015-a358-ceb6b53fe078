@@ -26,18 +26,17 @@ const LyraInfo = () => {
         .lyra-info-btn{
           position:fixed; right:22px; bottom:22px; z-index:60;
           width:34px; height:34px; border-radius:50%;
-          background:rgba(255,255,255,0.55);
+          background:#C8D9E6;
           backdrop-filter:blur(10px);
           -webkit-backdrop-filter:blur(10px);
-          border:1px solid rgba(86,124,141,0.35);
+          border:none;
           padding:0; cursor:pointer;
           display:flex; align-items:center; justify-content:center;
-          transition:background .25s ease, border-color .25s ease;
-          opacity:0.85;
+          transition:background .25s ease, opacity .25s ease;
+          opacity:0.95;
         }
         .lyra-info-btn:hover{
-          background:rgba(255,255,255,0.8);
-          border-color:rgba(86,124,141,0.55);
+          background:#bcd0e0;
           opacity:1;
         }
         .lyra-info-btn svg{ display:block; }
@@ -101,8 +100,8 @@ const LyraInfo = () => {
         onClick={() => setOpen(true)}
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <circle cx="7" cy="3" r="0.85" fill="#567C8D" />
-          <line x1="7" y1="6" x2="7" y2="11" stroke="#567C8D" strokeWidth="0.9" strokeLinecap="round" />
+          <circle cx="7" cy="3" r="1.1" fill="#567C8D" />
+          <line x1="7" y1="5.8" x2="7" y2="11.2" stroke="#567C8D" strokeWidth="1.4" strokeLinecap="round" />
         </svg>
       </button>
 
