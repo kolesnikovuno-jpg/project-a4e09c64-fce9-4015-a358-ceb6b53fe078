@@ -426,6 +426,31 @@ const Garden = () => {
         </svg>
 
         <style>{`
+        .garden-typewriter{
+          display:inline-block;
+          font-family:'Manrope',system-ui,sans-serif;
+          font-size:13px;
+          font-weight:300;
+          letter-spacing:0.54em;
+          color:hsl(0 0% 45%);
+          overflow:hidden;
+          white-space:nowrap;
+          width:0;
+          max-width:100%;
+          border-right:1px solid transparent;
+          vertical-align:bottom;
+        }
+        .garden-typewriter.visible{
+          animation:gardenType 1.4s steps(40,end) .2s forwards,
+                    gardenCaret .7s step-end .2s 3;
+        }
+        @keyframes gardenType{
+          from{width:0;}
+          to{width:100%;}
+        }
+        @keyframes gardenCaret{
+          50%{border-right-color:hsl(203 24% 40% / 0.6);}
+        }
         .garden-bud:hover circle:first-of-type {
           stroke-width: 1.8;
           filter: drop-shadow(0 0 6px hsl(203 24% 45% / 0.5));
