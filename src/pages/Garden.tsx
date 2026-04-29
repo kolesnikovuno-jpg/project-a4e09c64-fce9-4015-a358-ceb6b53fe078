@@ -321,7 +321,7 @@ const Garden = () => {
     <PageTransition>
       <div className="min-h-screen bg-background flex items-center justify-center pt-[18vh] md:pt-[6vh] overflow-hidden relative">
         <div className="absolute top-6 left-6 right-6 flex items-center justify-between">
-          <span className="text-sm tracking-[0.15em] text-foreground font-normal select-none">Garden</span>
+          <span className="text-sm tracking-[0.15em] text-foreground font-normal select-none" />
           <a
             href="/"
             onClick={(e) => {
