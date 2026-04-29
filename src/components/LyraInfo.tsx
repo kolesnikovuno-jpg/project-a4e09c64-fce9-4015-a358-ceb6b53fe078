@@ -24,18 +24,26 @@ const LyraInfo = () => {
     <>
       <style>{`
         .lyra-info-btn{
-          position:fixed; right:20px; bottom:20px; z-index:60;
-          width:46px; height:46px; border-radius:50%;
-          background:rgba(255,255,255,0.7);
+          position:fixed; right:22px; bottom:22px; z-index:60;
+          width:34px; height:34px; border-radius:50%;
+          background:rgba(255,255,255,0.55);
           backdrop-filter:blur(10px);
           -webkit-backdrop-filter:blur(10px);
-          border:1px solid rgba(0,0,0,0.06);
-          color:#222; font-family:ui-monospace,'SF Mono','JetBrains Mono',monospace;
-          font-size:18px; line-height:1; cursor:pointer;
+          border:1px solid rgba(86,124,141,0.35);
+          padding:0; cursor:pointer;
           display:flex; align-items:center; justify-content:center;
-          transition:background .2s ease;
+          transition:background .25s ease, border-color .25s ease;
+          opacity:0.85;
         }
-        .lyra-info-btn:hover{ background:rgba(255,255,255,0.9); }
+        .lyra-info-btn:hover{
+          background:rgba(255,255,255,0.8);
+          border-color:rgba(86,124,141,0.55);
+          opacity:1;
+        }
+        .lyra-info-btn svg{ display:block; }
+        @media(max-width:768px){
+          .lyra-info-btn{ width:38px; height:38px; right:16px; bottom:16px; }
+        }
         .lyra-info-overlay{
           position:fixed; inset:0; background:rgba(0,0,0,0.1);
           z-index:70; opacity:0; pointer-events:none;
@@ -92,7 +100,10 @@ const LyraInfo = () => {
         aria-label="info"
         onClick={() => setOpen(true)}
       >
-        i
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <circle cx="7" cy="3" r="0.85" fill="#567C8D" />
+          <line x1="7" y1="6" x2="7" y2="11" stroke="#567C8D" strokeWidth="0.9" strokeLinecap="round" />
+        </svg>
       </button>
 
       <div
