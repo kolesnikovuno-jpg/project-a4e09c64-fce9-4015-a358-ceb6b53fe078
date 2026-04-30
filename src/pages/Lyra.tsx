@@ -103,9 +103,7 @@ const Lyra = () => {
       // prevents accidental drags / camera moves during the crossfade.
       const fullyVisible = modelOp >= 0.999;
       model.style.pointerEvents = fullyVisible ? "auto" : "none";
-      if (fullyVisible) {
-        setModelFullyVisible(true);
-      }
+      setModelFullyVisible((prev) => (prev !== fullyVisible ? fullyVisible : prev));
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
