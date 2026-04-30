@@ -652,6 +652,9 @@ const Lyra = () => {
             >
               <p>Чем меньше усилия — тем точнее поддержка.</p>
             </div>
+            {/* Side touch-scroll safe zones around the model */}
+            <div className="uno-side-gutter left" aria-hidden />
+            <div className="uno-side-gutter right" aria-hidden />
           </div>
         </div>
           </div>
