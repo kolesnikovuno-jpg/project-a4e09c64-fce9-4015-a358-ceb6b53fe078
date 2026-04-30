@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import lyraHero from "@/assets/lyra-hero.png";
 import lyraDimensions from "@/assets/lyra-dimensions.png";
+import lyraDimensionsMobile from "@/assets/lyra-dimensions-mobile.png";
 import LyraInfo from "@/components/LyraInfo";
 
 declare global {
@@ -585,12 +586,15 @@ const Lyra = () => {
             className="absolute inset-0 w-full h-full bg-background flex items-center justify-center overflow-hidden"
             style={{ opacity: 0, willChange: "opacity", pointerEvents: "none" }}
           >
-            <img
-              src={lyraDimensions}
-              alt="Lyra — технический чертёж с размерами"
-              className="w-full h-full md:w-auto md:h-auto md:max-w-[92%] md:max-h-[88%] object-cover md:object-contain object-center scale-[1.35] md:scale-100 select-none"
-              draggable={false}
-            />
+            <picture>
+              <source media="(min-width: 768px)" srcSet={lyraDimensions} />
+              <img
+                src={lyraDimensionsMobile}
+                alt="Lyra — технический чертёж с размерами"
+                className="w-full h-full md:w-auto md:h-auto md:max-w-[92%] md:max-h-[88%] object-contain object-center scale-100 md:scale-100 select-none"
+                draggable={false}
+              />
+            </picture>
           </div>
         </div>
       </div>
