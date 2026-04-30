@@ -483,7 +483,7 @@ const Lyra = () => {
         .uno-actions{
           position:fixed; right:0; bottom:22px; z-index:60;
           display:flex; align-items:center; gap:22px;
-          padding:10px 22px 10px 20px;
+          padding:5px 22px 5px 20px;
           background:hsl(24 26% 94%);
           border:1px solid hsl(24 14% 82%);
           border-right:none;
@@ -500,7 +500,7 @@ const Lyra = () => {
         }
         .uno-actions button:hover{ color:#C97A63; }
         @media(max-width:768px){
-          .uno-actions{ bottom:18px; padding:9px 18px 9px 16px; gap:18px; }
+          .uno-actions{ bottom:18px; padding:4px 18px 4px 16px; gap:18px; }
         }
         model-viewer::part(default-ar-button){ display:none !important; }
         model-viewer [slot="ar-button"]{ display:none !important; }
