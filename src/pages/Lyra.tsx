@@ -518,34 +518,31 @@ const Lyra = () => {
         @media(max-width:768px){
           .uno-actions{ bottom:18px; padding:4px 18px 4px 16px; gap:18px; }
         }
-        /* Scroll indicator: vertical track above the info button.
-           Positioned absolutely inside .uno-actions, anchored to the right side
-           so it stays centered above the "info" label regardless of viewport. */
-        .uno-actions{ position:fixed; }
+        /* Scroll indicator: vertical 2px track rising from the middle of the
+           "info" button up to ~2/3 of the viewport. A small colored segment
+           travels along it as the page scrolls. Fixed to the viewport. */
         .uno-scroll-indicator{
-          position:absolute;
-          right:22px;            /* matches .uno-actions padding-right */
-          bottom:100%;           /* start at top edge of the actions bar */
-          transform:translate(50%, 0); /* shift so the 2px track sits over center of "info" */
-          margin-right:15px;     /* approx half-width of the "info" text */
+          position:fixed;
+          right:35px;            /* ≈ center of the "info" text (padding 22 + ~13 half-text) */
+          bottom:35px;           /* ≈ vertical middle of the info button */
           width:2px;
-          height:66.6vh;         /* 2/3 of the screen */
+          height:66.6vh;
           background:hsl(203 24% 40% / 0.18);
           pointer-events:none;
           overflow:hidden;
+          z-index:60;
         }
         .uno-scroll-fill{
           position:absolute;
-          left:0; right:0;
+          left:0;
           top:0;
           width:2px;
-          height:18%;
-          min-height:32px;
+          height:36px;
           background:hsl(203 24% 40%);
           will-change:top;
         }
         @media(max-width:768px){
-          .uno-scroll-indicator{ right:16px; margin-right:13px; height:66.6vh; }
+          .uno-scroll-indicator{ right:29px; bottom:30px; }
         }
         model-viewer::part(default-ar-button){ display:none !important; }
         model-viewer [slot="ar-button"]{ display:none !important; }
