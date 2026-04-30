@@ -590,6 +590,7 @@ const Lyra = () => {
               src={GLB_URL}
               alt="Lyra — Kolesnikov.UNO"
               camera-controls
+              disable-zoom
               interaction-prompt="none"
               auto-rotate
               auto-rotate-delay="1200"
