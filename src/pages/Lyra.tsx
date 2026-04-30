@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import lyraHero from "@/assets/lyra-hero.png";
 import LyraInfo from "@/components/LyraInfo";
@@ -375,11 +374,21 @@ const Lyra = () => {
             {/* Back arrow */}
             <button
           onClick={() => navigate("/garden")}
-              className="absolute top-4 left-4 md:top-5 md:left-5 p-2 text-[hsl(168_40%_52%)] hover:text-[#C97A63] transition-colors duration-300 z-10"
+              className="absolute top-4 left-4 md:top-5 md:left-5 px-2 py-1 text-[hsl(203_24%_40%)] hover:text-[#C97A63] transition-colors duration-300 z-10"
               style={{ pointerEvents: "auto" }}
           aria-label="Назад"
         >
-          <ChevronLeft size={24} strokeWidth={1} />
+          <span
+            style={{
+              fontFamily: "'Manrope', system-ui, sans-serif",
+              fontSize: "12px",
+              fontWeight: 300,
+              letterSpacing: "0.18em",
+              textTransform: "lowercase",
+            }}
+          >
+            ← back
+          </span>
         </button>
 
         <style>{`
