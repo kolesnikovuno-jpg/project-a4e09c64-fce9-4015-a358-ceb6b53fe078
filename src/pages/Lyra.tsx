@@ -481,18 +481,18 @@ const Lyra = () => {
           50%{border-right-color:hsl(203 24% 40% / 0.6);}
         }
         .uno-ar{
-          position:fixed; right:22px; bottom:64px;
-          z-index:60;
-          width:34px; height:34px; border-radius:50%;
-          background:#C8D9E6; border:none; padding:0;
-          display:flex; align-items:center; justify-content:center;
-          cursor:pointer; transition:background .25s ease, opacity .25s ease;
-          opacity:0.95;
+          position:fixed; right:74px; bottom:22px; z-index:60;
+          background:transparent; border:none; padding:6px 4px;
+          cursor:pointer;
+          font-family:'Manrope',system-ui,sans-serif;
+          font-size:12px; font-weight:300;
+          letter-spacing:0.18em; text-transform:lowercase;
+          color:hsl(203 24% 40%);
+          transition:color .25s ease;
         }
-        .uno-ar:hover{ background:#bcd0e0; opacity:1; }
-        .uno-ar svg{ display:block; }
+        .uno-ar:hover{ color:#C97A63; }
         @media(max-width:768px){
-          .uno-ar{ width:38px; height:38px; right:16px; bottom:64px; }
+          .uno-ar{ right:64px; bottom:18px; }
         }
         model-viewer::part(default-ar-button){ display:none !important; }
         model-viewer [slot="ar-button"]{ display:none !important; }
