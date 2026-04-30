@@ -451,7 +451,7 @@ const Garden = () => {
                         <circle
                           cx={brEndX}
                           cy={brY}
-                          r={br.r + 9}
+                          r={br.r * 2}
                           fill="none"
                           stroke="#C8D9E6"
                           strokeWidth="0.8"
