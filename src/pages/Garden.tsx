@@ -379,6 +379,21 @@ const Garden = () => {
                     transition: `stroke-dashoffset 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${stemDelay}s`,
                   }}
                 />
+                {stem.id === "05" && (
+                  <circle
+                    cx={stem.x}
+                    cy={topY}
+                    r={stem.topR + 9}
+                    fill="#C8D9E6"
+                    stroke="#C8D9E6"
+                    strokeWidth="0.8"
+                    style={{
+                      opacity: animated ? 1 : 0,
+                      transition: `opacity 0.6s ease ${(budDelays[stem.id] || 1) + 0.1}s`,
+                      pointerEvents: "none",
+                    }}
+                  />
+                )}
                 {/* Top bud */}
                 <Bud
                   cx={stem.x}
@@ -395,21 +410,6 @@ const Garden = () => {
                   visible={animated}
                   active={displayedLabelId === stem.id}
                 />
-                {stem.id === "05" && (
-                  <circle
-                    cx={stem.x}
-                    cy={topY}
-                    r={stem.topR + 9}
-                    fill="none"
-                    stroke="#C8D9E6"
-                    strokeWidth="0.8"
-                    style={{
-                      opacity: animated ? 1 : 0,
-                      transition: `opacity 0.6s ease ${(budDelays[stem.id] || 1) + 0.1}s`,
-                      pointerEvents: "none",
-                    }}
-                  />
-                )}
                 {/* Branches */}
                 {stem.branches.map((br, i) => {
                   const brY = gY - br.y;
