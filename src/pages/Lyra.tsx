@@ -14,6 +14,7 @@ declare global {
         src?: string;
         alt?: string;
         "camera-controls"?: boolean | string;
+        "disable-zoom"?: boolean | string;
         "interaction-prompt"?: string;
         "auto-rotate"?: boolean | string;
         "auto-rotate-delay"?: string;
@@ -525,10 +526,11 @@ const Lyra = () => {
         .uno-scroll-indicator{
           position:fixed;
           right:35px;            /* ≈ center of the "info" text (padding 22 + ~13 half-text) */
-          bottom:35px;           /* ≈ vertical middle of the info button */
+          bottom:46px;           /* sits just above the top edge of the info button */
           width:2px;
           height:66.6vh;
-          background:hsl(203 24% 40% / 0.18);
+          /* page bg with a very subtle darker shade — almost invisible */
+          background:hsl(24 18% 88%);
           pointer-events:none;
           overflow:hidden;
           z-index:60;
@@ -539,11 +541,12 @@ const Lyra = () => {
           top:0;
           width:2px;
           height:36px;
-          background:hsl(203 24% 40%);
+          /* slightly stronger shade of the page color */
+          background:hsl(24 14% 78%);
           will-change:top;
         }
         @media(max-width:768px){
-          .uno-scroll-indicator{ right:29px; bottom:30px; }
+          .uno-scroll-indicator{ right:29px; bottom:40px; }
         }
         model-viewer::part(default-ar-button){ display:none !important; }
         model-viewer [slot="ar-button"]{ display:none !important; }
