@@ -518,6 +518,35 @@ const Lyra = () => {
         @media(max-width:768px){
           .uno-actions{ bottom:18px; padding:4px 18px 4px 16px; gap:18px; }
         }
+        /* Scroll indicator: vertical track above the info button.
+           Positioned absolutely inside .uno-actions, anchored to the right side
+           so it stays centered above the "info" label regardless of viewport. */
+        .uno-actions{ position:fixed; }
+        .uno-scroll-indicator{
+          position:absolute;
+          right:22px;            /* matches .uno-actions padding-right */
+          bottom:100%;           /* start at top edge of the actions bar */
+          transform:translate(50%, 0); /* shift so the 2px track sits over center of "info" */
+          margin-right:15px;     /* approx half-width of the "info" text */
+          width:2px;
+          height:66.6vh;         /* 2/3 of the screen */
+          background:hsl(203 24% 40% / 0.18);
+          pointer-events:none;
+          overflow:hidden;
+        }
+        .uno-scroll-fill{
+          position:absolute;
+          left:0; right:0;
+          top:0;
+          width:2px;
+          height:18%;
+          min-height:32px;
+          background:hsl(203 24% 40%);
+          will-change:top;
+        }
+        @media(max-width:768px){
+          .uno-scroll-indicator{ right:16px; margin-right:13px; height:66.6vh; }
+        }
         model-viewer::part(default-ar-button){ display:none !important; }
         model-viewer [slot="ar-button"]{ display:none !important; }
       `}</style>
