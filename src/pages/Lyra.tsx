@@ -480,19 +480,27 @@ const Lyra = () => {
         @keyframes unoCaret{
           50%{border-right-color:hsl(203 24% 40% / 0.6);}
         }
-        .uno-ar{
-          position:fixed; right:74px; bottom:22px; z-index:60;
-          background:transparent; border:none; padding:6px 4px;
-          cursor:pointer;
+        .uno-actions{
+          position:fixed; right:0; bottom:22px; z-index:60;
+          display:flex; align-items:center; gap:22px;
+          padding:10px 22px 10px 20px;
+          background:hsl(24 26% 94%);
+          border:1px solid hsl(24 14% 82%);
+          border-right:none;
+          border-top-left-radius:2px;
+          border-bottom-left-radius:2px;
+        }
+        .uno-actions button{
+          background:transparent; border:none; padding:0; cursor:pointer;
           font-family:'Manrope',system-ui,sans-serif;
           font-size:12px; font-weight:300;
           letter-spacing:0.18em; text-transform:lowercase;
           color:hsl(203 24% 40%);
           transition:color .25s ease;
         }
-        .uno-ar:hover{ color:#C97A63; }
+        .uno-actions button:hover{ color:#C97A63; }
         @media(max-width:768px){
-          .uno-ar{ right:64px; bottom:18px; }
+          .uno-actions{ bottom:18px; padding:9px 18px 9px 16px; gap:18px; }
         }
         model-viewer::part(default-ar-button){ display:none !important; }
         model-viewer [slot="ar-button"]{ display:none !important; }
@@ -566,23 +574,6 @@ const Lyra = () => {
               />
             </model-viewer>
 
-            {modelFullyVisible && (
-              <button
-                type="button"
-                className="uno-ar"
-                aria-label="View in AR"
-                title="AR"
-                onClick={() => {
-                  const mv: any = modelRef.current;
-                  if (mv && typeof mv.activateAR === "function") {
-                    try { mv.activateAR(); } catch (e) { /* no-op */ }
-                  }
-                }}
-              >
-                ar
-              </button>
-            )}
-
             <div
               className={`uno-overlay-below ${modelLoaded && modelFullyVisible ? "visible" : ""}`}
               style={{
@@ -603,7 +594,30 @@ const Lyra = () => {
           </div>
         </div>
       </div>
-      <LyraInfo />
+      {modelFullyVisible && (
+        <div className="uno-actions">
+          <button
+            type="button"
+            aria-label="View in AR"
+            onClick={() => {
+              const mv: any = modelRef.current;
+              if (mv && typeof mv.activateAR === "function") {
+                try { mv.activateAR(); } catch (e) { /* no-op */ }
+              }
+            }}
+          >
+            ar
+          </button>
+          <button
+            type="button"
+            aria-label="info"
+            onClick={() => window.dispatchEvent(new CustomEvent("lyra:info-open"))}
+          >
+            info
+          </button>
+        </div>
+      )}
+      <LyraInfo showTrigger={false} />
     </PageTransition>
   );
 };

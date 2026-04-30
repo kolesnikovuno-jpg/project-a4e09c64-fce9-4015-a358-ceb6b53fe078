@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 
-const LyraInfo = () => {
+type Props = { showTrigger?: boolean };
+
+const LyraInfo = ({ showTrigger = true }: Props) => {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -9,6 +11,12 @@ const LyraInfo = () => {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
+    const onOpen = () => setOpen(true);
+    window.addEventListener("lyra:info-open", onOpen);
+    return () => window.removeEventListener("lyra:info-open", onOpen);
   }, []);
 
   useEffect(() => {
@@ -88,6 +96,7 @@ const LyraInfo = () => {
         .lyra-info-panel a{ color:#222; text-decoration:underline; text-underline-offset:2px; }
       `}</style>
 
+      {showTrigger && (
       <button
         className="lyra-info-btn"
         aria-label="info"
@@ -95,6 +104,7 @@ const LyraInfo = () => {
       >
         info
       </button>
+      )}
 
       <div
         className={`lyra-info-overlay ${open ? "open" : ""}`}
