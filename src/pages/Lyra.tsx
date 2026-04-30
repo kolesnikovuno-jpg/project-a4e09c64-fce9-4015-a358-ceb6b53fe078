@@ -594,8 +594,8 @@ const Lyra = () => {
           </div>
         </div>
       </div>
-      {modelFullyVisible && (
-        <div className="uno-actions">
+      <div className="uno-actions">
+        {modelFullyVisible && (
           <button
             type="button"
             aria-label="View in AR"
@@ -608,15 +608,15 @@ const Lyra = () => {
           >
             ar
           </button>
-          <button
+        )}
+        <button
             type="button"
             aria-label="info"
             onClick={() => window.dispatchEvent(new CustomEvent("lyra:info-open"))}
           >
             info
           </button>
-        </div>
-      )}
+      </div>
       <LyraInfo showTrigger={false} />
     </PageTransition>
   );
