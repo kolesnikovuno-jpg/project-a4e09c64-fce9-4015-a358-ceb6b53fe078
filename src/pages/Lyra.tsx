@@ -483,8 +483,7 @@ const Lyra = () => {
           display:flex; align-items:center; gap:22px;
           padding:5px 22px 5px 20px;
           background:hsl(24 26% 94%);
-          border:1px solid hsl(24 14% 82%);
-          border-right:none;
+          border:none;
           border-top-left-radius:2px;
           border-bottom-left-radius:2px;
         }
