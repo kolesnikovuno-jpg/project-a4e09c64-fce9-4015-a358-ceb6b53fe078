@@ -645,6 +645,10 @@ const Lyra = () => {
         </span>
       </button>
       <div className="uno-actions">
+        {/* scroll indicator track lives inside actions so it aligns with "info" */}
+        <div className="uno-scroll-indicator" aria-hidden>
+          <div className="uno-scroll-fill" ref={scrollFillRef} />
+        </div>
         {modelFullyVisible && (
           <button
             type="button"
