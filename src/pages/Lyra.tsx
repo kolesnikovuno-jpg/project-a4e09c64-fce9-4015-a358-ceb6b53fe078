@@ -599,6 +599,19 @@ const Lyra = () => {
           </div>
         </div>
           </div>
+          {/* Layer 3: dimensions sketch */}
+          <div
+            ref={dimsLayerRef}
+            className="absolute inset-0 w-full h-full bg-background flex items-center justify-center overflow-hidden"
+            style={{ opacity: 0, willChange: "opacity", pointerEvents: "none" }}
+          >
+            <img
+              src={lyraDimensions}
+              alt="Lyra — технический чертёж с размерами"
+              className="max-w-[92%] max-h-[88%] w-auto h-auto object-contain select-none"
+              draggable={false}
+            />
+          </div>
         </div>
       </div>
       <div className="uno-actions">
