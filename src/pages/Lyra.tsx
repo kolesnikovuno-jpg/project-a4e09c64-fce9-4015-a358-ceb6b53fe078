@@ -671,10 +671,6 @@ const Lyra = () => {
         </span>
       </button>
       <div className="uno-actions">
-        {/* scroll indicator track lives inside actions so it aligns with "info" */}
-        <div className="uno-scroll-indicator" aria-hidden>
-          <div className="uno-scroll-fill" ref={scrollFillRef} />
-        </div>
         {modelFullyVisible && (
           <button
             type="button"
@@ -698,6 +694,10 @@ const Lyra = () => {
           </button>
       </div>
       <LyraInfo showTrigger={false} />
+      {/* Vertical scroll indicator above the info button */}
+      <div className="uno-scroll-indicator" aria-hidden>
+        <div className="uno-scroll-fill" ref={scrollFillRef} />
+      </div>
       <SEO
         title="LYRA — .uno studio"
         description="LYRA — tension-based seating system. Flexible support structure, minimal material, adaptive response."
