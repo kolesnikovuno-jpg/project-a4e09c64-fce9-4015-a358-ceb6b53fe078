@@ -51,10 +51,11 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
           transition:opacity .25s ease-out;
         }
         .lyra-info-overlay.open{ opacity:1; pointer-events:auto; }
+        .lyra-info-overlay{ background:transparent; }
         .lyra-info-panel{
           position:fixed; top:0; right:0; height:100%;
-          width:65%; max-width:720px;
-          background:rgba(255,255,255,0.85);
+          width:33.3333%; max-width:520px;
+          background:rgba(255,255,255,0.96);
           backdrop-filter:blur(12px);
           -webkit-backdrop-filter:blur(12px);
           z-index:71;
@@ -73,8 +74,8 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
         .lyra-info-close{
           position:absolute; top:18px; right:22px;
           background:transparent; border:none; cursor:pointer;
-          font-size:20px; color:#222; line-height:1;
-          font-family:inherit;
+          font-size:34px; color:#222; line-height:1;
+          font-family:inherit; font-weight:200;
         }
         .lyra-info-panel h2{
           font-size:13px; font-weight:400; margin:0 0 28px;
@@ -121,6 +122,7 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
         <div className="section-title">dimensions</div>
         <div className="row"><span>height</span><span>…</span></div>
         <div className="row"><span>width</span><span>…</span></div>
+        <div className="row"><span>length</span><span>…</span></div>
 
         <div className="section-title">structure</div>
         <div>tension system</div>
@@ -142,12 +144,10 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
 
         <div className="section-title">contact</div>
         <div className="row">
-          <span>telegram</span>
-          <a href="https://t.me/kolesnikov_uno" target="_blank" rel="noreferrer">t.me/kolesnikov_uno</a>
+          <a href="https://t.me/kolesnikov_uno" target="_blank" rel="noreferrer">telegram</a>
         </div>
         <div className="row">
-          <span>email</span>
-          <a href="mailto:kolesnikov.uno@gmail.com">kolesnikov.uno@gmail.com</a>
+          <a href="mailto:kolesnikov.uno@gmail.com">email</a>
         </div>
       </aside>
     </>
