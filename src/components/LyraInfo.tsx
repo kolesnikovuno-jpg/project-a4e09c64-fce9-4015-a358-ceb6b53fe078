@@ -4,6 +4,26 @@ type Props = { showTrigger?: boolean };
 
 const LyraInfo = ({ showTrigger = true }: Props) => {
   const [open, setOpen] = useState(false);
+  const [shareLabel, setShareLabel] = useState("link");
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Lyra", url });
+        return;
+      }
+    } catch {
+      // user dismissed or share failed — fall through to copy
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareLabel("copied");
+      setTimeout(() => setShareLabel("link"), 1200);
+    } catch {
+      // silent
+    }
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -148,6 +168,21 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
         </div>
         <div className="row" style={{ marginTop: 18 }}>
           <a href="mailto:kolesnikov.uno@gmail.com">email</a>
+        </div>
+
+        <hr />
+
+        <div className="section-title">share</div>
+        <div className="row" style={{ marginTop: 8 }}>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleShare();
+            }}
+          >
+            {shareLabel}
+          </a>
         </div>
       </aside>
     </>
