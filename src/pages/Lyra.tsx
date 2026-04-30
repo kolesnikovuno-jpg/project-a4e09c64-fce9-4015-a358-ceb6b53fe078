@@ -579,18 +579,7 @@ const Lyra = () => {
                   }
                 }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path
-                    d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"
-                    stroke="#567C8D"
-                    strokeWidth="1.4"
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                  />
-                  <path d="M12 12l8-4.5" stroke="#567C8D" strokeWidth="1.4" strokeLinecap="round" />
-                  <path d="M12 12v9" stroke="#567C8D" strokeWidth="1.4" strokeLinecap="round" />
-                  <path d="M12 12L4 7.5" stroke="#567C8D" strokeWidth="1.4" strokeLinecap="round" />
-                </svg>
+                ar
               </button>
             )}
 
