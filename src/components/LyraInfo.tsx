@@ -143,10 +143,10 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
         <hr />
 
         <div className="section-title">contact</div>
-        <div className="row">
+        <div className="row" style={{ marginTop: 8 }}>
           <a href="https://t.me/kolesnikov_uno" target="_blank" rel="noreferrer">telegram</a>
         </div>
-        <div className="row">
+        <div className="row" style={{ marginTop: 18 }}>
           <a href="mailto:kolesnikov.uno@gmail.com">email</a>
         </div>
       </aside>
