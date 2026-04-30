@@ -529,8 +529,8 @@ const Lyra = () => {
           bottom:46px;           /* sits just above the top edge of the info button */
           width:2px;
           height:66.6vh;
-          /* page bg with a very subtle darker shade — almost invisible */
-          background:hsl(24 18% 88%);
+          /* subtle but visible track */
+          background:hsl(24 14% 80%);
           pointer-events:none;
           overflow:hidden;
           z-index:60;
@@ -540,10 +540,26 @@ const Lyra = () => {
           left:0;
           top:0;
           width:2px;
-          height:36px;
-          /* slightly stronger shade of the page color */
-          background:hsl(24 14% 78%);
+          height:56px;
+          /* clearly visible accent matching the info button color */
+          background:hsl(203 24% 40%);
           will-change:top;
+        }
+        /* Side touch gutters — let finger scroll the page along the edges
+           without rotating the 3D model. */
+        .uno-side-gutter{
+          position:absolute; top:0; bottom:0;
+          width:clamp(28px, 8vw, 96px);
+          z-index:3;
+          touch-action:pan-y;
+          background:transparent;
+        }
+        .uno-side-gutter.left{ left:0; }
+        .uno-side-gutter.right{ right:0; }
+        /* Model itself: allow vertical page scroll via touch even when
+           interacting with model; horizontal still rotates it. */
+        .uno-3d-stage model-viewer{
+          touch-action:pan-y;
         }
         @media(max-width:768px){
           .uno-scroll-indicator{ right:29px; bottom:40px; }
@@ -636,6 +652,9 @@ const Lyra = () => {
             >
               <p>Чем меньше усилия — тем точнее поддержка.</p>
             </div>
+            {/* Side touch-scroll safe zones around the model */}
+            <div className="uno-side-gutter left" aria-hidden />
+            <div className="uno-side-gutter right" aria-hidden />
           </div>
         </div>
           </div>
