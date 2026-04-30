@@ -25,23 +25,17 @@ const LyraInfo = () => {
       <style>{`
         .lyra-info-btn{
           position:fixed; right:22px; bottom:22px; z-index:60;
-          width:34px; height:34px; border-radius:50%;
-          background:#C8D9E6;
-          backdrop-filter:blur(10px);
-          -webkit-backdrop-filter:blur(10px);
-          border:none;
-          padding:0; cursor:pointer;
-          display:flex; align-items:center; justify-content:center;
-          transition:background .25s ease, opacity .25s ease;
-          opacity:0.95;
+          background:transparent; border:none; padding:6px 4px;
+          cursor:pointer;
+          font-family:'Manrope',system-ui,sans-serif;
+          font-size:12px; font-weight:300;
+          letter-spacing:0.18em; text-transform:lowercase;
+          color:hsl(203 24% 40%);
+          transition:color .25s ease;
         }
-        .lyra-info-btn:hover{
-          background:#bcd0e0;
-          opacity:1;
-        }
-        .lyra-info-btn svg{ display:block; }
+        .lyra-info-btn:hover{ color:#C97A63; }
         @media(max-width:768px){
-          .lyra-info-btn{ width:38px; height:38px; right:16px; bottom:16px; }
+          .lyra-info-btn{ right:16px; bottom:18px; }
         }
         .lyra-info-overlay{
           position:fixed; inset:0; background:rgba(0,0,0,0.1);
