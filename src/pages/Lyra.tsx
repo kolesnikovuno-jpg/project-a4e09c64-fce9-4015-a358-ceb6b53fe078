@@ -52,6 +52,33 @@ const Lyra = () => {
   const heroLayerRef = useRef<HTMLDivElement>(null);
   const modelLayerRef = useRef<HTMLDivElement>(null);
   const dimsLayerRef = useRef<HTMLDivElement>(null);
+  const scrollFillRef = useRef<HTMLDivElement>(null);
+
+  // Scroll indicator: a small colored segment that moves along a vertical track
+  // anchored above the "info" button. Position reflects window scroll progress.
+  useEffect(() => {
+    const fill = scrollFillRef.current;
+    if (!fill) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const doc = document.documentElement;
+      const max = (doc.scrollHeight - window.innerHeight) || 1;
+      const p = Math.max(0, Math.min(1, window.scrollY / max));
+      // Track height = 100% of parent; segment height fixed in CSS (~14%).
+      // Move via top percentage so segment travels from 0 to (100% - segment).
+      fill.style.top = `calc(${p * 100}% - ${p * 18}px)`;
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
 
   useEffect(() => {
     if (!customElements.get("model-viewer")) {
