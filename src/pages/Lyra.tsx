@@ -100,8 +100,11 @@ const Lyra = () => {
       const modelOp = Math.max(0, Math.min(1, (p - 0.15) * 1.4));
       hero.style.opacity = String(heroOp);
       model.style.opacity = String(modelOp);
-      model.style.pointerEvents = modelOp > 0.5 ? "auto" : "none";
-      if (modelOp >= 0.99) {
+      // Only enable interaction once the 3D layer is fully visible —
+      // prevents accidental drags / camera moves during the crossfade.
+      const fullyVisible = modelOp >= 0.999;
+      model.style.pointerEvents = fullyVisible ? "auto" : "none";
+      if (fullyVisible) {
         setModelFullyVisible(true);
       }
     };
