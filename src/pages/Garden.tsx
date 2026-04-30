@@ -380,11 +380,10 @@ const Garden = () => {
                   }}
                 />
                 {stem.id === "05" && (
-                  <circle
-                    cx={stem.x}
-                    cy={topY}
-                    r={stem.topR + 9}
+                  <path
+                    d={`M ${stem.x - (stem.topR + 9)} ${topY} a ${stem.topR + 9} ${stem.topR + 9} 0 1 0 ${(stem.topR + 9) * 2} 0 a ${stem.topR + 9} ${stem.topR + 9} 0 1 0 ${-(stem.topR + 9) * 2} 0 Z M ${stem.x - stem.topR} ${topY} a ${stem.topR} ${stem.topR} 0 1 1 ${stem.topR * 2} 0 a ${stem.topR} ${stem.topR} 0 1 1 ${-stem.topR * 2} 0 Z`}
                     fill="#C8D9E6"
+                    fillRule="evenodd"
                     stroke="#C8D9E6"
                     strokeWidth="0.8"
                     style={{
