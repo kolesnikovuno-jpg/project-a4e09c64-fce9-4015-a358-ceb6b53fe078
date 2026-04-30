@@ -74,8 +74,8 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
         .lyra-info-close{
           position:absolute; top:18px; right:22px;
           background:transparent; border:none; cursor:pointer;
-          font-size:34px; color:#222; line-height:1;
-          font-family:inherit; font-weight:200;
+          font-size:32px; color:#555; line-height:1;
+          font-family:'Manrope',system-ui,sans-serif; font-weight:100;
         }
         .lyra-info-panel h2{
           font-size:13px; font-weight:400; margin:0 0 28px;
