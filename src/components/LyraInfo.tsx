@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import lyraHero from "@/assets/lyra-hero.png";
 
 type Props = { showTrigger?: boolean };
 
@@ -21,17 +20,6 @@ const MODEL = {
   },
 };
 
-const setMeta = (selector: string, attr: string, value: string) => {
-  let el = document.head.querySelector<HTMLMetaElement>(selector);
-  if (!el) {
-    el = document.createElement("meta");
-    const [k, v] = selector.replace(/[\[\]"]/g, "").split("=");
-    el.setAttribute(k, v);
-    document.head.appendChild(el);
-  }
-  el.setAttribute(attr, value);
-};
-
 const LyraInfo = ({ showTrigger = true }: Props) => {
   const [open, setOpen] = useState(false);
   const [copyLabel, setCopyLabel] = useState("copy link");
@@ -41,35 +29,6 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
   useEffect(() => {
     setPageUrl(window.location.href);
   }, [open]);
-
-  // Inject sharing meta tags for Lyra
-  useEffect(() => {
-    const prev = {
-      ogTitle: document.head.querySelector('meta[property="og:title"]')?.getAttribute("content") || "",
-      ogDesc: document.head.querySelector('meta[property="og:description"]')?.getAttribute("content") || "",
-      ogImage: document.head.querySelector('meta[property="og:image"]')?.getAttribute("content") || "",
-      twTitle: document.head.querySelector('meta[name="twitter:title"]')?.getAttribute("content") || "",
-      twDesc: document.head.querySelector('meta[name="twitter:description"]')?.getAttribute("content") || "",
-      twImage: document.head.querySelector('meta[name="twitter:image"]')?.getAttribute("content") || "",
-    };
-    const origin = window.location.origin;
-    const img = origin + lyraHero;
-    const desc = MODEL.overview.join(" · ");
-    setMeta('meta[property="og:title"]', "content", MODEL.name);
-    setMeta('meta[property="og:description"]', "content", desc);
-    setMeta('meta[property="og:image"]', "content", img);
-    setMeta('meta[name="twitter:title"]', "content", MODEL.name);
-    setMeta('meta[name="twitter:description"]', "content", desc);
-    setMeta('meta[name="twitter:image"]', "content", img);
-    return () => {
-      if (prev.ogTitle) setMeta('meta[property="og:title"]', "content", prev.ogTitle);
-      if (prev.ogDesc) setMeta('meta[property="og:description"]', "content", prev.ogDesc);
-      if (prev.ogImage) setMeta('meta[property="og:image"]', "content", prev.ogImage);
-      if (prev.twTitle) setMeta('meta[name="twitter:title"]', "content", prev.twTitle);
-      if (prev.twDesc) setMeta('meta[name="twitter:description"]', "content", prev.twDesc);
-      if (prev.twImage) setMeta('meta[name="twitter:image"]', "content", prev.twImage);
-    };
-  }, []);
 
   const handleCopy = async () => {
     try {

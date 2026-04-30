@@ -5,6 +5,7 @@ import lyraHero from "@/assets/lyra-hero.png";
 import lyraDimensions from "@/assets/lyra-dimensions.png";
 import lyraDimensionsMobile from "@/assets/lyra-dimensions-mobile.png";
 import LyraInfo from "@/components/LyraInfo";
+import SEO from "@/components/SEO";
 
 declare global {
   namespace JSX {
@@ -640,6 +641,12 @@ const Lyra = () => {
           </button>
       </div>
       <LyraInfo showTrigger={false} />
+      <SEO
+        title="LYRA — .uno studio"
+        description="LYRA — tension-based seating system. Flexible support structure, minimal material, adaptive response."
+        image="/og/lyra-preview.png"
+        type="product"
+      />
     </PageTransition>
   );
 };
