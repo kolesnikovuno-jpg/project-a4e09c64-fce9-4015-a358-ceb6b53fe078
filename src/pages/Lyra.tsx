@@ -574,23 +574,6 @@ const Lyra = () => {
               />
             </model-viewer>
 
-            {modelFullyVisible && (
-              <button
-                type="button"
-                className="uno-ar"
-                aria-label="View in AR"
-                title="AR"
-                onClick={() => {
-                  const mv: any = modelRef.current;
-                  if (mv && typeof mv.activateAR === "function") {
-                    try { mv.activateAR(); } catch (e) { /* no-op */ }
-                  }
-                }}
-              >
-                ar
-              </button>
-            )}
-
             <div
               className={`uno-overlay-below ${modelLoaded && modelFullyVisible ? "visible" : ""}`}
               style={{
@@ -611,7 +594,30 @@ const Lyra = () => {
           </div>
         </div>
       </div>
-      <LyraInfo />
+      {modelFullyVisible && (
+        <div className="uno-actions">
+          <button
+            type="button"
+            aria-label="View in AR"
+            onClick={() => {
+              const mv: any = modelRef.current;
+              if (mv && typeof mv.activateAR === "function") {
+                try { mv.activateAR(); } catch (e) { /* no-op */ }
+              }
+            }}
+          >
+            ar
+          </button>
+          <button
+            type="button"
+            aria-label="info"
+            onClick={() => window.dispatchEvent(new CustomEvent("lyra:info-open"))}
+          >
+            info
+          </button>
+        </div>
+      )}
+      <LyraInfo showTrigger={false} />
     </PageTransition>
   );
 };
