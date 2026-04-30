@@ -379,26 +379,6 @@ const Lyra = () => {
             className="absolute inset-0 w-full h-full bg-background flex items-center justify-center overflow-x-hidden"
             style={{ opacity: 0, willChange: "opacity", pointerEvents: "none" }}
           >
-            {/* Back arrow */}
-            <button
-          onClick={() => navigate("/garden")}
-              className="absolute top-4 left-4 md:top-5 md:left-5 px-2 py-1 text-[hsl(203_24%_40%)] hover:text-[#C97A63] transition-colors duration-300 z-10"
-              style={{ pointerEvents: "auto" }}
-          aria-label="Назад"
-        >
-          <span
-            style={{
-              fontFamily: "'Manrope', system-ui, sans-serif",
-              fontSize: "12px",
-              fontWeight: 300,
-              letterSpacing: "0.18em",
-              textTransform: "lowercase",
-            }}
-          >
-            ← back
-          </span>
-        </button>
-
         <style>{`
         .uno-3d-wrap{
           --pad:clamp(6px,0.9vw,12px);
