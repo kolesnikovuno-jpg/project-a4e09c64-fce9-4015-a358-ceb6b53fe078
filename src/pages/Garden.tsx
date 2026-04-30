@@ -99,12 +99,12 @@ const Garden = () => {
   const [error, setError] = useState(false);
 
   const budLabels: Record<string, string> = {
-    "01": "Архитектура",
-    "02": "Интерьер",
-    "03": "Предмет",
-    "04": "Графика",
+    "01": ".",
+    "02": ".",
+    "03": ".",
+    "04": ".",
     "05": "Lyra — no effort",
-    "06": "Эскиз",
+    "06": ".",
     "06.1": "unocalc",
   };
 
