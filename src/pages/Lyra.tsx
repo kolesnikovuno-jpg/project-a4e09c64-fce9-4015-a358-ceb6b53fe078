@@ -411,6 +411,9 @@ const Lyra = () => {
             style={{ opacity: 0, willChange: "opacity", pointerEvents: "none" }}
           >
         <style>{`
+        /* Hide native scrollbar on Lyra page */
+        html, body { scrollbar-width: none; -ms-overflow-style: none; }
+        html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; display: none; }
         .uno-3d-wrap{
           --pad:clamp(6px,0.9vw,12px);
           position:relative;
