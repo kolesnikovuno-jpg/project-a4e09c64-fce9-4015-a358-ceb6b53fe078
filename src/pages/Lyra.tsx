@@ -52,6 +52,34 @@ const Lyra = () => {
   const heroLayerRef = useRef<HTMLDivElement>(null);
   const modelLayerRef = useRef<HTMLDivElement>(null);
   const dimsLayerRef = useRef<HTMLDivElement>(null);
+  const scrollFillRef = useRef<HTMLDivElement>(null);
+
+  // Scroll indicator: a small colored segment that moves along a vertical track
+  // anchored above the "info" button. Position reflects window scroll progress.
+  useEffect(() => {
+    const fill = scrollFillRef.current;
+    if (!fill) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const doc = document.documentElement;
+      const max = (doc.scrollHeight - window.innerHeight) || 1;
+      const p = Math.max(0, Math.min(1, window.scrollY / max));
+      // Track height = 100% of parent; segment height fixed in CSS (~14%).
+      // Move via top percentage so segment travels from 0 to (100% - segment).
+      // Move the segment from top:0 to top:(100% - segmentHeight)
+      fill.style.top = `calc(${p * 100}% - ${p * 36}px)`;
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
 
   useEffect(() => {
     if (!customElements.get("model-viewer")) {
@@ -491,6 +519,32 @@ const Lyra = () => {
         @media(max-width:768px){
           .uno-actions{ bottom:18px; padding:4px 18px 4px 16px; gap:18px; }
         }
+        /* Scroll indicator: vertical 2px track rising from the middle of the
+           "info" button up to ~2/3 of the viewport. A small colored segment
+           travels along it as the page scrolls. Fixed to the viewport. */
+        .uno-scroll-indicator{
+          position:fixed;
+          right:35px;            /* ≈ center of the "info" text (padding 22 + ~13 half-text) */
+          bottom:35px;           /* ≈ vertical middle of the info button */
+          width:2px;
+          height:66.6vh;
+          background:hsl(203 24% 40% / 0.18);
+          pointer-events:none;
+          overflow:hidden;
+          z-index:60;
+        }
+        .uno-scroll-fill{
+          position:absolute;
+          left:0;
+          top:0;
+          width:2px;
+          height:36px;
+          background:hsl(203 24% 40%);
+          will-change:top;
+        }
+        @media(max-width:768px){
+          .uno-scroll-indicator{ right:29px; bottom:30px; }
+        }
         model-viewer::part(default-ar-button){ display:none !important; }
         model-viewer [slot="ar-button"]{ display:none !important; }
       `}</style>
@@ -641,6 +695,10 @@ const Lyra = () => {
           </button>
       </div>
       <LyraInfo showTrigger={false} />
+      {/* Vertical scroll indicator above the info button */}
+      <div className="uno-scroll-indicator" aria-hidden>
+        <div className="uno-scroll-fill" ref={scrollFillRef} />
+      </div>
       <SEO
         title="LYRA — .uno studio"
         description="LYRA — tension-based seating system. Flexible support structure, minimal material, adaptive response."
