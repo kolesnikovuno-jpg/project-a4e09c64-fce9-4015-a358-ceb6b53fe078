@@ -588,7 +588,7 @@ const Lyra = () => {
             <img
               src={lyraDimensions}
               alt="Lyra — технический чертёж с размерами"
-              className="w-[98%] h-[92%] md:w-auto md:h-auto md:max-w-[92%] md:max-h-[88%] object-contain select-none"
+              className="w-full h-full md:w-auto md:h-auto md:max-w-[92%] md:max-h-[88%] object-cover md:object-contain object-center scale-[1.35] md:scale-100 select-none"
               draggable={false}
             />
           </div>
