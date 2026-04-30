@@ -93,10 +93,7 @@ const LyraInfo = () => {
         aria-label="info"
         onClick={() => setOpen(true)}
       >
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <circle cx="7" cy="3" r="1.1" fill="#567C8D" />
-          <line x1="7" y1="5.8" x2="7" y2="11.2" stroke="#567C8D" strokeWidth="1.4" strokeLinecap="round" />
-        </svg>
+        info
       </button>
 
       <div
