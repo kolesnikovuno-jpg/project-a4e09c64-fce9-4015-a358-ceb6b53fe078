@@ -336,7 +336,7 @@ const Garden = () => {
         {/* Floating label above stems, aligned to right edge */}
         <div
           className="absolute right-6 left-6 text-right pointer-events-none select-none z-10"
-          style={{ top: "calc(18vh - 2.5rem + 15px)" }}
+          style={{ top: "calc(18vh - 2.5rem + 25px)" }}
         >
           <TypewriterLabel text={displayedLabel} />
         </div>
@@ -444,7 +444,7 @@ const Garden = () => {
         .garden-typewriter{
           display:inline-block;
           font-family:'Manrope',system-ui,sans-serif;
-          font-size:14px;
+          font-size:13px;
           font-weight:300;
           letter-spacing:0.28em;
           color:hsl(0 0% 55%);
