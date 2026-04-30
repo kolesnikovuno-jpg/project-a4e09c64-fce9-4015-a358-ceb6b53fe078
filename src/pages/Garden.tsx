@@ -395,6 +395,21 @@ const Garden = () => {
                   visible={animated}
                   active={displayedLabelId === stem.id}
                 />
+                {stem.id === "05" && (
+                  <circle
+                    cx={stem.x}
+                    cy={topY}
+                    r={stem.topR + 5}
+                    fill="none"
+                    stroke="#C8D9E6"
+                    strokeWidth="0.8"
+                    style={{
+                      opacity: animated ? 1 : 0,
+                      transition: `opacity 0.6s ease ${(budDelays[stem.id] || 1) + 0.1}s`,
+                      pointerEvents: "none",
+                    }}
+                  />
+                )}
                 {/* Branches */}
                 {stem.branches.map((br, i) => {
                   const brY = gY - br.y;
@@ -432,21 +447,6 @@ const Garden = () => {
                         visible={animated}
                         active={displayedLabelId === subId}
                       />
-                      {subId === "05.1" && (
-                        <circle
-                          cx={brEndX}
-                          cy={brY}
-                          r={br.r + 5}
-                          fill="none"
-                          stroke="#C8D9E6"
-                          strokeWidth="0.8"
-                          style={{
-                            opacity: animated ? 1 : 0,
-                            transition: `opacity 0.6s ease ${(budDelays[subId] || 1.2) + 0.1}s`,
-                            pointerEvents: "none",
-                          }}
-                        />
-                      )}
                     </g>
                   );
                 })}
