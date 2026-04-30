@@ -399,7 +399,7 @@ const Garden = () => {
                   <circle
                     cx={stem.x}
                     cy={topY}
-                    r={stem.topR + 5}
+                    r={stem.topR + 9}
                     fill="none"
                     stroke="#C8D9E6"
                     strokeWidth="0.8"
