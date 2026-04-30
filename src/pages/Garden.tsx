@@ -402,7 +402,7 @@ const Garden = () => {
                     r={stem.topR + 9}
                     fill="none"
                     stroke="#C8D9E6"
-                    strokeWidth="0.8"
+                    strokeWidth="1"
                     style={{
                       opacity: animated ? 1 : 0,
                       transition: `opacity 0.6s ease ${(budDelays[stem.id] || 1) + 0.1}s`,
@@ -454,7 +454,7 @@ const Garden = () => {
                           r={br.r * 2}
                           fill="none"
                           stroke="#C8D9E6"
-                          strokeWidth="0.8"
+                          strokeWidth="1"
                           style={{
                             opacity: animated ? 1 : 0,
                             transition: `opacity 0.6s ease ${(budDelays[subId] || 1.2) + 0.1}s`,
