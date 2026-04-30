@@ -67,7 +67,8 @@ const Lyra = () => {
       const p = Math.max(0, Math.min(1, window.scrollY / max));
       // Track height = 100% of parent; segment height fixed in CSS (~14%).
       // Move via top percentage so segment travels from 0 to (100% - segment).
-      fill.style.top = `calc(${p * 100}% - ${p * 18}px)`;
+      // Move the segment from top:0 to top:(100% - segmentHeight)
+      fill.style.top = `calc(${p * 100}% - ${p * 36}px)`;
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
     update();
