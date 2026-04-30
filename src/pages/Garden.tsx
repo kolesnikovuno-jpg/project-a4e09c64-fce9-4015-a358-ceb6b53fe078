@@ -447,6 +447,21 @@ const Garden = () => {
                         visible={animated}
                         active={displayedLabelId === subId}
                       />
+                      {stem.id === "06" && i === 0 && (
+                        <circle
+                          cx={brEndX}
+                          cy={brY}
+                          r={br.r + 9}
+                          fill="none"
+                          stroke="#C8D9E6"
+                          strokeWidth="0.8"
+                          style={{
+                            opacity: animated ? 1 : 0,
+                            transition: `opacity 0.6s ease ${(budDelays[subId] || 1.2) + 0.1}s`,
+                            pointerEvents: "none",
+                          }}
+                        />
+                      )}
                     </g>
                   );
                 })}
