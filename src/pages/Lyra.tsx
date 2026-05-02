@@ -440,12 +440,11 @@ const Lyra = () => {
                 className="hero-caption absolute left-4 sm:left-8 md:left-12 lg:left-16 right-4 sm:right-12 pointer-events-none select-none"
                 style={{
                   top: "calc(33% + 70px)",
-                  marginLeft: "-35px",
                   color: "#F5EFEB",
                   fontFamily: "'Manrope', sans-serif",
                   fontWeight: 300,
-                  letterSpacing: "0.42em",
-                  fontSize: "clamp(10px, 1.445vw, 15.3px)",
+                  letterSpacing: "0.28em",
+                  fontSize: "clamp(9px, 1.445vw, 15.3px)",
                   lineHeight: 1.35,
                   opacity: `calc(var(--caption-scroll-opacity, 1) * ${captionLoaded ? 1 : 0})`,
                   transform: `translateY(calc(var(--caption-scroll-shift, 0px) + ${captionLoaded ? "0px" : "12px"}))`,
