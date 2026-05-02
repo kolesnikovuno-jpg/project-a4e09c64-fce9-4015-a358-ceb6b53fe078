@@ -471,6 +471,14 @@ const Lyra = () => {
           from { opacity: 0; transform: translateY(14px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        /* Mobile-safe caption: tighter tracking, no negative left margin so
+           the text never clips off the left edge on small screens. */
+        @media (max-width: 640px){
+          .hero-caption{
+            --caption-tracking: 0.22em;
+            --caption-shift: 0px;
+          }
+        }
         .uno-3d-wrap{
           --pad:clamp(6px,0.9vw,12px);
           position:relative;
