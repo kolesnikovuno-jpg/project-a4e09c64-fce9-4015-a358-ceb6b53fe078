@@ -34,7 +34,7 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, onHover, delay, v
       onMouseLeave={() => onHover?.(null)}
       role="button"
       tabIndex={0}
-      aria-label={label || `Элемент ${id}`}
+      aria-label={label || `${id}`}
       style={{
         cursor: "pointer",
         opacity: visible ? 1 : 0,
