@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -31,7 +31,12 @@ const App = () => (
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/unocalc" element={<UnoCalc />} />
           <Route path="/about" element={<About />} />
-          <Route path="/lyra" element={<Lyra />} />
+          {/* Multilingual Lyra — EN is the canonical source. Bare /lyra
+              redirects to the English version per the multilingual spec. */}
+          <Route path="/lyra" element={<Navigate to="/en/lyra" replace />} />
+          <Route path="/en/lyra" element={<Lyra />} />
+          <Route path="/ru/lyra" element={<Lyra />} />
+          <Route path="/uk/lyra" element={<Lyra />} />
           <Route path="/garden" element={<Garden />} />
           <Route path="/lyra-concept" element={<LyraConcept />} />
           <Route path="/gateway" element={<Gateway />} />
