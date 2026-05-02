@@ -811,8 +811,7 @@ const Lyra = () => {
       />
       {/* Language switcher — hidden on hero, fades in once user scrolls past it. */}
       <LanguageSwitcher
-        hidden={!switcherVisible}
-        background="hsl(24 26% 94%)"
+        background="transparent"
       />
     </PageTransition>
   );
