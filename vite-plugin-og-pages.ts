@@ -10,6 +10,8 @@ export type OgPage = {
   /** Path relative to site root, e.g. "/og/lyra-preview.png" */
   image: string;
   type?: string;
+  /** Optional per-locale alternate URLs for hreflang tags. */
+  alternates?: Record<string, string>;
 };
 
 type Options = {
@@ -41,7 +43,7 @@ export default function ogPages({ siteUrl, pages }: Options): Plugin {
       ? page.image
       : siteUrl.replace(/\/$/, "") + page.image;
     const type = page.type || "website";
-    return [
+    const tags = [
       `<title>${escape(page.title)}</title>`,
       `<meta name="description" content="${escape(page.description)}">`,
       `<link rel="canonical" href="${escape(absUrl)}">`,
@@ -54,7 +56,24 @@ export default function ogPages({ siteUrl, pages }: Options): Plugin {
       `<meta name="twitter:title" content="${escape(page.title)}">`,
       `<meta name="twitter:description" content="${escape(page.description)}">`,
       `<meta name="twitter:image" content="${escape(absImage)}">`,
-    ].join("\n    ");
+    ];
+    if (page.alternates) {
+      const entries = Object.entries(page.alternates);
+      for (const [lang, href] of entries) {
+        const abs = /^https?:\/\//i.test(href)
+          ? href
+          : siteUrl.replace(/\/$/, "") + href;
+        tags.push(
+          `<link rel="alternate" hreflang="${escape(lang)}" href="${escape(abs)}">`,
+        );
+      }
+      if (!entries.some(([l]) => l === "x-default")) {
+        tags.push(
+          `<link rel="alternate" hreflang="x-default" href="${escape(absUrl)}">`,
+        );
+      }
+    }
+    return tags.join("\n    ");
   };
 
   const rewriteHtml = (html: string, page: OgPage) => {
