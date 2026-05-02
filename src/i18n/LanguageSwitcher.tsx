@@ -18,7 +18,7 @@ type Props = {
  */
 const LanguageSwitcher = ({
   background = "transparent",
-  topOffset = 18,
+  topOffset = 0,
   hidden = false,
 }: Props) => {
   const { locale, switchTo } = useLocale();
@@ -53,7 +53,9 @@ const LanguageSwitcher = ({
         top: topOffset,
         left: "50%",
         transform: "translateX(-50%)",
-        zIndex: 70,
+        // High z-index so the switcher floats above hero images, the 3D
+        // model viewer, and any popup/info panels.
+        zIndex: 9999,
         fontFamily: "'Manrope', system-ui, sans-serif",
       }}
     >
@@ -64,14 +66,14 @@ const LanguageSwitcher = ({
         aria-label="Change language"
         onClick={() => setOpen((v) => !v)}
         style={{
-          width: 34,
-          height: 34,
+          width: 22,
+          height: 24,
           background,
           border: "none",
           outline: "none",
           cursor: "pointer",
           color: "hsl(203 24% 40%)",
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: 400,
           letterSpacing: "0.12em",
           textTransform: "uppercase",
@@ -90,13 +92,13 @@ const LanguageSwitcher = ({
           padding: 0,
           background,
           overflow: "hidden",
-          maxHeight: open ? items.length * 34 + 4 : 0,
+          maxHeight: open ? items.length * 24 + 4 : 0,
           opacity: open ? 1 : 0,
           transition:
             "max-height .35s cubic-bezier(0.22,0.61,0.36,1), opacity .25s ease",
           pointerEvents: open ? "auto" : "none",
           borderRadius: 2,
-          marginTop: 2,
+          marginTop: 1,
         }}
       >
         {items
@@ -112,13 +114,13 @@ const LanguageSwitcher = ({
                   switchTo(l);
                 }}
                 style={{
-                  width: 34,
-                  height: 34,
+                  width: 22,
+                  height: 24,
                   background: "transparent",
                   border: "none",
                   cursor: "pointer",
                   color: "hsl(203 24% 55%)",
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: 400,
                   letterSpacing: "0.12em",
                   textTransform: "uppercase",
