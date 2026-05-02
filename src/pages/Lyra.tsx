@@ -6,6 +6,9 @@ import lyraDimensions from "@/assets/lyra-dimensions.png";
 import lyraDimensionsMobile from "@/assets/lyra-dimensions-mobile.png";
 import LyraInfo from "@/components/LyraInfo";
 import SEO from "@/components/SEO";
+import { useLocale } from "@/i18n/useLocale";
+import LanguageSwitcher from "@/i18n/LanguageSwitcher";
+import { LOCALES } from "@/i18n/config";
 
 declare global {
   namespace JSX {
@@ -42,6 +45,7 @@ const USDZ_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/pub
 
 const Lyra = () => {
   const navigate = useNavigate();
+  const { t, locale, localePath } = useLocale();
   const modelRef = useRef<HTMLElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
@@ -56,6 +60,8 @@ const Lyra = () => {
   const scrollFillRef = useRef<HTMLDivElement>(null);
   const heroCaptionRef = useRef<HTMLDivElement>(null);
   const [captionLoaded, setCaptionLoaded] = useState(false);
+  // Switcher visibility — hidden while the hero screen is the dominant layer.
+  const [switcherVisible, setSwitcherVisible] = useState(false);
 
   // Smooth fade-in on mount.
   useEffect(() => {
@@ -178,6 +184,10 @@ const Lyra = () => {
       model.style.pointerEvents = fullyVisible ? "auto" : "none";
       dims.style.pointerEvents = dimsOp >= 0.999 ? "auto" : "none";
       setModelFullyVisible((prev) => (prev !== fullyVisible ? fullyVisible : prev));
+      // Show switcher once the hero has visibly receded — keeps the first
+      // (hero) screen clean per the multilingual UX rules.
+      const showSwitcher = heroOp < 0.5;
+      setSwitcherVisible((prev) => (prev !== showSwitcher ? showSwitcher : prev));
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
@@ -413,7 +423,7 @@ const Lyra = () => {
               <img
                 ref={heroImgRef}
                 src={lyraHero}
-                alt="Lyra chair — woman reclining in a sunlit concrete interior"
+                alt={t.lyra.hero_alt}
                 className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center"
                 loading="eager"
                 style={{
@@ -452,7 +462,7 @@ const Lyra = () => {
                   transition: "opacity 0.8s ease-out, transform 0.8s ease-out",
                 }}
               >
-                Form that carries the body
+                {t.lyra.hero_caption}
               </div>
             </div>
           </section>
@@ -717,7 +727,7 @@ const Lyra = () => {
                 zIndex: 4,
               }}
             >
-              <p>Чем меньше усилия — тем точнее поддержка.</p>
+              <p>{t.lyra.rotated_line}</p>
             </div>
             {/* Side touch-scroll safe zones around the model */}
             <div className="uno-side-gutter left" aria-hidden />
@@ -735,7 +745,7 @@ const Lyra = () => {
               <source media="(min-width: 768px)" srcSet={lyraDimensions} />
               <img
                 src={lyraDimensionsMobile}
-                alt="Lyra — технический чертёж с размерами"
+                alt={t.lyra.dimensions_alt}
                 className="w-full h-full md:w-auto md:h-auto md:max-w-[92%] md:max-h-[88%] object-contain object-center select-none"
                 draggable={false}
               />
@@ -747,7 +757,7 @@ const Lyra = () => {
       <button
         onClick={() => navigate("/garden")}
         className="fixed top-4 left-4 md:top-5 md:left-5 px-2 py-1 text-[hsl(203_24%_40%)] hover:text-[#C97A63] transition-colors duration-300 z-[60]"
-        aria-label="Назад"
+        aria-label={t.nav.back}
       >
         <span
           style={{
@@ -758,14 +768,14 @@ const Lyra = () => {
             textTransform: "lowercase",
           }}
         >
-          ← back
+          {t.nav.back}
         </span>
       </button>
       <div className="uno-actions">
         {modelFullyVisible && (
           <button
             type="button"
-            aria-label="View in AR"
+            aria-label={t.nav.ar}
             onClick={() => {
               const mv: any = modelRef.current;
               if (mv && typeof mv.activateAR === "function") {
@@ -773,15 +783,15 @@ const Lyra = () => {
               }
             }}
           >
-            ar
+            {t.nav.ar}
           </button>
         )}
         <button
             type="button"
-            aria-label="info"
+            aria-label={t.nav.info}
             onClick={() => window.dispatchEvent(new CustomEvent("lyra:info-open"))}
           >
-            info
+            {t.nav.info}
           </button>
       </div>
       <LyraInfo showTrigger={false} />
@@ -790,10 +800,19 @@ const Lyra = () => {
         <div className="uno-scroll-fill" ref={scrollFillRef} />
       </div>
       <SEO
-        title="LYRA — .uno studio"
-        description="LYRA — tension-based seating system. Flexible support structure, minimal material, adaptive response."
+        title={t.lyra.seo_title}
+        description={t.lyra.seo_description}
         image="/og/lyra-preview.png"
         type="product"
+        alternates={LOCALES.reduce<Record<string, string>>((acc, l) => {
+          acc[l] = `/${l}/lyra`;
+          return acc;
+        }, {})}
+      />
+      {/* Language switcher — hidden on hero, fades in once user scrolls past it. */}
+      <LanguageSwitcher
+        hidden={!switcherVisible}
+        background="hsl(24 26% 94%)"
       />
     </PageTransition>
   );
