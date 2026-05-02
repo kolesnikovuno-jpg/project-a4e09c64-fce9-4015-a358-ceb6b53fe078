@@ -443,7 +443,7 @@ const Lyra = () => {
                   color: "#F5EFEB",
                   fontFamily: "'Manrope', sans-serif",
                   fontWeight: 300,
-                  letterSpacing: "0.18em",
+                  letterSpacing: "0.26em",
                   fontSize: "clamp(12px, 1.7vw, 18px)",
                   lineHeight: 1.35,
                   opacity: `calc(var(--caption-scroll-opacity, 1) * ${captionLoaded ? 1 : 0})`,
