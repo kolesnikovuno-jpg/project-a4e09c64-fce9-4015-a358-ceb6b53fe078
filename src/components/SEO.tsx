@@ -8,6 +8,12 @@ type Props = {
   type?: string;
   /** Canonical URL. Defaults to current location.href */
   url?: string;
+  /**
+   * Optional alternate-language URLs for hreflang. Pass a map of language
+   * code → absolute URL (or path relative to site root). The current page's
+   * canonical URL is automatically added as the `x-default` if not present.
+   */
+  alternates?: Record<string, string>;
 };
 
 const upsertMeta = (selector: string, attrName: string, attrValue: string, content: string) => {
@@ -38,7 +44,7 @@ const upsertLink = (rel: string, href: string) => {
  * Sets per-page <title>, description and Open Graph / Twitter meta tags.
  * Restores previous values on unmount so navigating away does not leak meta.
  */
-const SEO = ({ title, description, image, type = "website", url }: Props) => {
+const SEO = ({ title, description, image, type = "website", url, alternates }: Props) => {
   useEffect(() => {
     const origin = window.location.origin;
     const absoluteUrl = url || window.location.href;
@@ -72,11 +78,34 @@ const SEO = ({ title, description, image, type = "website", url }: Props) => {
       if (prevHref) linkEl.setAttribute("href", prevHref);
     });
 
+    // hreflang alternates. We append (and later remove) our own elements so
+    // we don't fight any base ones in index.html.
+    const altEls: HTMLLinkElement[] = [];
+    if (alternates) {
+      const entries = Object.entries(alternates);
+      const addAlt = (hreflang: string, href: string) => {
+        const abs = /^https?:\/\//i.test(href) ? href : origin + href;
+        const el = document.createElement("link");
+        el.setAttribute("rel", "alternate");
+        el.setAttribute("hreflang", hreflang);
+        el.setAttribute("href", abs);
+        document.head.appendChild(el);
+        altEls.push(el);
+      };
+      for (const [lang, href] of entries) addAlt(lang, href);
+      if (!entries.some(([l]) => l === "x-default")) {
+        addAlt("x-default", absoluteUrl);
+      }
+    }
+    restorers.push(() => {
+      for (const el of altEls) el.parentNode?.removeChild(el);
+    });
+
     return () => {
       document.title = prevTitle;
       restorers.forEach((r) => r());
     };
-  }, [title, description, image, type, url]);
+  }, [title, description, image, type, url, JSON.stringify(alternates || {})]);
 
   return null;
 };
