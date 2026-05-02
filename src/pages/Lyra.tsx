@@ -445,7 +445,7 @@ const Lyra = () => {
                   fontFamily: "'Manrope', sans-serif",
                   fontWeight: 300,
                   letterSpacing: "0.34em",
-                  fontSize: "clamp(12px, 1.7vw, 18px)",
+                  fontSize: "clamp(10px, 1.445vw, 15.3px)",
                   lineHeight: 1.35,
                   opacity: `calc(var(--caption-scroll-opacity, 1) * ${captionLoaded ? 1 : 0})`,
                   transform: `translateY(calc(var(--caption-scroll-shift, 0px) + ${captionLoaded ? "0px" : "12px"}))`,
