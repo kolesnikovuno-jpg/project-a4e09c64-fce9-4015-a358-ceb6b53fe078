@@ -6,6 +6,9 @@ import lyraDimensions from "@/assets/lyra-dimensions.png";
 import lyraDimensionsMobile from "@/assets/lyra-dimensions-mobile.png";
 import LyraInfo from "@/components/LyraInfo";
 import SEO from "@/components/SEO";
+import { useLocale } from "@/i18n/useLocale";
+import LanguageSwitcher from "@/i18n/LanguageSwitcher";
+import { LOCALES } from "@/i18n/config";
 
 declare global {
   namespace JSX {
@@ -42,6 +45,7 @@ const USDZ_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/pub
 
 const Lyra = () => {
   const navigate = useNavigate();
+  const { t, locale, localePath } = useLocale();
   const modelRef = useRef<HTMLElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
@@ -56,6 +60,8 @@ const Lyra = () => {
   const scrollFillRef = useRef<HTMLDivElement>(null);
   const heroCaptionRef = useRef<HTMLDivElement>(null);
   const [captionLoaded, setCaptionLoaded] = useState(false);
+  // Switcher visibility — hidden while the hero screen is the dominant layer.
+  const [switcherVisible, setSwitcherVisible] = useState(false);
 
   // Smooth fade-in on mount.
   useEffect(() => {
@@ -178,6 +184,10 @@ const Lyra = () => {
       model.style.pointerEvents = fullyVisible ? "auto" : "none";
       dims.style.pointerEvents = dimsOp >= 0.999 ? "auto" : "none";
       setModelFullyVisible((prev) => (prev !== fullyVisible ? fullyVisible : prev));
+      // Show switcher once the hero has visibly receded — keeps the first
+      // (hero) screen clean per the multilingual UX rules.
+      const showSwitcher = heroOp < 0.5;
+      setSwitcherVisible((prev) => (prev !== showSwitcher ? showSwitcher : prev));
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
