@@ -54,6 +54,18 @@ const Lyra = () => {
   const modelLayerRef = useRef<HTMLDivElement>(null);
   const dimsLayerRef = useRef<HTMLDivElement>(null);
   const scrollFillRef = useRef<HTMLDivElement>(null);
+  const heroCaptionRef = useRef<HTMLDivElement>(null);
+  const [captionDismissed, setCaptionDismissed] = useState(false);
+
+  // Hero caption: fade out on first scroll, never reappear.
+  useEffect(() => {
+    if (captionDismissed) return;
+    const onScroll = () => {
+      if (window.scrollY > 4) setCaptionDismissed(true);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [captionDismissed]);
 
   // Scroll indicator: a small colored segment that moves along a vertical track
   // anchored above the "info" button. Position reflects window scroll progress.
@@ -401,6 +413,32 @@ const Lyra = () => {
                   backgroundImage: `url(${lyraHero})`,
                 }}
               />
+              <div
+                ref={heroCaptionRef}
+                aria-hidden
+                className="hero-caption absolute left-4 sm:left-8 md:left-12 lg:left-16 right-4 sm:right-12 pointer-events-none select-none"
+                style={{
+                  top: "66%",
+                  color: "#F5EFEB",
+                  fontFamily: "inherit",
+                  fontWeight: 300,
+                  letterSpacing: "0.12em",
+                  fontSize: "clamp(14px, 2.2vw, 22px)",
+                  lineHeight: 1.3,
+                  opacity: captionDismissed ? 0 : 1,
+                  transform: captionDismissed
+                    ? "translateY(10px)"
+                    : "translateY(0)",
+                  transition: captionDismissed
+                    ? "opacity 0.4s ease-out, transform 0.4s ease-out"
+                    : "opacity 0.7s ease-out, transform 0.7s ease-out",
+                  animation: captionDismissed
+                    ? undefined
+                    : "lyra-caption-in 0.7s ease-out both",
+                }}
+              >
+                Form that carries the body
+              </div>
             </div>
           </section>
 
