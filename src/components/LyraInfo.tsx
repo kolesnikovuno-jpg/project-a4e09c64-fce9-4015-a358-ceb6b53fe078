@@ -13,7 +13,7 @@ const MODEL = {
   ],
   dimensions: { height: "1500 mm", width: "840 mm", length: "1750 mm" },
   structure: ["tension system", "flexible support"],
-  material: { textile: "—", frame: "—", color: "customizable" },
+  material: { textile: "DYNEEMA weaving cord", frame: "plywood and paint", color: "customizable" },
   contact: {
     telegram: "https://t.me/kolesnikov_uno",
     email: "kolesnikov.uno@gmail.com",
