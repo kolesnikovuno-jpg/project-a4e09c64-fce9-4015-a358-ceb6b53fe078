@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, LayoutGroup, useAnimation } from "motion/react";
 import { useIsNative } from "@/hooks/use-native";
+import { useLocale } from "@/i18n/useLocale";
+import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 
 const Index = () => {
   const [open, setOpen] = useState(false);
@@ -9,6 +11,7 @@ const Index = () => {
   const navigate = useNavigate();
   const isNative = useIsNative();
   const controls = useAnimation();
+  const { t, localePath } = useLocale();
 
   useEffect(() => {
     if (open) {
@@ -227,7 +230,7 @@ const Index = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         handleClose();
-                        navigate("/garden");
+                        navigate(localePath("/garden"));
                       }}
                       className="pointer-events-auto absolute flex items-center justify-center w-[77px] h-[77px] md:w-[77px] md:h-[77px] top-[38px] right-[38px] md:top-[48px] md:right-[48px] rounded-full text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors cursor-pointer"
                       initial={{ opacity: 0 }}
@@ -297,14 +300,14 @@ const Index = () => {
                         onClick={(e) => {
                           e.preventDefault();
                           handleClose();
-                          navigate("/gateway");
+                          navigate(localePath("/gateway"));
                         }}
                         className="text-base tracking-[0.15em] font-normal text-foreground hover:text-primary transition-colors"
                       >
-                        .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">studio</span>
+                        .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">{t.index.studio_suffix}</span>
                       </a>
                       <p className="text-muted-foreground tracking-[0.08em] text-[9px] font-light">
-                        architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
+                        {t.index.architect_design_art}
                       </p>
                     </div>
                   </div>
@@ -315,14 +318,14 @@ const Index = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         handleClose();
-                        navigate("/gateway");
+                        navigate(localePath("/gateway"));
                       }}
                       className="text-base tracking-[0.15em] font-normal whitespace-nowrap hover:text-primary transition-colors"
                     >
-                      .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">studio</span>
+                      .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">{t.index.studio_suffix}</span>
                     </a>
                     <p className="text-muted-foreground tracking-[0.08em] text-[9px] font-light">
-                      architect &nbsp;.&nbsp; design &nbsp;.&nbsp; art
+                      {t.index.architect_design_art}
                     </p>
                   </div>
                 </div>
@@ -347,10 +350,10 @@ const Index = () => {
                     }}
                   >
                     <p className="text-[12px] md:text-[13px] font-light text-foreground/80 tracking-[0.1em] mt-6 mb-1">
-                      нет структуры - нет решения.
+                      {t.index.structure_label}
                     </p>
                     <p className="text-[14px] md:text-[15px] leading-[1.65]">
-                      выявляю структуру и собираю форму, в которой всё становится на место.
+                      {t.index.tagline}
                     </p>
                   </motion.div>
                   <motion.a
@@ -358,7 +361,7 @@ const Index = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       handleClose();
-                      navigate("/pricing");
+                      navigate(localePath("/pricing"));
                     }}
                     className="block text-left text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-7"
                     initial="hidden"
@@ -376,7 +379,7 @@ const Index = () => {
                       },
                     }}
                   >
-                    Формат и стоимость →
+                    {t.index.pricing_link}
                   </motion.a>
                   <motion.div
                     className="mt-10 pt-4 border-t border-border/20 flex items-baseline gap-2"
@@ -400,11 +403,11 @@ const Index = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         handleClose();
-                        navigate("/about");
+                        navigate(localePath("/about"));
                       }}
                       className="text-[11px] tracking-[0.12em] font-normal text-primary hover:text-primary/80 transition-colors"
                     >
-                      R.Yury Kolesnikov ⟶
+                      {t.index.author_link}
                     </a>
                   </motion.div>
                 </div>
@@ -412,6 +415,9 @@ const Index = () => {
             </motion.div>
           )}
         </AnimatePresence>
+        {/* Language switcher — hidden while the popup is open so it doesn't
+            compete with the modal stacking. */}
+        <LanguageSwitcher hidden={open} />
       </div>
     </LayoutGroup>
   );
