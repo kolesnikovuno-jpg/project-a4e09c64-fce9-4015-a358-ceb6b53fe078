@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,8 +15,36 @@ import LyraConcept from "./pages/LyraConcept";
 import Garden from "./pages/Garden";
 import Gateway from "./pages/Gateway";
 import UnoStudio from "./pages/UnoStudio";
+import { DEFAULT_LOCALE, LOCALES, isLocale } from "./i18n/config";
 
 const queryClient = new QueryClient();
+
+/**
+ * Redirect bare paths (e.g. /about) to the default locale (/en/about),
+ * preserving search and hash. Used for any route that should always be
+ * locale-prefixed.
+ */
+const RedirectToDefaultLocale = () => {
+  const { pathname, search, hash } = useLocation();
+  const segments = pathname.split("/").filter(Boolean);
+  // If first segment is already a locale, leave alone (defensive).
+  if (isLocale(segments[0])) {
+    return <Navigate to={pathname + search + hash} replace />;
+  }
+  const target = `/${DEFAULT_LOCALE}${pathname === "/" ? "" : pathname}`;
+  return <Navigate to={target + search + hash} replace />;
+};
+
+// Pages that exist under each locale prefix.
+const localizedPages: Array<{ path: string; element: JSX.Element }> = [
+  { path: "", element: <Index /> },
+  { path: "lyra", element: <Lyra /> },
+  { path: "about", element: <About /> },
+  { path: "pricing", element: <Pricing /> },
+  { path: "garden", element: <Garden /> },
+  { path: "gateway", element: <Gateway /> },
+  { path: "unostudio", element: <UnoStudio /> },
+];
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -25,22 +53,33 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          {/* Root → default locale */}
+          <Route path="/" element={<Navigate to={`/${DEFAULT_LOCALE}`} replace />} />
+
+          {/* Localized routes — generated for each supported locale. */}
+          {LOCALES.map((loc) =>
+            localizedPages.map(({ path, element }) => (
+              <Route
+                key={`${loc}/${path}`}
+                path={path ? `/${loc}/${path}` : `/${loc}`}
+                element={element}
+              />
+            ))
+          )}
+
+          {/* Bare paths → default locale equivalents. */}
+          {localizedPages
+            .filter((p) => p.path !== "")
+            .map(({ path }) => (
+              <Route key={`bare-${path}`} path={`/${path}`} element={<RedirectToDefaultLocale />} />
+            ))}
+
+          {/* Non-localized utility routes. */}
           <Route path="/doodle" element={<Canvas />} />
           <Route path="/pixels" element={<PixelTransition />} />
-          <Route path="/pricing" element={<Pricing />} />
           <Route path="/unocalc" element={<UnoCalc />} />
-          <Route path="/about" element={<About />} />
-          {/* Multilingual Lyra — EN is the canonical source. Bare /lyra
-              redirects to the English version per the multilingual spec. */}
-          <Route path="/lyra" element={<Navigate to="/en/lyra" replace />} />
-          <Route path="/en/lyra" element={<Lyra />} />
-          <Route path="/ru/lyra" element={<Lyra />} />
-          <Route path="/uk/lyra" element={<Lyra />} />
-          <Route path="/garden" element={<Garden />} />
           <Route path="/lyra-concept" element={<LyraConcept />} />
-          <Route path="/gateway" element={<Gateway />} />
-          <Route path="/unostudio" element={<UnoStudio />} />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

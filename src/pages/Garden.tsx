@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useMemo, useState } from "react";
 import PageTransition from "@/components/PageTransition";
+import { useLocale } from "@/i18n/useLocale";
+import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 
 interface BudProps {
   cx: number;
@@ -32,7 +34,7 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, onHover, delay, v
       onMouseLeave={() => onHover?.(null)}
       role="button"
       tabIndex={0}
-      aria-label={label || `Элемент ${id}`}
+      aria-label={label || `${id}`}
       style={{
         cursor: "pointer",
         opacity: visible ? 1 : 0,
@@ -87,6 +89,7 @@ const TypewriterLabel = ({ text }: { text: string | null }) => {
 const Garden = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { t, localePath } = useLocale();
   const [animated, setAnimated] = useState(false);
   const [activeBud, setActiveBud] = useState<string | null>(null);
   const [hoveredBud, setHoveredBud] = useState<string | null>(null);
@@ -103,13 +106,13 @@ const Garden = () => {
     "02": ".",
     "03": ".",
     "04": ".",
-    "05": "Lyra — no effort",
+    "05": t.garden.bud_label_lyra,
     "06": ".",
-    "06.1": "unocalc",
+    "06.1": t.garden.bud_label_unocalc,
   };
 
   const routes: Record<string, string> = {
-    "05": "/lyra",
+    "05": localePath("/lyra"),
     "06.1": "/unocalc",
   };
 
@@ -306,11 +309,11 @@ const Garden = () => {
                 setPassInput(e.target.value);
                 setError(false);
               }}
-              placeholder="••••"
+              placeholder={t.garden.password_placeholder}
               autoFocus
               className="bg-transparent border-b border-primary/40 text-center text-lg tracking-[0.3em] text-foreground outline-none py-2 w-32 placeholder:text-muted-foreground/40"
             />
-            {error && <span className="text-xs text-destructive tracking-wider">неверный пароль</span>}
+            {error && <span className="text-xs text-destructive tracking-wider">{t.garden.password_error}</span>}
           </form>
         </div>
       </PageTransition>
@@ -320,17 +323,18 @@ const Garden = () => {
   return (
     <PageTransition>
       <div className="min-h-screen bg-background flex items-center justify-center pt-[18vh] md:pt-[6vh] overflow-hidden relative">
+        <LanguageSwitcher />
         <div className="absolute top-6 left-6 right-6 flex items-center justify-between">
           <span className="text-sm tracking-[0.15em] text-foreground font-normal select-none" />
           <a
             href="/"
             onClick={(e) => {
               e.preventDefault();
-              navigate("/");
+              navigate(localePath("/"));
             }}
             className="text-[13px] text-primary font-medium hover:text-primary/80 transition-colors"
           >
-            .uno
+            {t.nav.uno}
           </a>
         </div>
         {/* Floating label above stems, aligned to right edge */}
