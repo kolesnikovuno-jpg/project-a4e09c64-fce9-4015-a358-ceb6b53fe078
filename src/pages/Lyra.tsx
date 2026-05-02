@@ -440,12 +440,12 @@ const Lyra = () => {
                 className="hero-caption absolute left-4 sm:left-8 md:left-12 lg:left-16 right-4 sm:right-12 pointer-events-none select-none"
                 style={{
                   top: "calc(33% + 70px)",
-                  marginLeft: "-35px",
                   color: "#F5EFEB",
                   fontFamily: "'Manrope', sans-serif",
                   fontWeight: 300,
-                  letterSpacing: "0.42em",
-                  fontSize: "clamp(10px, 1.445vw, 15.3px)",
+                  letterSpacing: "var(--caption-tracking, 0.42em)",
+                  fontSize: "clamp(9px, 1.445vw, 15.3px)",
+                  marginLeft: "var(--caption-shift, -35px)",
                   lineHeight: 1.35,
                   opacity: `calc(var(--caption-scroll-opacity, 1) * ${captionLoaded ? 1 : 0})`,
                   transform: `translateY(calc(var(--caption-scroll-shift, 0px) + ${captionLoaded ? "0px" : "12px"}))`,
@@ -470,6 +470,14 @@ const Lyra = () => {
         @keyframes lyra-caption-in {
           from { opacity: 0; transform: translateY(14px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        /* Mobile-safe caption: tighter tracking, no negative left margin so
+           the text never clips off the left edge on small screens. */
+        @media (max-width: 640px){
+          .hero-caption{
+            --caption-tracking: 0.22em;
+            --caption-shift: 0px;
+          }
         }
         .uno-3d-wrap{
           --pad:clamp(6px,0.9vw,12px);
