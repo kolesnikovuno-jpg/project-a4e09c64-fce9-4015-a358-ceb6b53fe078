@@ -1,17 +1,20 @@
 import { useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
+import { useLocale } from "@/i18n/useLocale";
+import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 
 const Gateway = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
   const navigate = useNavigate();
+  const { t, localePath } = useLocale();
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (password === "2222") {
       sessionStorage.setItem("unostudio-gateway", "ok");
-      navigate("/unostudio");
+      navigate(localePath("/unostudio"));
     } else {
       setError(true);
       setPassword("");
@@ -21,6 +24,7 @@ const Gateway = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <LanguageSwitcher />
       <motion.form
         onSubmit={handleSubmit}
         initial={{ opacity: 0, y: 8 }}
@@ -30,7 +34,7 @@ const Gateway = () => {
       >
         <div className="-ml-[0.35em]">
           <span className="text-base tracking-[0.15em] font-normal text-foreground">
-            .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">studio</span>
+            .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">{t.gateway.studio_suffix}</span>
           </span>
         </div>
         <motion.input
@@ -50,7 +54,7 @@ const Gateway = () => {
           type="submit"
           className="text-[13px] text-primary/75 hover:text-primary/90 transition-colors tracking-[0.05em]"
         >
-          войти →
+          {t.gateway.enter}
         </button>
       </motion.form>
     </div>
