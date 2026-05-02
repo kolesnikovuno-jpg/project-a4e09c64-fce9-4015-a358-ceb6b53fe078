@@ -55,17 +55,38 @@ const Lyra = () => {
   const dimsLayerRef = useRef<HTMLDivElement>(null);
   const scrollFillRef = useRef<HTMLDivElement>(null);
   const heroCaptionRef = useRef<HTMLDivElement>(null);
-  const [captionDismissed, setCaptionDismissed] = useState(false);
+  const [captionLoaded, setCaptionLoaded] = useState(false);
 
-  // Hero caption: fade out on first scroll, never reappear.
+  // Smooth fade-in on mount.
   useEffect(() => {
-    if (captionDismissed) return;
-    const onScroll = () => {
-      if (window.scrollY > 4) setCaptionDismissed(true);
+    const t = requestAnimationFrame(() => setCaptionLoaded(true));
+    return () => cancelAnimationFrame(t);
+  }, []);
+
+  // Caption opacity follows scroll: fades out as user scrolls, reappears on return.
+  useEffect(() => {
+    const el = heroCaptionRef.current;
+    if (!el) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const vh = window.innerHeight || 1;
+      // Fade across first ~40% of viewport scroll.
+      const p = Math.max(0, Math.min(1, window.scrollY / (vh * 0.4)));
+      const op = 1 - p;
+      el.style.setProperty("--caption-scroll-opacity", String(op));
+      el.style.setProperty("--caption-scroll-shift", `${p * 10}px`);
     };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [captionDismissed]);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
 
   // Scroll indicator: a small colored segment that moves along a vertical track
   // anchored above the "info" button. Position reflects window scroll progress.
@@ -418,23 +439,16 @@ const Lyra = () => {
                 aria-hidden
                 className="hero-caption absolute left-4 sm:left-8 md:left-12 lg:left-16 right-4 sm:right-12 pointer-events-none select-none"
                 style={{
-                  top: "66%",
+                  top: "33%",
                   color: "#F5EFEB",
-                  fontFamily: "inherit",
+                  fontFamily: "'Manrope', sans-serif",
                   fontWeight: 300,
-                  letterSpacing: "0.12em",
-                  fontSize: "clamp(14px, 2.2vw, 22px)",
-                  lineHeight: 1.3,
-                  opacity: captionDismissed ? 0 : 1,
-                  transform: captionDismissed
-                    ? "translateY(10px)"
-                    : "translateY(0)",
-                  transition: captionDismissed
-                    ? "opacity 0.4s ease-out, transform 0.4s ease-out"
-                    : "opacity 0.7s ease-out, transform 0.7s ease-out",
-                  animation: captionDismissed
-                    ? undefined
-                    : "lyra-caption-in 0.7s ease-out both",
+                  letterSpacing: "0.18em",
+                  fontSize: "clamp(12px, 1.7vw, 18px)",
+                  lineHeight: 1.35,
+                  opacity: `calc(var(--caption-scroll-opacity, 1) * ${captionLoaded ? 1 : 0})`,
+                  transform: `translateY(calc(var(--caption-scroll-shift, 0px) + ${captionLoaded ? "0px" : "12px"}))`,
+                  transition: "opacity 0.8s ease-out, transform 0.8s ease-out",
                 }}
               >
                 Form that carries the body
