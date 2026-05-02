@@ -452,6 +452,10 @@ const Lyra = () => {
         /* Hide native scrollbar on Lyra page */
         html, body { scrollbar-width: none; -ms-overflow-style: none; }
         html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; display: none; }
+        @keyframes lyra-caption-in {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
         .uno-3d-wrap{
           --pad:clamp(6px,0.9vw,12px);
           position:relative;
