@@ -475,7 +475,6 @@ const Lyra = () => {
            the text never clips off the left edge on small screens. */
         @media (max-width: 640px){
           .hero-caption{
-            --caption-tracking: 0.22em;
             --caption-shift: 0px;
           }
         }
