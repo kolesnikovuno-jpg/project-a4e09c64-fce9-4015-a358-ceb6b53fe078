@@ -17,7 +17,7 @@ type Props = {
  * default — relies on background color matching to stay secondary.
  */
 const LanguageSwitcher = ({
-  background = "transparent",
+  background = "hsl(24 26% 94%)",
   topOffset = 0,
   hidden = false,
 }: Props) => {
@@ -56,7 +56,17 @@ const LanguageSwitcher = ({
         // High z-index so the switcher floats above hero images, the 3D
         // model viewer, and any popup/info panels.
         zIndex: 9999,
+        // Background plate from the very top of the viewport, mirrors the
+        // "info" button styling (Lyra page) so the switcher reads as part of
+        // the same control language.
+        background,
+        padding: "5px 18px",
+        borderBottomLeftRadius: 2,
+        borderBottomRightRadius: 2,
         fontFamily: "'Manrope', system-ui, sans-serif",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
       }}
     >
       <button
@@ -66,19 +76,16 @@ const LanguageSwitcher = ({
         aria-label="Change language"
         onClick={() => setOpen((v) => !v)}
         style={{
-          width: 22,
-          height: 24,
-          background,
+          background: "transparent",
           border: "none",
           outline: "none",
           cursor: "pointer",
           color: "hsl(203 24% 40%)",
-          fontSize: 10,
-          fontWeight: 400,
-          letterSpacing: "0.12em",
-          textTransform: "uppercase",
+          fontSize: 12,
+          fontWeight: 300,
+          letterSpacing: "0.18em",
+          textTransform: "lowercase",
           padding: 0,
-          borderRadius: 2,
           transition: "color .25s ease",
         }}
       >
@@ -90,15 +97,15 @@ const LanguageSwitcher = ({
           listStyle: "none",
           margin: 0,
           padding: 0,
-          background,
+          background: "transparent",
           overflow: "hidden",
-          maxHeight: open ? items.length * 24 + 4 : 0,
+          maxHeight: open ? items.length * 26 + 4 : 0,
           opacity: open ? 1 : 0,
           transition:
             "max-height .35s cubic-bezier(0.22,0.61,0.36,1), opacity .25s ease",
           pointerEvents: open ? "auto" : "none",
-          borderRadius: 2,
-          marginTop: 1,
+          marginTop: 4,
+          textAlign: "center",
         }}
       >
         {items
@@ -114,17 +121,15 @@ const LanguageSwitcher = ({
                   switchTo(l);
                 }}
                 style={{
-                  width: 22,
-                  height: 24,
                   background: "transparent",
                   border: "none",
                   cursor: "pointer",
                   color: "hsl(203 24% 55%)",
-                  fontSize: 10,
-                  fontWeight: 400,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  padding: 0,
+                  fontSize: 12,
+                  fontWeight: 300,
+                  letterSpacing: "0.18em",
+                  textTransform: "lowercase",
+                  padding: "3px 0",
                   transition: "color .2s ease",
                 }}
                 onMouseEnter={(e) =>
