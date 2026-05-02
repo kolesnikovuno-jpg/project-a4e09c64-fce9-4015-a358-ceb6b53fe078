@@ -16,6 +16,8 @@ import Garden from "./pages/Garden";
 import Gateway from "./pages/Gateway";
 import UnoStudio from "./pages/UnoStudio";
 import { DEFAULT_LOCALE, LOCALES, isLocale } from "./i18n/config";
+import { initialLocale } from "./i18n/storage";
+import LocalePersistenceGuard from "./i18n/LocalePersistenceGuard";
 
 const queryClient = new QueryClient();
 
@@ -31,7 +33,8 @@ const RedirectToDefaultLocale = () => {
   if (isLocale(segments[0])) {
     return <Navigate to={pathname + search + hash} replace />;
   }
-  const target = `/${DEFAULT_LOCALE}${pathname === "/" ? "" : pathname}`;
+  // Honour the persisted user choice when available; fall back to default.
+  const target = `/${initialLocale()}${pathname === "/" ? "" : pathname}`;
   return <Navigate to={target + search + hash} replace />;
 };
 
@@ -52,9 +55,10 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <LocalePersistenceGuard />
         <Routes>
           {/* Root → default locale */}
-          <Route path="/" element={<Navigate to={`/${DEFAULT_LOCALE}`} replace />} />
+          <Route path="/" element={<RedirectToDefaultLocale />} />
 
           {/* Localized routes — generated for each supported locale. */}
           {LOCALES.map((loc) =>

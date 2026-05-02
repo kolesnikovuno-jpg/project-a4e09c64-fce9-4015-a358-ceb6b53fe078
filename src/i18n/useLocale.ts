@@ -8,6 +8,7 @@ import {
   type Locale,
 } from "./config";
 import { getDict, type Dictionary } from "./dictionary";
+import { setStoredLocale } from "./storage";
 
 /**
  * Resolves the active locale from the `:locale` route param, exposes the
@@ -37,6 +38,8 @@ export function useLocale() {
 
   /** Switch language while staying on the same logical page. */
   const switchTo = (target: Locale) => {
+    // Persist the choice so it survives navigation, refreshes and sessions.
+    setStoredLocale(target);
     const segments = location.pathname.split("/").filter(Boolean);
     if (isLocale(segments[0])) segments[0] = target;
     else segments.unshift(target);
