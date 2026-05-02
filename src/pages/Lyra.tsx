@@ -439,7 +439,7 @@ const Lyra = () => {
                 aria-hidden
                 className="hero-caption absolute left-4 sm:left-8 md:left-12 lg:left-16 right-4 sm:right-12 pointer-events-none select-none"
                 style={{
-                  top: "calc(33% + 15px)",
+                  top: "calc(33% + 25px)",
                   color: "#F5EFEB",
                   fontFamily: "'Manrope', sans-serif",
                   fontWeight: 300,
