@@ -1,19 +1,11 @@
 import { useEffect, useState } from "react";
+import { useLocale } from "@/i18n/useLocale";
 
 type Props = { showTrigger?: boolean };
 
-const MODEL = {
-  name: "LYRA",
-  subtitle: "model / chair",
-  status: "prototype",
-  overview: [
-    "Tension-based seating system",
-    "Flexible support structure",
-    "Minimal material, adaptive response",
-  ],
+// Numeric / contact values are language-independent.
+const MODEL_DATA = {
   dimensions: { height: "1500 mm", width: "840 mm", length: "1750 mm" },
-  structure: ["tension system", "flexible support"],
-  material: { textile: "DYNEEMA weaving cord", frame: "plywood and paint", color: "customizable" },
   contact: {
     telegram: "https://t.me/kolesnikov_uno",
     email: "kolesnikov.uno@gmail.com",
@@ -21,32 +13,41 @@ const MODEL = {
 };
 
 const LyraInfo = ({ showTrigger = true }: Props) => {
+  const { t } = useLocale();
+  const T = t.lyra_info;
   const [open, setOpen] = useState(false);
-  const [copyLabel, setCopyLabel] = useState("copy link");
-  const [shareLabel, setShareLabel] = useState("system share");
+  const [copyLabel, setCopyLabel] = useState(T.copy_link);
+  const [shareLabel, setShareLabel] = useState(T.system_share);
   const [pageUrl, setPageUrl] = useState("");
 
   useEffect(() => {
     setPageUrl(window.location.href);
   }, [open]);
 
+  // Reset transient labels whenever the active locale changes so we don't
+  // leave stale strings from the previous language on screen.
+  useEffect(() => {
+    setCopyLabel(T.copy_link);
+    setShareLabel(T.system_share);
+  }, [T.copy_link, T.system_share]);
+
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
-      setCopyLabel("copied");
-      setTimeout(() => setCopyLabel("copy link"), 1400);
+      setCopyLabel(T.copy_done);
+      setTimeout(() => setCopyLabel(T.copy_link), 1400);
     } catch {
-      setCopyLabel("failed");
-      setTimeout(() => setCopyLabel("copy link"), 1400);
+      setCopyLabel(T.copy_failed);
+      setTimeout(() => setCopyLabel(T.copy_link), 1400);
     }
   };
 
   const handleShare = async () => {
     const url = window.location.href;
-    const text = MODEL.overview.join(" · ");
+    const text = T.overview.join(" · ");
     if (navigator.share) {
       try {
-        await navigator.share({ title: MODEL.name, text, url });
+        await navigator.share({ title: T.title, text, url });
         return;
       } catch {
         // user dismissed — fall through
@@ -55,8 +56,8 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
     }
     // Fallback: copy link
     handleCopy();
-    setShareLabel("link copied");
-    setTimeout(() => setShareLabel("system share"), 1400);
+    setShareLabel(T.link_copied);
+    setTimeout(() => setShareLabel(T.system_share), 1400);
   };
 
   useEffect(() => {
@@ -87,7 +88,7 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
     : "";
 
   const today = new Date().toISOString().slice(0, 10);
-  const ref = "uno / lyra / 001";
+  const ref = T.ref;
 
   return (
     <>
@@ -241,10 +242,10 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
       {showTrigger && (
         <button
           className="lyra-info-btn"
-          aria-label="info"
+          aria-label={t.nav.info}
           onClick={() => setOpen(true)}
         >
-          info
+          {t.nav.info}
         </button>
       )}
 
@@ -263,10 +264,10 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
         </div>
 
         {/* 1. HEADER */}
-        <h2 className="li-title">{MODEL.name}</h2>
+        <h2 className="li-title">{T.title}</h2>
         <div className="li-headrow">
-          <span>model · <b>chair</b></span>
-          <span>status · <b>{MODEL.status}</b></span>
+          <span>{T.model_label} · <b>{T.model_value}</b></span>
+          <span>{T.status_label} · <b>{T.status_value}</b></span>
         </div>
 
         <div style={{ height: 22 }} />
@@ -274,27 +275,27 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
 
         {/* 2. OVERVIEW */}
         <div className="li-section li-overview">
-          <div className="li-section-title">overview</div>
-          {MODEL.overview.map((line) => <p key={line}>{line}</p>)}
+          <div className="li-section-title">{T.sections.overview}</div>
+          {T.overview.map((line) => <p key={line}>{line}</p>)}
         </div>
 
         <hr className="li-rule" />
 
         {/* 3. SPECIFICATIONS */}
         <div className="li-section">
-          <div className="li-section-title">specifications</div>
-          <div className="li-row"><span className="k">height</span><span className="v">{MODEL.dimensions.height}</span></div>
-          <div className="li-row"><span className="k">width</span><span className="v">{MODEL.dimensions.width}</span></div>
-          <div className="li-row"><span className="k">length</span><span className="v">{MODEL.dimensions.length}</span></div>
+          <div className="li-section-title">{T.sections.specifications}</div>
+          <div className="li-row"><span className="k">{T.spec_keys.height}</span><span className="v">{MODEL_DATA.dimensions.height}</span></div>
+          <div className="li-row"><span className="k">{T.spec_keys.width}</span><span className="v">{MODEL_DATA.dimensions.width}</span></div>
+          <div className="li-row"><span className="k">{T.spec_keys.length}</span><span className="v">{MODEL_DATA.dimensions.length}</span></div>
         </div>
 
         <hr className="li-rule" />
 
         {/* 4. STRUCTURE */}
         <div className="li-section">
-          <div className="li-section-title">structure</div>
+          <div className="li-section-title">{T.sections.structure}</div>
           <div className="li-list">
-            {MODEL.structure.map((s) => <div key={s}>{s}</div>)}
+            {T.structure.map((s) => <div key={s}>{s}</div>)}
           </div>
         </div>
 
@@ -302,17 +303,17 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
 
         {/* 5. MATERIAL */}
         <div className="li-section">
-          <div className="li-section-title">material</div>
-          <div className="li-row"><span className="k">textile</span><span className="v">{MODEL.material.textile}</span></div>
-          <div className="li-row"><span className="k">frame</span><span className="v">{MODEL.material.frame}</span></div>
-          <div className="li-row"><span className="k">color</span><span className="v">{MODEL.material.color}</span></div>
+          <div className="li-section-title">{T.sections.material}</div>
+          <div className="li-row"><span className="k">{T.material_keys.textile}</span><span className="v">{T.material_values.textile}</span></div>
+          <div className="li-row"><span className="k">{T.material_keys.frame}</span><span className="v">{T.material_values.frame}</span></div>
+          <div className="li-row"><span className="k">{T.material_keys.color}</span><span className="v">{T.material_values.color}</span></div>
         </div>
 
         <hr className="li-rule thick" />
 
         {/* 6. SHARE */}
         <div className="li-section">
-          <div className="li-section-title">share · reference</div>
+          <div className="li-section-title">{T.sections.share}</div>
           <div className="li-share-actions">
             <button className="li-btn" onClick={handleCopy}>
               <span>{copyLabel}</span>
@@ -326,7 +327,7 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
           <div className="li-qr">
             {qrSrc && <img src={qrSrc} alt="QR code to this page" />}
             <div className="li-qr-meta">
-              <b>scan · transmit</b>
+              <b>{T.qr_label}</b>
               {pageUrl}
             </div>
           </div>
@@ -336,18 +337,18 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
 
         {/* 7. CONTACT */}
         <div className="li-section li-contact">
-          <div className="li-section-title">contact</div>
-          <a href={MODEL.contact.telegram} target="_blank" rel="noreferrer">
-            <span>telegram</span><span>↗</span>
+          <div className="li-section-title">{T.sections.contact}</div>
+          <a href={MODEL_DATA.contact.telegram} target="_blank" rel="noreferrer">
+            <span>{T.contact_telegram}</span><span>↗</span>
           </a>
-          <a href={`mailto:${MODEL.contact.email}`}>
-            <span>email</span><span>↗</span>
+          <a href={`mailto:${MODEL_DATA.contact.email}`}>
+            <span>{T.contact_email}</span><span>↗</span>
           </a>
         </div>
 
         <div className="li-foot">
-          <span>uno · studio</span>
-          <span>kolesnikov</span>
+          <span>{T.footer_left}</span>
+          <span>{T.footer_right}</span>
         </div>
       </aside>
     </>
