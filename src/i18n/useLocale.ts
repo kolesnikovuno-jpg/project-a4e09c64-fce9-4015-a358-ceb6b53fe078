@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   DEFAULT_LOCALE,
   LOCALE_HTML_LANG,
@@ -15,11 +15,13 @@ import { getDict, type Dictionary } from "./dictionary";
  * languages while staying on the same logical page.
  */
 export function useLocale() {
-  const params = useParams<{ locale?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const locale: Locale = isLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
+  // Parse locale from the first path segment so the hook works whether
+  // routes are declared with a `:locale` param or as static `/en/...` paths.
+  const firstSegment = location.pathname.split("/").filter(Boolean)[0];
+  const locale: Locale = isLocale(firstSegment) ? firstSegment : DEFAULT_LOCALE;
   const t: Dictionary = useMemo(() => getDict(locale), [locale]);
 
   // Keep <html lang> in sync for accessibility and SEO.
