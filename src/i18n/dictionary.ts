@@ -1,8 +1,53 @@
 import type { Locale } from "./config";
 
+// Structural shape — derived from EN but widened to plain `string` so RU/UK
+// values are not narrowed to literal types of the EN source.
+export type Dictionary = {
+  nav: { back: string; info: string; ar: string };
+  lyra: {
+    hero_caption: string;
+    rotated_line: string;
+    dimensions_alt: string;
+    hero_alt: string;
+    seo_title: string;
+    seo_description: string;
+  };
+  lyra_info: {
+    ref: string;
+    title: string;
+    model_label: string;
+    model_value: string;
+    status_label: string;
+    status_value: string;
+    sections: {
+      overview: string;
+      specifications: string;
+      structure: string;
+      material: string;
+      share: string;
+      contact: string;
+    };
+    overview: readonly string[];
+    spec_keys: { height: string; width: string; length: string };
+    structure: readonly string[];
+    material_keys: { textile: string; frame: string; color: string };
+    material_values: { textile: string; frame: string; color: string };
+    copy_link: string;
+    copy_done: string;
+    copy_failed: string;
+    system_share: string;
+    link_copied: string;
+    qr_label: string;
+    contact_telegram: string;
+    contact_email: string;
+    footer_left: string;
+    footer_right: string;
+  };
+};
+
 // EN is the source of truth. RU and UA are adapted (not literal translation).
 // Add new keys to EN first, then mirror to RU and UK.
-export const dictionary = {
+export const dictionary: Record<Locale, Dictionary> = {
   en: {
     nav: {
       back: "← back",
@@ -168,8 +213,6 @@ export const dictionary = {
       footer_right: "kolesnikov",
     },
   },
-} as const;
-
-export type Dictionary = (typeof dictionary)["en"];
+};
 
 export const getDict = (locale: Locale): Dictionary => dictionary[locale];
