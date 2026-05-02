@@ -11,7 +11,7 @@ const MODEL = {
     "Flexible support structure",
     "Minimal material, adaptive response",
   ],
-  dimensions: { height: "—", width: "—", length: "—" },
+  dimensions: { height: "1500 mm", width: "840 mm", length: "1750 mm" },
   structure: ["tension system", "flexible support"],
   material: { textile: "—", frame: "—", color: "customizable" },
   contact: {
