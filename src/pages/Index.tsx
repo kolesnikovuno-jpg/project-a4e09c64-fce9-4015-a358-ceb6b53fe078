@@ -183,8 +183,8 @@ const Index = () => {
                       <motion.line
                         x1="57"
                         y1="0"
-                        x2="12"
-                        y2="45"
+                        x2="33"
+                        y2="24"
                         stroke="hsl(var(--primary))"
                         strokeWidth="0.5"
                         opacity="0.5"
@@ -209,8 +209,8 @@ const Index = () => {
                       <motion.line
                         x1="76"
                         y1="0"
-                        x2="18"
-                        y2="58"
+                        x2="46"
+                        y2="30"
                         stroke="hsl(var(--primary))"
                         strokeWidth="0.5"
                         opacity="0.5"
@@ -232,7 +232,7 @@ const Index = () => {
                         handleClose();
                         navigate(localePath("/garden"));
                       }}
-                      className="pointer-events-auto absolute flex items-center justify-center w-[77px] h-[77px] md:w-[77px] md:h-[77px] top-[38px] right-[38px] md:top-[48px] md:right-[48px] rounded-full text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors cursor-pointer"
+                      className="pointer-events-auto absolute flex items-center justify-center w-[77px] h-[77px] md:w-[77px] md:h-[77px] top-[22px] right-[22px] md:top-[28px] md:right-[28px] rounded-full text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors cursor-pointer"
                       initial={{ opacity: 0 }}
                       animate={controls}
                       variants={{
