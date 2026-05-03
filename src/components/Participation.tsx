@@ -87,26 +87,28 @@ const Participation = ({ model, open, onClose }: Props) => {
       <style>{`
         .pt-overlay{
           position:fixed; inset:0;
-          background:rgba(20,20,20,0.22);
+          background:rgba(20,20,20,0.18);
+          backdrop-filter:blur(2px);
+          -webkit-backdrop-filter:blur(2px);
           z-index:80; opacity:0; pointer-events:none;
-          transition:opacity .55s cubic-bezier(0.22,0.61,0.36,1);
+          transition:opacity .7s cubic-bezier(0.22,0.61,0.36,1);
         }
         .pt-overlay.open{ opacity:1; pointer-events:auto; }
         .pt-panel{
           position:fixed; top:0; right:0; height:100%;
-          width:38%; max-width:460px; min-width:360px;
+          width:34%; max-width:415px; min-width:325px;
           background:#F5EFEB;
           z-index:81;
           transform:translateX(100%);
-          transition:transform .7s cubic-bezier(0.22,0.61,0.36,1);
+          transition:transform .8s cubic-bezier(0.22,0.61,0.36,1);
           padding:42px 40px 56px 44px;
           overflow-y:auto;
           font-family:'JetBrains Mono','IBM Plex Mono','Menlo',ui-monospace,monospace;
           font-weight:400;
-          font-size:12px; line-height:1.65;
+          font-size:12px; line-height:1.8;
           color:#3A3A3A;
           letter-spacing:0.01em;
-          border-left:1px solid rgba(0,0,0,0.08);
+          border-left:1px solid rgba(0,0,0,0.05);
         }
         .pt-panel.open{ transform:translateX(0); }
         @media(max-width:768px){
@@ -121,37 +123,33 @@ const Participation = ({ model, open, onClose }: Props) => {
         }
         .pt-close:hover{ color:#1A1A1A; opacity:1; }
         .pt-title{
-          font-size:34px; font-weight:400; letter-spacing:0.04em;
-          color:#1F1F1F; margin:0 0 22px; line-height:1;
+          font-size:26px; font-weight:300; letter-spacing:0.04em;
+          color:#1F1F1F; margin:0 0 28px; line-height:1;
           font-family:'JetBrains Mono','IBM Plex Mono','Menlo',ui-monospace,monospace;
         }
-        .pt-section{ padding:18px 0; }
+        .pt-section{ padding:14px 0; }
         .pt-section-title{
           font-size:10px; letter-spacing:0.18em; text-transform:uppercase;
-          color:#8A8A8A; margin-bottom:10px; font-weight:400;
+          color:#8A8A8A; margin-bottom:14px; font-weight:400;
         }
-        .pt-section-title::before{ content:"// "; color:#B8B8B8; }
-        .pt-text{ margin:0; color:#3A3A3A; font-size:12.5px; white-space:pre-line; }
+        .pt-text{ margin:0; color:#3A3A3A; font-size:12.5px; line-height:1.85; white-space:pre-line; }
         .pt-rule{ border:0; border-top:1px dashed rgba(0,0,0,0.18); margin:0; height:0; }
-        .pt-row{ display:flex; gap:24px; padding:3px 0; font-size:12px; }
-        .pt-row .k{ color:#8A8A8A; min-width:120px; text-transform:lowercase; }
+        .pt-row{ display:flex; gap:18px; padding:5px 0; font-size:12px; }
+        .pt-row .k{ color:#8A8A8A; min-width:110px; text-transform:lowercase; }
         .pt-row .v{ color:#2A2A2A; flex:1; }
         .pt-action{
-          display:flex; align-items:center; justify-content:space-between;
-          width:100%;
-          padding:14px 0;
+          display:inline-flex; align-items:center; gap:8px;
+          padding:6px 0;
           background:transparent; border:none;
-          border-bottom:1px dashed rgba(0,0,0,0.18);
-          border-top:1px dashed rgba(0,0,0,0.18);
           font-family:inherit; font-size:12px; font-weight:400;
           color:#2A2A2A; letter-spacing:0.02em; text-transform:lowercase;
           cursor:pointer; text-align:left;
           transition:color .2s ease;
-          margin-top:18px;
+          margin-top:10px;
         }
         .pt-action:hover{ color:#C97A63; }
         .pt-action .arrow{ color:#9A9A9A; font-size:12px; }
-        .pt-form{ display:flex; flex-direction:column; gap:14px; margin-top:6px; }
+        .pt-form{ display:flex; flex-direction:column; gap:18px; margin-top:6px; }
         .pt-field{ display:flex; flex-direction:column; gap:4px; }
         .pt-label{
           font-size:10px; letter-spacing:0.14em; text-transform:lowercase;
@@ -160,7 +158,7 @@ const Participation = ({ model, open, onClose }: Props) => {
         .pt-input, .pt-textarea{
           background:transparent;
           border:none;
-          border-bottom:1px solid rgba(0,0,0,0.22);
+          border-bottom:1px solid rgba(0,0,0,0.18);
           padding:6px 0;
           font-family:inherit; font-size:13px; color:#1F1F1F;
           letter-spacing:0.01em;
@@ -198,9 +196,7 @@ const Participation = ({ model, open, onClose }: Props) => {
             <div className="pt-section">
               <p className="pt-text">{T.intro}</p>
             </div>
-            <hr className="pt-rule" />
             <div className="pt-section">
-              <div className="pt-section-title">{T.stage_label}</div>
               <div className="pt-row"><span className="k">{T.stage_label}</span><span className="v">{T.stage_value}</span></div>
               <div className="pt-row"><span className="k">{T.goal_label}</span><span className="v">{T.goal_value}</span></div>
             </div>
@@ -210,7 +206,7 @@ const Participation = ({ model, open, onClose }: Props) => {
             </div>
             <button className="pt-action" type="button" onClick={() => setStage("form")}>
               <span>{T.request_button}</span>
-              <span className="arrow">↗</span>
+              <span className="arrow">→</span>
             </button>
           </div>
         )}
@@ -258,7 +254,7 @@ const Participation = ({ model, open, onClose }: Props) => {
             {error && <div className="pt-error">{error}</div>}
             <button className="pt-action" type="submit" disabled={submitting}>
               <span>{submitting ? T.submitting : T.submit}</span>
-              <span className="arrow">↗</span>
+              <span className="arrow">→</span>
             </button>
           </form>
         )}
