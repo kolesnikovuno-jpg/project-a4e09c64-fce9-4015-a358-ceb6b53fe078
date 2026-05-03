@@ -4,10 +4,9 @@ import PageTransition from "@/components/PageTransition";
 import lyraHero from "@/assets/lyra-hero.png";
 import LyraInfo from "@/components/LyraInfo";
 import Participation from "@/components/Participation";
-import SEO from "@/components/SEO";
+import ModelSEO from "@/components/ModelSEO";
 import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
-import { LOCALES } from "@/i18n/config";
 
 declare global {
   namespace JSX {
@@ -841,16 +840,7 @@ const Lyra = () => {
       <div className="uno-scroll-indicator" aria-hidden>
         <div className="uno-scroll-fill" ref={scrollFillRef} />
       </div>
-      <SEO
-        title={t.lyra.seo_title}
-        description={t.lyra.seo_description}
-        image="/og/lyra-preview.png"
-        type="product"
-        alternates={LOCALES.reduce<Record<string, string>>((acc, l) => {
-          acc[l] = `/${l}/lyra`;
-          return acc;
-        }, {})}
-      />
+      <ModelSEO slug="lyra" />
       {/* Language switcher — hidden on hero, fades in once user scrolls past it. */}
       <LanguageSwitcher
         background="hsl(24 26% 94%)"

@@ -4,10 +4,9 @@ import PageTransition from "@/components/PageTransition";
 import lyraHero from "@/assets/nava-hero.png";
 import NavaInfo from "@/components/NavaInfo";
 import Participation from "@/components/Participation";
-import SEO from "@/components/SEO";
+import ModelSEO from "@/components/ModelSEO";
 import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
-import { LOCALES } from "@/i18n/config";
 
 declare global {
   namespace JSX {
@@ -849,16 +848,7 @@ const Nava = () => {
       <div className="uno-scroll-indicator" aria-hidden>
         <div className="uno-scroll-fill" ref={scrollFillRef} />
       </div>
-      <SEO
-        title={t.nava.seo_title}
-        description={t.nava.seo_description}
-        image="/og/nava-preview.png"
-        type="product"
-        alternates={LOCALES.reduce<Record<string, string>>((acc, l) => {
-          acc[l] = `/${l}/nava`;
-          return acc;
-        }, {})}
-      />
+      <ModelSEO slug="nava" />
       {/* Language switcher — hidden on hero, fades in once user scrolls past it. */}
       <LanguageSwitcher
         background="hsl(24 26% 94%)"
