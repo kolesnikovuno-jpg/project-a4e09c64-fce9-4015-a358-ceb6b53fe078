@@ -268,6 +268,8 @@ export const dictionary: Record<Locale, Dictionary> = {
       seo_title: "LYRA — .uno studio",
       seo_description:
         "LYRA — tension-based seating system. Flexible support structure, minimal material, adaptive response.",
+      description:
+        "This object is not a fixed form.\nIt exists as a point of transition between idea and material.\n\nWhat you see is a state — not the final.\nIt can remain as it is, or move further into reality.\n\nThe decision defines the form.",
     },
     lyra_info: {
       ref: "uno / lyra / 001",
@@ -324,6 +326,8 @@ export const dictionary: Record<Locale, Dictionary> = {
       hero_alt: "Nava chair — woman reclining in a sunlit garden",
       seo_title: "NAVA — .uno studio",
       seo_description: "NAVA — placeholder description.",
+      description:
+        "This object is not a fixed form.\nIt exists as a point of transition between idea and material.\n\nWhat you see is a state — not the final.\nIt can remain as it is, or move further into reality.\n\nThe decision defines the form.",
     },
     nava_info: {
       ref: "uno / nava / 001",
@@ -470,6 +474,8 @@ export const dictionary: Record<Locale, Dictionary> = {
       seo_title: "LYRA — .uno studio",
       seo_description:
         "LYRA — система сидения, основанная на натяжении. Гибкая опора, минимум материала, отзывчивая форма.",
+      description:
+        "Этот объект не является фиксированной формой.\nОн существует как точка перехода между идеей и материалом.\n\nТо, что вы видите — это состояние, а не финал.\nОн может остаться таким, как есть, или перейти в материю.\n\nРешение определяет форму.",
     },
     lyra_info: {
       ref: "uno / lyra / 001",
@@ -526,6 +532,8 @@ export const dictionary: Record<Locale, Dictionary> = {
       hero_alt: "Кресло Nava — фигура в залитом светом саду",
       seo_title: "NAVA — .uno studio",
       seo_description: "NAVA — описание появится позже.",
+      description:
+        "Этот объект не является фиксированной формой.\nОн существует как точка перехода между идеей и материалом.\n\nТо, что вы видите — это состояние, а не финал.\nОн может остаться таким, как есть, или перейти в материю.\n\nРешение определяет форму.",
     },
     nava_info: {
       ref: "uno / nava / 001",
@@ -672,6 +680,8 @@ export const dictionary: Record<Locale, Dictionary> = {
       seo_title: "LYRA — .uno studio",
       seo_description:
         "LYRA — система сидіння на натягу. Гнучка опора, мінімум матеріалу, чутлива форма.",
+      description:
+        "Цей об'єкт не є фіксованою формою.\nВін існує як точка переходу між ідеєю та матерією.\n\nТе, що ви бачите — це стан, а не фінал.\nВін може залишитися таким, як є, або перейти в матеріальність.\n\nРішення визначає форму.",
     },
     lyra_info: {
       ref: "uno / lyra / 001",
@@ -728,6 +738,8 @@ export const dictionary: Record<Locale, Dictionary> = {
       hero_alt: "Крісло Nava — постать у залитому світлом саду",
       seo_title: "NAVA — .uno studio",
       seo_description: "NAVA — опис з'явиться пізніше.",
+      description:
+        "Цей об'єкт не є фіксованою формою.\nВін існує як точка переходу між ідеєю та матерією.\n\nТе, що ви бачите — це стан, а не фінал.\nВін може залишитися таким, як є, або перейти в матеріальність.\n\nРішення визначає форму.",
     },
     nava_info: {
       ref: "uno / nava / 001",
