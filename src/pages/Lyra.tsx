@@ -168,14 +168,18 @@ const Lyra = () => {
       const total = zone.offsetHeight - window.innerHeight;
       const scrolled = Math.max(0, Math.min(total, -rect.top));
       const p = total > 0 ? scrolled / total : 0; // 0..1
-      // Two-stage crossfade: hero → model.
-      const heroOp = Math.max(0, Math.min(1, 1 - p * 2));
-      const modelOp = Math.max(0, Math.min(1, (p - 0.3) * 2));
+      // Three-stage crossfade: photo → 3D → text, all driven by the same scroll zone.
+      const heroOp = Math.max(0, Math.min(1, 1 - p * 3));
+      const modelIn = Math.max(0, Math.min(1, (p - 0.18) * 4));
+      const modelOut = Math.max(0, Math.min(1, 1 - (p - 0.58) * 4));
+      const modelOp = Math.min(modelIn, modelOut);
+      const textOp = Math.max(0, Math.min(1, (p - 0.62) * 3));
       hero.style.opacity = String(heroOp);
       model.style.opacity = String(modelOp);
       if (textBlockRef.current) {
-        textBlockRef.current.style.opacity = String(modelOp);
-        textBlockRef.current.style.transform = `translateY(${(1 - modelOp) * 14}px)`;
+        textBlockRef.current.style.opacity = String(textOp);
+        textBlockRef.current.style.transform = `translateY(${(1 - textOp) * 14}px)`;
+        textBlockRef.current.style.pointerEvents = textOp > 0.98 ? "auto" : "none";
       }
       const fullyVisible = modelOp >= 0.999;
       model.style.pointerEvents = fullyVisible ? "auto" : "none";
