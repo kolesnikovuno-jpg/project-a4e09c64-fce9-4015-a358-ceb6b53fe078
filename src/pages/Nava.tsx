@@ -41,8 +41,8 @@ declare global {
   }
 }
 
-const GLB_URL = "/nava.glb";
-const USDZ_URL = "/nava.usdz";
+const GLB_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/public/models/nava.glb";
+const USDZ_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/public/models/nava.usdz";
 
 const Nava = () => {
   const navigate = useNavigate();
