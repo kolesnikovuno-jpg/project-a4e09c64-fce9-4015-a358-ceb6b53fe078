@@ -736,19 +736,22 @@ const Nava = () => {
           </div>
         </div>
       </div>
-      {/* Back arrow — pinned to viewport */}
+      {/* Text block — fades in like the 3D scene, anchored to the page (not the model wrapper). */}
       <div
         style={{
-          width: "min(1250px, 100%)",
-          margin: "0 auto",
-          padding: "0 clamp(6px, 0.9vw, 12px)",
+          width: "100%",
+          padding: "0 clamp(20px, 6vw, 96px)",
           boxSizing: "border-box",
+          opacity: modelFullyVisible ? 1 : 0,
+          transform: modelFullyVisible ? "translateY(0)" : "translateY(14px)",
+          transition: "opacity 1.1s cubic-bezier(0.22,0.61,0.36,1), transform 1.1s cubic-bezier(0.22,0.61,0.36,1)",
+          willChange: "opacity, transform",
         }}
       >
         <p
           style={{
             maxWidth: "460px",
-            margin: "28px 0 36px",
+            margin: "48px 0 36px",
             fontFamily: "'Manrope', system-ui, sans-serif",
             fontSize: "13px",
             fontWeight: 300,
