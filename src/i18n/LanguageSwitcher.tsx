@@ -60,7 +60,7 @@ const LanguageSwitcher = ({
         // "info" button styling (Lyra page) so the switcher reads as part of
         // the same control language.
         background,
-        padding: "20px 6px 6px",
+        padding: "26px 6px 6px",
         width: 26,
         borderBottomLeftRadius: 2,
         borderBottomRightRadius: 2,
