@@ -740,7 +740,7 @@ const Lyra = () => {
         <p
           style={{
             maxWidth: "460px",
-            margin: "28px 0 36px",
+            margin: "48px 0 36px",
             fontFamily: "'Manrope', system-ui, sans-serif",
             fontSize: "13px",
             fontWeight: 300,
