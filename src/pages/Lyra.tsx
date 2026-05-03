@@ -59,6 +59,7 @@ const Lyra = () => {
   const modelLayerRef = useRef<HTMLDivElement>(null);
   const scrollFillRef = useRef<HTMLDivElement>(null);
   const heroCaptionRef = useRef<HTMLDivElement>(null);
+  const textBlockRef = useRef<HTMLDivElement>(null);
   const [captionLoaded, setCaptionLoaded] = useState(false);
   // Switcher visibility — hidden while the hero screen is the dominant layer.
   const [switcherVisible, setSwitcherVisible] = useState(false);
@@ -172,6 +173,10 @@ const Lyra = () => {
       const modelOp = Math.max(0, Math.min(1, (p - 0.3) * 2));
       hero.style.opacity = String(heroOp);
       model.style.opacity = String(modelOp);
+      if (textBlockRef.current) {
+        textBlockRef.current.style.opacity = String(modelOp);
+        textBlockRef.current.style.transform = `translateY(${(1 - modelOp) * 14}px)`;
+      }
       const fullyVisible = modelOp >= 0.999;
       model.style.pointerEvents = fullyVisible ? "auto" : "none";
       setModelFullyVisible((prev) => (prev !== fullyVisible ? fullyVisible : prev));
