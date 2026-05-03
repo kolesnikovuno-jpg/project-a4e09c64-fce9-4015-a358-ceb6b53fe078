@@ -10,3 +10,4 @@ Architecture + design + art portfolio site.
 ## Memories
 - [Design philosophy](mem://design/philosophy) — Conceptual approach, intentional minimalism
 - [i18n system](mem://features/i18n) — Multilingual infra (EN source, RU/UA adapted)
+- [model-v template](mem://templates/model-v) — Lyra page structure as reusable template (hero crossfade + 3D + info panel) for new model pages
