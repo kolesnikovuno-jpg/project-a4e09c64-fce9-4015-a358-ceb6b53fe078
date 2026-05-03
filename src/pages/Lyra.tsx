@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import lyraHero from "@/assets/lyra-hero.png";
-import lyraDimensions from "@/assets/lyra-dimensions.png";
-import lyraDimensionsMobile from "@/assets/lyra-dimensions-mobile.png";
 import LyraInfo from "@/components/LyraInfo";
 import SEO from "@/components/SEO";
 import { useLocale } from "@/i18n/useLocale";
