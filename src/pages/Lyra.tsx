@@ -56,7 +56,6 @@ const Lyra = () => {
   const crossfadeRef = useRef<HTMLDivElement>(null);
   const heroLayerRef = useRef<HTMLDivElement>(null);
   const modelLayerRef = useRef<HTMLDivElement>(null);
-  const dimsLayerRef = useRef<HTMLDivElement>(null);
   const scrollFillRef = useRef<HTMLDivElement>(null);
   const heroCaptionRef = useRef<HTMLDivElement>(null);
   const [captionLoaded, setCaptionLoaded] = useState(false);
@@ -157,8 +156,7 @@ const Lyra = () => {
     const zone = crossfadeRef.current;
     const hero = heroLayerRef.current;
     const model = modelLayerRef.current;
-    const dims = dimsLayerRef.current;
-    if (!zone || !hero || !model || !dims) return;
+    if (!zone || !hero || !model) return;
 
     let raf = 0;
     const update = () => {
@@ -167,22 +165,13 @@ const Lyra = () => {
       const total = zone.offsetHeight - window.innerHeight;
       const scrolled = Math.max(0, Math.min(total, -rect.top));
       const p = total > 0 ? scrolled / total : 0; // 0..1
-      // Three-stage crossfade: hero (0..0.5) → model (0.25..0.75) → dims (0.6..1)
-      // Hero fades out across first half; model peaks in the middle; dims arrives last.
-      const sp = p * 2; // scaled to two transitions
-      const heroOp = Math.max(0, Math.min(1, 1 - sp * 1.4));
-      // Model: ramp in (0.075..0.5 of p), hold, ramp out (0.6..0.85 of p)
-      const modelIn = Math.max(0, Math.min(1, (p - 0.075) * 4));
-      const modelOut = Math.max(0, Math.min(1, 1 - (p - 0.6) * 4));
-      const modelOp = Math.min(modelIn, modelOut);
-      const dimsOp = Math.max(0, Math.min(1, (p - 0.7) * 4));
+      // Two-stage crossfade: hero → model.
+      const heroOp = Math.max(0, Math.min(1, 1 - p * 2));
+      const modelOp = Math.max(0, Math.min(1, (p - 0.3) * 2));
       hero.style.opacity = String(heroOp);
       model.style.opacity = String(modelOp);
-      dims.style.opacity = String(dimsOp);
-      // Only enable interaction with model when it's fully visible AND dims hasn't started.
-      const fullyVisible = modelOp >= 0.999 && dimsOp <= 0.001;
+      const fullyVisible = modelOp >= 0.999;
       model.style.pointerEvents = fullyVisible ? "auto" : "none";
-      dims.style.pointerEvents = dimsOp >= 0.999 ? "auto" : "none";
       setModelFullyVisible((prev) => (prev !== fullyVisible ? fullyVisible : prev));
       // Show switcher once the hero has visibly receded — keeps the first
       // (hero) screen clean per the multilingual UX rules.
@@ -410,7 +399,7 @@ const Lyra = () => {
       <div
         ref={crossfadeRef}
         className="relative w-screen"
-        style={{ height: "300vh" }}
+        style={{ height: "200vh" }}
       >
         <div className="sticky top-0 w-screen h-screen overflow-hidden">
           {/* Layer 1: hero image */}
