@@ -169,6 +169,27 @@ export type Dictionary = {
     footer_right: string;
     close_aria: string;
   };
+  participation: {
+    link: string;
+    title: string;
+    intro: string;
+    stage_label: string;
+    stage_value: string;
+    goal_label: string;
+    goal_value: string;
+    limit: string;
+    request_button: string;
+    form_name: string;
+    form_email: string;
+    form_message: string;
+    form_message_optional: string;
+    submit: string;
+    submitting: string;
+    error: string;
+    success_text: string;
+    proceed_link: string;
+    close_aria: string;
+  };
 };
 
 // EN is the source of truth. RU and UA are adapted (not literal translation).
@@ -379,6 +400,29 @@ export const dictionary: Record<Locale, Dictionary> = {
       footer_right: "kolesnikov",
       close_aria: "close",
     },
+    participation: {
+      link: "Participate",
+      title: "Participation",
+      intro:
+        "Participation is a form of involvement in bringing the object into material.\n\nThis is not an investment.\nIt is a contribution to the process of realization.\n\nThe form is completed through decision and participation.",
+      stage_label: "Current stage",
+      stage_value: "Prototype",
+      goal_label: "Goal",
+      goal_value: "Physical realization of the object",
+      limit: "The process is limited.\nCompletion closes participation.",
+      request_button: "Request participation",
+      form_name: "Name",
+      form_email: "Email",
+      form_message: "Message",
+      form_message_optional: "optional",
+      submit: "Submit",
+      submitting: "Sending…",
+      error: "Could not send. Please try again.",
+      success_text:
+        "Your request has been received.\n\nYou can proceed with contribution using the current participation channel.",
+      proceed_link: "Proceed to contribution",
+      close_aria: "close",
+    },
   },
   ru: {
     nav: { back: "← назад", info: "инфо", ar: "ar", uno: ".uno" },
@@ -585,6 +629,29 @@ export const dictionary: Record<Locale, Dictionary> = {
       footer_right: "kolesnikov",
       close_aria: "закрыть",
     },
+    participation: {
+      link: "Участие",
+      title: "Участие",
+      intro:
+        "Участие — это форма вовлечения в перевод объекта в материю.\n\nЭто не инвестиция.\nЭто вклад в процесс реализации.\n\nФорма завершается через решение и участие.",
+      stage_label: "Текущая стадия",
+      stage_value: "Прототип",
+      goal_label: "Цель",
+      goal_value: "Физическая реализация объекта",
+      limit: "Процесс ограничен.\nЗавершение закрывает участие.",
+      request_button: "Запросить участие",
+      form_name: "Имя",
+      form_email: "Email",
+      form_message: "Сообщение",
+      form_message_optional: "необязательно",
+      submit: "Отправить",
+      submitting: "Отправка…",
+      error: "Не удалось отправить. Попробуйте ещё раз.",
+      success_text:
+        "Ваш запрос получен.\n\nВы можете продолжить вкладом через действующий канал участия.",
+      proceed_link: "Перейти к вкладу",
+      close_aria: "закрыть",
+    },
   },
   uk: {
     nav: { back: "← назад", info: "інфо", ar: "ar", uno: ".uno" },
@@ -789,6 +856,29 @@ export const dictionary: Record<Locale, Dictionary> = {
       contact_email: "email",
       footer_left: "uno · studio",
       footer_right: "kolesnikov",
+      close_aria: "закрити",
+    },
+    participation: {
+      link: "Участь",
+      title: "Участь",
+      intro:
+        "Участь — це форма залучення до переведення об'єкта в матерію.\n\nЦе не інвестиція.\nЦе внесок у процес реалізації.\n\nФорма завершується через рішення та участь.",
+      stage_label: "Поточна стадія",
+      stage_value: "Прототип",
+      goal_label: "Мета",
+      goal_value: "Фізична реалізація об'єкта",
+      limit: "Процес обмежений.\nЗавершення закриває участь.",
+      request_button: "Запросити участь",
+      form_name: "Ім'я",
+      form_email: "Email",
+      form_message: "Повідомлення",
+      form_message_optional: "необов'язково",
+      submit: "Надіслати",
+      submitting: "Надсилання…",
+      error: "Не вдалося надіслати. Спробуйте ще раз.",
+      success_text:
+        "Ваш запит отримано.\n\nВи можете продовжити внеском через діючий канал участі.",
+      proceed_link: "Перейти до внеску",
       close_aria: "закрити",
     },
   },
