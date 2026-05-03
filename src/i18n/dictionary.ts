@@ -78,6 +78,7 @@ export type Dictionary = {
     hero_alt: string;
     seo_title: string;
     seo_description: string;
+    description: string;
   };
   lyra_info: {
     ref: string;
@@ -126,6 +127,7 @@ export type Dictionary = {
     hero_alt: string;
     seo_title: string;
     seo_description: string;
+    description: string;
   };
   nava_info: {
     ref: string;
