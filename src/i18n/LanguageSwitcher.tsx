@@ -62,7 +62,7 @@ const LanguageSwitcher = ({
         // the same control language.
         background,
         width: 26,
-        paddingTop: 20,
+        paddingTop: 16,
         borderBottomLeftRadius: 2,
         borderBottomRightRadius: 2,
         fontFamily: "'Manrope', system-ui, sans-serif",
