@@ -137,7 +137,7 @@ const Nava = () => {
     const onLoad = () => {
       loader.classList.add("hide");
       (mv as any).cameraTarget = "auto";
-      (mv as any).cameraOrbit = "-8deg 70deg 170%";
+      (mv as any).cameraOrbit = "-8deg 70deg 300%";
       (mv as any).fieldOfView = "28deg";
       const had = mv.hasAttribute("auto-rotate");
       mv.removeAttribute("auto-rotate");
@@ -148,22 +148,7 @@ const Nava = () => {
     };
 
     mv.addEventListener("load", onLoad);
-
-    // Prevent default double-tap/double-click camera reset (which would
-    // snap the camera back to the model-viewer's auto-framing, making
-    // Nava look small). Re-apply our preferred orbit instead.
-    const resetOrbit = (e: Event) => {
-      e.preventDefault();
-      e.stopPropagation();
-      (mv as any).cameraOrbit = "-8deg 70deg 170%";
-      (mv as any).fieldOfView = "28deg";
-    };
-    mv.addEventListener("dblclick", resetOrbit, { capture: true });
-
-    return () => {
-      mv.removeEventListener("load", onLoad);
-      mv.removeEventListener("dblclick", resetOrbit, { capture: true } as any);
-    };
+    return () => mv.removeEventListener("load", onLoad);
   }, []);
 
   // Scroll-driven crossfade between hero image (layer 1) and 3D scene (layer 2)
@@ -697,10 +682,8 @@ const Nava = () => {
               exposure="1.45"
               shadow-intensity="0.6"
               shadow-softness="1"
-              camera-orbit="-8deg 70deg 170%"
+              camera-orbit="-8deg 70deg 300%"
               field-of-view="28deg"
-              min-camera-orbit="auto auto 50%"
-              max-camera-orbit="auto auto 500%"
               crossorigin="anonymous"
               referrerpolicy="no-referrer"
               style={{
