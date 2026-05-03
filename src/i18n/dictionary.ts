@@ -339,9 +339,6 @@ export const dictionary: Record<Locale, Dictionary> = {
         contact: "contact",
       },
       overview: [
-        "A lounge chair defined by a continuous frame",
-        "and a suspended soft volume.",
-        "",
         "The structure distributes weight through a single loop,",
         "creating a stable yet lightweight support.",
       ],
@@ -541,9 +538,6 @@ export const dictionary: Record<Locale, Dictionary> = {
         contact: "контакты",
       },
       overview: [
-        "Кресло-лаунж, образованное непрерывным каркасом",
-        "и подвешенным мягким объёмом.",
-        "",
         "Структура распределяет вес через единую петлю,",
         "создавая устойчивую и лёгкую опору.",
       ],
@@ -743,9 +737,6 @@ export const dictionary: Record<Locale, Dictionary> = {
         contact: "контакти",
       },
       overview: [
-        "Крісло-лаунж, утворене безперервним каркасом",
-        "та підвішеним м'яким об'ємом.",
-        "",
         "Структура розподіляє вагу через єдину петлю,",
         "створюючи стійку та легку опору.",
       ],
