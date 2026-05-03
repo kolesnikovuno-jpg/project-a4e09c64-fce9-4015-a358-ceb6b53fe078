@@ -680,7 +680,7 @@ const Nava = () => {
               exposure="1.45"
               shadow-intensity="0.6"
               shadow-softness="1"
-              camera-orbit="-8deg 70deg 300%"
+              camera-orbit="-8deg 70deg 360%"
               field-of-view="28deg"
               crossorigin="anonymous"
               referrerpolicy="no-referrer"
