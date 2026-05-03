@@ -118,6 +118,54 @@ export type Dictionary = {
     footer_right: string;
     close_aria: string;
   };
+  nava: {
+    hero_caption: string;
+    rotated_line: string;
+    dimensions_alt: string;
+    hero_alt: string;
+    seo_title: string;
+    seo_description: string;
+  };
+  nava_info: {
+    ref: string;
+    title: string;
+    model_label: string;
+    model_value: string;
+    status_label: string;
+    status_value: string;
+    sections: {
+      overview: string;
+      specifications: string;
+      structure: string;
+      material: string;
+      share: string;
+      contact: string;
+    };
+    overview: readonly string[];
+    spec_keys: { height: string; width: string; length: string };
+    structure: readonly string[];
+    material_keys: { textile: string; frame: string; color: string };
+    material_values: { textile: string; frame: string; color: string };
+    copy_link: string;
+    copy_done: string;
+    copy_failed: string;
+    system_share: string;
+    link_copied: string;
+    qr_label: string;
+    process_label: string;
+    process_flow: string;
+    production_label: string;
+    production_lines: readonly string[];
+    inquiry_label: string;
+    technical_label: string;
+    technical_description: string;
+    technical_link: string;
+    contact_telegram: string;
+    contact_email: string;
+    footer_left: string;
+    footer_right: string;
+    close_aria: string;
+  };
 };
 
 // EN is the source of truth. RU and UA are adapted (not literal translation).
