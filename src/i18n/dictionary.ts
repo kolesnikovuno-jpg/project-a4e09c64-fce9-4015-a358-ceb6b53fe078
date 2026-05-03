@@ -109,6 +109,9 @@ export type Dictionary = {
     production_label: string;
     production_lines: readonly string[];
     inquiry_label: string;
+    technical_label: string;
+    technical_description: string;
+    technical_link: string;
     contact_telegram: string;
     contact_email: string;
     footer_left: string;
@@ -253,6 +256,9 @@ export const dictionary: Record<Locale, Dictionary> = {
       production_label: "production",
       production_lines: ["made to order", "lead time 4–6 weeks"],
       inquiry_label: "inquiry",
+      technical_label: "technical",
+      technical_description: "drawing & dimensions",
+      technical_link: "view technical sheet",
       contact_telegram: "telegram",
       contact_email: "email",
       footer_left: "uno · studio",
@@ -393,6 +399,9 @@ export const dictionary: Record<Locale, Dictionary> = {
       production_label: "производство",
       production_lines: ["под заказ", "срок 4–6 недель"],
       inquiry_label: "запрос",
+      technical_label: "техническое",
+      technical_description: "чертёж и размеры",
+      technical_link: "открыть технический лист",
       contact_telegram: "telegram",
       contact_email: "email",
       footer_left: "uno · studio",
@@ -533,6 +542,9 @@ export const dictionary: Record<Locale, Dictionary> = {
       production_label: "виробництво",
       production_lines: ["на замовлення", "термін 4–6 тижнів"],
       inquiry_label: "запит",
+      technical_label: "технічне",
+      technical_description: "креслення та розміри",
+      technical_link: "відкрити технічний аркуш",
       contact_telegram: "telegram",
       contact_email: "email",
       footer_left: "uno · studio",
