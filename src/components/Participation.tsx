@@ -8,7 +8,10 @@ type Props = {
   onClose: () => void;
 };
 
-const CONTRIBUTION_URL = "https://send.monobank.ua/jar/2ezcb2Nk2E";
+const CONTRIBUTION_URLS: Record<"lyra" | "nava", string> = {
+  lyra: "https://send.monobank.ua/jar/2ezcb2Nk2E",
+  nava: "https://send.monobank.ua/jar/jCMAkkYaB",
+};
 
 const Participation = ({ model, open, onClose }: Props) => {
   const { t, locale } = useLocale();
@@ -298,7 +301,7 @@ const Participation = ({ model, open, onClose }: Props) => {
             </div>
             <a
               className="pt-link"
-              href={CONTRIBUTION_URL}
+              href={CONTRIBUTION_URLS[model]}
               target="_blank"
               rel="noopener noreferrer"
             >
