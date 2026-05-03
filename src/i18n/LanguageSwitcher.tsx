@@ -50,7 +50,7 @@ const LanguageSwitcher = ({
       ref={rootRef}
       style={{
         position: "fixed",
-        top: topOffset + 16,
+        top: topOffset,
         left: "50%",
         transform: "translateX(-50%)",
         // High z-index so the switcher floats above hero images, the 3D
@@ -60,8 +60,8 @@ const LanguageSwitcher = ({
         // "info" button styling (Lyra page) so the switcher reads as part of
         // the same control language.
         background,
+        padding: "26px 6px 6px",
         width: 26,
-        padding: "4px 6px 6px",
         borderBottomLeftRadius: 2,
         borderBottomRightRadius: 2,
         fontFamily: "'Manrope', system-ui, sans-serif",
