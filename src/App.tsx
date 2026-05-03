@@ -16,6 +16,7 @@ import LyraConcept from "./pages/LyraConcept";
 import Garden from "./pages/Garden";
 import Gateway from "./pages/Gateway";
 import UnoStudio from "./pages/UnoStudio";
+import Unsubscribe from "./pages/Unsubscribe";
 import { DEFAULT_LOCALE, LOCALES, isLocale } from "./i18n/config";
 import { initialLocale } from "./i18n/storage";
 import LocalePersistenceGuard from "./i18n/LocalePersistenceGuard";
@@ -85,6 +86,7 @@ const App = () => (
           <Route path="/pixels" element={<PixelTransition />} />
           <Route path="/unocalc" element={<UnoCalc />} />
           <Route path="/lyra-concept" element={<LyraConcept />} />
+          <Route path="/unsubscribe" element={<Unsubscribe />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
