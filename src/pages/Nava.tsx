@@ -43,9 +43,9 @@ declare global {
 
 const GLB_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/public/models/nava.glb";
 const USDZ_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/public/models/nava.usdz";
-const NAVA_CAMERA_ORBIT = "-8deg 70deg 8m";
+const NAVA_CAMERA_ORBIT = "-8deg 70deg 4m";
 const NAVA_FIELD_OF_VIEW = "28deg";
-const NAVA_CAMERA_DISTANCE_LOCK = "auto auto 8m";
+const NAVA_CAMERA_DISTANCE_LOCK = "auto auto 4m";
 
 const Nava = () => {
   const navigate = useNavigate();
