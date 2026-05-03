@@ -105,14 +105,20 @@ const Participation = ({ model, open, onClose }: Props) => {
           overflow-y:auto;
           font-family:'JetBrains Mono','IBM Plex Mono','Menlo',ui-monospace,monospace;
           font-weight:400;
-          font-size:12px; line-height:1.8;
+          font-size:12px; line-height:1.9;
           color:#3A3A3A;
           letter-spacing:0.01em;
-          border-left:1px solid rgba(0,0,0,0.05);
+          border-left:none;
+        }
+        .pt-panel::before{
+          content:""; position:absolute; top:0; left:-24px; bottom:0;
+          width:24px; pointer-events:none;
+          background:linear-gradient(to right, rgba(245,239,235,0) 0%, rgba(245,239,235,0.55) 60%, rgba(245,239,235,1) 100%);
         }
         .pt-panel.open{ transform:translateX(0); }
         @media(max-width:768px){
           .pt-panel{ width:100%; min-width:0; max-width:none; padding:34px 24px 48px 26px; }
+          .pt-panel::before{ display:none; }
         }
         .pt-close{
           position:absolute; top:14px; right:18px;
@@ -123,31 +129,32 @@ const Participation = ({ model, open, onClose }: Props) => {
         }
         .pt-close:hover{ color:#1A1A1A; opacity:1; }
         .pt-title{
-          font-size:26px; font-weight:300; letter-spacing:0.04em;
-          color:#1F1F1F; margin:0 0 28px; line-height:1;
+          font-size:23px; font-weight:300; letter-spacing:0.04em;
+          color:#2A2A2A; margin:0 0 30px; line-height:1;
           font-family:'JetBrains Mono','IBM Plex Mono','Menlo',ui-monospace,monospace;
         }
-        .pt-section{ padding:14px 0; }
+        .pt-section{ padding:10px 0; }
         .pt-section-title{
           font-size:10px; letter-spacing:0.18em; text-transform:uppercase;
           color:#8A8A8A; margin-bottom:14px; font-weight:400;
         }
-        .pt-text{ margin:0; color:#3A3A3A; font-size:12.5px; line-height:1.85; white-space:pre-line; }
+        .pt-text{ margin:0 0 6px; color:#3A3A3A; font-size:12.5px; line-height:1.95; white-space:pre-line; }
         .pt-rule{ border:0; border-top:1px dashed rgba(0,0,0,0.18); margin:0; height:0; }
-        .pt-row{ display:flex; gap:18px; padding:5px 0; font-size:12px; }
-        .pt-row .k{ color:#8A8A8A; min-width:110px; text-transform:lowercase; }
-        .pt-row .v{ color:#2A2A2A; flex:1; }
+        .pt-line{ margin:0 0 4px; color:#3A3A3A; font-size:12.5px; line-height:1.95; }
+        .pt-line .k{ color:#8A8A8A; text-transform:lowercase; }
+        .pt-line .sep{ color:#9A9A9A; margin:0 6px; }
+        .pt-line .v{ color:#2A2A2A; }
         .pt-action{
           display:inline-flex; align-items:center; gap:8px;
           padding:6px 0;
           background:transparent; border:none;
           font-family:inherit; font-size:12px; font-weight:400;
-          color:#2A2A2A; letter-spacing:0.02em; text-transform:lowercase;
+          color:#6A6A6A; letter-spacing:0.02em; text-transform:lowercase;
           cursor:pointer; text-align:left;
           transition:color .2s ease;
-          margin-top:10px;
+          margin-top:14px;
         }
-        .pt-action:hover{ color:#C97A63; }
+        .pt-action:hover{ color:#2A2A2A; }
         .pt-action .arrow{ color:#9A9A9A; font-size:12px; }
         .pt-form{ display:flex; flex-direction:column; gap:18px; margin-top:6px; }
         .pt-field{ display:flex; flex-direction:column; gap:4px; }
@@ -197,10 +204,9 @@ const Participation = ({ model, open, onClose }: Props) => {
               <p className="pt-text">{T.intro}</p>
             </div>
             <div className="pt-section">
-              <div className="pt-row"><span className="k">{T.stage_label}</span><span className="v">{T.stage_value}</span></div>
-              <div className="pt-row"><span className="k">{T.goal_label}</span><span className="v">{T.goal_value}</span></div>
+              <p className="pt-line"><span className="k">{T.stage_label}</span><span className="sep">—</span><span className="v">{T.stage_value}</span></p>
+              <p className="pt-line"><span className="k">{T.goal_label}</span><span className="sep">—</span><span className="v">{T.goal_value}</span></p>
             </div>
-            <hr className="pt-rule" />
             <div className="pt-section">
               <p className="pt-text">{T.limit}</p>
             </div>
