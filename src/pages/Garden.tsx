@@ -164,7 +164,7 @@ const Garden = () => {
         { side: -1, y: 310, len: 28, r: 6, style: "filled" as const },
       ],
       topR: 14,
-      topStyle: "outline" as const,
+      topStyle: "hatched" as const,
       id: "05",
     },
     {
@@ -221,7 +221,7 @@ const Garden = () => {
         { side: -1, y: 350, len: 32, r: 11, style: "filled" as const },
       ],
       topR: 21,
-      topStyle: "outline" as const,
+      topStyle: "hatched" as const,
       id: "05",
     },
     {
