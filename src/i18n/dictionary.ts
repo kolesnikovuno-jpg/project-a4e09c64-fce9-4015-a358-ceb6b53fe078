@@ -60,6 +60,7 @@ export type Dictionary = {
     password_placeholder: string;
     password_error: string;
     bud_label_lyra: string;
+    bud_label_nava: string;
     bud_label_unocalc: string;
     aria_element: string;
   };
