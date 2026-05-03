@@ -734,6 +734,7 @@ const Lyra = () => {
             <div className="uno-side-gutter right" aria-hidden />
           </div>
         </div>
+          </div>
           {/* Layer 3: text */}
           <div
             ref={textBlockRef}
