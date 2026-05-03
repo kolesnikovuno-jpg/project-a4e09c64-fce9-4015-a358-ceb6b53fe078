@@ -7,7 +7,6 @@ import Participation from "@/components/Participation";
 import ModelSEO from "@/components/ModelSEO";
 import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
-import { LOCALES } from "@/i18n/config";
 
 declare global {
   namespace JSX {
