@@ -11,6 +11,7 @@ import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import PixelTransition from "./pages/PixelTransition";
 import Lyra from "./pages/Lyra";
+import Nava from "./pages/Nava";
 import LyraConcept from "./pages/LyraConcept";
 import Garden from "./pages/Garden";
 import Gateway from "./pages/Gateway";
@@ -42,6 +43,7 @@ const RedirectToDefaultLocale = () => {
 const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   { path: "", element: <Index /> },
   { path: "lyra", element: <Lyra /> },
+  { path: "nava", element: <Nava /> },
   { path: "about", element: <About /> },
   { path: "pricing", element: <Pricing /> },
   { path: "garden", element: <Garden /> },
