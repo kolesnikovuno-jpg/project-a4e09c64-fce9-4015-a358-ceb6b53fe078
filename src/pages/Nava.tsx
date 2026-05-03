@@ -148,7 +148,22 @@ const Nava = () => {
     };
 
     mv.addEventListener("load", onLoad);
-    return () => mv.removeEventListener("load", onLoad);
+
+    // Prevent default double-tap/double-click camera reset (which would
+    // snap the camera back to the model-viewer's auto-framing, making
+    // Nava look small). Re-apply our preferred orbit instead.
+    const resetOrbit = (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
+      (mv as any).cameraOrbit = "-8deg 70deg 170%";
+      (mv as any).fieldOfView = "28deg";
+    };
+    mv.addEventListener("dblclick", resetOrbit, { capture: true });
+
+    return () => {
+      mv.removeEventListener("load", onLoad);
+      mv.removeEventListener("dblclick", resetOrbit, { capture: true } as any);
+    };
   }, []);
 
   // Scroll-driven crossfade between hero image (layer 1) and 3D scene (layer 2)
