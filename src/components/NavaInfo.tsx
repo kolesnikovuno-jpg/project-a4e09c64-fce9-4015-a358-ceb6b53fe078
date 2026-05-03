@@ -8,7 +8,7 @@ const MODEL_DATA = {
   dimensions: { height: "1500 mm", width: "840 mm", length: "1750 mm" },
   contact: {
     telegram:
-      "https://t.me/kolesnikov_uno?text=Hello,%20I'm%20interested%20in%20Lyra.%0A%0AColor:%20%0ALocation:%20%0ANotes:%20",
+      "https://t.me/kolesnikov_uno?text=Hello,%20I'm%20interested%20in%20Nava.%0A%0AColor:%20%0ALocation:%20%0ANotes:%20",
     email: "kolesnikov.uno@gmail.com",
   },
 };
