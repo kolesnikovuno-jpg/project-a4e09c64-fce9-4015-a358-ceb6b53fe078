@@ -28,6 +28,12 @@ export default defineConfig(({ mode }) => ({
           uk: "/uk/lyra",
           "x-default": "/en/lyra",
         };
+        const navaAlternates = {
+          en: "/en/nava",
+          ru: "/ru/nava",
+          uk: "/uk/nava",
+          "x-default": "/en/nava",
+        };
         return [
           {
             route: "/en/lyra",
@@ -55,6 +61,33 @@ export default defineConfig(({ mode }) => ({
             image: "/og/lyra-preview.png",
             type: "product",
             alternates,
+          },
+          {
+            route: "/en/nava",
+            title: "NAVA — .uno studio",
+            description:
+              "NAVA — a lounge chair defined by a continuous frame and a suspended soft volume. Form that holds the body.",
+            image: "/og/nava-preview.png",
+            type: "product",
+            alternates: navaAlternates,
+          },
+          {
+            route: "/ru/nava",
+            title: "NAVA — .uno studio",
+            description:
+              "NAVA — кресло на непрерывном каркасе с подвешенным мягким объёмом. Форма, которая держит тело.",
+            image: "/og/nava-preview.png",
+            type: "product",
+            alternates: navaAlternates,
+          },
+          {
+            route: "/uk/nava",
+            title: "NAVA — .uno studio",
+            description:
+              "NAVA — крісло на безперервному каркасі з підвішеним м'яким об'ємом. Форма, що тримає тіло.",
+            image: "/og/nava-preview.png",
+            type: "product",
+            alternates: navaAlternates,
           },
         ];
       })(),
