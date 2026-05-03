@@ -48,6 +48,7 @@ const LanguageSwitcher = ({
   return (
     <div
       ref={rootRef}
+      className="pt-5 md:pt-6 px-1.5 pb-1.5"
       style={{
         position: "fixed",
         top: topOffset,
@@ -60,7 +61,6 @@ const LanguageSwitcher = ({
         // "info" button styling (Lyra page) so the switcher reads as part of
         // the same control language.
         background,
-        padding: "26px 6px 6px",
         width: 26,
         borderBottomLeftRadius: 2,
         borderBottomRightRadius: 2,
