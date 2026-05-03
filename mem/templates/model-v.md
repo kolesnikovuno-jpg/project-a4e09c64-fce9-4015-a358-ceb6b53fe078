@@ -51,6 +51,11 @@ Right-side slide-in (38% width, 460px max), monospace receipt-like, cream `#F5EF
 - Dictionary subtree (title, ref, model_value, status_value, overview[], structure[], material values, process_flow, production_lines[], technical_*, footer_*)
 - Technical PDF in `public/`
 - Route path + entry in `localizedPages`
+- **OG link preview** (CRITICAL — without this, Telegram/WhatsApp/iMessage show empty cards because crawlers don't run JS):
+  - Generate `public/og/{model}-preview.png` at 1200×630 from the hero image:
+    `nix run nixpkgs#imagemagick -- src/assets/{model}-hero.png -resize 1200x630^ -gravity center -extent 1200x630 -quality 85 public/og/{model}-preview.png`
+  - Add per-locale entries (en/ru/uk) to the `pages` array in `vite.config.ts` via the `ogPages` plugin, with `route`, `title`, `description`, `image: "/og/{model}-preview.png"`, `type: "product"`, and an `alternates` map for hreflang.
+  - Preview only works in production build (plugin runs at `closeBundle`), not in dev.
 
 ## Constraints (do not change when replicating)
 - No new UI elements, buttons, or icons in the info panel.
