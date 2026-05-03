@@ -168,14 +168,18 @@ const Lyra = () => {
       const total = zone.offsetHeight - window.innerHeight;
       const scrolled = Math.max(0, Math.min(total, -rect.top));
       const p = total > 0 ? scrolled / total : 0; // 0..1
-      // Two-stage crossfade: hero → model.
-      const heroOp = Math.max(0, Math.min(1, 1 - p * 2));
-      const modelOp = Math.max(0, Math.min(1, (p - 0.3) * 2));
+      // Three-stage crossfade: photo → 3D → text, all driven by the same scroll zone.
+      const heroOp = Math.max(0, Math.min(1, 1 - p * 3));
+      const modelIn = Math.max(0, Math.min(1, (p - 0.18) * 4));
+      const modelOut = Math.max(0, Math.min(1, 1 - (p - 0.58) * 4));
+      const modelOp = Math.min(modelIn, modelOut);
+      const textOp = Math.max(0, Math.min(1, (p - 0.62) * 3));
       hero.style.opacity = String(heroOp);
       model.style.opacity = String(modelOp);
       if (textBlockRef.current) {
-        textBlockRef.current.style.opacity = String(modelOp);
-        textBlockRef.current.style.transform = `translateY(${(1 - modelOp) * 14}px)`;
+        textBlockRef.current.style.opacity = String(textOp);
+        textBlockRef.current.style.transform = `translateY(${(1 - textOp) * 14}px)`;
+        textBlockRef.current.style.pointerEvents = textOp > 0.98 ? "auto" : "none";
       }
       const fullyVisible = modelOp >= 0.999;
       model.style.pointerEvents = fullyVisible ? "auto" : "none";
@@ -406,7 +410,7 @@ const Lyra = () => {
       <div
         ref={crossfadeRef}
         className="relative w-screen"
-        style={{ height: "200vh" }}
+        style={{ height: "300vh" }}
       >
         <div className="sticky top-0 w-screen h-screen overflow-hidden">
           {/* Layer 1: hero image */}
@@ -731,56 +735,61 @@ const Lyra = () => {
           </div>
         </div>
           </div>
+          {/* Layer 3: text */}
+          <div
+            ref={textBlockRef}
+            className="absolute inset-0 w-full h-full bg-background"
+            style={{
+              padding: "0 clamp(20px, 6vw, 96px)",
+              boxSizing: "border-box",
+              opacity: 0,
+              transform: "translateY(14px)",
+              willChange: "opacity, transform",
+              pointerEvents: "none",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <p
+                style={{
+                  maxWidth: "460px",
+                  margin: "0 0 36px",
+                  fontFamily: "'Manrope', system-ui, sans-serif",
+                  fontSize: "13px",
+                  fontWeight: 300,
+                  lineHeight: 1.9,
+                  letterSpacing: "0.04em",
+                  color: "hsl(0 0% 38%)",
+                  whiteSpace: "pre-line",
+                }}
+              >
+                {t.lyra.description}
+              </p>
+              <button
+                type="button"
+                onClick={() => setParticipationOpen(true)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  padding: 0,
+                  margin: 0,
+                  cursor: "pointer",
+                  fontFamily: "'Manrope', system-ui, sans-serif",
+                  fontSize: "13px",
+                  fontWeight: 300,
+                  letterSpacing: "0.04em",
+                  color: "hsl(0 0% 45%)",
+                  transition: "color .25s ease",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#C97A63")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "hsl(0 0% 45%)")}
+              >
+                {t.participation.link} <span style={{ marginLeft: 4, opacity: 0.7 }}>↗</span>
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-      {/* Text block — follows the same scroll fade as the 3D scene, anchored to the page. */}
-      <div
-        ref={textBlockRef}
-        style={{
-          width: "100%",
-          padding: "0 clamp(20px, 6vw, 96px)",
-          boxSizing: "border-box",
-          opacity: 0,
-          transform: "translateY(14px)",
-          willChange: "opacity, transform",
-        }}
-      >
-        <p
-          style={{
-            maxWidth: "460px",
-            margin: "48px 0 36px",
-            fontFamily: "'Manrope', system-ui, sans-serif",
-            fontSize: "13px",
-            fontWeight: 300,
-            lineHeight: 1.9,
-            letterSpacing: "0.04em",
-            color: "hsl(0 0% 38%)",
-            whiteSpace: "pre-line",
-          }}
-        >
-          {t.lyra.description}
-        </p>
-        <button
-          type="button"
-          onClick={() => setParticipationOpen(true)}
-          style={{
-            background: "transparent",
-            border: "none",
-            padding: 0,
-            margin: "-20px 0 40px",
-            cursor: "pointer",
-            fontFamily: "'Manrope', system-ui, sans-serif",
-            fontSize: "13px",
-            fontWeight: 300,
-            letterSpacing: "0.04em",
-            color: "hsl(0 0% 45%)",
-            transition: "color .25s ease",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "#C97A63")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "hsl(0 0% 45%)")}
-        >
-          {t.participation.link} <span style={{ marginLeft: 4, opacity: 0.7 }}>↗</span>
-        </button>
       </div>
       <button
         onClick={() => navigate("/garden")}
