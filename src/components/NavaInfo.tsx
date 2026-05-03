@@ -272,15 +272,12 @@ const NavaInfo = ({ showTrigger = true }: Props) => {
         </div>
 
         <div style={{ height: 22 }} />
-        <hr className="li-rule" />
 
         {/* 2. OVERVIEW */}
         <div className="li-section li-overview">
           <div className="li-section-title">{T.sections.overview}</div>
           {T.overview.map((line) => <p key={line}>{line}</p>)}
         </div>
-
-        <hr className="li-rule" />
 
         {/* 3. SPECIFICATIONS */}
         <div className="li-section">
