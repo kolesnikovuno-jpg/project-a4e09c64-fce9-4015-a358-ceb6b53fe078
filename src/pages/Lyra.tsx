@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import lyraHero from "@/assets/lyra-hero.png";
 import LyraInfo from "@/components/LyraInfo";
+import Participation from "@/components/Participation";
 import SEO from "@/components/SEO";
 import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
@@ -61,6 +62,7 @@ const Lyra = () => {
   const [captionLoaded, setCaptionLoaded] = useState(false);
   // Switcher visibility — hidden while the hero screen is the dominant layer.
   const [switcherVisible, setSwitcherVisible] = useState(false);
+  const [participationOpen, setParticipationOpen] = useState(false);
 
   // Smooth fade-in on mount.
   useEffect(() => {
@@ -750,6 +752,27 @@ const Lyra = () => {
         >
           {t.lyra.description}
         </p>
+        <button
+          type="button"
+          onClick={() => setParticipationOpen(true)}
+          style={{
+            background: "transparent",
+            border: "none",
+            padding: 0,
+            margin: "-20px 0 40px",
+            cursor: "pointer",
+            fontFamily: "'Manrope', system-ui, sans-serif",
+            fontSize: "13px",
+            fontWeight: 300,
+            letterSpacing: "0.04em",
+            color: "hsl(0 0% 45%)",
+            transition: "color .25s ease",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#C97A63")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "hsl(0 0% 45%)")}
+        >
+          {t.participation.link}
+        </button>
       </div>
       <button
         onClick={() => navigate("/garden")}
@@ -792,6 +815,11 @@ const Lyra = () => {
           </button>
       </div>
       <LyraInfo showTrigger={false} />
+      <Participation
+        model="lyra"
+        open={participationOpen}
+        onClose={() => setParticipationOpen(false)}
+      />
       {/* Vertical scroll indicator above the info button */}
       <div className="uno-scroll-indicator" aria-hidden>
         <div className="uno-scroll-fill" ref={scrollFillRef} />
