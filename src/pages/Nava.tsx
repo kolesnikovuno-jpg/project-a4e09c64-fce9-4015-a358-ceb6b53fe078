@@ -27,6 +27,8 @@ declare global {
         "camera-orbit"?: string;
         "field-of-view"?: string;
         "camera-target"?: string;
+        "min-camera-orbit"?: string;
+        "max-camera-orbit"?: string;
         ar?: boolean | string;
         "ar-modes"?: string;
         "ar-scale"?: string;
