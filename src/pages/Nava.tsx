@@ -139,8 +139,8 @@ const Nava = () => {
     const onLoad = () => {
       loader.classList.add("hide");
       (mv as any).cameraTarget = "auto";
-      (mv as any).cameraOrbit = "-8deg 70deg 450%";
-      (mv as any).fieldOfView = "20deg";
+      (mv as any).cameraOrbit = "-8deg 70deg 750%";
+      (mv as any).fieldOfView = "14deg";
       const had = mv.hasAttribute("auto-rotate");
       mv.removeAttribute("auto-rotate");
       requestAnimationFrame(() => {
@@ -684,8 +684,8 @@ const Nava = () => {
               exposure="1.45"
               shadow-intensity="0.6"
               shadow-softness="1"
-              camera-orbit="-8deg 70deg 450%"
-              field-of-view="20deg"
+              camera-orbit="-8deg 70deg 750%"
+              field-of-view="14deg"
               crossorigin="anonymous"
               referrerpolicy="no-referrer"
               style={{
