@@ -773,10 +773,10 @@ const Nava = () => {
       <SEO
         title={t.nava.seo_title}
         description={t.nava.seo_description}
-        image="/og/lyra-preview.png"
+        image="/og/nava-preview.png"
         type="product"
         alternates={LOCALES.reduce<Record<string, string>>((acc, l) => {
-          acc[l] = `/${l}/lyra`;
+          acc[l] = `/${l}/nava`;
           return acc;
         }, {})}
       />
