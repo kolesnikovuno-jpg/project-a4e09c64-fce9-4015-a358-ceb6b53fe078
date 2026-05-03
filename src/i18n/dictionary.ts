@@ -169,6 +169,27 @@ export type Dictionary = {
     footer_right: string;
     close_aria: string;
   };
+  participation: {
+    link: string;
+    title: string;
+    intro: string;
+    stage_label: string;
+    stage_value: string;
+    goal_label: string;
+    goal_value: string;
+    limit: string;
+    request_button: string;
+    form_name: string;
+    form_email: string;
+    form_message: string;
+    form_message_optional: string;
+    submit: string;
+    submitting: string;
+    error: string;
+    success_text: string;
+    proceed_link: string;
+    close_aria: string;
+  };
 };
 
 // EN is the source of truth. RU and UA are adapted (not literal translation).
