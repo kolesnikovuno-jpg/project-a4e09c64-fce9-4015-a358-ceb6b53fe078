@@ -97,7 +97,7 @@ const Participation = ({ model, open, onClose }: Props) => {
         .pt-panel{
           position:fixed; top:0; right:0; height:100%;
           width:34%; max-width:415px; min-width:325px;
-          background:#F5EFEB;
+          background:hsl(24 26% 93%);
           z-index:81;
           transform:translateX(100%);
           transition:transform .8s cubic-bezier(0.22,0.61,0.36,1);
@@ -109,11 +109,17 @@ const Participation = ({ model, open, onClose }: Props) => {
           color:#3A3A3A;
           letter-spacing:0.01em;
           border-left:none;
+          box-shadow:none;
         }
         .pt-panel::before{
-          content:""; position:absolute; top:0; left:-24px; bottom:0;
-          width:24px; pointer-events:none;
-          background:linear-gradient(to right, rgba(245,239,235,0) 0%, rgba(245,239,235,0.55) 60%, rgba(245,239,235,1) 100%);
+          content:""; position:absolute; top:0; left:-110px; bottom:0;
+          width:110px; pointer-events:none;
+          background:linear-gradient(to right,
+            hsla(24,26%,93%,0) 0%,
+            hsla(24,26%,93%,0.03) 35%,
+            hsla(24,26%,93%,0.12) 60%,
+            hsla(24,26%,93%,0.45) 85%,
+            hsla(24,26%,93%,1) 100%);
         }
         .pt-panel.open{ transform:translateX(0); }
         @media(max-width:768px){
@@ -129,8 +135,8 @@ const Participation = ({ model, open, onClose }: Props) => {
         }
         .pt-close:hover{ color:#1A1A1A; opacity:1; }
         .pt-title{
-          font-size:23px; font-weight:300; letter-spacing:0.04em;
-          color:#2A2A2A; margin:0 0 30px; line-height:1;
+          font-size:21px; font-weight:250; letter-spacing:0.04em;
+          color:#3A3A3A; margin:0 0 30px; line-height:1;
           font-family:'JetBrains Mono','IBM Plex Mono','Menlo',ui-monospace,monospace;
         }
         .pt-section{ padding:10px 0; }
@@ -149,13 +155,13 @@ const Participation = ({ model, open, onClose }: Props) => {
           padding:6px 0;
           background:transparent; border:none;
           font-family:inherit; font-size:12px; font-weight:400;
-          color:#6A6A6A; letter-spacing:0.02em; text-transform:lowercase;
+          color:#8E8E8E; letter-spacing:0.02em; text-transform:lowercase;
           cursor:pointer; text-align:left;
           transition:color .2s ease;
           margin-top:14px;
         }
-        .pt-action:hover{ color:#2A2A2A; }
-        .pt-action .arrow{ color:#9A9A9A; font-size:12px; }
+        .pt-action:hover{ color:#3A3A3A; }
+        .pt-action .arrow{ color:#AEAEAE; font-size:12px; }
         .pt-form{ display:flex; flex-direction:column; gap:18px; margin-top:6px; }
         .pt-field{ display:flex; flex-direction:column; gap:4px; }
         .pt-label{
