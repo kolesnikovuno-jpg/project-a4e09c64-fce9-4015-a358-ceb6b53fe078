@@ -745,6 +745,28 @@ const Nava = () => {
         </div>
       </div>
       {/* Back arrow — pinned to viewport */}
+      <section
+        aria-label="object statement"
+        style={{
+          maxWidth: "460px",
+          margin: "28px 24px 36px",
+          fontFamily: "'Manrope', system-ui, sans-serif",
+          fontSize: "13px",
+          fontWeight: 300,
+          lineHeight: 1.9,
+          letterSpacing: "0.04em",
+          color: "hsl(0 0% 38%)",
+          whiteSpace: "pre-line",
+        }}
+      >
+        {`This object is not a fixed form.
+It exists as a point of transition between idea and material.
+
+What you see is a state — not the final.
+It can remain as it is, or move further into reality.
+
+The decision defines the form.`}
+      </section>
       <button
         onClick={() => navigate("/garden")}
         className="fixed top-4 left-4 md:top-5 md:left-5 px-2 py-1 text-[hsl(203_24%_40%)] hover:text-[#C97A63] transition-colors duration-300 z-[60]"
