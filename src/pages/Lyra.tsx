@@ -410,7 +410,7 @@ const Lyra = () => {
       <div
         ref={crossfadeRef}
         className="relative w-screen"
-        style={{ height: "200vh" }}
+        style={{ height: "300vh" }}
       >
         <div className="sticky top-0 w-screen h-screen overflow-hidden">
           {/* Layer 1: hero image */}
@@ -734,57 +734,61 @@ const Lyra = () => {
             <div className="uno-side-gutter right" aria-hidden />
           </div>
         </div>
+          {/* Layer 3: text */}
+          <div
+            ref={textBlockRef}
+            className="absolute inset-0 w-full h-full bg-background"
+            style={{
+              padding: "0 clamp(20px, 6vw, 96px)",
+              boxSizing: "border-box",
+              opacity: 0,
+              transform: "translateY(14px)",
+              willChange: "opacity, transform",
+              pointerEvents: "none",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <p
+                style={{
+                  maxWidth: "460px",
+                  margin: "0 0 36px",
+                  fontFamily: "'Manrope', system-ui, sans-serif",
+                  fontSize: "13px",
+                  fontWeight: 300,
+                  lineHeight: 1.9,
+                  letterSpacing: "0.04em",
+                  color: "hsl(0 0% 38%)",
+                  whiteSpace: "pre-line",
+                }}
+              >
+                {t.lyra.description}
+              </p>
+              <button
+                type="button"
+                onClick={() => setParticipationOpen(true)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  padding: 0,
+                  margin: 0,
+                  cursor: "pointer",
+                  fontFamily: "'Manrope', system-ui, sans-serif",
+                  fontSize: "13px",
+                  fontWeight: 300,
+                  letterSpacing: "0.04em",
+                  color: "hsl(0 0% 45%)",
+                  transition: "color .25s ease",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#C97A63")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "hsl(0 0% 45%)")}
+              >
+                {t.participation.link} <span style={{ marginLeft: 4, opacity: 0.7 }}>↗</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      {/* Text block — follows the same scroll fade as the 3D scene, anchored to the page. */}
-      <div
-        ref={textBlockRef}
-        style={{
-          width: "100%",
-          padding: "0 clamp(20px, 6vw, 96px)",
-          boxSizing: "border-box",
-          opacity: 0,
-          transform: "translateY(14px)",
-          willChange: "opacity, transform",
-        }}
-      >
-        <p
-          style={{
-            maxWidth: "460px",
-            margin: "48px 0 36px",
-            fontFamily: "'Manrope', system-ui, sans-serif",
-            fontSize: "13px",
-            fontWeight: 300,
-            lineHeight: 1.9,
-            letterSpacing: "0.04em",
-            color: "hsl(0 0% 38%)",
-            whiteSpace: "pre-line",
-          }}
-        >
-          {t.lyra.description}
-        </p>
-        <button
-          type="button"
-          onClick={() => setParticipationOpen(true)}
-          style={{
-            background: "transparent",
-            border: "none",
-            padding: 0,
-            margin: "-20px 0 40px",
-            cursor: "pointer",
-            fontFamily: "'Manrope', system-ui, sans-serif",
-            fontSize: "13px",
-            fontWeight: 300,
-            letterSpacing: "0.04em",
-            color: "hsl(0 0% 45%)",
-            transition: "color .25s ease",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "#C97A63")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "hsl(0 0% 45%)")}
-        >
-          {t.participation.link} <span style={{ marginLeft: 4, opacity: 0.7 }}>↗</span>
-        </button>
       </div>
       <button
         onClick={() => navigate("/garden")}
