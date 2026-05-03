@@ -43,7 +43,7 @@ declare global {
 
 const GLB_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/public/models/nava.glb";
 const USDZ_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/public/models/nava.usdz";
-const NAVA_CAMERA_ORBIT = "-8deg 70deg 170%";
+const NAVA_CAMERA_ORBIT = "-8deg 70deg 3.7m";
 const NAVA_FIELD_OF_VIEW = "28deg";
 
 const Nava = () => {
