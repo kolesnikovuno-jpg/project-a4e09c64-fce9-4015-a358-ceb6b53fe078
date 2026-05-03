@@ -772,7 +772,7 @@ const Nava = () => {
           onMouseEnter={(e) => (e.currentTarget.style.color = "#C97A63")}
           onMouseLeave={(e) => (e.currentTarget.style.color = "hsl(0 0% 45%)")}
         >
-          {t.participation.link}
+          {t.participation.link} <span style={{ marginLeft: 4, opacity: 0.7 }}>↗</span>
         </button>
       </div>
       <button
