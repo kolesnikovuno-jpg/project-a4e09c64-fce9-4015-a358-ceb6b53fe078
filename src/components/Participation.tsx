@@ -74,11 +74,31 @@ const Participation = ({ model, open, onClose }: Props) => {
         message: message.trim() ? message.trim().slice(0, 2000) : null,
         locale,
       });
-    setSubmitting(false);
     if (dbError) {
+      setSubmitting(false);
       setError(T.error);
       return;
     }
+    // Fire-and-forget email notification to site owner.
+    try {
+      await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "participation-request",
+          idempotencyKey: `participation-${model}-${trimmedEmail}-${Date.now()}`,
+          templateData: {
+            name: trimmedName.slice(0, 100),
+            email: trimmedEmail.slice(0, 255),
+            message: message.trim() ? message.trim().slice(0, 2000) : "",
+            model,
+            locale,
+          },
+        },
+      });
+    } catch (e) {
+      // Non-fatal: data is already saved.
+      console.warn("participation email notification failed", e);
+    }
+    setSubmitting(false);
     setStage("success");
   };
 
