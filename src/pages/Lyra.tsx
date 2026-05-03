@@ -59,6 +59,7 @@ const Lyra = () => {
   const modelLayerRef = useRef<HTMLDivElement>(null);
   const scrollFillRef = useRef<HTMLDivElement>(null);
   const heroCaptionRef = useRef<HTMLDivElement>(null);
+  const textBlockRef = useRef<HTMLDivElement>(null);
   const [captionLoaded, setCaptionLoaded] = useState(false);
   // Switcher visibility — hidden while the hero screen is the dominant layer.
   const [switcherVisible, setSwitcherVisible] = useState(false);
@@ -172,6 +173,10 @@ const Lyra = () => {
       const modelOp = Math.max(0, Math.min(1, (p - 0.3) * 2));
       hero.style.opacity = String(heroOp);
       model.style.opacity = String(modelOp);
+      if (textBlockRef.current) {
+        textBlockRef.current.style.opacity = String(modelOp);
+        textBlockRef.current.style.transform = `translateY(${(1 - modelOp) * 14}px)`;
+      }
       const fullyVisible = modelOp >= 0.999;
       model.style.pointerEvents = fullyVisible ? "auto" : "none";
       setModelFullyVisible((prev) => (prev !== fullyVisible ? fullyVisible : prev));
@@ -728,13 +733,16 @@ const Lyra = () => {
           </div>
         </div>
       </div>
-      {/* Back arrow — pinned to viewport */}
+      {/* Text block — follows the same scroll fade as the 3D scene, anchored to the page. */}
       <div
+        ref={textBlockRef}
         style={{
-          width: "min(1250px, 100%)",
-          margin: "0 auto",
-          padding: "0 clamp(6px, 0.9vw, 12px)",
+          width: "100%",
+          padding: "0 clamp(20px, 6vw, 96px)",
           boxSizing: "border-box",
+          opacity: 0,
+          transform: "translateY(14px)",
+          willChange: "opacity, transform",
         }}
       >
         <p
