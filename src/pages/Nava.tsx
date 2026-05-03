@@ -444,7 +444,7 @@ const Nava = () => {
                   fontSize: "clamp(9px, 1.445vw, 15.3px)",
                   marginLeft: "var(--caption-shift, -35px)",
                   lineHeight: 1.35,
-                  opacity: `calc(var(--caption-scroll-opacity, 1) * ${captionLoaded ? 1 : 0})`,
+                  opacity: `calc(var(--caption-scroll-opacity, 1) * ${captionLoaded ? 0.55 : 0})`,
                   transform: `translateY(calc(var(--caption-scroll-shift, 0px) + ${captionLoaded ? "0px" : "12px"}))`,
                   transition: "opacity 0.8s ease-out, transform 0.8s ease-out",
                 }}
