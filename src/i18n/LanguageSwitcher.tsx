@@ -48,10 +48,9 @@ const LanguageSwitcher = ({
   return (
     <div
       ref={rootRef}
-      className="px-1.5 pb-1.5"
       style={{
         position: "fixed",
-        top: topOffset,
+        top: topOffset + 16,
         left: "50%",
         transform: "translateX(-50%)",
         // High z-index so the switcher floats above hero images, the 3D
@@ -62,7 +61,7 @@ const LanguageSwitcher = ({
         // the same control language.
         background,
         width: 26,
-        paddingTop: 16,
+        padding: "4px 6px 6px",
         borderBottomLeftRadius: 2,
         borderBottomRightRadius: 2,
         fontFamily: "'Manrope', system-ui, sans-serif",
