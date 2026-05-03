@@ -415,9 +415,9 @@ const Index = () => {
             </motion.div>
           )}
         </AnimatePresence>
-        {/* Language switcher — hidden while the popup is open so it doesn't
-            compete with the modal stacking. */}
-        <LanguageSwitcher hidden={open} />
+        {/* Language switcher — hidden on the hero, visible only when the
+            popup is open. */}
+        <LanguageSwitcher hidden={!open} />
       </div>
     </LayoutGroup>
   );
