@@ -48,7 +48,7 @@ const LanguageSwitcher = ({
   return (
     <div
       ref={rootRef}
-      className="pt-5 md:pt-6 px-1.5 pb-1.5"
+      className="px-1.5 pb-1.5"
       style={{
         position: "fixed",
         top: topOffset,
@@ -62,6 +62,7 @@ const LanguageSwitcher = ({
         // the same control language.
         background,
         width: 26,
+        paddingTop: 20,
         borderBottomLeftRadius: 2,
         borderBottomRightRadius: 2,
         fontFamily: "'Manrope', system-ui, sans-serif",
