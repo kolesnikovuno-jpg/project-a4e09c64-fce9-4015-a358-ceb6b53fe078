@@ -400,7 +400,7 @@ const Garden = () => {
                   visible={animated}
                   active={displayedLabelId === stem.id}
                 />
-                {stem.id === "05" && (
+                {(stem.id === "05" || stem.id === "03") && (
                   <circle
                     cx={stem.x}
                     cy={topY}
