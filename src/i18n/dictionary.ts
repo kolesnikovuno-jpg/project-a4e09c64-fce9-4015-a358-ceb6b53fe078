@@ -858,6 +858,29 @@ export const dictionary: Record<Locale, Dictionary> = {
       footer_right: "kolesnikov",
       close_aria: "закрити",
     },
+    participation: {
+      link: "Участь",
+      title: "Участь",
+      intro:
+        "Участь — це форма залучення до переведення об'єкта в матерію.\n\nЦе не інвестиція.\nЦе внесок у процес реалізації.\n\nФорма завершується через рішення та участь.",
+      stage_label: "Поточна стадія",
+      stage_value: "Прототип",
+      goal_label: "Мета",
+      goal_value: "Фізична реалізація об'єкта",
+      limit: "Процес обмежений.\nЗавершення закриває участь.",
+      request_button: "Запросити участь",
+      form_name: "Ім'я",
+      form_email: "Email",
+      form_message: "Повідомлення",
+      form_message_optional: "необов'язково",
+      submit: "Надіслати",
+      submitting: "Надсилання…",
+      error: "Не вдалося надіслати. Спробуйте ще раз.",
+      success_text:
+        "Ваш запит отримано.\n\nВи можете продовжити внеском через діючий канал участі.",
+      proceed_link: "Перейти до внеску",
+      close_aria: "закрити",
+    },
   },
 };
 
