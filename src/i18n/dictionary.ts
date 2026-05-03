@@ -104,6 +104,11 @@ export type Dictionary = {
     system_share: string;
     link_copied: string;
     qr_label: string;
+    process_label: string;
+    process_flow: string;
+    production_label: string;
+    production_lines: readonly string[];
+    inquiry_label: string;
     contact_telegram: string;
     contact_email: string;
     footer_left: string;
@@ -243,6 +248,11 @@ export const dictionary: Record<Locale, Dictionary> = {
       system_share: "system share",
       link_copied: "link copied",
       qr_label: "scan · transmit",
+      process_label: "process",
+      process_flow: "request → details → production",
+      production_label: "production",
+      production_lines: ["made to order", "lead time 4–6 weeks"],
+      inquiry_label: "inquiry",
       contact_telegram: "telegram",
       contact_email: "email",
       footer_left: "uno · studio",
@@ -378,6 +388,11 @@ export const dictionary: Record<Locale, Dictionary> = {
       system_share: "поделиться",
       link_copied: "ссылка скопирована",
       qr_label: "скан · передача",
+      process_label: "процесс",
+      process_flow: "запрос → детали → производство",
+      production_label: "производство",
+      production_lines: ["под заказ", "срок 4–6 недель"],
+      inquiry_label: "запрос",
       contact_telegram: "telegram",
       contact_email: "email",
       footer_left: "uno · studio",
@@ -513,6 +528,11 @@ export const dictionary: Record<Locale, Dictionary> = {
       system_share: "поділитись",
       link_copied: "посилання скопійовано",
       qr_label: "скан · передача",
+      process_label: "процес",
+      process_flow: "запит → деталі → виробництво",
+      production_label: "виробництво",
+      production_lines: ["на замовлення", "термін 4–6 тижнів"],
+      inquiry_label: "запит",
       contact_telegram: "telegram",
       contact_email: "email",
       footer_left: "uno · studio",

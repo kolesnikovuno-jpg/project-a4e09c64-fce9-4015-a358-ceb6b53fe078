@@ -7,7 +7,8 @@ type Props = { showTrigger?: boolean };
 const MODEL_DATA = {
   dimensions: { height: "1500 mm", width: "840 mm", length: "1750 mm" },
   contact: {
-    telegram: "https://t.me/kolesnikov_uno",
+    telegram:
+      "https://t.me/kolesnikov_uno?text=Hello,%20I'm%20interested%20in%20Lyra.%0A%0AColor:%20%0ALocation:%20%0ANotes:%20",
     email: "kolesnikov.uno@gmail.com",
   },
 };
@@ -311,6 +312,37 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
 
         <hr className="li-rule thick" />
 
+        {/* PROCESS */}
+        <div className="li-section">
+          <div className="li-section-title">{T.process_label}</div>
+          <div className="li-row"><span className="v">{T.process_flow}</span></div>
+        </div>
+
+        <hr className="li-rule" />
+
+        {/* PRODUCTION */}
+        <div className="li-section">
+          <div className="li-section-title">{T.production_label}</div>
+          {T.production_lines.map((line) => (
+            <div key={line} className="li-row"><span className="v">{line}</span></div>
+          ))}
+        </div>
+
+        <hr className="li-rule" />
+
+        {/* CONTACT */}
+        <div className="li-section li-contact">
+          <div className="li-row"><span className="v">{T.inquiry_label}</span></div>
+          <a href={MODEL_DATA.contact.telegram} target="_blank" rel="noreferrer">
+            <span>{T.contact_telegram}</span><span>↗</span>
+          </a>
+          <a href={`mailto:${MODEL_DATA.contact.email}`}>
+            <span>{T.contact_email}</span><span>↗</span>
+          </a>
+        </div>
+
+        <hr className="li-rule thick" />
+
         {/* 6. SHARE */}
         <div className="li-section">
           <div className="li-section-title">{T.sections.share}</div>
@@ -331,19 +363,6 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
               {pageUrl}
             </div>
           </div>
-        </div>
-
-        <hr className="li-rule" />
-
-        {/* 7. CONTACT */}
-        <div className="li-section li-contact">
-          <div className="li-section-title">{T.sections.contact}</div>
-          <a href={MODEL_DATA.contact.telegram} target="_blank" rel="noreferrer">
-            <span>{T.contact_telegram}</span><span>↗</span>
-          </a>
-          <a href={`mailto:${MODEL_DATA.contact.email}`}>
-            <span>{T.contact_email}</span><span>↗</span>
-          </a>
         </div>
 
         <div className="li-foot">
