@@ -109,6 +109,9 @@ export type Dictionary = {
     production_label: string;
     production_lines: readonly string[];
     inquiry_label: string;
+    technical_label: string;
+    technical_description: string;
+    technical_link: string;
     contact_telegram: string;
     contact_email: string;
     footer_left: string;
