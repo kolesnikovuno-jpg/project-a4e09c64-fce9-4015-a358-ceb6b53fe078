@@ -316,8 +316,8 @@ export const dictionary: Record<Locale, Dictionary> = {
       close_aria: "close",
     },
     nava: {
-      hero_caption: "Form that carries the body",
-      rotated_line: "The lighter the effort — the more precise the support.",
+      hero_caption: "Form that holds the body",
+      rotated_line: "Continuous structure. Single line support.",
       dimensions_alt: "Nava — technical drawing with dimensions",
       hero_alt: "Nava chair — woman reclining in a sunlit garden",
       seo_title: "NAVA — .uno studio",
@@ -519,7 +519,7 @@ export const dictionary: Record<Locale, Dictionary> = {
     },
     nava: {
       hero_caption: "Форма, что держит тело",
-      rotated_line: "Чем меньше усилия — тем точнее поддержка.",
+      rotated_line: "Непрерывная структура. Опора одной линией.",
       dimensions_alt: "Nava — технический чертёж с размерами",
       hero_alt: "Кресло Nava — фигура в залитом светом саду",
       seo_title: "NAVA — .uno studio",
@@ -721,7 +721,7 @@ export const dictionary: Record<Locale, Dictionary> = {
     },
     nava: {
       hero_caption: "Форма, що тримає тіло",
-      rotated_line: "Що менше зусилля — то точніша підтримка.",
+      rotated_line: "Безперервна структура. Опора однією лінією.",
       dimensions_alt: "Nava — технічне креслення з розмірами",
       hero_alt: "Крісло Nava — постать у залитому світлом саду",
       seo_title: "NAVA — .uno studio",

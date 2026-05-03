@@ -5,7 +5,7 @@ type Props = { showTrigger?: boolean };
 
 // Numeric / contact values are language-independent.
 const MODEL_DATA = {
-  dimensions: { height: "1500 mm", width: "840 mm", length: "1750 mm" },
+  dimensions: { height: "654 mm", width: "656 mm", length: "917 mm" },
   contact: {
     telegram:
       "https://t.me/kolesnikov_uno?text=Hello,%20I'm%20interested%20in%20Nava.%0A%0AColor:%20%0ALocation:%20%0ANotes:%20",
