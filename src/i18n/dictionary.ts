@@ -104,6 +104,11 @@ export type Dictionary = {
     system_share: string;
     link_copied: string;
     qr_label: string;
+    process_label: string;
+    process_flow: string;
+    production_label: string;
+    production_lines: readonly string[];
+    inquiry_label: string;
     contact_telegram: string;
     contact_email: string;
     footer_left: string;
