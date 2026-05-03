@@ -293,6 +293,17 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
         <hr className="li-rule" />
 
         {/* 4. STRUCTURE */}
+        {/* TECHNICAL */}
+        <div className="li-section li-contact">
+          <div className="li-section-title">{T.technical_label}</div>
+          <div className="li-row"><span className="v">{T.technical_description}</span></div>
+          <a href="/lyra-technical.pdf" target="_blank" rel="noopener noreferrer">
+            <span>{T.technical_link}</span><span>↗</span>
+          </a>
+        </div>
+
+        <hr className="li-rule" />
+
         <div className="li-section">
           <div className="li-section-title">{T.sections.structure}</div>
           <div className="li-list">
