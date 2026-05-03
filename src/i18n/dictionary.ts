@@ -60,6 +60,7 @@ export type Dictionary = {
     password_placeholder: string;
     password_error: string;
     bud_label_lyra: string;
+    bud_label_nava: string;
     bud_label_unocalc: string;
     aria_element: string;
   };
@@ -246,6 +247,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       password_placeholder: "••••",
       password_error: "wrong password",
       bud_label_lyra: "Lyra — no effort",
+      bud_label_nava: "Nava",
       bud_label_unocalc: "unocalc",
       aria_element: "Element",
     },
@@ -437,6 +439,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       password_placeholder: "••••",
       password_error: "неверный пароль",
       bud_label_lyra: "Lyra — без усилия",
+      bud_label_nava: "Nava",
       bud_label_unocalc: "unocalc",
       aria_element: "Элемент",
     },
@@ -628,6 +631,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       password_placeholder: "••••",
       password_error: "невірний пароль",
       bud_label_lyra: "Lyra — без зусилля",
+      bud_label_nava: "Nava",
       bud_label_unocalc: "unocalc",
       aria_element: "Елемент",
     },

@@ -105,6 +105,7 @@ const Garden = () => {
     "01": ".",
     "02": ".",
     "03": ".",
+    "03.1": t.garden.bud_label_nava,
     "04": ".",
     "05": t.garden.bud_label_lyra,
     "06": ".",
@@ -113,6 +114,7 @@ const Garden = () => {
 
   const routes: Record<string, string> = {
     "05": localePath("/lyra"),
+    "03.1": localePath("/nava"),
     "06.1": "/unocalc",
   };
 
