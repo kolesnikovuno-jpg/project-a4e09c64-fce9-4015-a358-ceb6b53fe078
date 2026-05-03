@@ -41,7 +41,7 @@ declare global {
 const GLB_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/public/models/lyra.glb";
 const USDZ_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/public/models/lyra.usdz";
 
-const Lyra = () => {
+const Nava = () => {
   const navigate = useNavigate();
   const { t, locale, localePath } = useLocale();
   const modelRef = useRef<HTMLElement>(null);
@@ -410,7 +410,7 @@ const Lyra = () => {
               <img
                 ref={heroImgRef}
                 src={lyraHero}
-                alt={t.lyra.hero_alt}
+                alt={t.nava.hero_alt}
                 className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center"
                 loading="eager"
                 style={{
@@ -449,7 +449,7 @@ const Lyra = () => {
                   transition: "opacity 0.8s ease-out, transform 0.8s ease-out",
                 }}
               >
-                {t.lyra.hero_caption}
+                {t.nava.hero_caption}
               </div>
             </div>
           </section>
@@ -668,7 +668,7 @@ const Lyra = () => {
             <model-viewer
               ref={modelRef as any}
               src={GLB_URL}
-              alt="Lyra — Kolesnikov.UNO"
+              alt="Nava — Kolesnikov.UNO"
               camera-controls
               disable-zoom
               interaction-prompt="none"
@@ -714,7 +714,7 @@ const Lyra = () => {
                 zIndex: 4,
               }}
             >
-              <p>{t.lyra.rotated_line}</p>
+              <p>{t.nava.rotated_line}</p>
             </div>
             {/* Side touch-scroll safe zones around the model */}
             <div className="uno-side-gutter left" aria-hidden />
@@ -771,8 +771,8 @@ const Lyra = () => {
         <div className="uno-scroll-fill" ref={scrollFillRef} />
       </div>
       <SEO
-        title={t.lyra.seo_title}
-        description={t.lyra.seo_description}
+        title={t.nava.seo_title}
+        description={t.nava.seo_description}
         image="/og/lyra-preview.png"
         type="product"
         alternates={LOCALES.reduce<Record<string, string>>((acc, l) => {
@@ -788,4 +788,4 @@ const Lyra = () => {
   );
 };
 
-export default Lyra;
+export default Nava;
