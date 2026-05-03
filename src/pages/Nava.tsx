@@ -137,7 +137,7 @@ const Nava = () => {
     const onLoad = () => {
       loader.classList.add("hide");
       (mv as any).cameraTarget = "auto";
-      (mv as any).cameraOrbit = "-8deg 70deg 300%";
+      (mv as any).cameraOrbit = "-8deg 70deg 170%";
       (mv as any).fieldOfView = "28deg";
       const had = mv.hasAttribute("auto-rotate");
       mv.removeAttribute("auto-rotate");
