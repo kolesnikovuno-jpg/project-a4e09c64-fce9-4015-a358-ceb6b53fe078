@@ -43,8 +43,9 @@ declare global {
 
 const GLB_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/public/models/nava.glb";
 const USDZ_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/public/models/nava.usdz";
-const NAVA_CAMERA_ORBIT = "-8deg 70deg 3.7m";
+const NAVA_CAMERA_ORBIT = "-8deg 70deg 8m";
 const NAVA_FIELD_OF_VIEW = "28deg";
+const NAVA_CAMERA_DISTANCE_LOCK = "auto auto 8m";
 
 const Nava = () => {
   const navigate = useNavigate();
@@ -143,6 +144,8 @@ const Nava = () => {
       (mv as any).cameraTarget = "auto";
       (mv as any).cameraOrbit = NAVA_CAMERA_ORBIT;
       (mv as any).fieldOfView = NAVA_FIELD_OF_VIEW;
+      mv.setAttribute("min-camera-orbit", NAVA_CAMERA_DISTANCE_LOCK);
+      mv.setAttribute("max-camera-orbit", NAVA_CAMERA_DISTANCE_LOCK);
       const had = mv.hasAttribute("auto-rotate");
       mv.removeAttribute("auto-rotate");
       requestAnimationFrame(() => {
@@ -688,6 +691,8 @@ const Nava = () => {
               shadow-softness="1"
               camera-orbit={NAVA_CAMERA_ORBIT}
               field-of-view={NAVA_FIELD_OF_VIEW}
+              min-camera-orbit={NAVA_CAMERA_DISTANCE_LOCK}
+              max-camera-orbit={NAVA_CAMERA_DISTANCE_LOCK}
               crossorigin="anonymous"
               referrerpolicy="no-referrer"
               style={{
