@@ -733,13 +733,16 @@ const Lyra = () => {
           </div>
         </div>
       </div>
-      {/* Back arrow — pinned to viewport */}
+      {/* Text block — follows the same scroll fade as the 3D scene, anchored to the page. */}
       <div
+        ref={textBlockRef}
         style={{
-          width: "min(1250px, 100%)",
-          margin: "0 auto",
-          padding: "0 clamp(6px, 0.9vw, 12px)",
+          width: "100%",
+          padding: "0 clamp(20px, 6vw, 96px)",
           boxSizing: "border-box",
+          opacity: 0,
+          transform: "translateY(14px)",
+          willChange: "opacity, transform",
         }}
       >
         <p
