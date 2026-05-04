@@ -326,6 +326,21 @@ const Participation = ({ model, open, onClose }: Props) => {
               />
             </div>
             <div className="pt-field">
+              <label className="pt-label" htmlFor="pt-telegram">
+                {T.form_telegram} <span style={{ opacity: 0.6 }}>· {T.form_message_optional}</span>
+              </label>
+              <input
+                id="pt-telegram"
+                className="pt-input"
+                type="text"
+                maxLength={200}
+                placeholder={T.form_telegram_placeholder}
+                value={telegram}
+                onChange={(e) => setTelegram(e.target.value)}
+                autoComplete="off"
+              />
+            </div>
+            <div className="pt-field">
               <span className="pt-label">{T.form_sentiment_label}</span>
               <div className="pt-radio-group" role="radiogroup" aria-label={T.form_sentiment_label}>
                 {([
