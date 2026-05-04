@@ -15,7 +15,7 @@ type Props = {
  * Top-center language switcher shaped as a water drop. On click two more
  * drops "flow" downward with the alternative language options.
  */
-const LanguageSwitcher = ({ topOffset = 0, hidden = false }: Props) => {
+const LanguageSwitcher = ({ topOffset = 0, hidden = false, background }: Props) => {
   const { locale, switchTo } = useLocale();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -40,44 +40,48 @@ const LanguageSwitcher = ({ topOffset = 0, hidden = false }: Props) => {
 
   const others: Locale[] = LOCALES.filter((l) => l !== locale);
 
-  // Teardrop: pointed top, round bottom — asymmetric border-radius + 45°.
-  const SIZE = 36;
-  const drop = (active: boolean): CSSProperties => ({
-    width: SIZE,
-    height: SIZE,
-    background: "transparent",
-    border: `1px solid ${active ? "hsl(203 60% 50% / 0.85)" : "hsl(203 24% 55% / 0.55)"}`,
-    borderRadius: "50% 50% 50% 0",
-    transform: "rotate(-45deg)",
+  // Elegant teardrop pointing downward — filled with page background, no stroke.
+  const W = 30;
+  const H = 44;
+  const fill = background ?? "hsl(24 26% 94%)";
+  // Smooth drop: round shoulders at top, gentle taper to a soft tip at bottom.
+  const path =
+    "M15 1 C 26 1, 30 12, 24 22 C 20 28, 17 35, 15 43 C 13 35, 10 28, 6 22 C 0 12, 4 1, 15 1 Z";
+
+  const wrap: CSSProperties = {
+    position: "relative",
+    width: W,
+    height: H,
     display: "flex",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "center",
+    paddingTop: 8,
     cursor: "pointer",
-    transition: "border-color .25s ease, color .25s ease",
-    color: active ? "hsl(203 60% 50%)" : "hsl(203 24% 55%)",
-  });
-  const label: CSSProperties = {
-    transform: "rotate(45deg)",
+  };
+  const labelStyle = (active: boolean): CSSProperties => ({
+    position: "relative",
     fontSize: 11,
     fontWeight: 300,
-    letterSpacing: "0.12em",
+    letterSpacing: "0.14em",
     textTransform: "lowercase",
     fontFamily: "'Manrope', system-ui, sans-serif",
-  };
+    color: active ? "hsl(203 24% 40%)" : "hsl(203 24% 55%)",
+    transition: "color .25s ease",
+  });
 
   return (
     <div
       ref={rootRef}
       style={{
         position: "fixed",
-        top: topOffset + 10,
+        top: topOffset + 12,
         left: "50%",
         transform: "translateX(-50%)",
         zIndex: 9999,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: 12,
+        gap: 6,
       }}
     >
       <button
@@ -88,8 +92,17 @@ const LanguageSwitcher = ({ topOffset = 0, hidden = false }: Props) => {
         onClick={() => setOpen((v) => !v)}
         style={{ background: "transparent", border: "none", padding: 0, outline: "none" }}
       >
-        <div style={drop(true)}>
-          <span style={label}>{LOCALE_LABEL[locale].toLowerCase()}</span>
+        <div style={wrap}>
+          <svg
+            viewBox="0 0 30 44"
+            width={W}
+            height={H}
+            style={{ position: "absolute", inset: 0, display: "block" }}
+            aria-hidden
+          >
+            <path d={path} fill={fill} />
+          </svg>
+          <span style={labelStyle(true)}>{LOCALE_LABEL[locale].toLowerCase()}</span>
         </div>
       </button>
 
@@ -102,7 +115,7 @@ const LanguageSwitcher = ({ topOffset = 0, hidden = false }: Props) => {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 10,
+          gap: 4,
           pointerEvents: open ? "auto" : "none",
         }}
       >
@@ -126,17 +139,26 @@ const LanguageSwitcher = ({ topOffset = 0, hidden = false }: Props) => {
               style={{ background: "transparent", border: "none", padding: 0, cursor: "pointer" }}
             >
               <div
-                style={drop(false)}
+                style={wrap}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "#C97A63";
-                  e.currentTarget.style.color = "#C97A63";
+                  const s = e.currentTarget.querySelector("span") as HTMLElement | null;
+                  if (s) s.style.color = "#C97A63";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "hsl(203 24% 55% / 0.55)";
-                  e.currentTarget.style.color = "hsl(203 24% 55%)";
+                  const s = e.currentTarget.querySelector("span") as HTMLElement | null;
+                  if (s) s.style.color = "hsl(203 24% 55%)";
                 }}
               >
-                <span style={label}>{LOCALE_LABEL[l].toLowerCase()}</span>
+                <svg
+                  viewBox="0 0 30 44"
+                  width={W}
+                  height={H}
+                  style={{ position: "absolute", inset: 0, display: "block" }}
+                  aria-hidden
+                >
+                  <path d={path} fill={fill} />
+                </svg>
+                <span style={labelStyle(false)}>{LOCALE_LABEL[l].toLowerCase()}</span>
               </div>
             </button>
           </li>
