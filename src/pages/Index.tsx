@@ -67,16 +67,49 @@ const Index = () => {
         {/* Toggle button — asymmetric placement, shifted right */}
         <div className="flex items-center justify-center mt-[72px] md:mt-0 translate-x-[22vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
           <div className="group/uno relative flex items-center justify-center">
-            {/* Surrounding circle — same fill as button, mirrors hover/toggled state */}
+            {/* Surrounding circle — fingerprint texture instead of solid fill */}
             <span
               aria-hidden
-              className={`pointer-events-none absolute rounded-full w-[76px] h-[76px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/75 ${
-                toggled ? "bg-primary/75" : "bg-primary/45"
+              className={`pointer-events-none absolute rounded-full w-[76px] h-[76px] overflow-hidden transition-opacity duration-300 ease-in-out group-hover/uno:opacity-100 ${
+                toggled ? "opacity-100" : "opacity-80"
               }`}
-            />
+            >
+              <svg viewBox="0 0 76 76" width="76" height="76" aria-hidden>
+                <defs>
+                  <clipPath id="uno-fp-clip">
+                    <circle cx="38" cy="38" r="38" />
+                  </clipPath>
+                </defs>
+                <g
+                  clipPath="url(#uno-fp-clip)"
+                  fill="none"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth="1.1"
+                  strokeLinecap="round"
+                  opacity="0.85"
+                >
+                  {/* Concentric fingerprint-like ridges (open arcs) */}
+                  <path d="M10 38 Q38 8 66 38" />
+                  <path d="M12 44 Q38 16 64 44" />
+                  <path d="M14 50 Q38 24 62 50" />
+                  <path d="M17 55 Q38 32 59 55" />
+                  <path d="M21 59 Q38 40 55 59" />
+                  <path d="M26 62 Q38 50 50 62" />
+                  <path d="M30 64 Q38 57 46 64" />
+                  {/* Lower mirrored ridges */}
+                  <path d="M14 32 Q38 60 62 32" />
+                  <path d="M18 27 Q38 54 58 27" />
+                  <path d="M23 23 Q38 46 53 23" />
+                  <path d="M28 20 Q38 38 48 20" />
+                  {/* Small ridge endings / minutiae */}
+                  <path d="M32 38 Q38 34 44 38" />
+                  <path d="M34 42 Q38 39 42 42" />
+                </g>
+              </svg>
+            </span>
           <button
             onClick={handleToggle}
-            className="group/uno relative flex items-center justify-center bg-primary/45 rounded-full w-[76px] h-[76px] hover:bg-primary/75 transition-colors duration-300 cursor-pointer"
+            className="group/uno relative flex items-center justify-center rounded-full w-[76px] h-[76px] transition-colors duration-300 cursor-pointer"
           >
             {!open && (
               <motion.div
