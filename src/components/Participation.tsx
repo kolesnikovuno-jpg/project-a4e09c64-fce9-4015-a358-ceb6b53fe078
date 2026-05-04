@@ -22,6 +22,7 @@ const Participation = ({ model, open, onClose }: Props) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [sentiment, setSentiment] = useState<"support" | "participation" | "undecided" | "">("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,6 +34,7 @@ const Participation = ({ model, open, onClose }: Props) => {
         setName("");
         setEmail("");
         setMessage("");
+        setSentiment("");
         setError(null);
         setSubmitting(false);
       }, 600);
@@ -76,6 +78,7 @@ const Participation = ({ model, open, onClose }: Props) => {
         email: trimmedEmail.slice(0, 255),
         message: message.trim() ? message.trim().slice(0, 2000) : null,
         locale,
+        sentiment: sentiment || null,
       });
     if (dbError) {
       setSubmitting(false);
@@ -94,6 +97,7 @@ const Participation = ({ model, open, onClose }: Props) => {
             message: message.trim() ? message.trim().slice(0, 2000) : "",
             model,
             locale,
+            sentiment: sentiment || "",
           },
         },
       });
