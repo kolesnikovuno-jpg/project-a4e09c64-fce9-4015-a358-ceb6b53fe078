@@ -105,6 +105,21 @@ const Participation = ({ model, open, onClose }: Props) => {
       // Non-fatal: data is already saved.
       console.warn("participation email notification failed", e);
     }
+    // Fire-and-forget POST to Make webhook.
+    try {
+      await fetch("https://hook.eu2.make.com/n4g9lw19rfw52krs9ff6gsvy7p7x5mnx", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: trimmedName.slice(0, 100),
+          email: trimmedEmail.slice(0, 255),
+          participation: sentiment === "undecided" ? "not_decided" : (sentiment || ""),
+          message: message.trim() ? message.trim().slice(0, 2000) : "",
+        }),
+      });
+    } catch (e) {
+      console.warn("participation webhook failed", e);
+    }
     setSubmitting(false);
     setStage("success");
   };
