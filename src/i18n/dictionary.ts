@@ -183,6 +183,10 @@ export type Dictionary = {
     form_email: string;
     form_message: string;
     form_message_optional: string;
+    form_sentiment_label: string;
+    form_sentiment_support: string;
+    form_sentiment_participation: string;
+    form_sentiment_undecided: string;
     submit: string;
     submitting: string;
     error: string;
