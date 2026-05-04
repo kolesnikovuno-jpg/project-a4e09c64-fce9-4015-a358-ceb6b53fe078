@@ -1,26 +1,21 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { LOCALE_LABEL, LOCALES, type Locale } from "./config";
 import { useLocale } from "./useLocale";
 
 type Props = {
-  /** Background color matched to the current screen so the button blends in. */
-  background?: string;
   /** Optional vertical offset from the top of the viewport. */
   topOffset?: number;
   /** Hide the switcher entirely (e.g. on a hero screen). */
   hidden?: boolean;
+  /** Reserved for backward compatibility (no longer used visually). */
+  background?: string;
 };
 
 /**
- * Top-center language switcher. Square trigger that expands vertically
- * downward into a list of available languages. Visually quiet, no border by
- * default — relies on background color matching to stay secondary.
+ * Top-center language switcher shaped as a water drop. On click two more
+ * drops "flow" downward with the alternative language options.
  */
-const LanguageSwitcher = ({
-  background = "hsl(24 26% 94%)",
-  topOffset = 0,
-  hidden = false,
-}: Props) => {
+const LanguageSwitcher = ({ topOffset = 0, hidden = false }: Props) => {
   const { locale, switchTo } = useLocale();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -43,31 +38,46 @@ const LanguageSwitcher = ({
 
   if (hidden) return null;
 
-  const items: Locale[] = [...LOCALES];
+  const others: Locale[] = LOCALES.filter((l) => l !== locale);
+
+  // Teardrop: pointed top, round bottom — asymmetric border-radius + 45°.
+  const SIZE = 36;
+  const drop = (active: boolean): CSSProperties => ({
+    width: SIZE,
+    height: SIZE,
+    background: "transparent",
+    border: `1px solid ${active ? "hsl(203 60% 50% / 0.85)" : "hsl(203 24% 55% / 0.55)"}`,
+    borderRadius: "50% 50% 50% 0",
+    transform: "rotate(-45deg)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    transition: "border-color .25s ease, color .25s ease",
+    color: active ? "hsl(203 60% 50%)" : "hsl(203 24% 55%)",
+  });
+  const label: CSSProperties = {
+    transform: "rotate(45deg)",
+    fontSize: 11,
+    fontWeight: 300,
+    letterSpacing: "0.12em",
+    textTransform: "lowercase",
+    fontFamily: "'Manrope', system-ui, sans-serif",
+  };
 
   return (
     <div
       ref={rootRef}
       style={{
         position: "fixed",
-        top: topOffset,
+        top: topOffset + 10,
         left: "50%",
         transform: "translateX(-50%)",
-        // High z-index so the switcher floats above hero images, the 3D
-        // model viewer, and any popup/info panels.
         zIndex: 9999,
-        // Background plate from the very top of the viewport, mirrors the
-        // "info" button styling (Lyra page) so the switcher reads as part of
-        // the same control language.
-        background,
-        padding: "26px 6px 6px",
-        width: 26,
-        borderBottomLeftRadius: 2,
-        borderBottomRightRadius: 2,
-        fontFamily: "'Manrope', system-ui, sans-serif",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        gap: 12,
       }}
     >
       <button
@@ -76,76 +86,61 @@ const LanguageSwitcher = ({
         aria-expanded={open}
         aria-label="Change language"
         onClick={() => setOpen((v) => !v)}
-        style={{
-          background: "transparent",
-          border: "none",
-          outline: "none",
-          cursor: "pointer",
-          color: "hsl(203 24% 40%)",
-          fontSize: 12,
-          fontWeight: 300,
-          letterSpacing: "0.18em",
-          textTransform: "lowercase",
-          padding: 0,
-          transition: "color .25s ease",
-        }}
+        style={{ background: "transparent", border: "none", padding: 0, outline: "none" }}
       >
-        {LOCALE_LABEL[locale]}
+        <div style={drop(true)}>
+          <span style={label}>{LOCALE_LABEL[locale].toLowerCase()}</span>
+        </div>
       </button>
+
       <ul
         role="listbox"
         style={{
           listStyle: "none",
           margin: 0,
           padding: 0,
-          background: "transparent",
-          overflow: "hidden",
-          maxHeight: open ? items.length * 26 + 4 : 0,
-          opacity: open ? 1 : 0,
-          transition:
-            "max-height .35s cubic-bezier(0.22,0.61,0.36,1), opacity .25s ease",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 10,
           pointerEvents: open ? "auto" : "none",
-          marginTop: 4,
-          textAlign: "center",
         }}
       >
-        {items
-          .filter((l) => l !== locale)
-          .map((l) => (
-            <li key={l}>
-              <button
-                type="button"
-                role="option"
-                aria-selected={false}
-                onClick={() => {
-                  setOpen(false);
-                  switchTo(l);
+        {others.map((l, i) => (
+          <li
+            key={l}
+            style={{
+              opacity: open ? 1 : 0,
+              transform: open ? "translateY(0)" : "translateY(-14px)",
+              transition: `opacity .35s ease ${i * 90}ms, transform .5s cubic-bezier(0.22,0.61,0.36,1) ${i * 90}ms`,
+            }}
+          >
+            <button
+              type="button"
+              role="option"
+              aria-selected={false}
+              onClick={() => {
+                setOpen(false);
+                switchTo(l);
+              }}
+              style={{ background: "transparent", border: "none", padding: 0, cursor: "pointer" }}
+            >
+              <div
+                style={drop(false)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "#C97A63";
+                  e.currentTarget.style.color = "#C97A63";
                 }}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "hsl(203 24% 55%)",
-                  fontSize: 12,
-                  fontWeight: 300,
-                  letterSpacing: "0.18em",
-                  textTransform: "lowercase",
-                  padding: "3px 0",
-                  transition: "color .2s ease",
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "hsl(203 24% 55% / 0.55)";
+                  e.currentTarget.style.color = "hsl(203 24% 55%)";
                 }}
-                onMouseEnter={(e) =>
-                  ((e.currentTarget as HTMLButtonElement).style.color =
-                    "#C97A63")
-                }
-                onMouseLeave={(e) =>
-                  ((e.currentTarget as HTMLButtonElement).style.color =
-                    "hsl(203 24% 55%)")
-                }
               >
-                {LOCALE_LABEL[l]}
-              </button>
-            </li>
-          ))}
+                <span style={label}>{LOCALE_LABEL[l].toLowerCase()}</span>
+              </div>
+            </button>
+          </li>
+        ))}
       </ul>
     </div>
   );
