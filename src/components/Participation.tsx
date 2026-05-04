@@ -208,6 +208,33 @@ const Participation = ({ model, open, onClose }: Props) => {
         .pt-textarea{ min-height:70px; resize:vertical; }
         .pt-input:focus, .pt-textarea:focus{ border-bottom-color:#1F1F1F; }
         .pt-error{ color:#B5524A; font-size:11px; margin-top:4px; }
+        .pt-radio-group{
+          display:flex; flex-direction:column; gap:8px;
+          padding-top:2px;
+        }
+        .pt-radio{
+          display:flex; align-items:center; gap:10px;
+          cursor:pointer;
+          font-family:inherit; font-size:12.5px;
+          color:#3A3A3A; letter-spacing:0.01em;
+          line-height:1.6;
+          user-select:none;
+        }
+        .pt-radio input{
+          appearance:none; -webkit-appearance:none;
+          width:11px; height:11px; margin:0;
+          border:1px solid rgba(0,0,0,0.32);
+          border-radius:50%;
+          background:transparent;
+          cursor:pointer;
+          flex-shrink:0;
+          transition:border-color .2s ease, background .2s ease;
+        }
+        .pt-radio input:checked{
+          border-color:#1F1F1F;
+          background:radial-gradient(circle, #1F1F1F 0 3px, transparent 3.5px);
+        }
+        .pt-radio:hover input{ border-color:#1F1F1F; }
         .pt-link{
           display:inline-block; margin-top:18px;
           color:#2A2A2A; text-decoration:none;
