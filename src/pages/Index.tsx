@@ -67,55 +67,16 @@ const Index = () => {
         {/* Toggle button — asymmetric placement, shifted right */}
         <div className="flex items-center justify-center mt-[72px] md:mt-0 translate-x-[22vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
           <div className="group/uno relative flex items-center justify-center">
-            {/* Fingerprint pattern — larger than the button so the circle + text sit inside it */}
+            {/* Surrounding circle — same fill as button, mirrors hover/toggled state */}
             <span
               aria-hidden
-              className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-300 ease-in-out group-hover/uno:opacity-100 ${
-                toggled ? "opacity-100" : "opacity-80"
+              className={`pointer-events-none absolute rounded-full w-[76px] h-[76px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/75 ${
+                toggled ? "bg-primary/75" : "bg-primary/45"
               }`}
-              style={{ width: 110, height: 110 }}
-            >
-              <svg viewBox="0 0 110 110" width="110" height="110" aria-hidden>
-                <defs>
-                  <clipPath id="uno-fp-clip">
-                    {/* Clip to the button's 76px circle (radius 38) so anything outside is hidden */}
-                    <circle cx="55" cy="55" r="38" />
-                  </clipPath>
-                </defs>
-                <g
-                  clipPath="url(#uno-fp-clip)"
-                  fill="none"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth="0.9"
-                  strokeLinecap="round"
-                  opacity="0.8"
-                >
-                  {/* Upper ridges */}
-                  <path d="M4 55 Q55 10 106 55" />
-                  <path d="M7 62 Q55 18 103 62" />
-                  <path d="M10 68 Q55 26 100 68" />
-                  <path d="M14 74 Q55 34 96 74" />
-                  <path d="M19 80 Q55 44 91 80" />
-                  <path d="M25 85 Q55 54 85 85" />
-                  <path d="M32 89 Q55 66 78 89" />
-                  <path d="M40 92 Q55 78 70 92" />
-                  {/* Lower mirrored ridges */}
-                  <path d="M7 48 Q55 92 103 48" />
-                  <path d="M10 42 Q55 84 100 42" />
-                  <path d="M14 36 Q55 76 96 36" />
-                  <path d="M19 30 Q55 66 91 30" />
-                  <path d="M25 25 Q55 56 85 25" />
-                  <path d="M32 21 Q55 44 78 21" />
-                  <path d="M40 18 Q55 32 70 18" />
-                  {/* Minutiae */}
-                  <path d="M48 55 Q55 51 62 55" />
-                  <path d="M47 60 Q55 56 63 60" />
-                </g>
-              </svg>
-            </span>
+            />
           <button
             onClick={handleToggle}
-            className="group/uno relative flex items-center justify-center rounded-full w-[76px] h-[76px] transition-colors duration-300 cursor-pointer"
+            className="group/uno relative flex items-center justify-center bg-primary/45 rounded-full w-[76px] h-[76px] hover:bg-primary/75 transition-colors duration-300 cursor-pointer"
           >
             {!open && (
               <motion.div
@@ -134,7 +95,7 @@ const Index = () => {
                       height="2.2"
                       patternTransform="rotate(45)"
                     >
-                      <line x1="0" y1="0" x2="0" y2="2.2" stroke="hsl(var(--primary))" strokeWidth="1.3" />
+                      <line x1="0" y1="0" x2="0" y2="2.2" stroke="hsl(var(--background))" strokeWidth="1.3" />
                     </pattern>
                   </defs>
                   <circle
@@ -142,14 +103,14 @@ const Index = () => {
                     cy="14"
                     r="13"
                     fill="url(#hatch-toggle)"
-                    stroke="hsl(var(--primary))"
+                    stroke="hsl(var(--background))"
                     strokeWidth="0.8"
                   />
                 </svg>
               </motion.div>
             )}
             <span
-              className={`text-xs font-semibold text-primary transition-all duration-300 ease-in-out ${toggled ? "ml-3" : "ml-10"}`}
+              className={`text-xs font-semibold text-background transition-all duration-300 ease-in-out ${toggled ? "ml-3" : "ml-10"}`}
             >
               .uno
             </span>
