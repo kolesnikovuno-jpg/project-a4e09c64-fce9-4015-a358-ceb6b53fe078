@@ -74,7 +74,7 @@ const LanguageSwitcher = ({ topOffset = 0, hidden = false, background }: Props) 
       ref={rootRef}
       style={{
         position: "fixed",
-        top: topOffset + 8,
+        top: topOffset + 12,
         left: "50%",
         transform: "translateX(-50%)",
         zIndex: 9999,
