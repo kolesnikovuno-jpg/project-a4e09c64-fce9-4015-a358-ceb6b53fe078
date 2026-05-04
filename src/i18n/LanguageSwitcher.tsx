@@ -76,6 +76,7 @@ const LanguageSwitcher = ({ topOffset = 0, hidden = false, background }: Props) 
       style={{
         position: "fixed",
         top: topOffset + 10,
+        // shifted up by 2px
         left: "50%",
         transform: "translateX(-50%)",
         zIndex: 9999,
