@@ -183,6 +183,8 @@ export type Dictionary = {
     form_email: string;
     form_message: string;
     form_message_optional: string;
+    form_telegram: string;
+    form_telegram_placeholder: string;
     form_sentiment_label: string;
     form_sentiment_support: string;
     form_sentiment_participation: string;
@@ -419,6 +421,8 @@ export const dictionary: Record<Locale, Dictionary> = {
       form_email: "Email",
       form_message: "Message",
       form_message_optional: "optional",
+      form_telegram: "Telegram",
+      form_telegram_placeholder: "@username or link",
       form_sentiment_label: "Your sense of participation",
       form_sentiment_support: "Support",
       form_sentiment_participation: "Participation",
@@ -652,6 +656,8 @@ export const dictionary: Record<Locale, Dictionary> = {
       form_email: "Email",
       form_message: "Сообщение",
       form_message_optional: "необязательно",
+      form_telegram: "Telegram",
+      form_telegram_placeholder: "@username или ссылка",
       form_sentiment_label: "Ваше ощущение участия",
       form_sentiment_support: "Поддержка",
       form_sentiment_participation: "Участие",
@@ -885,6 +891,8 @@ export const dictionary: Record<Locale, Dictionary> = {
       form_email: "Email",
       form_message: "Повідомлення",
       form_message_optional: "необов'язково",
+      form_telegram: "Telegram",
+      form_telegram_placeholder: "@username або посилання",
       form_sentiment_label: "Ваше відчуття участі",
       form_sentiment_support: "Підтримка",
       form_sentiment_participation: "Участь",
