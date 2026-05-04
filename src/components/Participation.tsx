@@ -306,6 +306,27 @@ const Participation = ({ model, open, onClose }: Props) => {
               />
             </div>
             <div className="pt-field">
+              <span className="pt-label">{T.form_sentiment_label}</span>
+              <div className="pt-radio-group" role="radiogroup" aria-label={T.form_sentiment_label}>
+                {([
+                  ["support", T.form_sentiment_support],
+                  ["participation", T.form_sentiment_participation],
+                  ["undecided", T.form_sentiment_undecided],
+                ] as const).map(([value, label]) => (
+                  <label key={value} className="pt-radio">
+                    <input
+                      type="radio"
+                      name="pt-sentiment"
+                      value={value}
+                      checked={sentiment === value}
+                      onChange={() => setSentiment(value)}
+                    />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="pt-field">
               <label className="pt-label" htmlFor="pt-message">
                 {T.form_message} <span style={{ opacity: 0.6 }}>· {T.form_message_optional}</span>
               </label>
