@@ -183,6 +183,10 @@ export type Dictionary = {
     form_email: string;
     form_message: string;
     form_message_optional: string;
+    form_sentiment_label: string;
+    form_sentiment_support: string;
+    form_sentiment_participation: string;
+    form_sentiment_undecided: string;
     submit: string;
     submitting: string;
     error: string;
@@ -415,6 +419,10 @@ export const dictionary: Record<Locale, Dictionary> = {
       form_email: "Email",
       form_message: "Message",
       form_message_optional: "optional",
+      form_sentiment_label: "Your sense of participation",
+      form_sentiment_support: "Support",
+      form_sentiment_participation: "Participation",
+      form_sentiment_undecided: "Not decided yet",
       submit: "Submit",
       submitting: "Sending…",
       error: "Could not send. Please try again.",
@@ -644,6 +652,10 @@ export const dictionary: Record<Locale, Dictionary> = {
       form_email: "Email",
       form_message: "Сообщение",
       form_message_optional: "необязательно",
+      form_sentiment_label: "Ваше ощущение участия",
+      form_sentiment_support: "Поддержка",
+      form_sentiment_participation: "Участие",
+      form_sentiment_undecided: "Пока не определился",
       submit: "Отправить",
       submitting: "Отправка…",
       error: "Не удалось отправить. Попробуйте ещё раз.",
@@ -873,6 +885,10 @@ export const dictionary: Record<Locale, Dictionary> = {
       form_email: "Email",
       form_message: "Повідомлення",
       form_message_optional: "необов'язково",
+      form_sentiment_label: "Ваше відчуття участі",
+      form_sentiment_support: "Підтримка",
+      form_sentiment_participation: "Участь",
+      form_sentiment_undecided: "Поки не визначився",
       submit: "Надіслати",
       submitting: "Надсилання…",
       error: "Не вдалося надіслати. Спробуйте ще раз.",

@@ -22,6 +22,7 @@ const Participation = ({ model, open, onClose }: Props) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [sentiment, setSentiment] = useState<"support" | "participation" | "undecided" | "">("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,6 +34,7 @@ const Participation = ({ model, open, onClose }: Props) => {
         setName("");
         setEmail("");
         setMessage("");
+        setSentiment("");
         setError(null);
         setSubmitting(false);
       }, 600);
@@ -76,6 +78,7 @@ const Participation = ({ model, open, onClose }: Props) => {
         email: trimmedEmail.slice(0, 255),
         message: message.trim() ? message.trim().slice(0, 2000) : null,
         locale,
+        sentiment: sentiment || null,
       });
     if (dbError) {
       setSubmitting(false);
@@ -94,6 +97,7 @@ const Participation = ({ model, open, onClose }: Props) => {
             message: message.trim() ? message.trim().slice(0, 2000) : "",
             model,
             locale,
+            sentiment: sentiment || "",
           },
         },
       });
@@ -204,6 +208,33 @@ const Participation = ({ model, open, onClose }: Props) => {
         .pt-textarea{ min-height:70px; resize:vertical; }
         .pt-input:focus, .pt-textarea:focus{ border-bottom-color:#1F1F1F; }
         .pt-error{ color:#B5524A; font-size:11px; margin-top:4px; }
+        .pt-radio-group{
+          display:flex; flex-direction:column; gap:8px;
+          padding-top:2px;
+        }
+        .pt-radio{
+          display:flex; align-items:center; gap:10px;
+          cursor:pointer;
+          font-family:inherit; font-size:12.5px;
+          color:#3A3A3A; letter-spacing:0.01em;
+          line-height:1.6;
+          user-select:none;
+        }
+        .pt-radio input{
+          appearance:none; -webkit-appearance:none;
+          width:11px; height:11px; margin:0;
+          border:1px solid rgba(0,0,0,0.32);
+          border-radius:50%;
+          background:transparent;
+          cursor:pointer;
+          flex-shrink:0;
+          transition:border-color .2s ease, background .2s ease;
+        }
+        .pt-radio input:checked{
+          border-color:#1F1F1F;
+          background:radial-gradient(circle, #1F1F1F 0 3px, transparent 3.5px);
+        }
+        .pt-radio:hover input{ border-color:#1F1F1F; }
         .pt-link{
           display:inline-block; margin-top:18px;
           color:#2A2A2A; text-decoration:none;
@@ -273,6 +304,27 @@ const Participation = ({ model, open, onClose }: Props) => {
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
               />
+            </div>
+            <div className="pt-field">
+              <span className="pt-label">{T.form_sentiment_label}</span>
+              <div className="pt-radio-group" role="radiogroup" aria-label={T.form_sentiment_label}>
+                {([
+                  ["support", T.form_sentiment_support],
+                  ["participation", T.form_sentiment_participation],
+                  ["undecided", T.form_sentiment_undecided],
+                ] as const).map(([value, label]) => (
+                  <label key={value} className="pt-radio">
+                    <input
+                      type="radio"
+                      name="pt-sentiment"
+                      value={value}
+                      checked={sentiment === value}
+                      onChange={() => setSentiment(value)}
+                    />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
             </div>
             <div className="pt-field">
               <label className="pt-label" htmlFor="pt-message">
