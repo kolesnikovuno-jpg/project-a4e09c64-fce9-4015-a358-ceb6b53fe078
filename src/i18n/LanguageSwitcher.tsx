@@ -45,17 +45,18 @@ const LanguageSwitcher = ({ topOffset = 0, hidden = false, background }: Props) 
   const H = 44;
   const fill = background ?? "hsl(24 26% 94%)";
   // Smooth drop: round shoulders at top, gentle taper to a soft tip at bottom.
+  // Tip up, round bottom.
   const path =
-    "M15 1 C 26 1, 30 12, 24 22 C 20 28, 17 35, 15 43 C 13 35, 10 28, 6 22 C 0 12, 4 1, 15 1 Z";
+    "M15 43 C 26 43, 30 32, 24 22 C 20 16, 17 9, 15 1 C 13 9, 10 16, 6 22 C 0 32, 4 43, 15 43 Z";
 
   const wrap: CSSProperties = {
     position: "relative",
     width: W,
     height: H,
     display: "flex",
-    alignItems: "flex-start",
+    alignItems: "flex-end",
     justifyContent: "center",
-    paddingTop: 8,
+    paddingBottom: 8,
     cursor: "pointer",
   };
   const labelStyle = (active: boolean): CSSProperties => ({
