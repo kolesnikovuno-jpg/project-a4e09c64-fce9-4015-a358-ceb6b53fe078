@@ -67,17 +67,18 @@ const Index = () => {
         {/* Toggle button — asymmetric placement, shifted right */}
         <div className="flex items-center justify-center mt-[72px] md:mt-0 translate-x-[22vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
           <div className="group/uno relative flex items-center justify-center">
-            {/* Surrounding circle — fingerprint texture instead of solid fill */}
+            {/* Fingerprint pattern — larger than the button so the circle + text sit inside it */}
             <span
               aria-hidden
-              className={`pointer-events-none absolute rounded-full w-[76px] h-[76px] overflow-hidden transition-opacity duration-300 ease-in-out group-hover/uno:opacity-100 ${
+              className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-300 ease-in-out group-hover/uno:opacity-100 ${
                 toggled ? "opacity-100" : "opacity-80"
               }`}
+              style={{ width: 200, height: 200 }}
             >
-              <svg viewBox="0 0 76 76" width="76" height="76" aria-hidden>
+              <svg viewBox="0 0 200 200" width="200" height="200" aria-hidden>
                 <defs>
                   <clipPath id="uno-fp-clip">
-                    <circle cx="38" cy="38" r="38" />
+                    <ellipse cx="100" cy="100" rx="98" ry="98" />
                   </clipPath>
                 </defs>
                 <g
@@ -86,24 +87,31 @@ const Index = () => {
                   stroke="hsl(var(--primary))"
                   strokeWidth="1.1"
                   strokeLinecap="round"
-                  opacity="0.85"
+                  opacity="0.8"
                 >
-                  {/* Concentric fingerprint-like ridges (open arcs) */}
-                  <path d="M10 38 Q38 8 66 38" />
-                  <path d="M12 44 Q38 16 64 44" />
-                  <path d="M14 50 Q38 24 62 50" />
-                  <path d="M17 55 Q38 32 59 55" />
-                  <path d="M21 59 Q38 40 55 59" />
-                  <path d="M26 62 Q38 50 50 62" />
-                  <path d="M30 64 Q38 57 46 64" />
+                  {/* Concentric fingerprint ridges — upper arcs */}
+                  <path d="M6 100 Q100 14 194 100" />
+                  <path d="M10 110 Q100 26 190 110" />
+                  <path d="M14 120 Q100 38 186 120" />
+                  <path d="M20 128 Q100 50 180 128" />
+                  <path d="M28 136 Q100 64 172 136" />
+                  <path d="M38 144 Q100 80 162 144" />
+                  <path d="M50 150 Q100 96 150 150" />
+                  <path d="M62 156 Q100 116 138 156" />
+                  <path d="M74 160 Q100 134 126 160" />
                   {/* Lower mirrored ridges */}
-                  <path d="M14 32 Q38 60 62 32" />
-                  <path d="M18 27 Q38 54 58 27" />
-                  <path d="M23 23 Q38 46 53 23" />
-                  <path d="M28 20 Q38 38 48 20" />
-                  {/* Small ridge endings / minutiae */}
-                  <path d="M32 38 Q38 34 44 38" />
-                  <path d="M34 42 Q38 39 42 42" />
+                  <path d="M10 90 Q100 174 190 90" />
+                  <path d="M14 80 Q100 162 186 80" />
+                  <path d="M20 72 Q100 150 180 72" />
+                  <path d="M28 64 Q100 136 172 64" />
+                  <path d="M38 56 Q100 120 162 56" />
+                  <path d="M50 50 Q100 104 150 50" />
+                  <path d="M64 44 Q100 86 136 44" />
+                  <path d="M78 40 Q100 66 122 40" />
+                  {/* Minutiae / short ridge endings */}
+                  <path d="M88 100 Q100 92 112 100" />
+                  <path d="M86 108 Q100 102 114 108" />
+                  <path d="M90 92 Q100 86 110 92" />
                 </g>
               </svg>
             </span>
