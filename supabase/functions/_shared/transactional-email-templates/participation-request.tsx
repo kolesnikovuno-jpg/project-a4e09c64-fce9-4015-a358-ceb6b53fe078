@@ -10,6 +10,7 @@ interface ParticipationRequestProps {
   message?: string
   model?: string
   locale?: string
+  sentiment?: string
 }
 
 const ParticipationRequestEmail = ({
@@ -18,6 +19,7 @@ const ParticipationRequestEmail = ({
   message,
   model,
   locale,
+  sentiment,
 }: ParticipationRequestProps) => (
   <Html lang="en" dir="ltr">
     <Head />
@@ -36,6 +38,12 @@ const ParticipationRequestEmail = ({
         <Text style={value}>{name || '—'}</Text>
         <Text style={label}>Email</Text>
         <Text style={value}>{email || '—'}</Text>
+        {sentiment ? (
+          <>
+            <Text style={label}>Sense of participation</Text>
+            <Text style={value}>{sentiment}</Text>
+          </>
+        ) : null}
         {message ? (
           <>
             <Text style={label}>Message</Text>
