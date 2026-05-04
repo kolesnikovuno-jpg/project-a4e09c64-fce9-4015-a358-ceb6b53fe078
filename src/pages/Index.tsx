@@ -70,11 +70,11 @@ const Index = () => {
             {/* Surrounding circle — fingerprint texture instead of solid fill */}
             <span
               aria-hidden
-              className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full w-[150px] h-[150px] md:w-[170px] md:h-[170px] overflow-hidden transition-opacity duration-300 ease-in-out group-hover/uno:opacity-100 ${
+              className={`pointer-events-none absolute rounded-full w-[76px] h-[76px] overflow-hidden transition-opacity duration-300 ease-in-out group-hover/uno:opacity-100 ${
                 toggled ? "opacity-100" : "opacity-80"
               }`}
             >
-              <svg viewBox="0 0 76 76" width="100%" height="100%" aria-hidden preserveAspectRatio="xMidYMid meet">
+              <svg viewBox="0 0 76 76" width="76" height="76" aria-hidden>
                 <defs>
                   <clipPath id="uno-fp-clip">
                     <circle cx="38" cy="38" r="38" />
