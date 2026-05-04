@@ -1,464 +1,143 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence, LayoutGroup, useAnimation } from "motion/react";
+import { motion, useAnimationControls } from "motion/react";
 import { useIsNative } from "@/hooks/use-native";
 import { useLocale } from "@/i18n/useLocale";
-import LanguageSwitcher from "@/i18n/LanguageSwitcher";
+
+type Phase = "idle" | "fixating" | "moving" | "converged";
 
 const Index = () => {
-  const [open, setOpen] = useState(false);
-  const [toggled, setToggled] = useState(false);
   const navigate = useNavigate();
   const isNative = useIsNative();
-  const controls = useAnimation();
-  const { t, localePath } = useLocale();
+  const { localePath } = useLocale();
 
-  useEffect(() => {
-    if (open) {
-      const t = setTimeout(() => {
-        controls.start("visible");
-      }, 400);
-      return () => clearTimeout(t);
-    } else {
-      controls.start("hidden");
-    }
-  }, [open, controls]);
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [hovered, setHovered] = useState(false);
+  const smallControls = useAnimationControls();
+  const fieldControls = useAnimationControls();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const fieldRef = useRef<HTMLDivElement>(null);
+  const smallRef = useRef<HTMLButtonElement>(null);
 
-  // In the native iOS app, launch directly into the calculator.
   useEffect(() => {
     if (isNative) navigate("/unocalc", { replace: true });
   }, [isNative, navigate]);
 
-  const handleToggle = () => {
-    if (!toggled) {
-      setToggled(true);
-      setTimeout(() => setOpen(true), 250);
-    } else {
-      setOpen(false);
+  const begin = async () => {
+    if (phase !== "idle") return;
+    setPhase("fixating");
+
+    // Phase 3 — fixation (compress + densify)
+    await smallControls.start({
+      scale: 0.97,
+      opacity: 1,
+      transition: { duration: 0.14, ease: [0.4, 0, 0.6, 1] },
+    });
+
+    // Compute attraction vector toward large field center
+    const container = containerRef.current?.getBoundingClientRect();
+    const small = smallRef.current?.getBoundingClientRect();
+    const field = fieldRef.current?.getBoundingClientRect();
+    if (!container || !small || !field) {
+      navigate(localePath("/garden"));
+      return;
     }
-  };
+    const smallCx = small.left + small.width / 2;
+    const smallCy = small.top + small.height / 2;
+    const fieldCx = field.left + field.width / 2;
+    const fieldCy = field.top + field.height / 2;
+    const dx = fieldCx - smallCx;
+    const dy = fieldCy - smallCy;
 
-  const handleClose = () => {
-    setOpen(false);
-    setTimeout(() => setToggled(false), 400);
-  };
+    setPhase("moving");
 
-  const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (open) return;
+    // Phase 5 — space reacts as motion begins
+    fieldControls.start({
+      scale: 1.018,
+      opacity: 0.55,
+      transition: { duration: 0.9, ease: [0.25, 0.1, 0.25, 1] },
+    });
 
-    const target = e.target as HTMLElement;
-    if (target.closest("button") || target.closest("[data-popup]")) return;
+    // Phase 4 + 6 — attraction (ease-in) then settle (ease-out)
+    await smallControls.start({
+      x: dx,
+      y: dy,
+      scale: 0.4,
+      opacity: 0.9,
+      transition: {
+        x: { duration: 0.95, ease: [0.32, 0.0, 0.67, 0.0] },
+        y: { duration: 0.95, ease: [0.32, 0.0, 0.67, 0.0] },
+        scale: { duration: 1.05, ease: [0.32, 0.0, 0.67, 0.2] },
+        opacity: { duration: 1.05, ease: [0.4, 0, 0.2, 1] },
+      },
+    });
 
-    navigate("/doodle");
-  };
+    // Final convergence settle
+    await Promise.all([
+      smallControls.start({
+        scale: 0.05,
+        opacity: 0,
+        transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+      }),
+      fieldControls.start({
+        scale: 1.06,
+        opacity: 0.85,
+        transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
+      }),
+    ]);
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.currentTarget === e.target) {
-      handleClose();
-    }
+    setPhase("converged");
+    // Phase 7 — transition
+    navigate(localePath("/garden"));
   };
 
   return (
-    <LayoutGroup>
-      <div
-        className="relative min-h-screen flex items-center justify-center bg-background cursor-pointer"
-        onClick={handleBackgroundClick}
-      >
-        {/* Toggle button — asymmetric placement, shifted right */}
-        <div className="flex items-center justify-center mt-[72px] md:mt-0 translate-x-[22vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
-          <div className="group/uno relative flex items-center justify-center">
-            {/* Fingerprint pattern — larger than the button so the circle + text sit inside it */}
-            <span
-              aria-hidden
-              className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-300 ease-in-out group-hover/uno:opacity-100 ${
-                toggled ? "opacity-100" : "opacity-80"
-              }`}
-              style={{ width: 110, height: 110 }}
-            >
-              <svg viewBox="0 0 110 110" width="110" height="110" aria-hidden>
-                <defs>
-                  <clipPath id="uno-fp-clip">
-                    {/* Clip to the button's 76px circle (radius 38) so anything outside is hidden */}
-                    <circle cx="55" cy="55" r="38" />
-                  </clipPath>
-                </defs>
-                <g
-                  clipPath="url(#uno-fp-clip)"
-                  fill="none"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth="0.9"
-                  strokeLinecap="round"
-                  opacity="0.8"
-                >
-                  {/* Upper ridges */}
-                  <path d="M4 55 Q55 10 106 55" />
-                  <path d="M7 62 Q55 18 103 62" />
-                  <path d="M10 68 Q55 26 100 68" />
-                  <path d="M14 74 Q55 34 96 74" />
-                  <path d="M19 80 Q55 44 91 80" />
-                  <path d="M25 85 Q55 54 85 85" />
-                  <path d="M32 89 Q55 66 78 89" />
-                  <path d="M40 92 Q55 78 70 92" />
-                  {/* Lower mirrored ridges */}
-                  <path d="M7 48 Q55 92 103 48" />
-                  <path d="M10 42 Q55 84 100 42" />
-                  <path d="M14 36 Q55 76 96 36" />
-                  <path d="M19 30 Q55 66 91 30" />
-                  <path d="M25 25 Q55 56 85 25" />
-                  <path d="M32 21 Q55 44 78 21" />
-                  <path d="M40 18 Q55 32 70 18" />
-                  {/* Minutiae */}
-                  <path d="M48 55 Q55 51 62 55" />
-                  <path d="M47 60 Q55 56 63 60" />
-                </g>
-              </svg>
-            </span>
-          <button
-            onClick={handleToggle}
-            className="group/uno relative flex items-center justify-center rounded-full w-[76px] h-[76px] transition-colors duration-300 cursor-pointer"
-          >
-            {!open && (
-              <motion.div
-                layoutId="morph-circle"
-                className="absolute w-7 h-7"
-                initial={false}
-                transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-                animate={{ left: toggled ? 42 : 4 }}
-              >
-                <svg width="28" height="28" viewBox="0 0 28 28">
-                  <defs>
-                    <pattern
-                      id="hatch-toggle"
-                      patternUnits="userSpaceOnUse"
-                      width="2.2"
-                      height="2.2"
-                      patternTransform="rotate(45)"
-                    >
-                      <line x1="0" y1="0" x2="0" y2="2.2" stroke="hsl(var(--primary))" strokeWidth="1.3" />
-                    </pattern>
-                  </defs>
-                  <circle
-                    cx="14"
-                    cy="14"
-                    r="13"
-                    fill="url(#hatch-toggle)"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth="0.8"
-                  />
-                </svg>
-              </motion.div>
-            )}
-            <span
-              className={`text-xs font-semibold text-primary transition-all duration-300 ease-in-out ${toggled ? "ml-3" : "ml-10"}`}
-            >
-              .uno
-            </span>
-          </button>
-          </div>
-        </div>
+    <div
+      ref={containerRef}
+      className="relative min-h-screen w-full overflow-hidden bg-background"
+    >
+      {/* Large circle — the field */}
+      <motion.div
+        ref={fieldRef}
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{
+          width: "min(72vmin, 720px)",
+          height: "min(72vmin, 720px)",
+          background:
+            "radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.07) 0%, hsl(var(--primary) / 0.035) 45%, hsl(var(--primary) / 0) 72%)",
+          border: "1px solid hsl(var(--primary) / 0.08)",
+          opacity: 0.4,
+        }}
+        initial={{ scale: 1, opacity: 0.4 }}
+        animate={fieldControls}
+      />
 
-        {/* Custom overlay popup */}
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              data-overlay
-              className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
-              onClick={handleOverlayClick}
-            >
-              {/* Backdrop */}
-              <motion.div
-                data-overlay
-                className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-              />
-
-              {/* Content card */}
-              <motion.div
-                data-popup
-                className="relative z-10 w-full max-w-2xl mx-2 md:mx-4 my-4 border border-border/30 bg-background/80 backdrop-blur-sm p-4 md:p-8 overflow-visible max-h-[calc(100vh-2rem)] overflow-y-auto"
-                initial={{ opacity: 0, scale: 0.97, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.97, y: 10 }}
-                transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
-              >
-                {/* Close button + circle menu — shared coordinate system anchored at top-right */}
-                <div className="absolute top-4 right-4">
-                  {/* Close button = origin (0,0) of this system */}
-                  <button
-                    onClick={handleClose}
-                    className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center cursor-pointer focus:outline-none z-10"
-                  >
-                    <motion.span
-                      layoutId="morph-circle"
-                      className="block w-5 h-5 rounded-full bg-primary/80"
-                      transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-                    />
-                  </button>
-
-                  {/* Connector line + circle, positioned relative to the button */}
-                  {/*
-                    Mobile geometry (button is 20x20 at top:0, right:0):
-                      - button center  = (right: 10, top: 10)
-                      - circle (46x46) at top: 44, right: 44 → center (right: 67, top: 67)
-                      - line from button center to circle center
-                    Desktop geometry (button 20x20):
-                      - circle (60x60) at top: 56, right: 56 → center (right: 86, top: 86)
-                  */}
-                  <div className="pointer-events-none">
-                    {/* Mobile SVG */}
-                    <svg
-                      className="absolute md:hidden"
-                      style={{ top: 10, right: 10, width: 57, height: 57 }}
-                      viewBox="0 0 57 57"
-                      fill="none"
-                    >
-                      <motion.line
-                        x1="57"
-                        y1="0"
-                        x2="33"
-                        y2="24"
-                        stroke="hsl(var(--primary))"
-                        strokeWidth="0.5"
-                        opacity="0.5"
-                        initial={{ pathLength: 0 }}
-                        animate={controls}
-                        variants={{
-                          hidden: { pathLength: 0 },
-                          visible: {
-                            pathLength: 1,
-                            transition: { duration: 0.45, ease: [0.25, 0.1, 0.25, 1] },
-                          },
-                        }}
-                      />
-                    </svg>
-                    {/* Desktop SVG */}
-                    <svg
-                      className="absolute hidden md:block"
-                      style={{ top: 10, right: 10, width: 76, height: 76 }}
-                      viewBox="0 0 76 76"
-                      fill="none"
-                    >
-                      <motion.line
-                        x1="76"
-                        y1="0"
-                        x2="46"
-                        y2="30"
-                        stroke="hsl(var(--primary))"
-                        strokeWidth="0.5"
-                        opacity="0.5"
-                        initial={{ pathLength: 0 }}
-                        animate={controls}
-                        variants={{
-                          hidden: { pathLength: 0 },
-                          visible: {
-                            pathLength: 1,
-                            transition: { duration: 0.45, ease: [0.25, 0.1, 0.25, 1] },
-                          },
-                        }}
-                      />
-                    </svg>
-                    <motion.a
-                      href="/garden"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleClose();
-                        navigate(localePath("/garden"));
-                      }}
-                      className="pointer-events-auto absolute flex items-center justify-center w-[77px] h-[77px] md:w-[77px] md:h-[77px] top-[22px] right-[22px] md:top-[28px] md:right-[28px] rounded-full text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors cursor-pointer"
-                      initial={{ opacity: 0 }}
-                      animate={controls}
-                      variants={{
-                        hidden: { opacity: 0 },
-                        visible: {
-                          opacity: 1,
-                          transition: {
-                            delay: 0.5,
-                            duration: 0.35,
-                            ease: [0.22, 1, 0.36, 1],
-                          },
-                        },
-                      }}
-                    >
-                      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 77 77">
-                        <motion.circle
-                          cx="38.5"
-                          cy="38.5"
-                          r="37.5"
-                          fill="none"
-                          stroke="hsl(var(--primary))"
-                          strokeWidth="1"
-                          strokeDasharray="236"
-                          initial={{ strokeDashoffset: 236 }}
-                          animate={controls}
-                          variants={{
-                            hidden: { strokeDashoffset: 236 },
-                            visible: {
-                              strokeDashoffset: 0,
-                              transition: {
-                                delay: 0.48,
-                                duration: 0.75,
-                                ease: [0.25, 0.1, 0.25, 1],
-                              },
-                            },
-                          }}
-                        />
-                      </svg>
-
-                      <motion.span
-                        initial={{ opacity: 0, y: 4 }}
-                        animate={controls}
-                        variants={{
-                          hidden: { opacity: 0, y: 4 },
-                          visible: {
-                            opacity: 1,
-                            y: 0,
-                            transition: { delay: 0.75, duration: 0.25, ease: [0.22, 1, 0.36, 1] },
-                          },
-                        }}
-                      >
-                        garden
-                      </motion.span>
-                    </motion.a>
-                  </div>
-                </div>
-
-                {/* Header */}
-                <div className="flex flex-col space-y-1.5 text-left overflow-visible">
-                  {/* Mobile header */}
-                  <div className="md:hidden overflow-visible">
-                    <div className="flex flex-col gap-1 -ml-[0.35em] pr-10">
-                      <a
-                        href="/gateway"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleClose();
-                          navigate(localePath("/gateway"));
-                        }}
-                        className="text-base tracking-[0.15em] font-normal text-foreground hover:text-primary transition-colors"
-                      >
-                        .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">{t.index.studio_suffix}</span>
-                      </a>
-                      <p className="text-muted-foreground tracking-[0.08em] text-[9px] font-light">
-                        {t.index.architect_design_art}
-                      </p>
-                    </div>
-                  </div>
-                  {/* Desktop header */}
-                  <div className="hidden md:flex items-baseline gap-4 overflow-visible -ml-[0.35em]">
-                    <a
-                      href="/gateway"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleClose();
-                        navigate(localePath("/gateway"));
-                      }}
-                      className="text-base tracking-[0.15em] font-normal whitespace-nowrap hover:text-primary transition-colors"
-                    >
-                      .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">{t.index.studio_suffix}</span>
-                    </a>
-                    <p className="text-muted-foreground tracking-[0.08em] text-[9px] font-light">
-                      {t.index.architect_design_art}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="text-foreground leading-relaxed mt-7 flex flex-col">
-                  <motion.div
-                    className="text-left text-foreground"
-                    initial="hidden"
-                    animate={controls}
-                    variants={{
-                      hidden: { opacity: 0, y: 12 },
-                      visible: {
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                          delay: 0.7,
-                          duration: 0.45,
-                          ease: [0.25, 0.1, 0.25, 1],
-                        },
-                      },
-                    }}
-                  >
-                    <p className="text-[12px] md:text-[13px] font-light text-foreground/80 tracking-[0.1em] mt-6 mb-1">
-                      {t.index.structure_label}
-                    </p>
-                    <p className="text-[14px] md:text-[15px] leading-[1.65]">
-                      {t.index.tagline}
-                    </p>
-                  </motion.div>
-                  <motion.a
-                    href="/pricing"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleClose();
-                      navigate(localePath("/pricing"));
-                    }}
-                    className="block text-left text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-7"
-                    initial="hidden"
-                    animate={controls}
-                    variants={{
-                      hidden: { opacity: 0, y: 10 },
-                      visible: {
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                          delay: 0.95,
-                          duration: 0.4,
-                          ease: [0.25, 0.1, 0.25, 1],
-                        },
-                      },
-                    }}
-                  >
-                    {t.index.pricing_link}
-                  </motion.a>
-                  <motion.div
-                    className="mt-10 pt-4 border-t border-border/20 flex items-baseline gap-2"
-                    initial="hidden"
-                    animate={controls}
-                    variants={{
-                      hidden: { opacity: 0 },
-                      visible: {
-                        opacity: 1,
-                        transition: {
-                          delay: 1.2,
-                          duration: 0.45,
-                          ease: [0.25, 0.1, 0.25, 1],
-                        },
-                      },
-                    }}
-                  >
-                    <span className="text-[9px] tracking-[0.08em] text-muted-foreground">© 2026</span>
-                    <a
-                      href="/about"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleClose();
-                        navigate(localePath("/about"));
-                      }}
-                      className="text-[11px] tracking-[0.12em] font-normal text-primary hover:text-primary/80 transition-colors"
-                    >
-                      {t.index.author_link}
-                    </a>
-                  </motion.div>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        {/* Language switcher — hidden on the hero, visible only when the
-            popup is open. */}
-        <LanguageSwitcher hidden={!open} />
-      </div>
-    </LayoutGroup>
+      {/* Small circle — the visitor */}
+      <motion.button
+        ref={smallRef}
+        onClick={begin}
+        onPointerEnter={() => setHovered(true)}
+        onPointerLeave={() => setHovered(false)}
+        aria-label=""
+        className="absolute left-1/2 top-1/2 rounded-full focus:outline-none"
+        style={{
+          width: 18,
+          height: 18,
+          marginLeft: -9,
+          marginTop: -9,
+          background: "hsl(var(--primary))",
+          boxShadow: hovered
+            ? "0 0 24px 2px hsl(var(--primary) / 0.35)"
+            : "0 0 12px 0 hsl(var(--primary) / 0.18)",
+          cursor: phase === "idle" ? "pointer" : "default",
+          transition: "box-shadow 600ms cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
+        initial={{ scale: 1, opacity: 0.92, x: 0, y: 0 }}
+        animate={smallControls}
+        disabled={phase !== "idle"}
+      />
+    </div>
   );
 };
 
