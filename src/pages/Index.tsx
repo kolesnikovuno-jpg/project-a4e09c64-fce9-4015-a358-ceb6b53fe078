@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, useAnimationControls } from "motion/react";
 import { useIsNative } from "@/hooks/use-native";
 import { useLocale } from "@/i18n/useLocale";
+import Garden from "./Garden";
 
 type Phase = "idle" | "fixating" | "moving" | "converged";
 
@@ -13,6 +14,7 @@ const Index = () => {
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [hovered, setHovered] = useState(false);
+  const [revealGarden, setRevealGarden] = useState(false);
   const smallControls = useAnimationControls();
   const fieldControls = useAnimationControls();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -87,8 +89,12 @@ const Index = () => {
     ]);
 
     setPhase("converged");
-    // Phase 7 — transition
-    navigate(localePath("/garden"));
+    // Phase 7 — spatial transition: reveal garden in-place
+    setRevealGarden(true);
+    // Update URL silently after the visual reveal begins
+    window.setTimeout(() => {
+      window.history.replaceState({}, "", localePath("/garden"));
+    }, 600);
   };
 
   return (
@@ -96,11 +102,26 @@ const Index = () => {
       ref={containerRef}
       className="relative min-h-screen w-full overflow-hidden bg-background"
     >
+      {/* Garden — emerges within the same scene as a deeper layer */}
+      <motion.div
+        className="absolute inset-0 z-20"
+        initial={{ opacity: 0, scale: 1.04, filter: "blur(8px)" }}
+        animate={
+          revealGarden
+            ? { opacity: 1, scale: 1, filter: "blur(0px)" }
+            : { opacity: 0, scale: 1.04, filter: "blur(8px)" }
+        }
+        transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+        style={{ pointerEvents: revealGarden ? "auto" : "none" }}
+      >
+        {revealGarden && <Garden />}
+      </motion.div>
+
       {/* Large circle — the field */}
       <motion.div
         ref={fieldRef}
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+        className="pointer-events-none absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full"
         style={{
           width: "min(72vmin, 720px)",
           height: "min(72vmin, 720px)",
@@ -120,7 +141,7 @@ const Index = () => {
         onPointerEnter={() => setHovered(true)}
         onPointerLeave={() => setHovered(false)}
         aria-label=""
-        className="absolute left-1/2 top-1/2 rounded-full focus:outline-none"
+        className="absolute left-1/2 top-1/2 z-10 rounded-full focus:outline-none"
         style={{
           width: 18,
           height: 18,
