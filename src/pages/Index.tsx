@@ -78,7 +78,8 @@ const Index = () => {
               <svg viewBox="0 0 110 110" width="110" height="110" aria-hidden>
                 <defs>
                   <clipPath id="uno-fp-clip">
-                    <ellipse cx="55" cy="55" rx="54" ry="54" />
+                    {/* Clip to the button's 76px circle (radius 38) so anything outside is hidden */}
+                    <circle cx="55" cy="55" r="38" />
                   </clipPath>
                 </defs>
                 <g
