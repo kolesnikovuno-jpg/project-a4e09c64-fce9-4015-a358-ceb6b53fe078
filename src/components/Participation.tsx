@@ -22,6 +22,7 @@ const Participation = ({ model, open, onClose }: Props) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [telegram, setTelegram] = useState("");
   const [sentiment, setSentiment] = useState<"support" | "participation" | "undecided" | "">("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +35,7 @@ const Participation = ({ model, open, onClose }: Props) => {
         setName("");
         setEmail("");
         setMessage("");
+        setTelegram("");
         setSentiment("");
         setError(null);
         setSubmitting(false);
@@ -70,6 +72,7 @@ const Participation = ({ model, open, onClose }: Props) => {
     if (!trimmedName || !trimmedEmail) return;
     setSubmitting(true);
     setError(null);
+    const trimmedTelegram = telegram.trim().slice(0, 200);
     const { error: dbError } = await supabase
       .from("participation_requests")
       .insert({
@@ -98,6 +101,7 @@ const Participation = ({ model, open, onClose }: Props) => {
             model,
             locale,
             sentiment: sentiment || "",
+            telegram: trimmedTelegram,
           },
         },
       });
@@ -115,6 +119,7 @@ const Participation = ({ model, open, onClose }: Props) => {
           email: trimmedEmail.slice(0, 255),
           participation: sentiment === "undecided" ? "not_decided" : (sentiment || ""),
           message: message.trim() ? message.trim().slice(0, 2000) : "",
+          telegram: trimmedTelegram,
         }),
       });
     } catch (e) {
