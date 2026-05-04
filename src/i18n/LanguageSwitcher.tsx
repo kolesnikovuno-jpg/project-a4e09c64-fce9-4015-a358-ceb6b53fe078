@@ -54,11 +54,9 @@ const LanguageSwitcher = ({ topOffset = 0, hidden = false, background }: Props) 
     width: W,
     height: H,
     display: "flex",
-    alignItems: "flex-start",
-    justifyContent: "center",
-    paddingTop: 0,
-    paddingBottom: 8,
     alignItems: "flex-end",
+    justifyContent: "center",
+    paddingBottom: 8,
     cursor: "pointer",
   };
   const labelStyle = (active: boolean): CSSProperties => ({
