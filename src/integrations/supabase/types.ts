@@ -110,6 +110,7 @@ export type Database = {
           message: string | null
           model: string
           name: string
+          sentiment: string | null
         }
         Insert: {
           created_at?: string
@@ -119,6 +120,7 @@ export type Database = {
           message?: string | null
           model: string
           name: string
+          sentiment?: string | null
         }
         Update: {
           created_at?: string
@@ -128,6 +130,7 @@ export type Database = {
           message?: string | null
           model?: string
           name?: string
+          sentiment?: string | null
         }
         Relationships: []
       }
