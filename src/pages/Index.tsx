@@ -128,7 +128,7 @@ const Index = () => {
                       height="2.2"
                       patternTransform="rotate(45)"
                     >
-                      <line x1="0" y1="0" x2="0" y2="2.2" stroke="hsl(var(--background))" strokeWidth="1.3" />
+                      <line x1="0" y1="0" x2="0" y2="2.2" stroke="hsl(var(--primary))" strokeWidth="1.3" />
                     </pattern>
                   </defs>
                   <circle
@@ -136,7 +136,7 @@ const Index = () => {
                     cy="14"
                     r="13"
                     fill="url(#hatch-toggle)"
-                    stroke="hsl(var(--background))"
+                    stroke="hsl(var(--primary))"
                     strokeWidth="0.8"
                   />
                 </svg>
