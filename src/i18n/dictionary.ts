@@ -183,6 +183,8 @@ export type Dictionary = {
     form_email: string;
     form_message: string;
     form_message_optional: string;
+    form_telegram: string;
+    form_telegram_placeholder: string;
     form_sentiment_label: string;
     form_sentiment_support: string;
     form_sentiment_participation: string;
