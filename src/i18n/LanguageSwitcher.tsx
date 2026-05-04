@@ -56,7 +56,7 @@ const LanguageSwitcher = ({ topOffset = 0, hidden = false, background }: Props) 
     display: "flex",
     alignItems: "flex-end",
     justifyContent: "center",
-    paddingBottom: 8,
+    paddingBottom: 10,
     cursor: "pointer",
   };
   const labelStyle = (active: boolean): CSSProperties => ({
@@ -75,7 +75,7 @@ const LanguageSwitcher = ({ topOffset = 0, hidden = false, background }: Props) 
       ref={rootRef}
       style={{
         position: "fixed",
-        top: topOffset + 10,
+        top: topOffset + 8,
         left: "50%",
         transform: "translateX(-50%)",
         zIndex: 9999,
