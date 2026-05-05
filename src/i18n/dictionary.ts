@@ -410,7 +410,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       close_aria: "close",
     },
     participation: {
-      link: "Participate",
+      link: "You can record your participation",
       title: "Participation",
       intro:
         "Participation is a form of involvement in the object's transition into matter.\n\nThis is not an investment.\nIt is a contribution to the process of realization.\n\nThe form is completed through decision and participation.\n\nYou record your participation in this process.",
@@ -648,7 +648,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       close_aria: "закрыть",
     },
     participation: {
-      link: "Участие",
+      link: "Вы можете зафиксировать своё участие",
       title: "Участие",
       intro:
         "Участие — это форма вовлечения в переход объекта в материю.\n\nЭто не инвестиция.\nЭто вклад в процесс реализации.\n\nФорма завершается через решение и участие.\n\nВы фиксируете своё участие в этом процессе.",
@@ -886,7 +886,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       close_aria: "закрити",
     },
     participation: {
-      link: "Участь",
+      link: "Ви можете зафіксувати свою участь",
       title: "Участь",
       intro:
         "Участь — це форма залучення до переходу об'єкта в матерію.\n\nЦе не інвестиція.\nЦе внесок у процес реалізації.\n\nФорма завершується через рішення та участь.\n\nВи фіксуєте свою участь у цьому процесі.",
