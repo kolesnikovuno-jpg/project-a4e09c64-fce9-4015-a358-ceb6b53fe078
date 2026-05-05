@@ -18,7 +18,7 @@ const Index = () => {
     if (open) {
       const t = setTimeout(() => {
         controls.start("visible");
-      }, 400);
+      }, 700);
       return () => clearTimeout(t);
     } else {
       controls.start("hidden");
@@ -293,7 +293,12 @@ const Index = () => {
                 </div>
 
                 {/* Header */}
-                <div className="flex flex-col space-y-1.5 text-left overflow-visible">
+                <motion.div
+                  className="flex flex-col space-y-1.5 text-left overflow-visible"
+                  initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
+                  animate={open ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
+                  transition={{ delay: 0.55, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                >
                   {/* Mobile header */}
                   <div className="md:hidden overflow-visible">
                     <div className="flex flex-col gap-1 -ml-[0.35em] pr-10">
@@ -330,7 +335,7 @@ const Index = () => {
                       {t.index.architect_design_art}
                     </p>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Content */}
                 <div className="text-foreground leading-relaxed mt-7 flex flex-col">
@@ -339,14 +344,15 @@ const Index = () => {
                     initial="hidden"
                     animate={controls}
                     variants={{
-                      hidden: { opacity: 0, y: 12 },
+                      hidden: { opacity: 0, y: 12, filter: "blur(6px)" },
                       visible: {
                         opacity: 1,
                         y: 0,
+                        filter: "blur(0px)",
                         transition: {
-                          delay: 0.7,
-                          duration: 0.45,
-                          ease: [0.25, 0.1, 0.25, 1],
+                          delay: 0.1,
+                          duration: 0.4,
+                          ease: [0.22, 1, 0.36, 1],
                         },
                       },
                     }}
@@ -369,14 +375,15 @@ const Index = () => {
                     initial="hidden"
                     animate={controls}
                     variants={{
-                      hidden: { opacity: 0, y: 10 },
+                      hidden: { opacity: 0, y: 10, filter: "blur(6px)" },
                       visible: {
                         opacity: 1,
                         y: 0,
+                        filter: "blur(0px)",
                         transition: {
-                          delay: 0.95,
+                          delay: 0.25,
                           duration: 0.4,
-                          ease: [0.25, 0.1, 0.25, 1],
+                          ease: [0.22, 1, 0.36, 1],
                         },
                       },
                     }}
@@ -388,13 +395,14 @@ const Index = () => {
                     initial="hidden"
                     animate={controls}
                     variants={{
-                      hidden: { opacity: 0 },
+                      hidden: { opacity: 0, filter: "blur(6px)" },
                       visible: {
                         opacity: 1,
+                        filter: "blur(0px)",
                         transition: {
-                          delay: 1.2,
-                          duration: 0.45,
-                          ease: [0.25, 0.1, 0.25, 1],
+                          delay: 0.4,
+                          duration: 0.4,
+                          ease: [0.22, 1, 0.36, 1],
                         },
                       },
                     }}
