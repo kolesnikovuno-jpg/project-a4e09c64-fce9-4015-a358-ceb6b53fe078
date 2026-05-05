@@ -66,8 +66,8 @@ const Participation = ({ model, open, onClose }: Props) => {
     console.log("stage after init:", stage);
   }, [stage]);
 
-  // On open: pick the right initial stage from cached identity, then
-  // refresh the status from the webhook in the background.
+  // On open: pick the right initial stage from cached identity.
+  // NO network calls here — submission must only happen on user click.
   useEffect(() => {
     if (!open) {
       const id = window.setTimeout(() => {
@@ -80,19 +80,11 @@ const Participation = ({ model, open, onClose }: Props) => {
     const uid = getStoredUserId();
     setLocalStatus(cached);
     setLocalUserName(getUserName());
-    // If we already know the user (user_id stored from a previous
-    // submission or token exchange), skip the form entirely and go to
-    // the action stage, regardless of current cached status.
     if (uid) {
       setStage("action");
     } else {
       setStage("intro");
     }
-    // Background refresh — does not block UI.
-    void refreshStatus(model).then(() => {
-      setLocalStatus(getStatus(model));
-      setLocalUserName(getUserName());
-    });
   }, [open, model]);
 
   // ESC to close
