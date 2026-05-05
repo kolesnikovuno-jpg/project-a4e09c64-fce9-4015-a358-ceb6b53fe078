@@ -426,7 +426,7 @@ const Index = () => {
                         hidden: { opacity: 0 },
                         visible: {
                           opacity: 1,
-                          transition: { delay: 0.7, duration: 1.4, ease: "linear" },
+                          transition: { delay: 0.7, duration: 1.8, ease: [0.25, 0.1, 0.25, 1] },
                         },
                       }}
                     >
