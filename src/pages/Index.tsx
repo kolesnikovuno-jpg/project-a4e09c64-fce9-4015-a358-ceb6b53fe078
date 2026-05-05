@@ -195,8 +195,14 @@ const Index = () => {
                     <motion.span
                       layoutId="morph-circle"
                       className="block w-5 h-5 relative"
-                      transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
-                      style={{ willChange: "transform, opacity", transform: "translate3d(0,0,0)" }}
+                      initial={{ scale: 0.7 }}
+                      animate={{ scale: [0.7, 0.7, 1] }}
+                      transition={{
+                        duration: 0.75,
+                        ease: [0.4, 0, 0.2, 1],
+                        scale: { duration: 0.75, ease: [0.4, 0, 0.2, 1], times: [0, 0.55, 1] },
+                      }}
+                      style={{ willChange: "transform, opacity" }}
                     >
                       {/* Striped layer — fades out during travel */}
                       <motion.svg
