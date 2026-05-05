@@ -341,7 +341,7 @@ const Garden = () => {
         {/* Floating label above stems, aligned to right edge */}
         <div
           className="absolute right-6 left-6 text-right pointer-events-none select-none z-10"
-          style={{ top: "calc(18vh - 2.5rem + 55px)" }}
+          style={{ top: "calc(18vh - 2.5rem + 60px)" }}
         >
           <TypewriterLabel text={displayedLabel} />
         </div>
