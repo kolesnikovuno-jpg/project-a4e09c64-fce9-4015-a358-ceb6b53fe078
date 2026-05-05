@@ -5,6 +5,54 @@ import { useIsNative } from "@/hooks/use-native";
 import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 
+const SoftTypewriter = ({
+  text,
+  delay = 0,
+  charDuration = 0.5,
+  stagger = 0.025,
+  className,
+}: {
+  text: string;
+  delay?: number;
+  charDuration?: number;
+  stagger?: number;
+  className?: string;
+}) => {
+  const chars = Array.from(text);
+  return (
+    <motion.span
+      className={className}
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: {},
+        visible: {
+          transition: { delay, staggerChildren: stagger },
+        },
+      }}
+      aria-label={text}
+    >
+      {chars.map((ch, i) => (
+        <motion.span
+          key={i}
+          aria-hidden
+          variants={{
+            hidden: { opacity: 0, filter: "blur(2px)" },
+            visible: {
+              opacity: 1,
+              filter: "blur(0px)",
+              transition: { duration: charDuration, ease: [0.25, 0.1, 0.25, 1] },
+            },
+          }}
+          style={{ display: "inline-block", whiteSpace: "pre" }}
+        >
+          {ch}
+        </motion.span>
+      ))}
+    </motion.span>
+  );
+};
+
 const Index = () => {
   const [open, setOpen] = useState(false);
   const [toggled, setToggled] = useState(false);
