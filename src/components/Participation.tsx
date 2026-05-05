@@ -130,21 +130,22 @@ const Participation = ({ model, open, onClose }: Props) => {
       // Non-fatal: data is already saved.
       console.warn("participation email notification failed", e);
     }
-    // Fire-and-forget POST to Make webhook.
+    // Fire-and-forget POST to Make webhook — ONE single object, never an array.
     try {
+      const payloadOut = {
+        kind: "participation_request",
+        email: trimmedEmail.slice(0, 255),
+        name: trimmedName.slice(0, 100),
+        model_id: model,
+        user_id: existingUserId,
+        participation: sentiment === "undecided" ? "not_decided" : (sentiment || ""),
+        message: message.trim() ? message.trim().slice(0, 2000) : "",
+        telegram: trimmedTelegram,
+      };
       const res = await fetch("https://hook.eu2.make.com/n4g9lw19rfw52krs9ff6gsvy7p7x5mnx", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          kind: "participation_request",
-          user_id: existingUserId,
-          model_id: model,
-          name: trimmedName.slice(0, 100),
-          email: trimmedEmail.slice(0, 255),
-          participation: sentiment === "undecided" ? "not_decided" : (sentiment || ""),
-          message: message.trim() ? message.trim().slice(0, 2000) : "",
-          telegram: trimmedTelegram,
-        }),
+        body: JSON.stringify(payloadOut),
       });
 // Read user_id / user_name from the webhook response.
 let data: any = null;
