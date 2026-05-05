@@ -364,7 +364,7 @@ const Index = () => {
                           visible: {
                             opacity: 1,
                             y: 0,
-                            transition: { delay: 1.77, duration: 1.8, ease: [0.25, 0.1, 0.25, 1] },
+                            transition: { delay: 3.17, duration: 1.8, ease: [0.4, 0, 0.2, 1] },
                           },
                         }}
                       >
@@ -384,7 +384,7 @@ const Index = () => {
                     hidden: { opacity: 0 },
                     visible: {
                       opacity: 1,
-                      transition: { delay: 1.77, duration: 1.6, ease: [0.25, 0.1, 0.25, 1] },
+                      transition: { delay: 3.17, duration: 1.6, ease: [0.4, 0, 0.2, 1] },
                     },
                   }}
                 >
@@ -438,7 +438,7 @@ const Index = () => {
                         hidden: { opacity: 0 },
                         visible: {
                           opacity: 1,
-                          transition: { delay: 1.77, duration: 1.8, ease: [0.25, 0.1, 0.25, 1] },
+                          transition: { delay: 3.17, duration: 1.8, ease: [0.4, 0, 0.2, 1] },
                         },
                       }}
                     >
@@ -453,7 +453,7 @@ const Index = () => {
                         hidden: { opacity: 0 },
                         visible: {
                           opacity: 1,
-                          transition: { delay: 2.07, duration: 1.6, ease: "linear" },
+                          transition: { delay: 3.47, duration: 1.6, ease: [0.4, 0, 0.2, 1] },
                         },
                       }}
                     >
@@ -476,7 +476,7 @@ const Index = () => {
                       visible: {
                         opacity: 1,
                         transition: {
-                          delay: 2.67,
+                          delay: 4.07,
                           duration: 1.4,
                           ease: "linear",
                         },
@@ -495,7 +495,7 @@ const Index = () => {
                       visible: {
                         opacity: 1,
                         transition: {
-                          delay: 2.87,
+                          delay: 4.27,
                           duration: 0.4,
                           ease: [0.25, 0.1, 0.25, 1],
                         },
