@@ -110,7 +110,7 @@ const Index = () => {
                 layoutId="morph-circle"
                 className="absolute w-7 h-7"
                 initial={false}
-                transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 1.05, ease: [0.4, 0, 0.2, 1] }}
                 style={{ willChange: "transform, opacity" }}
                 animate={{ left: toggled ? 42 : 4 }}
               >
