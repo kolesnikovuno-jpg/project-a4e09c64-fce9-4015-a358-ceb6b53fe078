@@ -8,7 +8,6 @@ import {
   setStatus,
   setUserId,
   setUserName,
-  refreshStatus,
   type ParticipationStatus,
 } from "@/lib/participationUser";
 
