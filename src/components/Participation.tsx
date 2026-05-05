@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale } from "@/i18n/useLocale";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -46,7 +46,7 @@ const Participation = ({ model, open, onClose }: Props) => {
   const [error, setError] = useState<string | null>(null);
   const [status, setLocalStatus] = useState<ParticipationStatus>(() => getStatus(model));
   const [userName, setLocalUserName] = useState<string | null>(() => getUserName());
-  const lastResetTapRef = (typeof window !== "undefined" ? { current: 0 } : { current: 0 });
+  const lastResetTapRef = useRef(0);
 
   const handleResetTap = () => {
     const now = Date.now();
