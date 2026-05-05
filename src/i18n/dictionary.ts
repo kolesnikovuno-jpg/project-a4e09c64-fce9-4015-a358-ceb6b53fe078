@@ -299,7 +299,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       seo_description:
         "LYRA — tension-based seating system. Flexible support structure, minimal material, adaptive response.",
       description:
-        "This object is not a fixed form.\nIt exists as a point of transition between idea and material.\n\nWhat you see is a state — not the final.\nIt can remain as it is, or move further into reality.\n\nThe decision defines the form.",
+        "This object is not a fixed form.\nIt exists as a point of transition between idea and material.\n\nWhat you see is a state — not the final.\nIt can remain as it is, or move further into matter.\n\nThe decision defines the form.\n\nYou can record your participation →",
     },
     lyra_info: {
       ref: "uno / lyra / 001",
@@ -413,7 +413,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       link: "Participate",
       title: "Participation",
       intro:
-        "Participation is a form of involvement in bringing the object into material.\n\nThis is not an investment.\nIt is a contribution to the process of realization.\n\nThe form is completed through decision and participation.",
+        "Participation is a form of involvement in the object's transition into matter.\n\nThis is not an investment.\nIt is a contribution to the process of realization.\n\nThe form is completed through decision and participation.\n\nYou record your participation in this process.",
       stage_label: "Current stage",
       stage_value: "Prototype",
       goal_label: "Goal",
@@ -426,7 +426,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       form_message_optional: "optional",
       form_telegram: "Telegram",
       form_telegram_placeholder: "@username or link",
-      form_sentiment_label: "Your sense of participation",
+      form_sentiment_label: "Format of participation",
       form_sentiment_support: "Support",
       form_sentiment_participation: "Participation",
       form_sentiment_undecided: "Not decided yet",
@@ -434,7 +434,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       submitting: "Sending…",
       error: "Could not send. Please try again.",
       success_text:
-        "Your request has been received.\n\nYou can proceed with contribution using the current participation channel.",
+        "Your request has been recorded.\n\nYou have entered the process of the object's realization.\n\nFurther development will proceed through the chosen channel of participation.",
       proceed_link: "Proceed to contribution",
       close_aria: "close",
       action_requested_title: "Request received",
@@ -775,7 +775,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       seo_description:
         "LYRA — система сидіння на натягу. Гнучка опора, мінімум матеріалу, чутлива форма.",
       description:
-        "Цей об'єкт не є фіксованою формою.\nВін існує як точка переходу між ідеєю та матерією.\n\nТе, що ви бачите — це стан, а не фінал.\nВін може залишитися таким, як є, або перейти в матеріальність.\n\nРішення визначає форму.",
+        "Цей об'єкт не є фіксованою формою.\nВін існує як точка переходу між ідеєю та матерією.\n\nТе, що ви бачите — стан, а не фінал.\nВін може залишитися таким, як є, або перейти в матерію.\n\nРішення визначає форму.\n\nВи можете зафіксувати свою участь →",
     },
     lyra_info: {
       ref: "uno / lyra / 001",
@@ -889,7 +889,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       link: "Участь",
       title: "Участь",
       intro:
-        "Участь — це форма залучення до переведення об'єкта в матерію.\n\nЦе не інвестиція.\nЦе внесок у процес реалізації.\n\nФорма завершується через рішення та участь.",
+        "Участь — це форма залучення до переходу об'єкта в матерію.\n\nЦе не інвестиція.\nЦе внесок у процес реалізації.\n\nФорма завершується через рішення та участь.\n\nВи фіксуєте свою участь у цьому процесі.",
       stage_label: "Поточна стадія",
       stage_value: "Прототип",
       goal_label: "Мета",
@@ -902,7 +902,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       form_message_optional: "необов'язково",
       form_telegram: "Telegram",
       form_telegram_placeholder: "@username або посилання",
-      form_sentiment_label: "Ваше відчуття участі",
+      form_sentiment_label: "Формат участі",
       form_sentiment_support: "Підтримка",
       form_sentiment_participation: "Участь",
       form_sentiment_undecided: "Поки не визначився",
@@ -910,7 +910,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       submitting: "Надсилання…",
       error: "Не вдалося надіслати. Спробуйте ще раз.",
       success_text:
-        "Ваш запит отримано.\n\nВи можете продовжити внеском через діючий канал участі.",
+        "Запит зафіксовано.\n\nВи увійшли в процес реалізації об'єкта.\n\nПодальший розвиток відбуватиметься через обраний канал участі.",
       proceed_link: "Перейти до внеску",
       close_aria: "закрити",
       action_requested_title: "Запит отримано",
