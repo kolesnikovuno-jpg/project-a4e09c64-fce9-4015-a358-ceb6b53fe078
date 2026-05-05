@@ -494,8 +494,8 @@ const Index = () => {
                         opacity: 1,
                         transition: {
                           delay: 4.27,
-                          duration: 0.4,
-                          ease: [0.25, 0.1, 0.25, 1],
+                          duration: 1.6,
+                          ease: [0.4, 0, 0.2, 1],
                         },
                       },
                     }}
