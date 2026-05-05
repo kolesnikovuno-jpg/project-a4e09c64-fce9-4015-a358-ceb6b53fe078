@@ -112,7 +112,8 @@ const Index = () => {
                 layoutId="morph-circle"
                 className="absolute w-7 h-7"
                 initial={false}
-                transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+                style={{ willChange: "transform, opacity" }}
                 animate={{ left: toggled ? 42 : 4 }}
               >
                 <div className="relative w-full h-full">
@@ -189,7 +190,8 @@ const Index = () => {
                     <motion.span
                       layoutId="morph-circle"
                       className="block w-5 h-5 relative"
-                      transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+                      transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+                      style={{ willChange: "transform, opacity", transform: "translate3d(0,0,0)" }}
                     >
                       {/* Striped layer — fades out during travel */}
                       <motion.svg
@@ -198,10 +200,11 @@ const Index = () => {
                         initial={{ opacity: 1 }}
                         animate={{ opacity: open ? 0 : 1 }}
                         transition={{
-                          duration: 0.28,
-                          delay: open ? 0.22 : 0,
+                          duration: 0.42,
+                          delay: open ? 0.42 : 0,
                           ease: [0.22, 1, 0.36, 1],
                         }}
+                        style={{ willChange: "opacity" }}
                       >
                         <defs>
                           <pattern
@@ -229,10 +232,11 @@ const Index = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: open ? 1 : 0 }}
                         transition={{
-                          duration: 0.32,
-                          delay: open ? 0.28 : 0,
+                          duration: 0.46,
+                          delay: open ? 0.36 : 0,
                           ease: [0.22, 1, 0.36, 1],
                         }}
+                        style={{ willChange: "opacity" }}
                       />
                     </motion.span>
                   </button>
