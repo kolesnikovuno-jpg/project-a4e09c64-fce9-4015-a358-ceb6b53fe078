@@ -93,7 +93,18 @@ const Participation = ({ model, open, onClose }: Props) => {
     setSubmitting(true);
     setError(null);
     const trimmedTelegram = telegram.trim().slice(0, 200);
-    const existingUserId = getUserId();
+    // Save user_id (= email) IMMEDIATELY, independent of webhook response.
+    // This guarantees recognition on next page load even if the webhook fails.
+    const emailAsId = trimmedEmail.slice(0, 255);
+    try {
+      localStorage.setItem("user_id", emailAsId);
+      console.log("user_id saved:", localStorage.getItem("user_id"));
+    } catch (e) {
+      console.warn("localStorage write failed", e);
+    }
+    setUserId(emailAsId);
+    setUserName(trimmedName.slice(0, 100));
+    const existingUserId = emailAsId;
     const { error: dbError } = await supabase
       .from("participation_requests")
       .insert({
