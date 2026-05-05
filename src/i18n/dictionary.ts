@@ -299,7 +299,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       seo_description:
         "LYRA — tension-based seating system. Flexible support structure, minimal material, adaptive response.",
       description:
-        "This object is not a fixed form.\nIt exists as a point of transition between idea and material.\n\nWhat you see is a state — not the final.\nIt can remain as it is, or move further into matter.\n\nThe decision defines the form.\n\nYou can record your participation →",
+        "This object is not a fixed form.\nIt exists as a point of transition between idea and material.\n\nWhat you see is a state — not the final.\nIt can remain as it is, or move further into matter.\n\nThe decision defines the form.",
     },
     lyra_info: {
       ref: "uno / lyra / 001",
@@ -537,7 +537,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       seo_description:
         "LYRA — система сидения, основанная на натяжении. Гибкая опора, минимум материала, отзывчивая форма.",
       description:
-        "Этот объект не является фиксированной формой.\nОн существует как точка перехода между идеей и материалом.\n\nТо, что вы видите — состояние, а не финал.\nОн может остаться таким, как есть, или перейти в материю.\n\nРешение определяет форму.\n\nВы можете зафиксировать своё участие →",
+        "Этот объект не является фиксированной формой.\nОн существует как точка перехода между идеей и материалом.\n\nТо, что вы видите — состояние, а не финал.\nОн может остаться таким, как есть, или перейти в материю.\n\nРешение определяет форму.",
     },
     lyra_info: {
       ref: "uno / lyra / 001",
@@ -775,7 +775,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       seo_description:
         "LYRA — система сидіння на натягу. Гнучка опора, мінімум матеріалу, чутлива форма.",
       description:
-        "Цей об'єкт не є фіксованою формою.\nВін існує як точка переходу між ідеєю та матерією.\n\nТе, що ви бачите — стан, а не фінал.\nВін може залишитися таким, як є, або перейти в матерію.\n\nРішення визначає форму.\n\nВи можете зафіксувати свою участь →",
+        "Цей об'єкт не є фіксованою формою.\nВін існує як точка переходу між ідеєю та матерією.\n\nТе, що ви бачите — стан, а не фінал.\nВін може залишитися таким, як є, або перейти в матерію.\n\nРішення визначає форму.",
     },
     lyra_info: {
       ref: "uno / lyra / 001",
