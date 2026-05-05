@@ -74,8 +74,10 @@ const Index = () => {
                 toggled ? "bg-primary/75" : "bg-primary/45"
               }`}
             />
-          <button
+          <motion.button
             onClick={handleToggle}
+            whileTap={{ scale: 1.06 }}
+            transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
             className="group/uno relative flex items-center justify-center bg-primary/45 rounded-full w-[76px] h-[76px] hover:bg-primary/75 transition-colors duration-300 cursor-pointer"
           >
             {!open && (
@@ -83,7 +85,7 @@ const Index = () => {
                 layoutId="morph-circle"
                 className="absolute w-7 h-7"
                 initial={false}
-                transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
                 animate={{ left: toggled ? 42 : 4 }}
               >
                 <svg width="28" height="28" viewBox="0 0 28 28">
@@ -114,7 +116,7 @@ const Index = () => {
             >
               .uno
             </span>
-          </button>
+          </motion.button>
           </div>
         </div>
 
@@ -144,10 +146,10 @@ const Index = () => {
               <motion.div
                 data-popup
                 className="relative z-10 w-full max-w-2xl mx-2 md:mx-4 my-4 border border-border/30 bg-background/80 backdrop-blur-sm p-4 md:p-8 overflow-visible max-h-[calc(100vh-2rem)] overflow-y-auto"
-                initial={{ opacity: 0, scale: 0.97, y: 10 }}
+                initial={{ opacity: 0, scale: 0.96, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.97, y: 10 }}
-                transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
+                exit={{ opacity: 0, scale: 0.96, y: 8, transition: { duration: 0.32, ease: [0.22, 1, 0.36, 1] } }}
+                transition={{ delay: 0.45, duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               >
                 {/* Close button + circle menu — shared coordinate system anchored at top-right */}
                 <div className="absolute top-4 right-4">
@@ -159,7 +161,10 @@ const Index = () => {
                     <motion.span
                       layoutId="morph-circle"
                       className="block w-5 h-5 rounded-full bg-primary/80"
-                      transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                      initial={{ scale: 0.85 }}
+                      animate={{ scale: 1 }}
+                      exit={{ scale: 0.85 }}
+                      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
                     />
                   </button>
 
@@ -190,11 +195,12 @@ const Index = () => {
                         opacity="0.5"
                         initial={{ pathLength: 0 }}
                         animate={controls}
+                        exit={{ pathLength: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }}
                         variants={{
                           hidden: { pathLength: 0 },
                           visible: {
                             pathLength: 1,
-                            transition: { duration: 0.45, ease: [0.25, 0.1, 0.25, 1] },
+                            transition: { delay: 0.28, duration: 0.38, ease: [0.22, 1, 0.36, 1] },
                           },
                         }}
                       />
@@ -216,11 +222,12 @@ const Index = () => {
                         opacity="0.5"
                         initial={{ pathLength: 0 }}
                         animate={controls}
+                        exit={{ pathLength: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }}
                         variants={{
                           hidden: { pathLength: 0 },
                           visible: {
                             pathLength: 1,
-                            transition: { duration: 0.45, ease: [0.25, 0.1, 0.25, 1] },
+                            transition: { delay: 0.28, duration: 0.38, ease: [0.22, 1, 0.36, 1] },
                           },
                         }}
                       />
@@ -235,6 +242,7 @@ const Index = () => {
                       className="pointer-events-auto absolute flex items-center justify-center w-[77px] h-[77px] md:w-[77px] md:h-[77px] top-[22px] right-[22px] md:top-[28px] md:right-[28px] rounded-full text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors cursor-pointer"
                       initial={{ opacity: 0 }}
                       animate={controls}
+                      exit={{ opacity: 0, transition: { duration: 0.2 } }}
                       variants={{
                         hidden: { opacity: 0 },
                         visible: {
@@ -258,13 +266,14 @@ const Index = () => {
                           strokeDasharray="236"
                           initial={{ strokeDashoffset: 236 }}
                           animate={controls}
+                          exit={{ strokeDashoffset: 236, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } }}
                           variants={{
                             hidden: { strokeDashoffset: 236 },
                             visible: {
                               strokeDashoffset: 0,
                               transition: {
-                                delay: 0.48,
-                                duration: 0.75,
+                                delay: 0.5,
+                                duration: 0.5,
                                 ease: [0.25, 0.1, 0.25, 1],
                               },
                             },
@@ -275,6 +284,7 @@ const Index = () => {
                       <motion.span
                         initial={{ opacity: 0, y: 4 }}
                         animate={controls}
+                        exit={{ opacity: 0, y: 4, transition: { duration: 0.18 } }}
                         variants={{
                           hidden: { opacity: 0, y: 4 },
                           visible: {
@@ -336,14 +346,16 @@ const Index = () => {
                     className="text-left text-foreground"
                     initial="hidden"
                     animate={controls}
+                    exit={{ opacity: 0, y: 6, filter: "blur(4px)", transition: { duration: 0.22 } }}
                     variants={{
-                      hidden: { opacity: 0, y: 12 },
+                      hidden: { opacity: 0, y: 10, filter: "blur(4px)" },
                       visible: {
                         opacity: 1,
                         y: 0,
+                        filter: "blur(0px)",
                         transition: {
                           delay: 0.7,
-                          duration: 0.45,
+                          duration: 0.5,
                           ease: [0.25, 0.1, 0.25, 1],
                         },
                       },
@@ -366,11 +378,13 @@ const Index = () => {
                     className="block text-left text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-7"
                     initial="hidden"
                     animate={controls}
+                    exit={{ opacity: 0, y: 6, filter: "blur(4px)", transition: { duration: 0.2 } }}
                     variants={{
-                      hidden: { opacity: 0, y: 10 },
+                      hidden: { opacity: 0, y: 10, filter: "blur(4px)" },
                       visible: {
                         opacity: 1,
                         y: 0,
+                        filter: "blur(0px)",
                         transition: {
                           delay: 0.95,
                           duration: 0.4,
@@ -385,6 +399,7 @@ const Index = () => {
                     className="mt-10 pt-4 border-t border-border/20 flex items-baseline gap-2"
                     initial="hidden"
                     animate={controls}
+                    exit={{ opacity: 0, transition: { duration: 0.18 } }}
                     variants={{
                       hidden: { opacity: 0 },
                       visible: {
