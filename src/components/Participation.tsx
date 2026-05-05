@@ -56,7 +56,6 @@ const Participation = ({ model, open, onClose }: Props) => {
       setStage("action");
       setLocalUserName(getUserName());
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -191,7 +190,7 @@ const Participation = ({ model, open, onClose }: Props) => {
         body: JSON.stringify(payloadOut),
       });
 // Read user_id / user_name from the webhook response.
-let data: any = null;
+let data: unknown = null;
 try {
   data = await res.json();
 } catch (parseErr) {
@@ -200,7 +199,8 @@ try {
 // Make often wraps payload in an array — unwrap it.
 const payload = Array.isArray(data) ? data[0] : data;
 if (payload && typeof payload === "object") {
-  const rawUid = payload.user_id ?? payload.userId ?? payload.id;
+  const payloadRecord = payload as Record<string, unknown>;
+  const rawUid = payloadRecord.user_id ?? payloadRecord.userId ?? payloadRecord.id;
   const uid =
     typeof rawUid === "string"
       ? rawUid.match(/\[([^\]]+)\]\(mailto:[^)]+\)/)?.[1] ?? rawUid
