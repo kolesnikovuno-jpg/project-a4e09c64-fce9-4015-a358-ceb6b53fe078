@@ -147,7 +147,7 @@ const Index = () => {
               </motion.div>
             )}
             <span
-              className={`text-xs font-semibold text-background transition-all duration-300 ease-in-out ${toggled ? "ml-3" : "ml-10"}`}
+              className="text-xs font-semibold text-background"
             >
               .uno
             </span>
