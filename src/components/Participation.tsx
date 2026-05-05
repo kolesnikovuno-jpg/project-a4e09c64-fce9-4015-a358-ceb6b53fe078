@@ -146,18 +146,29 @@ const Participation = ({ model, open, onClose }: Props) => {
           telegram: trimmedTelegram,
         }),
       });
-      // Best-effort: read back user_id / status from the webhook response.
+      // Read user_id / user_name from the webhook response.
+      let data: any = null;
       try {
         const text = await res.text();
-        if (text) {
-          const data = JSON.parse(text);
-          if (data && typeof data === "object") {
-            if (typeof data.user_id === "string" && data.user_id) setUserId(data.user_id);
-            if (typeof data.user_name === "string" && data.user_name) setUserName(data.user_name);
-          }
+        console.log("RESPONSE raw:", text);
+        if (text) data = JSON.parse(text);
+      } catch (parseErr) {
+        console.warn("participation: failed to parse webhook response", parseErr);
+      }
+      console.log("RESPONSE:", data);
+      // Make often wraps payload in an array — unwrap it.
+      const payload = Array.isArray(data) ? data[0] : data;
+      if (payload && typeof payload === "object") {
+        const uid = payload.user_id ?? payload.userId ?? payload.id;
+        const uname = payload.user_name ?? payload.userName ?? payload.name;
+        if (typeof uid === "string" && uid) {
+          localStorage.setItem("user_id", uid);
+          setUserId(uid);
+          console.log("user_id saved:", uid);
+        } else {
+          console.warn("participation: user_id missing in response", payload);
         }
-      } catch {
-        /* non-JSON or empty body — ignore */
+        if (typeof uname === "string" && uname) setUserName(uname);
       }
     } catch (e) {
       console.warn("participation webhook failed", e);
