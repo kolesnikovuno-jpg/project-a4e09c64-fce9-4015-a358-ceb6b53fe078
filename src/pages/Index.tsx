@@ -415,32 +415,38 @@ const Index = () => {
 
                 {/* Content */}
                 <div className="text-foreground leading-relaxed mt-7 flex flex-col">
-                  <motion.div
-                    className="text-left text-foreground"
-                    initial="hidden"
-                    animate={controls}
-                    exit={{ opacity: 0, y: 6, filter: "blur(4px)", transition: { duration: 0.22 } }}
-                    variants={{
-                      hidden: { opacity: 0, y: 10, filter: "blur(4px)" },
-                      visible: {
-                        opacity: 1,
-                        y: 0,
-                        filter: "blur(0px)",
-                        transition: {
-                          delay: 1.45,
-                          duration: 0.4,
-                          ease: [0.25, 0.1, 0.25, 1],
+                  <div className="text-left text-foreground">
+                    <motion.p
+                      className="text-[12px] md:text-[13px] font-light text-foreground/80 tracking-[0.1em] mt-6 mb-1"
+                      initial="hidden"
+                      animate={controls}
+                      exit={{ opacity: 0, transition: { duration: 0.25, ease: "linear" } }}
+                      variants={{
+                        hidden: { opacity: 0 },
+                        visible: {
+                          opacity: 1,
+                          transition: { delay: 1.45, duration: 0.9, ease: "linear" },
                         },
-                      },
-                    }}
-                  >
-                    <p className="text-[12px] md:text-[13px] font-light text-foreground/80 tracking-[0.1em] mt-6 mb-1">
+                      }}
+                    >
                       {t.index.structure_label}
-                    </p>
-                    <p className="text-[14px] md:text-[15px] leading-[1.65]">
+                    </motion.p>
+                    <motion.p
+                      className="text-[14px] md:text-[15px] leading-[1.65]"
+                      initial="hidden"
+                      animate={controls}
+                      exit={{ opacity: 0, transition: { duration: 0.25, ease: "linear" } }}
+                      variants={{
+                        hidden: { opacity: 0 },
+                        visible: {
+                          opacity: 1,
+                          transition: { delay: 1.7, duration: 1.1, ease: "linear" },
+                        },
+                      }}
+                    >
                       {t.index.tagline}
-                    </p>
-                  </motion.div>
+                    </motion.p>
+                  </div>
                   <motion.a
                     href="/pricing"
                     onClick={(e) => {
@@ -451,17 +457,15 @@ const Index = () => {
                     className="block text-left text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-7"
                     initial="hidden"
                     animate={controls}
-                    exit={{ opacity: 0, y: 6, filter: "blur(4px)", transition: { duration: 0.2 } }}
+                    exit={{ opacity: 0, transition: { duration: 0.25, ease: "linear" } }}
                     variants={{
-                      hidden: { opacity: 0, y: 10, filter: "blur(4px)" },
+                      hidden: { opacity: 0 },
                       visible: {
                         opacity: 1,
-                        y: 0,
-                        filter: "blur(0px)",
                         transition: {
-                          delay: 1.6,
-                          duration: 0.35,
-                          ease: [0.25, 0.1, 0.25, 1],
+                          delay: 2.4,
+                          duration: 0.9,
+                          ease: "linear",
                         },
                       },
                     }}
