@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, LayoutGroup, useAnimation } from "motion/react";
 import { useIsNative } from "@/hooks/use-native";
@@ -8,6 +8,7 @@ import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 const Index = () => {
   const [open, setOpen] = useState(false);
   const [toggled, setToggled] = useState(false);
+  const [feedback, setFeedback] = useState(false);
   const navigate = useNavigate();
   const isNative = useIsNative();
   const controls = useAnimation();
@@ -31,8 +32,12 @@ const Index = () => {
 
   const handleToggle = () => {
     if (!toggled) {
+      setFeedback(true);
       setToggled(true);
-      setTimeout(() => setOpen(true), 250);
+      setTimeout(() => {
+        setFeedback(false);
+        setOpen(true);
+      }, 100);
     } else {
       setOpen(false);
     }
@@ -40,7 +45,7 @@ const Index = () => {
 
   const handleClose = () => {
     setOpen(false);
-    setTimeout(() => setToggled(false), 400);
+    setTimeout(() => setToggled(false), 650);
   };
 
   const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -67,54 +72,53 @@ const Index = () => {
         {/* Toggle button — asymmetric placement, shifted right */}
         <div className="flex items-center justify-center mt-[72px] md:mt-0 translate-x-[22vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
           <div className="group/uno relative flex items-center justify-center">
-            {/* Surrounding circle — same fill as button, mirrors hover/toggled state */}
-            <span
-              aria-hidden
-              className={`pointer-events-none absolute rounded-full w-[76px] h-[76px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/75 ${
-                toggled ? "bg-primary/75" : "bg-primary/45"
-              }`}
-            />
-          <button
-            onClick={handleToggle}
-            className="group/uno relative flex items-center justify-center bg-primary/45 rounded-full w-[76px] h-[76px] hover:bg-primary/75 transition-colors duration-300 cursor-pointer"
-          >
             {!open && (
-              <motion.div
-                layoutId="morph-circle"
-                className="absolute w-7 h-7"
-                initial={false}
-                transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-                animate={{ left: toggled ? 42 : 4 }}
+              <motion.button
+                layoutId="hero-morph"
+                onClick={handleToggle}
+                animate={{ scale: feedback ? 1.1 : 1 }}
+                transition={{
+                  layout: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
+                  scale: { duration: 0.1, ease: "easeOut" },
+                }}
+                style={{ borderRadius: 9999 }}
+                className="group/uno relative flex items-center justify-center bg-primary/45 w-[76px] h-[76px] hover:bg-primary/75 transition-colors duration-300 cursor-pointer overflow-hidden"
               >
-                <svg width="28" height="28" viewBox="0 0 28 28">
-                  <defs>
-                    <pattern
-                      id="hatch-toggle"
-                      patternUnits="userSpaceOnUse"
-                      width="2.2"
-                      height="2.2"
-                      patternTransform="rotate(45)"
-                    >
-                      <line x1="0" y1="0" x2="0" y2="2.2" stroke="hsl(var(--background))" strokeWidth="1.3" />
-                    </pattern>
-                  </defs>
-                  <circle
-                    cx="14"
-                    cy="14"
-                    r="13"
-                    fill="url(#hatch-toggle)"
-                    stroke="hsl(var(--background))"
-                    strokeWidth="0.8"
-                  />
-                </svg>
-              </motion.div>
+                <motion.div
+                  className="absolute w-7 h-7"
+                  initial={false}
+                  transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                  animate={{ left: toggled ? 42 : 4 }}
+                >
+                  <svg width="28" height="28" viewBox="0 0 28 28">
+                    <defs>
+                      <pattern
+                        id="hatch-toggle"
+                        patternUnits="userSpaceOnUse"
+                        width="2.2"
+                        height="2.2"
+                        patternTransform="rotate(45)"
+                      >
+                        <line x1="0" y1="0" x2="0" y2="2.2" stroke="hsl(var(--background))" strokeWidth="1.3" />
+                      </pattern>
+                    </defs>
+                    <circle
+                      cx="14"
+                      cy="14"
+                      r="13"
+                      fill="url(#hatch-toggle)"
+                      stroke="hsl(var(--background))"
+                      strokeWidth="0.8"
+                    />
+                  </svg>
+                </motion.div>
+                <span
+                  className={`text-xs font-semibold text-background transition-all duration-300 ease-in-out ${toggled ? "ml-3" : "ml-10"}`}
+                >
+                  .uno
+                </span>
+              </motion.button>
             )}
-            <span
-              className={`text-xs font-semibold text-background transition-all duration-300 ease-in-out ${toggled ? "ml-3" : "ml-10"}`}
-            >
-              .uno
-            </span>
-          </button>
           </div>
         </div>
 
@@ -143,11 +147,13 @@ const Index = () => {
               {/* Content card */}
               <motion.div
                 data-popup
+                layoutId="hero-morph"
+                style={{ borderRadius: 0 }}
                 className="relative z-10 w-full max-w-2xl mx-2 md:mx-4 my-4 border border-border/30 bg-background/80 backdrop-blur-sm p-4 md:p-8 overflow-visible max-h-[calc(100vh-2rem)] overflow-y-auto"
-                initial={{ opacity: 0, scale: 0.97, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.97, y: 10 }}
-                transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
+                transition={{
+                  layout: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
+                  default: { duration: 0.45, ease: [0.25, 0.1, 0.25, 1] },
+                }}
               >
                 {/* Close button + circle menu — shared coordinate system anchored at top-right */}
                 <div className="absolute top-4 right-4">
@@ -156,11 +162,7 @@ const Index = () => {
                     onClick={handleClose}
                     className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center cursor-pointer focus:outline-none z-10"
                   >
-                    <motion.span
-                      layoutId="morph-circle"
-                      className="block w-5 h-5 rounded-full bg-primary/80"
-                      transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-                    />
+                    <span className="block w-5 h-5 rounded-full bg-primary/80" />
                   </button>
 
                   {/* Connector line + circle, positioned relative to the button */}
