@@ -177,8 +177,8 @@ const Index = () => {
                 data-popup
                 className="relative z-10 w-full max-w-2xl mx-2 md:mx-4 my-4 border border-border/30 bg-background/80 backdrop-blur-sm p-4 md:p-8 overflow-visible max-h-[calc(100vh-2rem)] overflow-y-auto"
                 initial={false}
-                animate={open ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.96, y: 8 }}
-                transition={open ? { delay: 0.45, duration: 0.28, ease: [0.22, 1, 0.36, 1] } : { duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                animate={open ? { opacity: 1 } : { opacity: 0 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
               >
                 {/* Close button + circle menu — shared coordinate system anchored at top-right */}
                 <div className="absolute top-4 right-4">
@@ -200,8 +200,8 @@ const Index = () => {
                         initial={{ opacity: 1 }}
                         animate={{ opacity: open ? 0 : 1 }}
                         transition={{
-                          duration: 0.42,
-                          delay: open ? 0.42 : 0,
+                          duration: 0.55,
+                          delay: open ? 0.3 : 0,
                           ease: [0.22, 1, 0.36, 1],
                         }}
                         style={{ willChange: "opacity" }}
@@ -232,8 +232,8 @@ const Index = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: open ? 1 : 0 }}
                         transition={{
-                          duration: 0.46,
-                          delay: open ? 0.36 : 0,
+                          duration: 0.55,
+                          delay: open ? 0.3 : 0,
                           ease: [0.22, 1, 0.36, 1],
                         }}
                         style={{ willChange: "opacity" }}
