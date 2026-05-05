@@ -200,8 +200,8 @@ const Index = () => {
                         initial={{ opacity: 1 }}
                         animate={{ opacity: open ? 0 : 1 }}
                         transition={{
-                          duration: 0.42,
-                          delay: open ? 0.42 : 0,
+                          duration: 0.55,
+                          delay: open ? 0.3 : 0,
                           ease: [0.22, 1, 0.36, 1],
                         }}
                         style={{ willChange: "opacity" }}
@@ -232,8 +232,8 @@ const Index = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: open ? 1 : 0 }}
                         transition={{
-                          duration: 0.46,
-                          delay: open ? 0.36 : 0,
+                          duration: 0.55,
+                          delay: open ? 0.3 : 0,
                           ease: [0.22, 1, 0.36, 1],
                         }}
                         style={{ willChange: "opacity" }}
