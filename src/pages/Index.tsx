@@ -155,7 +155,7 @@ const Index = () => {
               className={`fixed inset-0 z-50 flex items-center justify-center overflow-y-auto ${open ? "pointer-events-auto" : "pointer-events-none"}`}
               initial={false}
               animate={{ opacity: open ? 1 : 0 }}
-              transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
               onAnimationComplete={() => {
                 if (!openRef.current) setPopupMounted(false);
               }}
@@ -167,7 +167,7 @@ const Index = () => {
                 className="absolute inset-0 bg-background/80 backdrop-blur-sm"
                 initial={false}
                 animate={{ opacity: open ? 1 : 0 }}
-                transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+                transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
               />
 
               {/* Content card */}
@@ -176,7 +176,7 @@ const Index = () => {
                 className="relative z-10 w-full max-w-2xl mx-2 md:mx-4 my-4 border border-border/30 bg-background/80 backdrop-blur-sm p-4 md:p-8 overflow-visible max-h-[calc(100vh-2rem)] overflow-y-auto"
                 initial={false}
                 animate={open ? { opacity: 1 } : { opacity: 0 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
               >
                 {/* Close button + circle menu — shared coordinate system anchored at top-right */}
                 <div className="absolute top-4 right-4">
