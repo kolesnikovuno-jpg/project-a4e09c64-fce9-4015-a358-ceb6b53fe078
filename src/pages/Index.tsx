@@ -74,8 +74,10 @@ const Index = () => {
                 toggled ? "bg-primary/75" : "bg-primary/45"
               }`}
             />
-          <button
+          <motion.button
             onClick={handleToggle}
+            whileTap={{ scale: 1.06 }}
+            transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
             className="group/uno relative flex items-center justify-center bg-primary/45 rounded-full w-[76px] h-[76px] hover:bg-primary/75 transition-colors duration-300 cursor-pointer"
           >
             {!open && (
@@ -83,7 +85,7 @@ const Index = () => {
                 layoutId="morph-circle"
                 className="absolute w-7 h-7"
                 initial={false}
-                transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
                 animate={{ left: toggled ? 42 : 4 }}
               >
                 <svg width="28" height="28" viewBox="0 0 28 28">
@@ -114,7 +116,7 @@ const Index = () => {
             >
               .uno
             </span>
-          </button>
+          </motion.button>
           </div>
         </div>
 
