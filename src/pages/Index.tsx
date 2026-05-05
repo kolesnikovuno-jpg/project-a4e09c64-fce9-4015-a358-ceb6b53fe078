@@ -364,7 +364,7 @@ const Index = () => {
                           visible: {
                             opacity: 1,
                             y: 0,
-                            transition: { delay: 1.95, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+                            transition: { delay: 0.7, duration: 1.8, ease: [0.25, 0.1, 0.25, 1] },
                           },
                         }}
                       >
