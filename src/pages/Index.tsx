@@ -477,30 +477,25 @@ const Index = () => {
                 {/* Content */}
                 <div className="text-foreground leading-relaxed mt-7 flex flex-col">
                   <div className="text-left text-foreground">
-                    <motion.p
-                      className="text-[12px] md:text-[13px] font-light text-foreground/80 tracking-[0.1em] mt-6 mb-1"
-                      initial="hidden"
-                      animate={controls}
-                      exit={{ opacity: 0, transition: { duration: 0.25, ease: "linear" } }}
-                      variants={{
-                        hidden: { opacity: 0 },
-                        visible: {
-                          opacity: 1,
-                          transition: { delay: 0.7, duration: 1.8, ease: [0.25, 0.1, 0.25, 1] },
-                        },
-                      }}
-                    >
-                      {t.index.structure_label}
-                    </motion.p>
                     {open && (
-                      <p className="text-[14px] md:text-[15px] leading-[1.65]">
-                        <SoftTypewriter
-                          text={t.index.tagline}
-                          delay={1.0}
-                          charDuration={0.55}
-                          stagger={0.022}
-                        />
-                      </p>
+                      <>
+                        <p className="text-[12px] md:text-[13px] font-light text-foreground/80 tracking-[0.1em] mt-6 mb-1">
+                          <SoftTypewriter
+                            text={t.index.structure_label}
+                            delay={2.1}
+                            charDuration={0.55}
+                            stagger={0.022}
+                          />
+                        </p>
+                        <p className="text-[14px] md:text-[15px] leading-[1.65]">
+                          <SoftTypewriter
+                            text={t.index.tagline}
+                            delay={2.9}
+                            charDuration={0.55}
+                            stagger={0.022}
+                          />
+                        </p>
+                      </>
                     )}
                   </div>
                   <motion.a
@@ -519,7 +514,7 @@ const Index = () => {
                       visible: {
                         opacity: 1,
                         transition: {
-                          delay: 2.4,
+                          delay: 4.0,
                           duration: 0.01,
                           ease: "linear",
                         },
@@ -529,7 +524,7 @@ const Index = () => {
                     {open ? (
                       <SoftTypewriter
                         text={t.index.pricing_link}
-                        delay={2.4}
+                        delay={4.0}
                         charDuration={0.5}
                         stagger={0.02}
                       />
