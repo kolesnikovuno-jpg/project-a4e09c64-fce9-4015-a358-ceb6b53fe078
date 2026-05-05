@@ -273,7 +273,7 @@ const Index = () => {
                           hidden: { pathLength: 0 },
                           visible: {
                             pathLength: 1,
-                            transition: { delay: 0.28, duration: 0.38, ease: [0.22, 1, 0.36, 1] },
+                            transition: { delay: 0.7, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
                           },
                         }}
                       />
@@ -300,7 +300,7 @@ const Index = () => {
                           hidden: { pathLength: 0 },
                           visible: {
                             pathLength: 1,
-                            transition: { delay: 0.28, duration: 0.38, ease: [0.22, 1, 0.36, 1] },
+                            transition: { delay: 0.7, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
                           },
                         }}
                       />
