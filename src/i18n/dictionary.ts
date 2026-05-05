@@ -437,6 +437,9 @@ export const dictionary: Record<Locale, Dictionary> = {
         "Your request has been received.\n\nYou can proceed with contribution using the current participation channel.",
       proceed_link: "Proceed to contribution",
       close_aria: "close",
+      action_requested_title: "Request received",
+      action_allowed_title: "Access confirmed",
+      action_greeting: "Welcome",
     },
   },
   ru: {
@@ -672,6 +675,9 @@ export const dictionary: Record<Locale, Dictionary> = {
         "Ваш запрос получен.\n\nВы можете продолжить вкладом через действующий канал участия.",
       proceed_link: "Перейти к вкладу",
       close_aria: "закрыть",
+      action_requested_title: "Запрос получен",
+      action_allowed_title: "Доступ подтверждён",
+      action_greeting: "Добро пожаловать",
     },
   },
   uk: {
@@ -907,6 +913,9 @@ export const dictionary: Record<Locale, Dictionary> = {
         "Ваш запит отримано.\n\nВи можете продовжити внеском через діючий канал участі.",
       proceed_link: "Перейти до внеску",
       close_aria: "закрити",
+      action_requested_title: "Запит отримано",
+      action_allowed_title: "Доступ підтверджено",
+      action_greeting: "Ласкаво просимо",
     },
   },
 };
