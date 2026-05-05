@@ -195,6 +195,9 @@ export type Dictionary = {
     success_text: string;
     proceed_link: string;
     close_aria: string;
+    action_requested_title: string;
+    action_allowed_title: string;
+    action_greeting: string;
   };
 };
 
