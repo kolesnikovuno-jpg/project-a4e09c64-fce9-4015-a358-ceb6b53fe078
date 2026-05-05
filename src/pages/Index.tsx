@@ -377,7 +377,7 @@ const Index = () => {
                   className="flex flex-col space-y-1.5 text-left overflow-visible"
                   initial="hidden"
                   animate={controls}
-                  exit={{ opacity: 0, transition: { duration: 0.25, ease: "linear" } }}
+                  exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
                   variants={{
                     hidden: { opacity: 0 },
                     visible: {
@@ -431,7 +431,7 @@ const Index = () => {
                       className="text-[12px] md:text-[13px] font-light text-foreground/80 tracking-[0.1em] mt-6 mb-1"
                       initial="hidden"
                       animate={controls}
-                      exit={{ opacity: 0, transition: { duration: 0.25, ease: "linear" } }}
+                      exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
                       variants={{
                         hidden: { opacity: 0 },
                         visible: {
@@ -446,7 +446,7 @@ const Index = () => {
                       className="text-[14px] md:text-[15px] leading-[1.65]"
                       initial="hidden"
                       animate={controls}
-                      exit={{ opacity: 0, transition: { duration: 0.25, ease: "linear" } }}
+                      exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
                       variants={{
                         hidden: { opacity: 0 },
                         visible: {
@@ -468,7 +468,7 @@ const Index = () => {
                     className="block text-left text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-7"
                     initial="hidden"
                     animate={controls}
-                    exit={{ opacity: 0, transition: { duration: 0.25, ease: "linear" } }}
+                    exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
                     variants={{
                       hidden: { opacity: 0 },
                       visible: {
@@ -487,7 +487,7 @@ const Index = () => {
                     className="mt-10 pt-4 border-t border-border/20 flex items-baseline gap-2"
                     initial="hidden"
                     animate={controls}
-                    exit={{ opacity: 0, transition: { duration: 0.18 } }}
+                    exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
                     variants={{
                       hidden: { opacity: 0 },
                       visible: {
