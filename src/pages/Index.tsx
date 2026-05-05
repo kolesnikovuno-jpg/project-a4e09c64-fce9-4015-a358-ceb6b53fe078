@@ -67,7 +67,7 @@ const Index = () => {
     if (openTimerRef.current) clearTimeout(openTimerRef.current);
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
     setOpen(false);
-    resetTimerRef.current = setTimeout(() => setToggled(false), 550);
+    resetTimerRef.current = setTimeout(() => setToggled(false), 350);
   };
 
   const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -110,7 +110,7 @@ const Index = () => {
                 layoutId="morph-circle"
                 className="absolute w-7 h-7"
                 initial={false}
-                transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 1.05, ease: [0.4, 0, 0.2, 1] }}
                 style={{ willChange: "transform, opacity" }}
                 animate={{ left: toggled ? 42 : 4 }}
               >
@@ -155,7 +155,7 @@ const Index = () => {
               className={`fixed inset-0 z-50 flex items-center justify-center overflow-y-auto ${open ? "pointer-events-auto" : "pointer-events-none"}`}
               initial={false}
               animate={{ opacity: open ? 1 : 0 }}
-              transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
               onAnimationComplete={() => {
                 if (!openRef.current) setPopupMounted(false);
               }}
@@ -167,7 +167,7 @@ const Index = () => {
                 className="absolute inset-0 bg-background/80 backdrop-blur-sm"
                 initial={false}
                 animate={{ opacity: open ? 1 : 0 }}
-                transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+                transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
               />
 
               {/* Content card */}
@@ -176,7 +176,7 @@ const Index = () => {
                 className="relative z-10 w-full max-w-2xl mx-2 md:mx-4 my-4 border border-border/30 bg-background/80 backdrop-blur-sm p-4 md:p-8 overflow-visible max-h-[calc(100vh-2rem)] overflow-y-auto"
                 initial={false}
                 animate={open ? { opacity: 1 } : { opacity: 0 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
               >
                 {/* Close button + circle menu — shared coordinate system anchored at top-right */}
                 <div className="absolute top-4 right-4">
@@ -188,7 +188,7 @@ const Index = () => {
                     <motion.span
                       layoutId="morph-circle"
                       className="block w-5 h-5 relative"
-                      transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+                      transition={{ duration: 1.05, ease: [0.4, 0, 0.2, 1] }}
                       style={{ willChange: "transform, opacity", transform: "translate3d(0,0,0)" }}
                     >
                       {/* Striped layer — fades out during travel */}
@@ -266,12 +266,12 @@ const Index = () => {
                         opacity="0.5"
                         initial={{ pathLength: 0 }}
                         animate={controls}
-                        exit={{ pathLength: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }}
+                        exit={{ pathLength: 0, transition: { duration: 0.5, ease: [0.4, 0, 1, 1] } }}
                         variants={{
                           hidden: { pathLength: 0 },
                           visible: {
                             pathLength: 1,
-                            transition: { delay: 0.37, duration: 1.4, ease: [0.25, 0.1, 0.25, 1] },
+                            transition: { delay: 0.37, duration: 1.4, ease: [0.4, 0, 1, 1] },
                           },
                         }}
                       />
@@ -293,12 +293,12 @@ const Index = () => {
                         opacity="0.5"
                         initial={{ pathLength: 0 }}
                         animate={controls}
-                        exit={{ pathLength: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }}
+                        exit={{ pathLength: 0, transition: { duration: 0.5, ease: [0.4, 0, 1, 1] } }}
                         variants={{
                           hidden: { pathLength: 0 },
                           visible: {
                             pathLength: 1,
-                            transition: { delay: 0.37, duration: 1.4, ease: [0.25, 0.1, 0.25, 1] },
+                            transition: { delay: 0.37, duration: 1.4, ease: [0.4, 0, 1, 1] },
                           },
                         }}
                       />
@@ -338,7 +338,7 @@ const Index = () => {
                           transform="rotate(-45 38.5 38.5)"
                           initial={{ strokeDashoffset: 236 }}
                           animate={controls}
-                          exit={{ strokeDashoffset: 236, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } }}
+                          exit={{ strokeDashoffset: 236, transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] } }}
                           variants={{
                             hidden: { strokeDashoffset: 236 },
                             visible: {
@@ -356,13 +356,13 @@ const Index = () => {
                       <motion.span
                         initial={{ opacity: 0, y: 4 }}
                         animate={controls}
-                        exit={{ opacity: 0, y: 4, transition: { duration: 0.18 } }}
+                        exit={{ opacity: 0, y: 4, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
                         variants={{
                           hidden: { opacity: 0, y: 4 },
                           visible: {
                             opacity: 1,
                             y: 0,
-                            transition: { delay: 3.17, duration: 1.8, ease: [0.4, 0, 0.2, 1] },
+                            transition: { delay: 3.0, duration: 1.2, ease: [0.4, 0, 0.2, 1] },
                           },
                         }}
                       >
@@ -377,7 +377,7 @@ const Index = () => {
                   className="flex flex-col space-y-1.5 text-left overflow-visible"
                   initial="hidden"
                   animate={controls}
-                  exit={{ opacity: 0, transition: { duration: 0.25, ease: "linear" } }}
+                  exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
                   variants={{
                     hidden: { opacity: 0 },
                     visible: {
@@ -431,7 +431,7 @@ const Index = () => {
                       className="text-[12px] md:text-[13px] font-light text-foreground/80 tracking-[0.1em] mt-6 mb-1"
                       initial="hidden"
                       animate={controls}
-                      exit={{ opacity: 0, transition: { duration: 0.25, ease: "linear" } }}
+                      exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
                       variants={{
                         hidden: { opacity: 0 },
                         visible: {
@@ -446,7 +446,7 @@ const Index = () => {
                       className="text-[14px] md:text-[15px] leading-[1.65]"
                       initial="hidden"
                       animate={controls}
-                      exit={{ opacity: 0, transition: { duration: 0.25, ease: "linear" } }}
+                      exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
                       variants={{
                         hidden: { opacity: 0 },
                         visible: {
@@ -468,7 +468,7 @@ const Index = () => {
                     className="block text-left text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-7"
                     initial="hidden"
                     animate={controls}
-                    exit={{ opacity: 0, transition: { duration: 0.25, ease: "linear" } }}
+                    exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
                     variants={{
                       hidden: { opacity: 0 },
                       visible: {
@@ -487,7 +487,7 @@ const Index = () => {
                     className="mt-10 pt-4 border-t border-border/20 flex items-baseline gap-2"
                     initial="hidden"
                     animate={controls}
-                    exit={{ opacity: 0, transition: { duration: 0.18 } }}
+                    exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
                     variants={{
                       hidden: { opacity: 0 },
                       visible: {
