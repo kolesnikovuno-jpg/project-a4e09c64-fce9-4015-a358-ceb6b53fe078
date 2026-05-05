@@ -161,7 +161,10 @@ const Index = () => {
                     <motion.span
                       layoutId="morph-circle"
                       className="block w-5 h-5 rounded-full bg-primary/80"
-                      transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                      initial={{ scale: 0.85 }}
+                      animate={{ scale: 1 }}
+                      exit={{ scale: 0.85 }}
+                      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
                     />
                   </button>
 
