@@ -504,14 +504,6 @@ if (payload && typeof payload === "object") {
               </p>
               <p className="pt-text">{T.success_text}</p>
             </div>
-            <a
-              className="pt-link"
-              href={CONTRIBUTION_URLS[model]}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {T.proceed_link}
-            </a>
             <div className="pt-section" style={{ marginTop: 28 }}>
               <p className="pt-section-title">{T.direct_support_title}</p>
               <a
