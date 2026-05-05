@@ -110,14 +110,13 @@ const Index = () => {
             {!open && (
               <motion.div
                 layoutId="morph-circle"
-                className="absolute w-7 h-7"
+                className="absolute w-5 h-5"
                 initial={false}
                 transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
-                style={{ willChange: "transform, opacity" }}
-                animate={{ left: toggled ? 42 : 4 }}
+                style={{ willChange: "transform, opacity", transformOrigin: "center center" }}
+                animate={{ left: toggled ? 46 : 8 }}
               >
-                <div className="relative w-full h-full">
-                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 28 28">
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 28 28">
                     <defs>
                       <pattern
                         id="hatch-toggle"
@@ -137,8 +136,7 @@ const Index = () => {
                       stroke="hsl(var(--background))"
                       strokeWidth="0.8"
                     />
-                  </svg>
-                </div>
+                </svg>
               </motion.div>
             )}
             <span
