@@ -148,24 +148,24 @@ const Index = () => {
         </div>
 
         {/* Custom overlay popup */}
-        <AnimatePresence>
-          {open && (
+        {popupMounted && (
             <motion.div
               data-overlay
-              className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              className={`fixed inset-0 z-50 flex items-center justify-center overflow-y-auto ${open ? "pointer-events-auto" : "pointer-events-none"}`}
+              initial={false}
+              animate={{ opacity: open ? 1 : 0 }}
               transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
+              onAnimationComplete={() => {
+                if (!openRef.current) setPopupMounted(false);
+              }}
               onClick={handleOverlayClick}
             >
               {/* Backdrop */}
               <motion.div
                 data-overlay
                 className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                initial={false}
+                animate={{ opacity: open ? 1 : 0 }}
                 transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
               />
 
@@ -173,10 +173,9 @@ const Index = () => {
               <motion.div
                 data-popup
                 className="relative z-10 w-full max-w-2xl mx-2 md:mx-4 my-4 border border-border/30 bg-background/80 backdrop-blur-sm p-4 md:p-8 overflow-visible max-h-[calc(100vh-2rem)] overflow-y-auto"
-                initial={{ opacity: 0, scale: 0.96, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.96, y: 8, transition: { duration: 0.32, ease: [0.22, 1, 0.36, 1] } }}
-                transition={{ delay: 0.45, duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                initial={false}
+                animate={open ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.96, y: 8 }}
+                transition={open ? { delay: 0.45, duration: 0.28, ease: [0.22, 1, 0.36, 1] } : { duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
               >
                 {/* Close button + circle menu — shared coordinate system anchored at top-right */}
                 <div className="absolute top-4 right-4">
@@ -453,7 +452,6 @@ const Index = () => {
               </motion.div>
             </motion.div>
           )}
-        </AnimatePresence>
         {/* Language switcher — hidden on the hero, visible only when the
             popup is open. */}
         <LanguageSwitcher hidden={!open} />
