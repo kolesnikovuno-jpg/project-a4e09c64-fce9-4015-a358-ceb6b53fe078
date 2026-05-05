@@ -146,28 +146,27 @@ const Participation = ({ model, open, onClose }: Props) => {
           telegram: trimmedTelegram,
         }),
       });
-      // Read user_id / user_name from the webhook response.
-      let data: any = null;
-      try {
-        const text = await res.text();
-        console.log("RESPONSE raw:", text);
-        if (text) data = JSON.parse(text);
-      } catch (parseErr) {
-        console.warn("participation: failed to parse webhook response", parseErr);
-      }
-      console.log("RESPONSE:", data);
-      // Make often wraps payload in an array — unwrap it.
-      const payload = Array.isArray(data) ? data[0] : data;
-      if (payload && typeof payload === "object") {
-        const uid = payload.user_id ?? payload.userId ?? payload.id;
-        const uname = payload.user_name ?? payload.userName ?? payload.name;
-        if (typeof uid === "string" && uid) {
-          localStorage.setItem("user_id", uid);
-          setUserId(uid);
-          console.log("user_id saved:", uid);
-        } else {
-          console.warn("participation: user_id missing in response", payload);
-        }
+// Read user_id / user_name from the webhook response.
+let data: any = null;
+try {
+  data = await res.json();
+} catch (parseErr) {
+  console.warn("participation: failed to parse webhook response", parseErr);
+}
+// Make often wraps payload in an array — unwrap it.
+const payload = Array.isArray(data) ? data[0] : data;
+if (payload && typeof payload === "object") {
+  const rawUid = payload.user_id ?? payload.userId ?? payload.id;
+  const uid =
+    typeof rawUid === "string"
+      ? rawUid.match(/\[([^\]]+)\]\(mailto:[^)]+\)/)?.[1] ?? rawUid
+      : rawUid;
+
+  if (typeof uid === "string" && uid) {
+    localStorage.setItem("user_id", uid);
+    setUserId(uid);
+  }
+}
         if (typeof uname === "string" && uname) setUserName(uname);
       }
     } catch (e) {
