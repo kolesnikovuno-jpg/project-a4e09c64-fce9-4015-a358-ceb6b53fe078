@@ -266,12 +266,12 @@ const Index = () => {
                         opacity="0.5"
                         initial={{ pathLength: 0 }}
                         animate={controls}
-                        exit={{ pathLength: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }}
+                        exit={{ pathLength: 0, transition: { duration: 0.5, ease: [0.4, 0, 1, 1] } }}
                         variants={{
                           hidden: { pathLength: 0 },
                           visible: {
                             pathLength: 1,
-                            transition: { delay: 0.37, duration: 1.4, ease: [0.25, 0.1, 0.25, 1] },
+                            transition: { delay: 0.37, duration: 1.4, ease: [0.4, 0, 1, 1] },
                           },
                         }}
                       />
@@ -293,12 +293,12 @@ const Index = () => {
                         opacity="0.5"
                         initial={{ pathLength: 0 }}
                         animate={controls}
-                        exit={{ pathLength: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }}
+                        exit={{ pathLength: 0, transition: { duration: 0.5, ease: [0.4, 0, 1, 1] } }}
                         variants={{
                           hidden: { pathLength: 0 },
                           visible: {
                             pathLength: 1,
-                            transition: { delay: 0.37, duration: 1.4, ease: [0.25, 0.1, 0.25, 1] },
+                            transition: { delay: 0.37, duration: 1.4, ease: [0.4, 0, 1, 1] },
                           },
                         }}
                       />
@@ -338,7 +338,7 @@ const Index = () => {
                           transform="rotate(-45 38.5 38.5)"
                           initial={{ strokeDashoffset: 236 }}
                           animate={controls}
-                          exit={{ strokeDashoffset: 236, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } }}
+                          exit={{ strokeDashoffset: 236, transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] } }}
                           variants={{
                             hidden: { strokeDashoffset: 236 },
                             visible: {
@@ -356,13 +356,13 @@ const Index = () => {
                       <motion.span
                         initial={{ opacity: 0, y: 4 }}
                         animate={controls}
-                        exit={{ opacity: 0, y: 4, transition: { duration: 0.18 } }}
+                        exit={{ opacity: 0, y: 4, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
                         variants={{
                           hidden: { opacity: 0, y: 4 },
                           visible: {
                             opacity: 1,
                             y: 0,
-                            transition: { delay: 3.17, duration: 1.8, ease: [0.4, 0, 0.2, 1] },
+                            transition: { delay: 3.0, duration: 1.2, ease: [0.4, 0, 0.2, 1] },
                           },
                         }}
                       >
