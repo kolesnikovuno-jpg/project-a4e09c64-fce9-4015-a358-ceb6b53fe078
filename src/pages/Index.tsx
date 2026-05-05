@@ -492,21 +492,16 @@ const Index = () => {
                     >
                       {t.index.structure_label}
                     </motion.p>
-                    <motion.p
-                      className="text-[14px] md:text-[15px] leading-[1.65]"
-                      initial="hidden"
-                      animate={controls}
-                      exit={{ opacity: 0, transition: { duration: 0.25, ease: "linear" } }}
-                      variants={{
-                        hidden: { opacity: 0 },
-                        visible: {
-                          opacity: 1,
-                          transition: { delay: 1.0, duration: 1.6, ease: "linear" },
-                        },
-                      }}
-                    >
-                      {t.index.tagline}
-                    </motion.p>
+                    {open && (
+                      <p className="text-[14px] md:text-[15px] leading-[1.65]">
+                        <SoftTypewriter
+                          text={t.index.tagline}
+                          delay={1.0}
+                          charDuration={0.55}
+                          stagger={0.022}
+                        />
+                      </p>
+                    )}
                   </div>
                   <motion.a
                     href="/pricing"
@@ -524,14 +519,21 @@ const Index = () => {
                       visible: {
                         opacity: 1,
                         transition: {
-                          delay: 1.6,
-                          duration: 1.4,
+                          delay: 2.4,
+                          duration: 0.01,
                           ease: "linear",
                         },
                       },
                     }}
                   >
-                    {t.index.pricing_link}
+                    {open ? (
+                      <SoftTypewriter
+                        text={t.index.pricing_link}
+                        delay={2.4}
+                        charDuration={0.5}
+                        stagger={0.02}
+                      />
+                    ) : null}
                   </motion.a>
                   <motion.div
                     className="mt-10 pt-4 border-t border-border/20 flex items-baseline gap-2"
