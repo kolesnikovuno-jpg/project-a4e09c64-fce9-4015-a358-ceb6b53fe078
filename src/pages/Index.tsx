@@ -59,10 +59,8 @@ const Index = () => {
       return;
     }
 
-    openTimerRef.current = setTimeout(() => {
-      setPopupMounted(true);
-      setOpen(true);
-    }, 250);
+    setPopupMounted(true);
+    setOpen(true);
   };
 
   const handleClose = () => {
