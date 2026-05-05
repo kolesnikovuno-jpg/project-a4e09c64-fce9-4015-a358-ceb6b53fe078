@@ -242,6 +242,7 @@ const Index = () => {
                       className="pointer-events-auto absolute flex items-center justify-center w-[77px] h-[77px] md:w-[77px] md:h-[77px] top-[22px] right-[22px] md:top-[28px] md:right-[28px] rounded-full text-[9px] md:text-[10px] tracking-[0.1em] text-primary/70 hover:text-primary transition-colors cursor-pointer"
                       initial={{ opacity: 0 }}
                       animate={controls}
+                      exit={{ opacity: 0, transition: { duration: 0.2 } }}
                       variants={{
                         hidden: { opacity: 0 },
                         visible: {
@@ -265,13 +266,14 @@ const Index = () => {
                           strokeDasharray="236"
                           initial={{ strokeDashoffset: 236 }}
                           animate={controls}
+                          exit={{ strokeDashoffset: 236, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } }}
                           variants={{
                             hidden: { strokeDashoffset: 236 },
                             visible: {
                               strokeDashoffset: 0,
                               transition: {
-                                delay: 0.48,
-                                duration: 0.75,
+                                delay: 0.5,
+                                duration: 0.5,
                                 ease: [0.25, 0.1, 0.25, 1],
                               },
                             },
@@ -282,6 +284,7 @@ const Index = () => {
                       <motion.span
                         initial={{ opacity: 0, y: 4 }}
                         animate={controls}
+                        exit={{ opacity: 0, y: 4, transition: { duration: 0.18 } }}
                         variants={{
                           hidden: { opacity: 0, y: 4 },
                           visible: {
