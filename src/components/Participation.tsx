@@ -41,8 +41,7 @@ const Participation = ({ model, open, onClose }: Props) => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [telegram, setTelegram] = useState("");
-  const [sentiment, setSentiment] = useState<"support" | "participation" | "undecided" | "">("");
-  // note: "material" is also a valid sentiment value below
+  const [sentiment, setSentiment] = useState<"support" | "participation" | "undecided" | "material" | "">("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setLocalStatus] = useState<ParticipationStatus>(() => getStatus(model));
