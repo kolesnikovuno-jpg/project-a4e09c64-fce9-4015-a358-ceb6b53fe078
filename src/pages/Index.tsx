@@ -74,11 +74,9 @@ const Index = () => {
                 toggled ? "bg-primary/75" : "bg-primary/45"
               }`}
             />
-          <motion.button
+          <button
             onClick={handleToggle}
-            whileTap={{ scale: 1.06 }}
-            transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
-            className="group/uno relative flex items-center justify-center bg-primary/45 rounded-full w-[76px] h-[76px] hover:bg-primary/75 transition-colors duration-300 cursor-pointer"
+            className="group/uno relative flex items-center justify-center bg-primary/45 rounded-full w-[76px] h-[76px] hover:bg-primary/75 transition-colors duration-300 cursor-pointer active:scale-[1.06]"
           >
             {!open && (
               <motion.div
@@ -116,7 +114,7 @@ const Index = () => {
             >
               .uno
             </span>
-          </motion.button>
+          </button>
           </div>
         </div>
 
@@ -161,9 +159,6 @@ const Index = () => {
                     <motion.span
                       layoutId="morph-circle"
                       className="block w-5 h-5 rounded-full bg-primary/80"
-                      initial={{ scale: 0.85 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0.85 }}
                       transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
                     />
                   </button>
