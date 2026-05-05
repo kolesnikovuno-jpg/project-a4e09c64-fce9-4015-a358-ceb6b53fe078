@@ -41,7 +41,7 @@ const Participation = ({ model, open, onClose }: Props) => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [telegram, setTelegram] = useState("");
-  const [sentiment, setSentiment] = useState<"support" | "participation" | "undecided" | "">("");
+  const [sentiment, setSentiment] = useState<"support" | "participation" | "undecided" | "material" | "">("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setLocalStatus] = useState<ParticipationStatus>(() => getStatus(model));
@@ -452,6 +452,7 @@ if (payload && typeof payload === "object") {
                   ["support", T.form_sentiment_support],
                   ["participation", T.form_sentiment_participation],
                   ["undecided", T.form_sentiment_undecided],
+                  ["material", T.form_sentiment_material],
                 ] as const).map(([value, label]) => (
                   <label key={value} className="pt-radio">
                     <input
@@ -459,7 +460,7 @@ if (payload && typeof payload === "object") {
                       name="pt-sentiment"
                       value={value}
                       checked={sentiment === value}
-                      onChange={() => setSentiment(value)}
+                      onChange={() => setSentiment(value as typeof sentiment)}
                     />
                     <span>{label}</span>
                   </label>
@@ -509,8 +510,19 @@ if (payload && typeof payload === "object") {
               target="_blank"
               rel="noopener noreferrer"
             >
-              {T.proceed_link} ↗
+              {T.proceed_link}
             </a>
+            <div className="pt-section" style={{ marginTop: 28 }}>
+              <p className="pt-section-title">{T.direct_support_title}</p>
+              <a
+                className="pt-link"
+                href={CONTRIBUTION_URLS[model]}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {T.donate_link}
+              </a>
+            </div>
           </div>
         )}
         <div

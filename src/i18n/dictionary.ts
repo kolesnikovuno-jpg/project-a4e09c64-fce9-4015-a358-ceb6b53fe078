@@ -189,11 +189,14 @@ export type Dictionary = {
     form_sentiment_support: string;
     form_sentiment_participation: string;
     form_sentiment_undecided: string;
+    form_sentiment_material: string;
     submit: string;
     submitting: string;
     error: string;
     success_text: string;
     proceed_link: string;
+    direct_support_title: string;
+    donate_link: string;
     close_aria: string;
     action_requested_title: string;
     action_allowed_title: string;
@@ -427,15 +430,18 @@ export const dictionary: Record<Locale, Dictionary> = {
       form_telegram: "Telegram",
       form_telegram_placeholder: "@username or link",
       form_sentiment_label: "Format of participation",
-      form_sentiment_support: "Support",
-      form_sentiment_participation: "Participation",
-      form_sentiment_undecided: "Not decided yet",
+      form_sentiment_support: "Support the process",
+      form_sentiment_participation: "Participation in realization",
+      form_sentiment_undecided: "Leave it open",
+      form_sentiment_material: "Material support",
       submit: "Submit",
       submitting: "Sending…",
       error: "Could not send. Please try again.",
       success_text:
         "Your request has been recorded.\n\nYou have entered the process of the object's realization.\n\nFurther development will proceed through the chosen channel of participation.",
-      proceed_link: "Proceed to contribution",
+      proceed_link: "Continue participation →",
+      direct_support_title: "Direct support",
+      donate_link: "Donate →",
       close_aria: "close",
       action_requested_title: "Request received",
       action_allowed_title: "Access confirmed",
@@ -665,15 +671,18 @@ export const dictionary: Record<Locale, Dictionary> = {
       form_telegram: "Telegram",
       form_telegram_placeholder: "@username или ссылка",
       form_sentiment_label: "Формат участия",
-      form_sentiment_support: "Поддержка",
-      form_sentiment_participation: "Участие",
-      form_sentiment_undecided: "Пока не определился",
+      form_sentiment_support: "Поддержка процесса",
+      form_sentiment_participation: "Участие в реализации",
+      form_sentiment_undecided: "Оставить открытым",
+      form_sentiment_material: "Материальная поддержка",
       submit: "Отправить",
       submitting: "Отправка…",
       error: "Не удалось отправить. Попробуйте ещё раз.",
       success_text:
         "Запрос зафиксирован.\n\nВы вошли в процесс реализации объекта.\n\nДальнейшее развитие будет происходить через выбранный канал участия.",
-      proceed_link: "Перейти к вкладу",
+      proceed_link: "Продолжить участие →",
+      direct_support_title: "Прямая поддержка",
+      donate_link: "Донат →",
       close_aria: "закрыть",
       action_requested_title: "Запрос получен",
       action_allowed_title: "Доступ подтверждён",
@@ -903,15 +912,18 @@ export const dictionary: Record<Locale, Dictionary> = {
       form_telegram: "Telegram",
       form_telegram_placeholder: "@username або посилання",
       form_sentiment_label: "Формат участі",
-      form_sentiment_support: "Підтримка",
-      form_sentiment_participation: "Участь",
-      form_sentiment_undecided: "Поки не визначився",
+      form_sentiment_support: "Підтримка процесу",
+      form_sentiment_participation: "Участь у реалізації",
+      form_sentiment_undecided: "Залишити відкритим",
+      form_sentiment_material: "Матеріальна підтримка",
       submit: "Надіслати",
       submitting: "Надсилання…",
       error: "Не вдалося надіслати. Спробуйте ще раз.",
       success_text:
         "Запит зафіксовано.\n\nВи увійшли в процес реалізації об'єкта.\n\nПодальший розвиток відбуватиметься через обраний канал участі.",
-      proceed_link: "Перейти до внеску",
+      proceed_link: "Продовжити участь →",
+      direct_support_title: "Пряма підтримка",
+      donate_link: "Донат →",
       close_aria: "закрити",
       action_requested_title: "Запит отримано",
       action_allowed_title: "Доступ підтверджено",
