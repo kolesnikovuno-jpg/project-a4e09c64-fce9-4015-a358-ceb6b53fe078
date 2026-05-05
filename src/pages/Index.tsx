@@ -67,7 +67,7 @@ const Index = () => {
     if (openTimerRef.current) clearTimeout(openTimerRef.current);
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
     setOpen(false);
-    resetTimerRef.current = setTimeout(() => setToggled(false), 350);
+    resetTimerRef.current = setTimeout(() => setToggled(false), 150);
   };
 
   const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
