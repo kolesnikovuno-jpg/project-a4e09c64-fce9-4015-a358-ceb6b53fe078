@@ -146,10 +146,10 @@ const Index = () => {
               <motion.div
                 data-popup
                 className="relative z-10 w-full max-w-2xl mx-2 md:mx-4 my-4 border border-border/30 bg-background/80 backdrop-blur-sm p-4 md:p-8 overflow-visible max-h-[calc(100vh-2rem)] overflow-y-auto"
-                initial={{ opacity: 0, scale: 0.97, y: 10 }}
+                initial={{ opacity: 0, scale: 0.96, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.97, y: 10 }}
-                transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
+                exit={{ opacity: 0, scale: 0.96, y: 8, transition: { duration: 0.32, ease: [0.22, 1, 0.36, 1] } }}
+                transition={{ delay: 0.45, duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               >
                 {/* Close button + circle menu — shared coordinate system anchored at top-right */}
                 <div className="absolute top-4 right-4">
