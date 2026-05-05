@@ -375,7 +375,19 @@ const Index = () => {
                 </div>
 
                 {/* Header */}
-                <div className="flex flex-col space-y-1.5 text-left overflow-visible">
+                <motion.div
+                  className="flex flex-col space-y-1.5 text-left overflow-visible"
+                  initial="hidden"
+                  animate={controls}
+                  exit={{ opacity: 0, transition: { duration: 0.25, ease: "linear" } }}
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                      opacity: 1,
+                      transition: { delay: 0.7, duration: 1.6, ease: [0.25, 0.1, 0.25, 1] },
+                    },
+                  }}
+                >
                   {/* Mobile header */}
                   <div className="md:hidden overflow-visible">
                     <div className="flex flex-col gap-1 -ml-[0.35em] pr-10">
@@ -412,7 +424,7 @@ const Index = () => {
                       {t.index.architect_design_art}
                     </p>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Content */}
                 <div className="text-foreground leading-relaxed mt-7 flex flex-col">
