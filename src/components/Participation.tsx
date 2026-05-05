@@ -46,6 +46,21 @@ const Participation = ({ model, open, onClose }: Props) => {
   const [error, setError] = useState<string | null>(null);
   const [status, setLocalStatus] = useState<ParticipationStatus>(() => getStatus(model));
   const [userName, setLocalUserName] = useState<string | null>(() => getUserName());
+  const lastResetTapRef = (typeof window !== "undefined" ? { current: 0 } : { current: 0 });
+
+  const handleResetTap = () => {
+    const now = Date.now();
+    if (now - lastResetTapRef.current <= 300) {
+      try {
+        localStorage.removeItem("user_id");
+      } catch {
+        /* ignore */
+      }
+      window.location.reload();
+      return;
+    }
+    lastResetTapRef.current = now;
+  };
 
   // Recognise user immediately on mount — independent of `open`.
   // If user_id already exists in localStorage, skip the form entirely.
@@ -493,6 +508,20 @@ if (payload && typeof payload === "object") {
             </a>
           </div>
         )}
+        <div
+          aria-hidden="true"
+          onClick={handleResetTap}
+          onTouchEnd={handleResetTap}
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 60,
+            background: "transparent",
+            zIndex: 1,
+          }}
+        />
       </aside>
     </>
   );
