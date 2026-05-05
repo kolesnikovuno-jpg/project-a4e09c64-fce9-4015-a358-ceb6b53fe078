@@ -5,54 +5,6 @@ import { useIsNative } from "@/hooks/use-native";
 import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 
-const SoftTypewriter = ({
-  text,
-  delay = 0,
-  charDuration = 0.5,
-  stagger = 0.025,
-  className,
-}: {
-  text: string;
-  delay?: number;
-  charDuration?: number;
-  stagger?: number;
-  className?: string;
-}) => {
-  const chars = Array.from(text);
-  return (
-    <motion.span
-      className={className}
-      initial="hidden"
-      animate="visible"
-      variants={{
-        hidden: {},
-        visible: {
-          transition: { delay, staggerChildren: stagger },
-        },
-      }}
-      aria-label={text}
-    >
-      {chars.map((ch, i) => (
-        <motion.span
-          key={i}
-          aria-hidden
-          variants={{
-            hidden: { opacity: 0, filter: "blur(2px)" },
-            visible: {
-              opacity: 1,
-              filter: "blur(0px)",
-              transition: { duration: charDuration, ease: [0.25, 0.1, 0.25, 1] },
-            },
-          }}
-          style={{ display: "inline-block", whiteSpace: "pre" }}
-        >
-          {ch}
-        </motion.span>
-      ))}
-    </motion.span>
-  );
-};
-
 const Index = () => {
   const [open, setOpen] = useState(false);
   const [toggled, setToggled] = useState(false);
@@ -477,26 +429,36 @@ const Index = () => {
                 {/* Content */}
                 <div className="text-foreground leading-relaxed mt-7 flex flex-col">
                   <div className="text-left text-foreground">
-                    {open && (
-                      <>
-                        <p className="text-[12px] md:text-[13px] font-light text-foreground/80 tracking-[0.1em] mt-6 mb-1">
-                          <SoftTypewriter
-                            text={t.index.structure_label}
-                            delay={2.1}
-                            charDuration={0.55}
-                            stagger={0.022}
-                          />
-                        </p>
-                        <p className="text-[14px] md:text-[15px] leading-[1.65]">
-                          <SoftTypewriter
-                            text={t.index.tagline}
-                            delay={2.9}
-                            charDuration={0.55}
-                            stagger={0.022}
-                          />
-                        </p>
-                      </>
-                    )}
+                    <motion.p
+                      className="text-[12px] md:text-[13px] font-light text-foreground/80 tracking-[0.1em] mt-6 mb-1"
+                      initial="hidden"
+                      animate={controls}
+                      exit={{ opacity: 0, transition: { duration: 0.25, ease: "linear" } }}
+                      variants={{
+                        hidden: { opacity: 0 },
+                        visible: {
+                          opacity: 1,
+                          transition: { delay: 0.7, duration: 1.8, ease: [0.25, 0.1, 0.25, 1] },
+                        },
+                      }}
+                    >
+                      {t.index.structure_label}
+                    </motion.p>
+                    <motion.p
+                      className="text-[14px] md:text-[15px] leading-[1.65]"
+                      initial="hidden"
+                      animate={controls}
+                      exit={{ opacity: 0, transition: { duration: 0.25, ease: "linear" } }}
+                      variants={{
+                        hidden: { opacity: 0 },
+                        visible: {
+                          opacity: 1,
+                          transition: { delay: 1.0, duration: 1.6, ease: "linear" },
+                        },
+                      }}
+                    >
+                      {t.index.tagline}
+                    </motion.p>
                   </div>
                   <motion.a
                     href="/pricing"
@@ -514,21 +476,14 @@ const Index = () => {
                       visible: {
                         opacity: 1,
                         transition: {
-                          delay: 4.0,
-                          duration: 0.01,
+                          delay: 1.6,
+                          duration: 1.4,
                           ease: "linear",
                         },
                       },
                     }}
                   >
-                    {open ? (
-                      <SoftTypewriter
-                        text={t.index.pricing_link}
-                        delay={4.0}
-                        charDuration={0.5}
-                        stagger={0.02}
-                      />
-                    ) : null}
+                    {t.index.pricing_link}
                   </motion.a>
                   <motion.div
                     className="mt-10 pt-4 border-t border-border/20 flex items-baseline gap-2"
