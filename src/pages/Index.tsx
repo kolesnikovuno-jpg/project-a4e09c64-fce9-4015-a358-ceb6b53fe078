@@ -195,11 +195,12 @@ const Index = () => {
                         opacity="0.5"
                         initial={{ pathLength: 0 }}
                         animate={controls}
+                        exit={{ pathLength: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }}
                         variants={{
                           hidden: { pathLength: 0 },
                           visible: {
                             pathLength: 1,
-                            transition: { duration: 0.45, ease: [0.25, 0.1, 0.25, 1] },
+                            transition: { delay: 0.28, duration: 0.38, ease: [0.22, 1, 0.36, 1] },
                           },
                         }}
                       />
@@ -221,11 +222,12 @@ const Index = () => {
                         opacity="0.5"
                         initial={{ pathLength: 0 }}
                         animate={controls}
+                        exit={{ pathLength: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }}
                         variants={{
                           hidden: { pathLength: 0 },
                           visible: {
                             pathLength: 1,
-                            transition: { duration: 0.45, ease: [0.25, 0.1, 0.25, 1] },
+                            transition: { delay: 0.28, duration: 0.38, ease: [0.22, 1, 0.36, 1] },
                           },
                         }}
                       />
