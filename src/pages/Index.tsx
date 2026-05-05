@@ -147,7 +147,7 @@ const Index = () => {
               </motion.div>
             )}
             <span
-              className="text-xs font-semibold text-background ml-[46px]"
+              className="text-xs font-semibold text-background ml-[41px]"
             >
               .uno
             </span>
