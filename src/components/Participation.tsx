@@ -167,8 +167,6 @@ if (payload && typeof payload === "object") {
     setUserId(uid);
   }
 }
-        if (typeof uname === "string" && uname) setUserName(uname);
-      }
     } catch (e) {
       console.warn("participation webhook failed", e);
     }
