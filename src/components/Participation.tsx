@@ -53,7 +53,10 @@ const Participation = ({ model, open, onClose }: Props) => {
     const uid = getUserId();
     setLocalStatus(cached);
     setLocalUserName(getUserName());
-    setStage(uid && cached !== "none" ? "action" : "intro");
+    // If we already know the user (user_id stored from a previous
+    // submission or token exchange), skip the form entirely and go to
+    // the action stage, regardless of current cached status.
+    setStage(uid ? "action" : "intro");
     // Background refresh — does not block UI.
     void refreshStatus(model).then(() => {
       setLocalStatus(getStatus(model));
