@@ -346,14 +346,16 @@ const Index = () => {
                     className="text-left text-foreground"
                     initial="hidden"
                     animate={controls}
+                    exit={{ opacity: 0, y: 6, filter: "blur(4px)", transition: { duration: 0.22 } }}
                     variants={{
-                      hidden: { opacity: 0, y: 12 },
+                      hidden: { opacity: 0, y: 10, filter: "blur(4px)" },
                       visible: {
                         opacity: 1,
                         y: 0,
+                        filter: "blur(0px)",
                         transition: {
                           delay: 0.7,
-                          duration: 0.45,
+                          duration: 0.5,
                           ease: [0.25, 0.1, 0.25, 1],
                         },
                       },
@@ -376,11 +378,13 @@ const Index = () => {
                     className="block text-left text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-7"
                     initial="hidden"
                     animate={controls}
+                    exit={{ opacity: 0, y: 6, filter: "blur(4px)", transition: { duration: 0.2 } }}
                     variants={{
-                      hidden: { opacity: 0, y: 10 },
+                      hidden: { opacity: 0, y: 10, filter: "blur(4px)" },
                       visible: {
                         opacity: 1,
                         y: 0,
+                        filter: "blur(0px)",
                         transition: {
                           delay: 0.95,
                           duration: 0.4,
@@ -395,6 +399,7 @@ const Index = () => {
                     className="mt-10 pt-4 border-t border-border/20 flex items-baseline gap-2"
                     initial="hidden"
                     animate={controls}
+                    exit={{ opacity: 0, transition: { duration: 0.18 } }}
                     variants={{
                       hidden: { opacity: 0 },
                       visible: {
