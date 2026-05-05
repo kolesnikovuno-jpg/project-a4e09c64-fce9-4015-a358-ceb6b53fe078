@@ -520,7 +520,6 @@ if (payload && typeof payload === "object") {
         <div
           aria-hidden="true"
           onClick={handleResetTap}
-          onTouchEnd={handleResetTap}
           style={{
             position: "absolute",
             left: 0,
