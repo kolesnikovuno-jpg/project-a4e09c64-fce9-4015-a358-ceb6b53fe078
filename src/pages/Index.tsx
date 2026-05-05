@@ -135,7 +135,7 @@ const Index = () => {
                       r="13"
                       fill="url(#hatch-toggle)"
                       stroke="hsl(var(--background))"
-                      strokeWidth="0.8"
+                      strokeWidth="0.4"
                     />
                   </svg>
                 </div>
@@ -223,7 +223,7 @@ const Index = () => {
                           r="13"
                           fill="url(#hatch-morph)"
                           stroke="hsl(var(--background))"
-                          strokeWidth="0.8"
+                          strokeWidth="0.4"
                         />
                       </motion.svg>
                       {/* Filled layer — fades in during travel */}
