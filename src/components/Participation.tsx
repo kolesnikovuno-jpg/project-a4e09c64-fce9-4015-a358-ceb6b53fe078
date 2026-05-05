@@ -18,6 +18,16 @@ type Props = {
   onClose: () => void;
 };
 
+type Stage = "intro" | "form" | "action";
+
+const getStoredUserId = (): string | null => {
+  try {
+    return localStorage.getItem("user_id") || getUserId();
+  } catch {
+    return getUserId();
+  }
+};
+
 const CONTRIBUTION_URLS: Record<"lyra" | "nava", string> = {
   lyra: "https://send.monobank.ua/jar/2ezcb2Nk2E",
   nava: "https://send.monobank.ua/jar/jCMAkkYaB",
@@ -27,8 +37,7 @@ const Participation = ({ model, open, onClose }: Props) => {
   const { t, locale } = useLocale();
   const T = t.participation;
 
-  type Stage = "intro" | "form" | "action";
-  const [stage, setStage] = useState<Stage>("intro");
+  const [stage, setStage] = useState<Stage>(() => (getStoredUserId() ? "action" : "intro"));
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -42,17 +51,21 @@ const Participation = ({ model, open, onClose }: Props) => {
   // Recognise user immediately on mount — independent of `open`.
   // If user_id already exists in localStorage, skip the form entirely.
   useEffect(() => {
-    try {
-      const uid = localStorage.getItem("user_id");
-      if (uid) {
-        setStage("action");
-        setLocalUserName(getUserName());
-      }
-    } catch {
-      /* ignore */
+    const uid = getStoredUserId();
+    if (uid) {
+      setStage("action");
+      setLocalUserName(getUserName());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (stage === "intro" && getStoredUserId()) {
+      setStage("action");
+      return;
+    }
+    console.log("stage after init:", stage);
+  }, [stage]);
 
   // On open: pick the right initial stage from cached identity, then
   // refresh the status from the webhook in the background.
@@ -65,13 +78,17 @@ const Participation = ({ model, open, onClose }: Props) => {
       return () => window.clearTimeout(id);
     }
     const cached = getStatus(model);
-    const uid = getUserId();
+    const uid = getStoredUserId();
     setLocalStatus(cached);
     setLocalUserName(getUserName());
     // If we already know the user (user_id stored from a previous
     // submission or token exchange), skip the form entirely and go to
     // the action stage, regardless of current cached status.
-    setStage(uid ? "action" : "intro");
+    if (uid) {
+      setStage("action");
+    } else {
+      setStage("intro");
+    }
     // Background refresh — does not block UI.
     void refreshStatus(model).then(() => {
       setLocalStatus(getStatus(model));
