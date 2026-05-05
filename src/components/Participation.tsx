@@ -53,6 +53,11 @@ const Participation = ({ model, open, onClose }: Props) => {
     if (now - lastResetTapRef.current <= 300) {
       try {
         localStorage.removeItem("user_id");
+        localStorage.removeItem("user_name");
+        localStorage.removeItem("uno.participation.user_id");
+        localStorage.removeItem("uno.participation.user_name");
+        localStorage.removeItem("uno.participation.status.lyra");
+        localStorage.removeItem("uno.participation.status.nava");
       } catch {
         /* ignore */
       }
