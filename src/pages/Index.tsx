@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence, LayoutGroup, useAnimation } from "motion/react";
+import { motion, LayoutGroup, useAnimation } from "motion/react";
 import { useIsNative } from "@/hooks/use-native";
 import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
@@ -8,10 +8,25 @@ import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 const Index = () => {
   const [open, setOpen] = useState(false);
   const [toggled, setToggled] = useState(false);
+  const [popupMounted, setPopupMounted] = useState(false);
+  const openRef = useRef(open);
+  const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
   const isNative = useIsNative();
   const controls = useAnimation();
   const { t, localePath } = useLocale();
+
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
+
+  useEffect(() => {
+    return () => {
+      if (openTimerRef.current) clearTimeout(openTimerRef.current);
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -30,17 +45,31 @@ const Index = () => {
   }, [isNative, navigate]);
 
   const handleToggle = () => {
-    if (!toggled) {
-      setToggled(true);
-      setTimeout(() => setOpen(true), 250);
-    } else {
-      setOpen(false);
+    if (open) {
+      handleClose();
+      return;
     }
+
+    if (openTimerRef.current) clearTimeout(openTimerRef.current);
+    if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    setToggled(true);
+
+    if (popupMounted) {
+      setOpen(true);
+      return;
+    }
+
+    openTimerRef.current = setTimeout(() => {
+      setPopupMounted(true);
+      setOpen(true);
+    }, 250);
   };
 
   const handleClose = () => {
+    if (openTimerRef.current) clearTimeout(openTimerRef.current);
+    if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
     setOpen(false);
-    setTimeout(() => setToggled(false), 400);
+    resetTimerRef.current = setTimeout(() => setToggled(false), 550);
   };
 
   const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
