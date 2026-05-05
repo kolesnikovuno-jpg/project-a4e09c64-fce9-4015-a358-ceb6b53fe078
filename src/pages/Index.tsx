@@ -284,7 +284,7 @@ const Index = () => {
                           hidden: { pathLength: 0 },
                           visible: {
                             pathLength: 1,
-                            transition: { delay: 0.37, duration: 1.4, ease: [0.5, 0, 0.75, 0] },
+                            transition: { delay: 0.37, duration: 1.4, ease: [0.4, 0, 1, 1] },
                           },
                         }}
                       />
@@ -311,7 +311,7 @@ const Index = () => {
                           hidden: { pathLength: 0 },
                           visible: {
                             pathLength: 1,
-                            transition: { delay: 0.37, duration: 1.4, ease: [0.5, 0, 0.75, 0] },
+                            transition: { delay: 0.37, duration: 1.4, ease: [0.4, 0, 1, 1] },
                           },
                         }}
                       />
@@ -357,9 +357,9 @@ const Index = () => {
                             visible: {
                               strokeDashoffset: 0,
                               transition: {
-                                delay: 1.67,
-                                duration: 1.5,
-                                ease: [0, 0, 0.4, 1],
+                                delay: 1.77,
+                                duration: 1.4,
+                                ease: [0.4, 0, 0.2, 1],
                               },
                             },
                           }}
