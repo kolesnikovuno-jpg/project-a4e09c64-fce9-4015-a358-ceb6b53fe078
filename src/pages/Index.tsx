@@ -269,7 +269,7 @@ const Index = () => {
                           hidden: { pathLength: 0 },
                           visible: {
                             pathLength: 1,
-                            transition: { delay: 0.7, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+                            transition: { delay: 0.37, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
                           },
                         }}
                       />
@@ -296,7 +296,7 @@ const Index = () => {
                           hidden: { pathLength: 0 },
                           visible: {
                             pathLength: 1,
-                            transition: { delay: 0.7, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+                            transition: { delay: 0.37, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
                           },
                         }}
                       />
@@ -317,8 +317,8 @@ const Index = () => {
                         visible: {
                           opacity: 1,
                           transition: {
-                            delay: 0.5,
-                            duration: 0.35,
+                            delay: 0.7,
+                            duration: 0.01,
                             ease: [0.22, 1, 0.36, 1],
                           },
                         },
@@ -341,8 +341,8 @@ const Index = () => {
                             visible: {
                               strokeDashoffset: 0,
                               transition: {
-                                delay: 0.5,
-                                duration: 0.5,
+                                delay: 0.7,
+                                duration: 0.7,
                                 ease: [0.25, 0.1, 0.25, 1],
                               },
                             },
@@ -359,7 +359,7 @@ const Index = () => {
                           visible: {
                             opacity: 1,
                             y: 0,
-                            transition: { delay: 0.75, duration: 0.25, ease: [0.22, 1, 0.36, 1] },
+                            transition: { delay: 1.26, duration: 0.28, ease: [0.22, 1, 0.36, 1] },
                           },
                         }}
                       >
@@ -423,8 +423,8 @@ const Index = () => {
                         y: 0,
                         filter: "blur(0px)",
                         transition: {
-                          delay: 0.7,
-                          duration: 0.5,
+                          delay: 1.45,
+                          duration: 0.4,
                           ease: [0.25, 0.1, 0.25, 1],
                         },
                       },
@@ -455,8 +455,8 @@ const Index = () => {
                         y: 0,
                         filter: "blur(0px)",
                         transition: {
-                          delay: 0.95,
-                          duration: 0.4,
+                          delay: 1.6,
+                          duration: 0.35,
                           ease: [0.25, 0.1, 0.25, 1],
                         },
                       },
@@ -474,8 +474,8 @@ const Index = () => {
                       visible: {
                         opacity: 1,
                         transition: {
-                          delay: 1.2,
-                          duration: 0.45,
+                          delay: 1.8,
+                          duration: 0.4,
                           ease: [0.25, 0.1, 0.25, 1],
                         },
                       },
