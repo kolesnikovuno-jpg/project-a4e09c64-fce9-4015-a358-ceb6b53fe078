@@ -110,9 +110,16 @@ const Index = () => {
                 layoutId="morph-circle"
                 className="absolute w-7 h-7"
                 initial={false}
-                transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
+                transition={{
+                  duration: 0.75,
+                  ease: [0.4, 0, 0.2, 1],
+                  scale: { duration: 0.75, ease: [0.4, 0, 0.2, 1], times: [0, 0.55, 1] },
+                }}
                 style={{ willChange: "transform, opacity" }}
-                animate={{ left: toggled ? 42 : 4 }}
+                animate={{
+                  left: toggled ? 42 : 4,
+                  scale: toggled ? 1 : [1, 0.7, 1],
+                }}
               >
                 <div className="relative w-full h-full">
                   <svg className="absolute inset-0 w-full h-full" viewBox="0 0 28 28">
