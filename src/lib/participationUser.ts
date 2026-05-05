@@ -15,6 +15,10 @@ const USER_ID_KEY = "uno.participation.user_id";
 const USER_NAME_KEY = "uno.participation.user_name";
 const STATUS_PREFIX = "uno.participation.status."; // + modelId
 
+// Plain-key mirrors per product spec: localStorage.setItem('user_id', ...)
+const PLAIN_USER_ID_KEY = "user_id";
+const PLAIN_USER_NAME_KEY = "user_name";
+
 const WEBHOOK_URL =
   "https://hook.eu2.make.com/n4g9lw19rfw52krs9ff6gsvy7p7x5mnx";
 
@@ -34,11 +38,19 @@ const safeSet = (k: string, v: string): void => {
   }
 };
 
-export const getUserId = (): string | null => safeGet(USER_ID_KEY);
-export const setUserId = (id: string): void => safeSet(USER_ID_KEY, id);
+export const getUserId = (): string | null =>
+  safeGet(PLAIN_USER_ID_KEY) ?? safeGet(USER_ID_KEY);
+export const setUserId = (id: string): void => {
+  safeSet(USER_ID_KEY, id);
+  safeSet(PLAIN_USER_ID_KEY, id);
+};
 
-export const getUserName = (): string | null => safeGet(USER_NAME_KEY);
-export const setUserName = (name: string): void => safeSet(USER_NAME_KEY, name);
+export const getUserName = (): string | null =>
+  safeGet(PLAIN_USER_NAME_KEY) ?? safeGet(USER_NAME_KEY);
+export const setUserName = (name: string): void => {
+  safeSet(USER_NAME_KEY, name);
+  safeSet(PLAIN_USER_NAME_KEY, name);
+};
 
 export const getStatus = (model: ModelId): ParticipationStatus => {
   const v = safeGet(STATUS_PREFIX + model);
