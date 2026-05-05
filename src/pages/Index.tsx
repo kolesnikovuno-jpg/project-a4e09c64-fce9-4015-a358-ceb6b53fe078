@@ -346,7 +346,7 @@ const Index = () => {
                               strokeDashoffset: 0,
                               transition: {
                                 delay: 0.7,
-                                duration: 0.7,
+                                duration: 1.4,
                                 ease: [0.25, 0.1, 0.25, 1],
                               },
                             },
@@ -363,7 +363,7 @@ const Index = () => {
                           visible: {
                             opacity: 1,
                             y: 0,
-                            transition: { delay: 1.26, duration: 0.28, ease: [0.22, 1, 0.36, 1] },
+                            transition: { delay: 1.95, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
                           },
                         }}
                       >
@@ -425,7 +425,7 @@ const Index = () => {
                         hidden: { opacity: 0 },
                         visible: {
                           opacity: 1,
-                          transition: { delay: 0.7, duration: 0.7, ease: "linear" },
+                          transition: { delay: 0.7, duration: 1.4, ease: "linear" },
                         },
                       }}
                     >
@@ -440,7 +440,7 @@ const Index = () => {
                         hidden: { opacity: 0 },
                         visible: {
                           opacity: 1,
-                          transition: { delay: 0.85, duration: 0.9, ease: "linear" },
+                          transition: { delay: 1.0, duration: 1.6, ease: "linear" },
                         },
                       }}
                     >
@@ -463,8 +463,8 @@ const Index = () => {
                       visible: {
                         opacity: 1,
                         transition: {
-                          delay: 1.1,
-                          duration: 0.8,
+                          delay: 1.6,
+                          duration: 1.4,
                           ease: "linear",
                         },
                       },
