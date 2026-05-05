@@ -112,30 +112,32 @@ const Index = () => {
                 layoutId="morph-circle"
                 className="absolute w-7 h-7"
                 initial={false}
-                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
                 animate={{ left: toggled ? 42 : 4 }}
               >
-                <svg width="28" height="28" viewBox="0 0 28 28">
-                  <defs>
-                    <pattern
-                      id="hatch-toggle"
-                      patternUnits="userSpaceOnUse"
-                      width="2.2"
-                      height="2.2"
-                      patternTransform="rotate(45)"
-                    >
-                      <line x1="0" y1="0" x2="0" y2="2.2" stroke="hsl(var(--background))" strokeWidth="1.3" />
-                    </pattern>
-                  </defs>
-                  <circle
-                    cx="14"
-                    cy="14"
-                    r="13"
-                    fill="url(#hatch-toggle)"
-                    stroke="hsl(var(--background))"
-                    strokeWidth="0.8"
-                  />
-                </svg>
+                <div className="relative w-full h-full">
+                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 28 28">
+                    <defs>
+                      <pattern
+                        id="hatch-toggle"
+                        patternUnits="userSpaceOnUse"
+                        width="2.2"
+                        height="2.2"
+                        patternTransform="rotate(45)"
+                      >
+                        <line x1="0" y1="0" x2="0" y2="2.2" stroke="hsl(var(--background))" strokeWidth="1.3" />
+                      </pattern>
+                    </defs>
+                    <circle
+                      cx="14"
+                      cy="14"
+                      r="13"
+                      fill="url(#hatch-toggle)"
+                      stroke="hsl(var(--background))"
+                      strokeWidth="0.8"
+                    />
+                  </svg>
+                </div>
               </motion.div>
             )}
             <span
@@ -186,9 +188,53 @@ const Index = () => {
                   >
                     <motion.span
                       layoutId="morph-circle"
-                      className="block w-5 h-5 rounded-full bg-primary/80"
-                      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                    />
+                      className="block w-5 h-5 relative"
+                      transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                      {/* Striped layer — fades out during travel */}
+                      <motion.svg
+                        className="absolute inset-0 w-full h-full"
+                        viewBox="0 0 28 28"
+                        initial={{ opacity: 1 }}
+                        animate={{ opacity: open ? 0 : 1 }}
+                        transition={{
+                          duration: 0.28,
+                          delay: open ? 0.22 : 0,
+                          ease: [0.22, 1, 0.36, 1],
+                        }}
+                      >
+                        <defs>
+                          <pattern
+                            id="hatch-morph"
+                            patternUnits="userSpaceOnUse"
+                            width="2.2"
+                            height="2.2"
+                            patternTransform="rotate(45)"
+                          >
+                            <line x1="0" y1="0" x2="0" y2="2.2" stroke="hsl(var(--background))" strokeWidth="1.3" />
+                          </pattern>
+                        </defs>
+                        <circle
+                          cx="14"
+                          cy="14"
+                          r="13"
+                          fill="url(#hatch-morph)"
+                          stroke="hsl(var(--background))"
+                          strokeWidth="0.8"
+                        />
+                      </motion.svg>
+                      {/* Filled layer — fades in during travel */}
+                      <motion.span
+                        className="absolute inset-0 rounded-full bg-primary/80"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: open ? 1 : 0 }}
+                        transition={{
+                          duration: 0.32,
+                          delay: open ? 0.28 : 0,
+                          ease: [0.22, 1, 0.36, 1],
+                        }}
+                      />
+                    </motion.span>
                   </button>
 
                   {/* Connector line + circle, positioned relative to the button */}
