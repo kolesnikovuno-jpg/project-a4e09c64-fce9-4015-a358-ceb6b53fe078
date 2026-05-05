@@ -132,10 +132,8 @@ const Index = () => {
                     <circle
                       cx="14"
                       cy="14"
-                      r="13"
+                      r="14"
                       fill="url(#hatch-toggle)"
-                      stroke="hsl(var(--background))"
-                      strokeWidth="0.8"
                     />
                   </svg>
                 </div>
@@ -220,10 +218,8 @@ const Index = () => {
                         <circle
                           cx="14"
                           cy="14"
-                          r="13"
+                          r="14"
                           fill="url(#hatch-morph)"
-                          stroke="hsl(var(--background))"
-                          strokeWidth="0.8"
                         />
                       </motion.svg>
                       {/* Filled layer — fades in during travel */}
