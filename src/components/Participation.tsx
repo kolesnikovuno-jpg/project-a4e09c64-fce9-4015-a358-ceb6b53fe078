@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { useLocale } from "@/i18n/useLocale";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  getStatus,
+  getUserId,
+  getUserName,
+  setStatus,
+  setUserId,
+  setUserName,
+  refreshStatus,
+  type ParticipationStatus,
+} from "@/lib/participationUser";
 
 type Props = {
   model: "lyra" | "nava";
@@ -17,7 +27,7 @@ const Participation = ({ model, open, onClose }: Props) => {
   const { t, locale } = useLocale();
   const T = t.participation;
 
-  type Stage = "intro" | "form" | "success";
+  type Stage = "intro" | "form" | "action";
   const [stage, setStage] = useState<Stage>("intro");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -26,23 +36,30 @@ const Participation = ({ model, open, onClose }: Props) => {
   const [sentiment, setSentiment] = useState<"support" | "participation" | "undecided" | "">("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [status, setLocalStatus] = useState<ParticipationStatus>(() => getStatus(model));
+  const [userName, setLocalUserName] = useState<string | null>(() => getUserName());
 
-  // Reset whenever popup is closed/reopened.
+  // On open: pick the right initial stage from cached identity, then
+  // refresh the status from the webhook in the background.
   useEffect(() => {
     if (!open) {
       const id = window.setTimeout(() => {
-        setStage("intro");
-        setName("");
-        setEmail("");
-        setMessage("");
-        setTelegram("");
-        setSentiment("");
         setError(null);
         setSubmitting(false);
       }, 600);
       return () => window.clearTimeout(id);
     }
-  }, [open]);
+    const cached = getStatus(model);
+    const uid = getUserId();
+    setLocalStatus(cached);
+    setLocalUserName(getUserName());
+    setStage(uid && cached !== "none" ? "action" : "intro");
+    // Background refresh — does not block UI.
+    void refreshStatus(model).then(() => {
+      setLocalStatus(getStatus(model));
+      setLocalUserName(getUserName());
+    });
+  }, [open, model]);
 
   // ESC to close
   useEffect(() => {
@@ -73,6 +90,7 @@ const Participation = ({ model, open, onClose }: Props) => {
     setSubmitting(true);
     setError(null);
     const trimmedTelegram = telegram.trim().slice(0, 200);
+    const existingUserId = getUserId();
     const { error: dbError } = await supabase
       .from("participation_requests")
       .insert({
@@ -111,10 +129,13 @@ const Participation = ({ model, open, onClose }: Props) => {
     }
     // Fire-and-forget POST to Make webhook.
     try {
-      await fetch("https://hook.eu2.make.com/n4g9lw19rfw52krs9ff6gsvy7p7x5mnx", {
+      const res = await fetch("https://hook.eu2.make.com/n4g9lw19rfw52krs9ff6gsvy7p7x5mnx", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          kind: "participation_request",
+          user_id: existingUserId,
+          model_id: model,
           name: trimmedName.slice(0, 100),
           email: trimmedEmail.slice(0, 255),
           participation: sentiment === "undecided" ? "not_decided" : (sentiment || ""),
@@ -122,11 +143,29 @@ const Participation = ({ model, open, onClose }: Props) => {
           telegram: trimmedTelegram,
         }),
       });
+      // Best-effort: read back user_id / status from the webhook response.
+      try {
+        const text = await res.text();
+        if (text) {
+          const data = JSON.parse(text);
+          if (data && typeof data === "object") {
+            if (typeof data.user_id === "string" && data.user_id) setUserId(data.user_id);
+            if (typeof data.user_name === "string" && data.user_name) setUserName(data.user_name);
+          }
+        }
+      } catch {
+        /* non-JSON or empty body — ignore */
+      }
     } catch (e) {
       console.warn("participation webhook failed", e);
     }
+    // Always remember the name they typed as a friendly fallback.
+    if (!getUserName()) setUserName(trimmedName.slice(0, 100));
+    setStatus(model, "requested");
+    setLocalStatus("requested");
+    setLocalUserName(getUserName());
     setSubmitting(false);
-    setStage("success");
+    setStage("action");
   };
 
   return (
@@ -381,9 +420,21 @@ const Participation = ({ model, open, onClose }: Props) => {
           </form>
         )}
 
-        {stage === "success" && (
+        {stage === "action" && (
           <div className="pt-stage">
+            {userName && (
+              <div className="pt-section">
+                <p className="pt-line">
+                  <span className="k">{T.action_greeting}</span>
+                  <span className="sep">—</span>
+                  <span className="v">{userName}</span>
+                </p>
+              </div>
+            )}
             <div className="pt-section">
+              <p className="pt-section-title">
+                {status === "allowed" ? T.action_allowed_title : T.action_requested_title}
+              </p>
               <p className="pt-text">{T.success_text}</p>
             </div>
             <a
