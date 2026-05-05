@@ -39,6 +39,21 @@ const Participation = ({ model, open, onClose }: Props) => {
   const [status, setLocalStatus] = useState<ParticipationStatus>(() => getStatus(model));
   const [userName, setLocalUserName] = useState<string | null>(() => getUserName());
 
+  // Recognise user immediately on mount — independent of `open`.
+  // If user_id already exists in localStorage, skip the form entirely.
+  useEffect(() => {
+    try {
+      const uid = localStorage.getItem("user_id");
+      if (uid) {
+        setStage("action");
+        setLocalUserName(getUserName());
+      }
+    } catch {
+      /* ignore */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // On open: pick the right initial stage from cached identity, then
   // refresh the status from the webhook in the background.
   useEffect(() => {
