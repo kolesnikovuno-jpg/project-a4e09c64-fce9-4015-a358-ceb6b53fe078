@@ -164,7 +164,7 @@ const Void = () => {
         <div className="void-scroll-fill" ref={scrollFillRef} />
       </div>
 
-      <LanguageSwitcher background="hsl(24 26% 94%)" hidden={!switcherVisible} />
+      <LanguageSwitcher background="hsl(24 26% 94%)" />
     </PageTransition>
   );
 };
