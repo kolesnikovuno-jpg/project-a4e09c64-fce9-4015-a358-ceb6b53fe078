@@ -74,7 +74,7 @@ const Index = () => {
     if (centerTimerRef.current) clearTimeout(centerTimerRef.current);
     setReturnPhase("center");
     setOpen(false);
-    centerTimerRef.current = setTimeout(() => setReturnPhase("idle"), 470);
+    centerTimerRef.current = setTimeout(() => setReturnPhase("idle"), 620);
     resetTimerRef.current = setTimeout(() => setToggled(false), 470);
   };
 
