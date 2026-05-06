@@ -40,7 +40,7 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, onHover, delay, v
         opacity: visible ? 1 : 0,
         transform: visible ? "scale(1)" : "scale(0)",
         transformOrigin: `${cx}px ${cy}px`,
-        transition: `opacity 0.6s ease ${delay}s, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}s`,
+        transition: `opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1) ${delay}s, transform 0.7s cubic-bezier(0.34, 1.4, 0.64, 1) ${delay}s`,
       }}
     >
       {hatched && (
@@ -247,7 +247,7 @@ const Garden = () => {
     const stemIds = src.map((s) => s.id);
     const shuffledStems = [...stemIds].sort(() => Math.random() - 0.5);
     shuffledStems.forEach((id, i) => {
-      stemD[id] = 0.3 + i * 0.2 + Math.random() * 0.15;
+      stemD[id] = 0.15 + i * 0.18 + Math.random() * 0.12;
     });
 
     // Collect all buds and randomize bloom order
@@ -260,7 +260,7 @@ const Garden = () => {
     });
     const shuffledBuds = [...allBuds].sort(() => Math.random() - 0.5);
     shuffledBuds.forEach((id, i) => {
-      budD[id] = 1.2 + i * 0.15 + Math.random() * 0.1;
+      budD[id] = 0.9 + i * 0.13 + Math.random() * 0.08;
     });
     return { budDelays: budD, stemDelays: stemD };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -361,7 +361,7 @@ const Garden = () => {
             strokeWidth={sw}
             style={{
               opacity: animated ? 1 : 0,
-              transition: "opacity 0.6s ease-out",
+              transition: "opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1)",
             }}
           />
 
@@ -381,7 +381,7 @@ const Garden = () => {
                   style={{
                     strokeDasharray: stem.h,
                     strokeDashoffset: animated ? 0 : stem.h,
-                    transition: `stroke-dashoffset 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${stemDelay}s`,
+                    transition: `stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1) ${stemDelay}s`,
                   }}
                 />
                 {/* Top bud */}
@@ -435,7 +435,7 @@ const Garden = () => {
                         style={{
                           strokeDasharray: br.len,
                           strokeDashoffset: animated ? 0 : br.len,
-                          transition: `stroke-dashoffset 0.5s ease-out ${branchGrowDelay}s`,
+                        transition: `stroke-dashoffset 0.55s cubic-bezier(0.4, 0, 0.2, 1) ${branchGrowDelay}s`,
                         }}
                       />
                       <Bud
