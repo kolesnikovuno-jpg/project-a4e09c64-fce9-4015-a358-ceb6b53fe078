@@ -629,7 +629,7 @@ const Index = () => {
                       rel="noopener noreferrer"
                       className="text-[10px] tracking-[0.1em] text-muted-foreground/70 hover:text-muted-foreground transition-colors"
                     >
-                      Telegram Journal →
+                      Telegram Journal ⟶
                     </a>
                   </motion.div>
                 </div>
