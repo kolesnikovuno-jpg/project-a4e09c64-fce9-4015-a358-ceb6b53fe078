@@ -606,7 +606,7 @@ const Index = () => {
                     </a>
                   </motion.div>
                   <motion.div
-                    className="mt-3 flex items-baseline gap-2"
+                    className="mt-[10px] flex items-baseline gap-2"
                     initial="hidden"
                     animate={controls}
                     exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
