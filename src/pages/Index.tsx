@@ -122,23 +122,33 @@ const Index = () => {
                   duration: 0.58,
                   ease: [0.65, 0, 0.35, 1],
                   left: {
-                    duration: returnPhase === "center" ? 0.46 : 0.58,
+                    duration: 0.58,
                     ease: [0.65, 0, 0.35, 1],
                   },
                   scale: {
                     duration: 0.58,
                     ease: [0.4, 0, 0.2, 1],
+                    times: returnPhase === "center" ? [0, 0.5, 1] : undefined,
                   },
                   opacity: {
                     duration: 0.58,
                     ease: [0.4, 0, 0.2, 1],
+                    times: returnPhase === "center" ? [0, 0.5, 1] : undefined,
                   },
                 }}
                 style={{ willChange: "transform, opacity" }}
                 animate={{
-                  left: returnPhase === "center" ? 24 : toggled ? 42 : 4,
-                  scale: returnPhase === "center" ? 0.18 : toggled ? 0.42 : 1,
-                  opacity: returnPhase === "center" || toggled ? 0 : 1,
+                  left: toggled ? 42 : 4,
+                  scale: toggled
+                    ? 0.42
+                    : returnPhase === "center"
+                    ? [0.42, 0.18, 1]
+                    : 1,
+                  opacity: toggled
+                    ? 0
+                    : returnPhase === "center"
+                    ? [0, 0, 1]
+                    : 1,
                 }}
               >
                 <div className="relative w-full h-full">
