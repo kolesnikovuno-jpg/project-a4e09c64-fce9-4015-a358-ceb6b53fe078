@@ -141,10 +141,10 @@ const Void = () => {
                 className="max-w-2xl text-center"
                 style={{
                   fontFamily: "'Manrope', system-ui, sans-serif",
-                  fontSize: "16px",
+                  fontSize: "13px",
                   fontWeight: 300,
                   lineHeight: 1.7,
-                  letterSpacing: "0.02em",
+                  letterSpacing: "0.14em",
                   color: "hsl(203 24% 40%)",
                 }}
               >
