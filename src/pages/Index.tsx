@@ -427,8 +427,8 @@ const Index = () => {
                           stroke="hsl(var(--primary))"
                           strokeWidth="1"
                           strokeDasharray="236"
-                          transform="rotate(-45 38.5 38.5)"
-                          initial={{ strokeDashoffset: 236 }}
+                        transform="rotate(-45 38.5 38.5) scale(1 -1) translate(0 -77)"
+                        initial={{ strokeDashoffset: 236 }}
                           animate={controls}
                           exit={{ strokeDashoffset: 236, transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] } }}
                           variants={{
