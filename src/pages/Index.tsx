@@ -326,21 +326,21 @@ const Index = () => {
                         }}
                       />
                       <motion.circle
-                        cx="33"
-                        cy="24"
                         r="2"
                         fill="hsl(var(--primary))"
-                        initial={{ opacity: 0 }}
+                        initial={{ opacity: 0, cx: 57, cy: 0 }}
                         animate={controls}
                         exit={{ opacity: 0, transition: { duration: 0.3 } }}
                         variants={{
-                          hidden: { opacity: 0 },
+                          hidden: { opacity: 0, cx: 57, cy: 0 },
                           visible: {
-                            opacity: [0, 0.9, 0.9, 0],
+                            opacity: [0, 0.9, 0.9, 0.9, 0],
+                            cx: [57, 57, 33, 33, 33],
+                            cy: [0, 0, 24, 24, 24],
                             transition: {
                               delay: 0.37,
                               duration: 3.17,
-                              times: [0, 0.44, 0.44, 0.88],
+                              times: [0, 0.05, 0.44, 0.55, 0.88],
                               ease: "linear",
                             },
                           },
@@ -374,21 +374,21 @@ const Index = () => {
                         }}
                       />
                       <motion.circle
-                        cx="46"
-                        cy="30"
                         r="2.2"
                         fill="hsl(var(--primary))"
-                        initial={{ opacity: 0 }}
+                        initial={{ opacity: 0, cx: 76, cy: 0 }}
                         animate={controls}
                         exit={{ opacity: 0, transition: { duration: 0.3 } }}
                         variants={{
-                          hidden: { opacity: 0 },
+                          hidden: { opacity: 0, cx: 76, cy: 0 },
                           visible: {
-                            opacity: [0, 0.9, 0.9, 0],
+                            opacity: [0, 0.9, 0.9, 0.9, 0],
+                            cx: [76, 76, 46, 46, 46],
+                            cy: [0, 0, 30, 30, 30],
                             transition: {
                               delay: 0.37,
                               duration: 3.17,
-                              times: [0, 0.44, 0.44, 0.88],
+                              times: [0, 0.05, 0.44, 0.55, 0.88],
                               ease: "linear",
                             },
                           },
