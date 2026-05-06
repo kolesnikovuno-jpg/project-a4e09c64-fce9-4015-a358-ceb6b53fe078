@@ -605,6 +605,28 @@ const Index = () => {
                       {t.index.author_link}
                     </a>
                   </motion.div>
+                  <motion.a
+                    href="https://t.me/+-QJlOeTl9fZkNzIy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 block text-[10px] tracking-[0.1em] text-muted-foreground/70 hover:text-muted-foreground transition-colors"
+                    initial="hidden"
+                    animate={controls}
+                    exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: {
+                        opacity: 1,
+                        transition: {
+                          delay: 4.37,
+                          duration: 1.6,
+                          ease: [0.4, 0, 0.2, 1],
+                        },
+                      },
+                    }}
+                  >
+                    Journal →
+                  </motion.a>
                 </div>
               </motion.div>
             </motion.div>
