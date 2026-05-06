@@ -8,10 +8,12 @@ import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 const Index = () => {
   const [open, setOpen] = useState(false);
   const [toggled, setToggled] = useState(false);
+  const [returnPhase, setReturnPhase] = useState<"idle" | "center">("idle");
   const [popupMounted, setPopupMounted] = useState(false);
   const openRef = useRef(open);
   const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const centerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
   const isNative = useIsNative();
   const controls = useAnimation();
@@ -25,6 +27,7 @@ const Index = () => {
     return () => {
       if (openTimerRef.current) clearTimeout(openTimerRef.current);
       if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+      if (centerTimerRef.current) clearTimeout(centerTimerRef.current);
     };
   }, []);
 
@@ -52,6 +55,8 @@ const Index = () => {
 
     if (openTimerRef.current) clearTimeout(openTimerRef.current);
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    if (centerTimerRef.current) clearTimeout(centerTimerRef.current);
+    setReturnPhase("idle");
     setToggled(true);
 
     if (popupMounted) {
@@ -66,8 +71,11 @@ const Index = () => {
   const handleClose = () => {
     if (openTimerRef.current) clearTimeout(openTimerRef.current);
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    if (centerTimerRef.current) clearTimeout(centerTimerRef.current);
+    setReturnPhase("center");
     setOpen(false);
-    resetTimerRef.current = setTimeout(() => setToggled(false), 150);
+    centerTimerRef.current = setTimeout(() => setReturnPhase("idle"), 470);
+    resetTimerRef.current = setTimeout(() => setToggled(false), 470);
   };
 
   const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -111,24 +119,26 @@ const Index = () => {
                 className="absolute w-7 h-7"
                 initial={false}
                 transition={{
-                  duration: 0.9,
+                  duration: 0.58,
                   ease: [0.65, 0, 0.35, 1],
+                  left: {
+                    duration: returnPhase === "center" ? 0.46 : 0.58,
+                    ease: [0.65, 0, 0.35, 1],
+                  },
                   scale: {
-                    duration: 0.9,
+                    duration: 0.58,
                     ease: [0.4, 0, 0.2, 1],
-                    times: [0, 0.5, 1],
                   },
                   opacity: {
-                    duration: 0.9,
+                    duration: 0.58,
                     ease: [0.4, 0, 0.2, 1],
-                    times: [0, 0.5, 1],
                   },
                 }}
                 style={{ willChange: "transform, opacity" }}
                 animate={{
-                  left: toggled ? 42 : 4,
-                  scale: toggled ? 1 : [1, 0.35, 1],
-                  opacity: toggled ? 1 : [1, 0, 1],
+                  left: returnPhase === "center" ? 24 : toggled ? 42 : 4,
+                  scale: returnPhase === "center" ? 0.18 : toggled ? 0.42 : 1,
+                  opacity: returnPhase === "center" || toggled ? 0 : 1,
                 }}
               >
                 <div className="relative w-full h-full">
