@@ -109,14 +109,14 @@ const Garden = () => {
     "05": t.garden.bud_label_lyra,
     "06": ".",
     "06.1": t.garden.bud_label_unocalc,
-    "02.2": "void",
+    "02.1": "void",
   };
 
   const routes: Record<string, string> = {
     "05": localePath("/lyra"),
     "03": localePath("/nava"),
     "06.1": "/unocalc",
-    "02.2": localePath("/void"),
+    "02.1": localePath("/void"),
   };
 
   const gY = 560;
