@@ -625,7 +625,7 @@ const Index = () => {
                       },
                     }}
                   >
-                    Journal →
+                    Telegram Journal →
                   </motion.a>
                 </div>
               </motion.div>
