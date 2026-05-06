@@ -119,29 +119,26 @@ const Index = () => {
                 className="absolute w-7 h-7"
                 initial={false}
                 transition={{
-                  duration: 0.85,
+                  duration: 0.58,
                   ease: [0.65, 0, 0.35, 1],
                   left: {
-                    duration: 0.85,
+                    duration: returnPhase === "center" ? 0.46 : 0.58,
                     ease: [0.65, 0, 0.35, 1],
-                    times: [0, 0.56, 1],
                   },
                   scale: {
-                    duration: 0.85,
+                    duration: 0.58,
                     ease: [0.4, 0, 0.2, 1],
-                    times: [0, 0.56, 1],
                   },
                   opacity: {
-                    duration: 0.85,
+                    duration: 0.58,
                     ease: [0.4, 0, 0.2, 1],
-                    times: [0, 0.72, 1],
                   },
                 }}
                 style={{ willChange: "transform, opacity" }}
                 animate={{
-                  left: toggled ? 42 : [42, 24, 4],
-                  scale: toggled ? 0.42 : [0.42, 0.28, 1],
-                  opacity: toggled ? 0 : [0, 0, 1],
+                  left: returnPhase === "center" ? 24 : toggled ? 42 : 4,
+                  scale: returnPhase === "center" ? 0.18 : toggled ? 0.42 : 1,
+                  opacity: returnPhase === "center" || toggled ? 0 : 1,
                 }}
               >
                 <div className="relative w-full h-full">
