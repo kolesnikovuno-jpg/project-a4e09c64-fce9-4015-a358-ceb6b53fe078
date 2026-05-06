@@ -172,8 +172,15 @@ const Void = () => {
       tIntensity = Math.min(1, Math.hypot(nx, ny));
       lastInput = performance.now();
       if (!touchActive) {
-        tPanX = Math.max(-1, Math.min(1, g / 25));
+        const angle = (screen.orientation && screen.orientation.angle) || 0;
+        let panSrcX = g;
+        let panSrcY = b;
+        if (angle === 90) { panSrcX = -(e.beta ?? 0); panSrcY = g; }
+        else if (angle === -90 || angle === 270) { panSrcX = (e.beta ?? 0); panSrcY = -g; }
+        tPanX = Math.max(-1, Math.min(1, panSrcX / 25));
+        tPanY = Math.max(-1, Math.min(1, panSrcY / 25));
       }
+      ensureLoop();
     };
 
     const tick = () => {
@@ -239,6 +246,22 @@ const Void = () => {
     hero.addEventListener("touchend", onTouchEnd);
     window.addEventListener("deviceorientation", onTilt);
 
+    // iOS 13+ requires explicit permission for DeviceOrientationEvent.
+    const DOE: any = (window as any).DeviceOrientationEvent;
+    const needsPerm = DOE && typeof DOE.requestPermission === "function";
+    const requestTilt = () => {
+      window.removeEventListener("touchend", requestTilt);
+      if (!needsPerm) return;
+      DOE.requestPermission().then((state: string) => {
+        if (state === "granted") {
+          window.addEventListener("deviceorientation", onTilt);
+        }
+      }).catch(() => {});
+    };
+    if (needsPerm) {
+      window.addEventListener("touchend", requestTilt, { once: true });
+    }
+
     const r0 = hero.getBoundingClientRect();
     fx = tFX = r0.width / 2;
     fy = tFY = r0.height / 2;
@@ -253,6 +276,7 @@ const Void = () => {
       hero.removeEventListener("touchmove", onTouchMove);
       hero.removeEventListener("touchend", onTouchEnd);
       window.removeEventListener("deviceorientation", onTilt);
+      window.removeEventListener("touchend", requestTilt);
       if (raf) cancelAnimationFrame(raf);
     };
   }, []);
