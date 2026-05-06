@@ -75,7 +75,7 @@ const Index = () => {
     setReturnPhase("center");
     setOpen(false);
     centerTimerRef.current = setTimeout(() => setReturnPhase("idle"), 750);
-    resetTimerRef.current = setTimeout(() => setToggled(false), 470);
+    resetTimerRef.current = setTimeout(() => setToggled(false), 750);
   };
 
   const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
