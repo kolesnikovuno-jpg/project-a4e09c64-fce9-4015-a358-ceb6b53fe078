@@ -325,6 +325,27 @@ const Index = () => {
                           },
                         }}
                       />
+                      <motion.circle
+                        cx="33"
+                        cy="24"
+                        r="2"
+                        fill="hsl(var(--primary))"
+                        initial={{ opacity: 0 }}
+                        animate={controls}
+                        exit={{ opacity: 0, transition: { duration: 0.3 } }}
+                        variants={{
+                          hidden: { opacity: 0 },
+                          visible: {
+                            opacity: [0, 0.9, 0.9, 0],
+                            transition: {
+                              delay: 0.37,
+                              duration: 3.17,
+                              times: [0, 0.44, 0.44, 0.88],
+                              ease: "linear",
+                            },
+                          },
+                        }}
+                      />
                     </svg>
                     {/* Desktop SVG */}
                     <svg
@@ -349,6 +370,27 @@ const Index = () => {
                           visible: {
                             pathLength: 1,
                             transition: { delay: 0.37, duration: 1.4, ease: [0.4, 0, 1, 1] },
+                          },
+                        }}
+                      />
+                      <motion.circle
+                        cx="46"
+                        cy="30"
+                        r="2.2"
+                        fill="hsl(var(--primary))"
+                        initial={{ opacity: 0 }}
+                        animate={controls}
+                        exit={{ opacity: 0, transition: { duration: 0.3 } }}
+                        variants={{
+                          hidden: { opacity: 0 },
+                          visible: {
+                            opacity: [0, 0.9, 0.9, 0],
+                            transition: {
+                              delay: 0.37,
+                              duration: 3.17,
+                              times: [0, 0.44, 0.44, 0.88],
+                              ease: "linear",
+                            },
                           },
                         }}
                       />
