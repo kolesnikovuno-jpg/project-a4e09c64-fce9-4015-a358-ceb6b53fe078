@@ -118,11 +118,17 @@ const Index = () => {
                     ease: [0.4, 0, 0.2, 1],
                     times: [0, 0.5, 1],
                   },
+                  opacity: {
+                    duration: 0.9,
+                    ease: [0.4, 0, 0.2, 1],
+                    times: [0, 0.5, 1],
+                  },
                 }}
                 style={{ willChange: "transform, opacity" }}
                 animate={{
                   left: toggled ? 42 : 4,
-                  scale: toggled ? 1 : [1, 0.6, 1],
+                  scale: toggled ? 1 : [1, 0.35, 1],
+                  opacity: toggled ? 1 : [1, 0, 1],
                 }}
               >
                 <div className="relative w-full h-full">
