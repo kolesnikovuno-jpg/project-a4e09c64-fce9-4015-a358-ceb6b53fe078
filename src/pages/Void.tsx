@@ -336,7 +336,7 @@ const Void = () => {
           <section
             ref={heroSectionRef}
             className="absolute inset-0 w-full h-full overflow-hidden"
-            style={{ willChange: "opacity", cursor: "grab", touchAction: "none" }}
+            style={{ willChange: "opacity", cursor: "grab", touchAction: "pan-y" }}
           >
             <div ref={heroLayerRef} className="absolute inset-0 w-full h-full">
               <img
