@@ -609,7 +609,7 @@ const Index = () => {
                     href="https://t.me/+-QJlOeTl9fZkNzIy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-3 block text-right text-[10px] tracking-[0.1em] text-muted-foreground/70 hover:text-muted-foreground transition-colors"
+                    className="mt-3 block pl-[3.25rem] text-[10px] tracking-[0.1em] text-muted-foreground/70 hover:text-muted-foreground transition-colors"
                     initial="hidden"
                     animate={controls}
                     exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
