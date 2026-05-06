@@ -7,7 +7,7 @@ import voidHero from "@/assets/void-hero.png";
 
 const Void = () => {
   const navigate = useNavigate();
-  const { t, localePath } = useLocale();
+  const { t, localePath, locale } = useLocale();
   const crossfadeRef = useRef<HTMLDivElement>(null);
   const heroLayerRef = useRef<HTMLDivElement>(null);
   const secondLayerRef = useRef<HTMLDivElement>(null);
@@ -148,7 +148,11 @@ const Void = () => {
                   color: "hsl(203 24% 40%)",
                 }}
               >
-                Концепт art-gallery основан на идее зазора между внешним и внутренним пространствами. В этом зазоре формируются объекты, не принадлежащие времени. Их влияние не транслируется напрямую, а проявляется во внешнем мире через человеческое восприятие.
+                {locale === "en"
+                  ? "The concept of the art gallery is based on the idea of a gap between outer and inner spaces. Within this gap, objects are formed that do not belong to time. Their influence is not transmitted directly, but emerges in the external world through human perception."
+                  : locale === "uk"
+                  ? "Концепт art-gallery заснований на ідеї зазору між зовнішнім та внутрішнім просторами. У цьому зазорі формуються об'єкти, що не належать часу. Їхній вплив не транслюється безпосередньо, а проявляється у зовнішньому світі через людське сприйняття."
+                  : "Концепт art-gallery основан на идее зазора между внешним и внутренним пространствами. В этом зазоре формируются объекты, не принадлежащие времени. Их влияние не транслируется напрямую, а проявляется во внешнем мире через человеческое восприятие."}
               </p>
             </div>
           </div>
