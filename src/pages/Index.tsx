@@ -622,7 +622,7 @@ const Index = () => {
                       },
                     }}
                   >
-                    <span aria-hidden className="text-[9px] tracking-[0.08em] invisible pl-[10px]">© 2026</span>
+                    <span aria-hidden className="text-[9px] tracking-[0.08em] invisible pl-[15px]">© 2026</span>
                     <a
                       href="https://t.me/+-QJlOeTl9fZkNzIy"
                       target="_blank"
