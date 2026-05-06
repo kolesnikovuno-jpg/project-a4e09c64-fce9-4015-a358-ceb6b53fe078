@@ -8,10 +8,12 @@ import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 const Index = () => {
   const [open, setOpen] = useState(false);
   const [toggled, setToggled] = useState(false);
+  const [returnPhase, setReturnPhase] = useState<"idle" | "center">("idle");
   const [popupMounted, setPopupMounted] = useState(false);
   const openRef = useRef(open);
   const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const centerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
   const isNative = useIsNative();
   const controls = useAnimation();
@@ -25,6 +27,7 @@ const Index = () => {
     return () => {
       if (openTimerRef.current) clearTimeout(openTimerRef.current);
       if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+      if (centerTimerRef.current) clearTimeout(centerTimerRef.current);
     };
   }, []);
 
@@ -52,6 +55,8 @@ const Index = () => {
 
     if (openTimerRef.current) clearTimeout(openTimerRef.current);
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    if (centerTimerRef.current) clearTimeout(centerTimerRef.current);
+    setReturnPhase("idle");
     setToggled(true);
 
     if (popupMounted) {
@@ -66,8 +71,11 @@ const Index = () => {
   const handleClose = () => {
     if (openTimerRef.current) clearTimeout(openTimerRef.current);
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    if (centerTimerRef.current) clearTimeout(centerTimerRef.current);
+    setReturnPhase("center");
     setOpen(false);
-    resetTimerRef.current = setTimeout(() => setToggled(false), 620);
+    centerTimerRef.current = setTimeout(() => setReturnPhase("idle"), 470);
+    resetTimerRef.current = setTimeout(() => setToggled(false), 470);
   };
 
   const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
