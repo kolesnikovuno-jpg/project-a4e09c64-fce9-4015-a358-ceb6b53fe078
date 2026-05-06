@@ -67,7 +67,7 @@ const Index = () => {
     if (openTimerRef.current) clearTimeout(openTimerRef.current);
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
     setOpen(false);
-    resetTimerRef.current = setTimeout(() => setToggled(false), 150);
+    resetTimerRef.current = setTimeout(() => setToggled(false), 620);
   };
 
   const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -111,24 +111,29 @@ const Index = () => {
                 className="absolute w-7 h-7"
                 initial={false}
                 transition={{
-                  duration: 0.9,
+                  duration: 0.85,
                   ease: [0.65, 0, 0.35, 1],
+                  left: {
+                    duration: 0.85,
+                    ease: [0.65, 0, 0.35, 1],
+                    times: [0, 0.56, 1],
+                  },
                   scale: {
-                    duration: 0.9,
+                    duration: 0.85,
                     ease: [0.4, 0, 0.2, 1],
-                    times: [0, 0.5, 1],
+                    times: [0, 0.56, 1],
                   },
                   opacity: {
-                    duration: 0.9,
+                    duration: 0.85,
                     ease: [0.4, 0, 0.2, 1],
-                    times: [0, 0.5, 1],
+                    times: [0, 0.72, 1],
                   },
                 }}
                 style={{ willChange: "transform, opacity" }}
                 animate={{
-                  left: toggled ? 42 : 4,
-                  scale: toggled ? 1 : [1, 0.35, 1],
-                  opacity: toggled ? 1 : [1, 0, 1],
+                  left: toggled ? 42 : [42, 24, 4],
+                  scale: toggled ? 0.42 : [0.42, 0.28, 1],
+                  opacity: toggled ? 0 : [0, 0, 1],
                 }}
               >
                 <div className="relative w-full h-full">
