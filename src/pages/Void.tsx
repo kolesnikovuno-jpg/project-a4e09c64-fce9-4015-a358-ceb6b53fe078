@@ -135,7 +135,23 @@ const Void = () => {
             ref={secondLayerRef}
             className="absolute inset-0 w-full h-full bg-background"
             style={{ opacity: 0, willChange: "opacity", pointerEvents: "none" }}
-          />
+          >
+            <div className="w-full h-full flex items-center justify-center px-6">
+              <p
+                className="max-w-2xl text-center"
+                style={{
+                  fontFamily: "'Manrope', system-ui, sans-serif",
+                  fontSize: "16px",
+                  fontWeight: 300,
+                  lineHeight: 1.7,
+                  letterSpacing: "0.02em",
+                  color: "hsl(203 24% 40%)",
+                }}
+              >
+                Концепт art-gallery основан на идее зазора между внешним и внутренним пространствами. В этом зазоре формируются объекты, не принадлежащие времени. Их влияние не транслируется напрямую, а проявляется во внешнем мире через человеческое восприятие.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
