@@ -605,11 +605,8 @@ const Index = () => {
                       {t.index.author_link}
                     </a>
                   </motion.div>
-                  <motion.a
-                    href="https://t.me/+-QJlOeTl9fZkNzIy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 block text-[10px] tracking-[0.1em] text-muted-foreground/70 hover:text-muted-foreground transition-colors"
+                  <motion.div
+                    className="mt-3 flex items-baseline gap-2"
                     initial="hidden"
                     animate={controls}
                     exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
@@ -625,8 +622,16 @@ const Index = () => {
                       },
                     }}
                   >
-                    Telegram Journal →
-                  </motion.a>
+                    <span aria-hidden className="text-[9px] tracking-[0.08em] invisible">© 2026</span>
+                    <a
+                      href="https://t.me/+-QJlOeTl9fZkNzIy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] tracking-[0.1em] text-muted-foreground/70 hover:text-muted-foreground transition-colors"
+                    >
+                      Telegram Journal →
+                    </a>
+                  </motion.div>
                 </div>
               </motion.div>
             </motion.div>
