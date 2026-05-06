@@ -8,12 +8,14 @@ import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 const Index = () => {
   const [open, setOpen] = useState(false);
   const [toggled, setToggled] = useState(false);
+  const [buttonActive, setButtonActive] = useState(false);
   const [returnPhase, setReturnPhase] = useState<"idle" | "center">("idle");
   const [popupMounted, setPopupMounted] = useState(false);
   const openRef = useRef(open);
   const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const centerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const buttonTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
   const isNative = useIsNative();
   const controls = useAnimation();
@@ -28,6 +30,7 @@ const Index = () => {
       if (openTimerRef.current) clearTimeout(openTimerRef.current);
       if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
       if (centerTimerRef.current) clearTimeout(centerTimerRef.current);
+      if (buttonTimerRef.current) clearTimeout(buttonTimerRef.current);
     };
   }, []);
 
@@ -56,8 +59,10 @@ const Index = () => {
     if (openTimerRef.current) clearTimeout(openTimerRef.current);
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
     if (centerTimerRef.current) clearTimeout(centerTimerRef.current);
+    if (buttonTimerRef.current) clearTimeout(buttonTimerRef.current);
     setReturnPhase("idle");
     setToggled(true);
+    setButtonActive(true);
 
     if (popupMounted) {
       setOpen(true);
@@ -72,10 +77,12 @@ const Index = () => {
     if (openTimerRef.current) clearTimeout(openTimerRef.current);
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
     if (centerTimerRef.current) clearTimeout(centerTimerRef.current);
+    if (buttonTimerRef.current) clearTimeout(buttonTimerRef.current);
     setReturnPhase("center");
     setOpen(false);
     centerTimerRef.current = setTimeout(() => setReturnPhase("idle"), 750);
-    resetTimerRef.current = setTimeout(() => setToggled(false), 750);
+    resetTimerRef.current = setTimeout(() => setToggled(false), 470);
+    buttonTimerRef.current = setTimeout(() => setButtonActive(false), 750);
   };
 
   const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -106,7 +113,7 @@ const Index = () => {
             <span
               aria-hidden
               className={`pointer-events-none absolute rounded-full w-[76px] h-[76px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/75 ${
-                toggled ? "bg-primary/75" : "bg-primary/45"
+                buttonActive ? "bg-primary/75" : "bg-primary/45"
               }`}
             />
           <button
