@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        heading: ['Manrope', 'sans-serif'],
-        body: ['Manrope', 'sans-serif'],
+        heading: ['Hasklig', 'monospace'],
+        body: ['Hasklig', 'monospace'],
       },
       colors: {
         border: "hsl(var(--border))",
