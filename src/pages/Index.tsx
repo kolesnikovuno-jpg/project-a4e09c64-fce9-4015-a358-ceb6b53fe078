@@ -113,21 +113,16 @@ const Index = () => {
                 transition={{
                   duration: 0.9,
                   ease: [0.65, 0, 0.35, 1],
-                  left: {
-                    duration: 1.0,
-                    ease: [0.65, 0, 0.35, 1],
-                    times: [0, 0.55, 1],
-                  },
                   scale: {
-                    duration: 1.0,
+                    duration: 0.9,
                     ease: [0.4, 0, 0.2, 1],
-                    times: [0, 0.55, 1],
+                    times: [0, 0.5, 1],
                   },
                 }}
                 style={{ willChange: "transform, opacity" }}
                 animate={{
-                  left: toggled ? 42 : [42, 24, 4],
-                  scale: toggled ? 1 : [1, 0.65, 1],
+                  left: toggled ? 42 : 4,
+                  scale: toggled ? 1 : [1, 0.6, 1],
                 }}
               >
                 <div className="relative w-full h-full">
