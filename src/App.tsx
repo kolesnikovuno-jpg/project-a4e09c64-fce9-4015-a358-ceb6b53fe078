@@ -16,6 +16,7 @@ import LyraConcept from "./pages/LyraConcept";
 import Garden from "./pages/Garden";
 import Gateway from "./pages/Gateway";
 import UnoStudio from "./pages/UnoStudio";
+import Void from "./pages/Void";
 import Unsubscribe from "./pages/Unsubscribe";
 import { DEFAULT_LOCALE, LOCALES, isLocale } from "./i18n/config";
 import { initialLocale } from "./i18n/storage";
@@ -50,6 +51,7 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   { path: "garden", element: <Garden /> },
   { path: "gateway", element: <Gateway /> },
   { path: "unostudio", element: <UnoStudio /> },
+  { path: "void", element: <Void /> },
 ];
 
 const App = () => (
