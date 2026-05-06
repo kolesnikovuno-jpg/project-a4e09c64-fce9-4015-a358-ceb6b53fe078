@@ -126,14 +126,14 @@ const Index = () => {
                     ease: [0.65, 0, 0.35, 1],
                   },
                   scale: {
-                    duration: 0.58,
+                    duration: 0.7,
                     ease: [0.4, 0, 0.2, 1],
-                    times: returnPhase === "center" ? [0, 0.5, 1] : undefined,
+                    times: returnPhase === "center" ? [0, 0.45, 1] : undefined,
                   },
                   opacity: {
-                    duration: 0.58,
-                    ease: [0.4, 0, 0.2, 1],
-                    times: returnPhase === "center" ? [0, 0.5, 1] : undefined,
+                    duration: 0.7,
+                    ease: [0.33, 1, 0.68, 1],
+                    times: returnPhase === "center" ? [0, 0.55, 1] : undefined,
                   },
                 }}
                 style={{ willChange: "transform, opacity" }}
