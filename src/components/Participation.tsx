@@ -390,7 +390,7 @@ if (payload && typeof payload === "object") {
               <p className="pt-text">{T.intro}</p>
             </div>
             <div className="pt-section">
-              <p className="pt-line"><span className="k">{T.stage_label}</span><span className="sep">—</span><span className="v">{T.stage_value}</span></p>
+              <p className="pt-line"><span className="k">{T.stage_label}</span><span className="sep">—</span><span className="v">{model === "void" ? (locale === "en" ? "Concept" : locale === "uk" ? "Концепт" : "Концепт") : T.stage_value}</span></p>
               <p className="pt-line"><span className="k">{T.goal_label}</span><span className="sep">—</span><span className="v">{T.goal_value}</span></p>
             </div>
             <div className="pt-section">
