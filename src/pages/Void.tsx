@@ -410,12 +410,21 @@ const Void = () => {
           <div
             ref={thirdLayerRef}
             className="absolute inset-0 w-full h-full bg-background"
-            style={{ opacity: 0, willChange: "opacity", pointerEvents: "none" }}
+            style={{
+              padding: "0 clamp(20px, 6vw, 96px)",
+              boxSizing: "border-box",
+              opacity: 0,
+              willChange: "opacity",
+              pointerEvents: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+            }}
           >
-            <div className="w-full h-full flex items-center justify-center px-6">
-              <div style={{ maxWidth: 460 }}>
+            <div style={{ textAlign: "right" }}>
                 <p
                   style={{
+                    maxWidth: "460px",
                     margin: "0 0 36px",
                     fontFamily: "'Manrope', system-ui, sans-serif",
                     fontSize: "13px",
@@ -426,11 +435,7 @@ const Void = () => {
                     whiteSpace: "pre-line",
                   }}
                 >
-                  {locale === "en"
-                    ? "The art gallery is open to participation. You can support the realization of the space or take part in its formation."
-                    : locale === "uk"
-                    ? "Art-gallery відкрита для участі. Ви можете підтримати реалізацію простору або взяти участь у його формуванні."
-                    : "Art-gallery открыта для участия. Вы можете поддержать реализацию пространства или принять участие в его формировании."}
+                  {t.lyra.description}
                 </p>
                 <button
                   type="button"
@@ -453,7 +458,6 @@ const Void = () => {
                 >
                   {t.participation.link} <span style={{ marginLeft: 4, opacity: 0.7 }}>↗</span>
                 </button>
-              </div>
             </div>
           </div>
         </div>
