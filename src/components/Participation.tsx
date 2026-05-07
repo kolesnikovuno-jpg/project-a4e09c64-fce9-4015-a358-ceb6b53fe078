@@ -12,7 +12,7 @@ import {
 } from "@/lib/participationUser";
 
 type Props = {
-  model: "lyra" | "nava";
+  model: "lyra" | "nava" | "void";
   open: boolean;
   onClose: () => void;
 };
@@ -27,9 +27,10 @@ const getStoredUserId = (): string | null => {
   }
 };
 
-const CONTRIBUTION_URLS: Record<"lyra" | "nava", string> = {
+const CONTRIBUTION_URLS: Record<"lyra" | "nava" | "void", string> = {
   lyra: "https://send.monobank.ua/jar/2ezcb2Nk2E",
   nava: "https://send.monobank.ua/jar/jCMAkkYaB",
+  void: "https://send.monobank.ua/jar/AfpNMi7BKV",
 };
 
 const Participation = ({ model, open, onClose }: Props) => {
