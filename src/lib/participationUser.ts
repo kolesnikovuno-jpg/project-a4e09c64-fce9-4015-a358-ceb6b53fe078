@@ -9,7 +9,7 @@
  */
 
 export type ParticipationStatus = "none" | "requested" | "allowed";
-export type ModelId = "lyra" | "nava";
+export type ModelId = "lyra" | "nava" | "void";
 
 const USER_ID_KEY = "uno.participation.user_id";
 const USER_NAME_KEY = "uno.participation.user_name";

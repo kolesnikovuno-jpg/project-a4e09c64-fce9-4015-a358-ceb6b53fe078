@@ -4,6 +4,7 @@ import PageTransition from "@/components/PageTransition";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import { useLocale } from "@/i18n/useLocale";
 import voidHero from "@/assets/void-hero.png";
+import Participation from "@/components/Participation";
 
 const Void = () => {
   const navigate = useNavigate();
@@ -14,8 +15,10 @@ const Void = () => {
   const heroImgRef = useRef<HTMLImageElement>(null);
   const heroLensRef = useRef<HTMLDivElement>(null);
   const secondLayerRef = useRef<HTMLDivElement>(null);
+  const thirdLayerRef = useRef<HTMLDivElement>(null);
   const scrollFillRef = useRef<HTMLDivElement>(null);
   const [switcherVisible, setSwitcherVisible] = useState(false);
+  const [participationOpen, setParticipationOpen] = useState(false);
 
   // Scroll indicator
   useEffect(() => {
@@ -45,7 +48,8 @@ const Void = () => {
     const zone = crossfadeRef.current;
     const hero = heroLayerRef.current;
     const second = secondLayerRef.current;
-    if (!zone || !hero || !second) return;
+    const third = thirdLayerRef.current;
+    if (!zone || !hero || !second || !third) return;
     let raf = 0;
     const update = () => {
       raf = 0;
@@ -53,11 +57,17 @@ const Void = () => {
       const total = zone.offsetHeight - window.innerHeight;
       const scrolled = Math.max(0, Math.min(total, -rect.top));
       const p = total > 0 ? scrolled / total : 0;
-      const heroOp = Math.max(0, Math.min(1, 1 - p * 2));
-      const secondOp = Math.max(0, Math.min(1, (p - 0.3) * 2));
+      // Three stages: hero (0..0.33) → second text (0.33..0.66) → third (0.66..1)
+      const heroOp = Math.max(0, Math.min(1, 1 - p * 3));
+      const secondIn = Math.max(0, Math.min(1, (p - 0.2) * 4));
+      const secondOut = Math.max(0, Math.min(1, 1 - (p - 0.55) * 4));
+      const secondOp = Math.min(secondIn, secondOut);
+      const thirdOp = Math.max(0, Math.min(1, (p - 0.62) * 3));
       hero.style.opacity = String(heroOp);
       second.style.opacity = String(secondOp);
-      second.style.pointerEvents = secondOp > 0.5 ? "auto" : "none";
+      second.style.pointerEvents = secondOp > 0.5 && thirdOp < 0.5 ? "auto" : "none";
+      third.style.opacity = String(thirdOp);
+      third.style.pointerEvents = thirdOp > 0.5 ? "auto" : "none";
       const showSwitcher = heroOp < 0.5;
       setSwitcherVisible((prev) => (prev !== showSwitcher ? showSwitcher : prev));
     };
@@ -330,7 +340,7 @@ const Void = () => {
         }
       `}</style>
 
-      <div ref={crossfadeRef} className="relative w-screen" style={{ height: "200vh" }}>
+      <div ref={crossfadeRef} className="relative w-screen" style={{ height: "300vh" }}>
         <div className="sticky top-0 w-screen h-screen overflow-hidden">
           {/* Layer 1: hero image */}
           <section
@@ -395,6 +405,57 @@ const Void = () => {
               </p>
             </div>
           </div>
+
+          {/* Layer 3: participation CTA */}
+          <div
+            ref={thirdLayerRef}
+            className="absolute inset-0 w-full h-full bg-background"
+            style={{ opacity: 0, willChange: "opacity", pointerEvents: "none" }}
+          >
+            <div className="w-full h-full flex items-center justify-center px-6">
+              <div style={{ maxWidth: 460 }}>
+                <p
+                  style={{
+                    margin: "0 0 36px",
+                    fontFamily: "'Manrope', system-ui, sans-serif",
+                    fontSize: "13px",
+                    fontWeight: 300,
+                    lineHeight: 1.9,
+                    letterSpacing: "0.04em",
+                    color: "hsl(0 0% 38%)",
+                    whiteSpace: "pre-line",
+                  }}
+                >
+                  {locale === "en"
+                    ? "The art gallery is open to participation. You can support the realization of the space or take part in its formation."
+                    : locale === "uk"
+                    ? "Art-gallery відкрита для участі. Ви можете підтримати реалізацію простору або взяти участь у його формуванні."
+                    : "Art-gallery открыта для участия. Вы можете поддержать реализацию пространства или принять участие в его формировании."}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setParticipationOpen(true)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    padding: 0,
+                    margin: 0,
+                    cursor: "pointer",
+                    fontFamily: "'Manrope', system-ui, sans-serif",
+                    fontSize: "13px",
+                    fontWeight: 300,
+                    letterSpacing: "0.04em",
+                    color: "hsl(0 0% 45%)",
+                    transition: "color .25s ease",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "#C97A63")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "hsl(0 0% 45%)")}
+                >
+                  {t.participation.link} <span style={{ marginLeft: 4, opacity: 0.7 }}>↗</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -425,6 +486,11 @@ const Void = () => {
       </div>
 
       <LanguageSwitcher background="hsl(24 26% 94%)" />
+      <Participation
+        model="void"
+        open={participationOpen}
+        onClose={() => setParticipationOpen(false)}
+      />
     </PageTransition>
   );
 };
