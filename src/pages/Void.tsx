@@ -340,7 +340,7 @@ const Void = () => {
         }
       `}</style>
 
-      <div ref={crossfadeRef} className="relative w-screen" style={{ height: "200vh" }}>
+      <div ref={crossfadeRef} className="relative w-screen" style={{ height: "300vh" }}>
         <div className="sticky top-0 w-screen h-screen overflow-hidden">
           {/* Layer 1: hero image */}
           <section
@@ -405,6 +405,57 @@ const Void = () => {
               </p>
             </div>
           </div>
+
+          {/* Layer 3: participation CTA */}
+          <div
+            ref={thirdLayerRef}
+            className="absolute inset-0 w-full h-full bg-background"
+            style={{ opacity: 0, willChange: "opacity", pointerEvents: "none" }}
+          >
+            <div className="w-full h-full flex items-center justify-center px-6">
+              <div style={{ maxWidth: 460 }}>
+                <p
+                  style={{
+                    margin: "0 0 36px",
+                    fontFamily: "'Manrope', system-ui, sans-serif",
+                    fontSize: "13px",
+                    fontWeight: 300,
+                    lineHeight: 1.9,
+                    letterSpacing: "0.04em",
+                    color: "hsl(0 0% 38%)",
+                    whiteSpace: "pre-line",
+                  }}
+                >
+                  {locale === "en"
+                    ? "The art gallery is open to participation. You can support the realization of the space or take part in its formation."
+                    : locale === "uk"
+                    ? "Art-gallery відкрита для участі. Ви можете підтримати реалізацію простору або взяти участь у його формуванні."
+                    : "Art-gallery открыта для участия. Вы можете поддержать реализацию пространства или принять участие в его формировании."}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setParticipationOpen(true)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    padding: 0,
+                    margin: 0,
+                    cursor: "pointer",
+                    fontFamily: "'Manrope', system-ui, sans-serif",
+                    fontSize: "13px",
+                    fontWeight: 300,
+                    letterSpacing: "0.04em",
+                    color: "hsl(0 0% 45%)",
+                    transition: "color .25s ease",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "#C97A63")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "hsl(0 0% 45%)")}
+                >
+                  {t.participation.link} <span style={{ marginLeft: 4, opacity: 0.7 }}>↗</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -435,6 +486,11 @@ const Void = () => {
       </div>
 
       <LanguageSwitcher background="hsl(24 26% 94%)" />
+      <Participation
+        model="void"
+        open={participationOpen}
+        onClose={() => setParticipationOpen(false)}
+      />
     </PageTransition>
   );
 };
