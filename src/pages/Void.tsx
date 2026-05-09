@@ -421,7 +421,7 @@ const Void = () => {
               justifyContent: "flex-end",
             }}
           >
-            <div style={{ textAlign: "right" }}>
+            <div style={{ textAlign: "left" }}>
                 <p
                   style={{
                     maxWidth: "460px",
