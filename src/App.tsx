@@ -18,6 +18,8 @@ import Gateway from "./pages/Gateway";
 import UnoStudio from "./pages/UnoStudio";
 import Void from "./pages/Void";
 import Unsubscribe from "./pages/Unsubscribe";
+import Clarity from "./pages/Clarity";
+import ClarityIntake from "./pages/ClarityIntake";
 import { DEFAULT_LOCALE, LOCALES, isLocale } from "./i18n/config";
 import { initialLocale } from "./i18n/storage";
 import LocalePersistenceGuard from "./i18n/LocalePersistenceGuard";
@@ -52,6 +54,8 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   { path: "gateway", element: <Gateway /> },
   { path: "unostudio", element: <UnoStudio /> },
   { path: "void", element: <Void /> },
+  { path: "clarity", element: <Clarity /> },
+  { path: "clarity/intake", element: <ClarityIntake /> },
 ];
 
 const App = () => (
