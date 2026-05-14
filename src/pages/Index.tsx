@@ -575,6 +575,31 @@ const Index = () => {
                   >
                     {t.index.pricing_link}
                   </motion.a>
+                  <motion.a
+                    href="/clarity"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleClose();
+                      navigate(localePath("/clarity"));
+                    }}
+                    className="block text-left text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-2"
+                    initial="hidden"
+                    animate={controls}
+                    exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: {
+                        opacity: 1,
+                        transition: {
+                          delay: 4.17,
+                          duration: 1.4,
+                          ease: "linear",
+                        },
+                      },
+                    }}
+                  >
+                    {t.clarity.teaser_link}
+                  </motion.a>
                   <motion.div
                     className="mt-10 pt-4 border-t border-border/20 flex items-baseline gap-2"
                     initial="hidden"
