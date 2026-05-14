@@ -51,6 +51,9 @@ const Clarity = () => {
               </p>
               <p className="mt-6 max-w-xl">{C.body_1}</p>
               <p className="mt-4 max-w-xl">{C.body_2}</p>
+              {C.bridge && (
+                <p className="mt-6 max-w-xl whitespace-pre-wrap">{C.bridge}</p>
+              )}
             </section>
 
             <div className="w-full h-px bg-border/20 mb-10 md:mb-12" />
