@@ -1,0 +1,27 @@
+# .uno studio — Kolesnikov
+
+> Independent practice by Kolesnikov working across architecture, design and art. Projects, objects and ongoing experiments.
+
+## Pages
+
+- [Home (EN)](/en): Entry point to .uno studio.
+- [Home (RU)](/ru): Главная страница .uno studio.
+- [Home (UK)](/uk): Головна сторінка .uno studio.
+- [About](/en/about): About the studio — practice, principles and people.
+- [Pricing](/en/pricing): Engagement model and pricing.
+- [Garden](/en/garden): Index of objects developed within the Kolesnikov system.
+- [Gateway](/en/gateway): Gateway into the Kolesnikov system.
+- [.uno studio](/en/unostudio): Studio overview.
+
+## Objects
+
+- [LYRA](/en/lyra): Design object, prototype stage.
+- [NAVA](/en/nava): Design object, prototype stage.
+- [VOID](/en/void): Design object, concept stage.
+
+## Optional
+
+- [Doodle](/doodle): Interactive canvas experiment.
+- [Pixels](/pixels): Pixel transition experiment.
+- [UnoCalc](/unocalc): Utility calculator.
+- [Lyra concept](/lyra-concept): Concept sketch for LYRA.
