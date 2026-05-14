@@ -551,31 +551,6 @@ const Index = () => {
                     </motion.p>
                   </div>
                   <motion.a
-                    href="/pricing"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleClose();
-                      navigate(localePath("/pricing"));
-                    }}
-                    className="block text-left text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-7"
-                    initial="hidden"
-                    animate={controls}
-                    exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
-                    variants={{
-                      hidden: { opacity: 0 },
-                      visible: {
-                        opacity: 1,
-                        transition: {
-                          delay: 4.07,
-                          duration: 1.4,
-                          ease: "linear",
-                        },
-                      },
-                    }}
-                  >
-                    {t.index.pricing_link}
-                  </motion.a>
-                  <motion.a
                     href="/clarity"
                     onClick={(e) => {
                       e.preventDefault();
