@@ -212,6 +212,7 @@ export type Dictionary = {
     lead_2: string;
     body_1: string;
     body_2: string;
+    bridge: string;
     for_label: string;
     for_items: readonly string[];
     not_for_label: string;
@@ -519,7 +520,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       lead_1: "Sometimes the problem is not the solution,",
       lead_2: "it is the absence of structure.",
       body_1:
-        "Structural Clarity is a focused analysis of a situation you are inside but cannot see clearly. The aim is not advice. The aim is structure.",
+        "Structural Clarity is a focused reading of a situation you are inside but cannot yet structure clearly. The aim is not advice. The aim is structure.",
       body_2:
         "After the analysis the situation has a shape. From a shape, a decision becomes possible.",
       for_label: "Suitable when",
@@ -537,19 +538,20 @@ export const dictionary: Record<Locale, Dictionary> = {
       ],
       process_label: "Process",
       process_steps: [
-        { n: "01", title: "Submission", body: "You describe the situation through a guided intake. No call yet." },
+        { n: "01", title: "Submission", body: "You describe the situation through a guided intake. No call required." },
         { n: "02", title: "Review", body: "The intake is read. If the work is suitable, terms and timing are sent back." },
-        { n: "03", title: "Analysis", body: "Focused work on the structure of your situation. Two to seven days, depending on scale." },
+        { n: "03", title: "Analysis", body: "Focused work on the structure of your situation. 3–5 business days, depending on scale." },
         { n: "04", title: "Delivery", body: "A written structural reading and the next decision becomes possible." },
       ],
       outcome_label: "Outcome",
       outcome_body:
-        "A precise written reading of the situation. The structure made visible, the real task named, and the range of possible next steps defined.",
+        "A precise written reading of the situation. The structure made visible, the real task named, and the next meaningful decision made visible.",
       format_label: "Format",
       format_body:
-        "Asynchronous. Written. Limited intake. Each request is read personally. Not all requests proceed.",
+        "Asynchronous. Written. Limited intake.\n\nEach request is reviewed individually.\n\nStructural Clarity — €95\n\nDelivery: 3–5 business days\n\nNot all requests proceed.",
       cta_button: "Begin intake →",
       cta_note: "Five minutes. No call required.",
+      bridge: "Why this format\n\nI work by identifying hidden structure, tensions, and decision architecture where situations appear unclear, overloaded, or difficult to name.",
       intake: {
         header: "intake",
         back_aria: "Back",
@@ -850,7 +852,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       lead_1: "Иногда проблема не в решении,",
       lead_2: "а в отсутствии структуры.",
       body_1:
-        "Структурная ясность — это сфокусированный анализ ситуации, в которой вы находитесь, но которую не видите целиком. Цель — не совет. Цель — структура.",
+        "Структурная ясность — это сфокусированное чтение ситуации, в которой вы находитесь, но которую ещё не можете структурировать целиком. Цель — не совет. Цель — структура.",
       body_2:
         "После анализа у ситуации появляется форма. От формы становится возможным решение.",
       for_label: "Подходит, когда",
@@ -868,19 +870,20 @@ export const dictionary: Record<Locale, Dictionary> = {
       ],
       process_label: "Процесс",
       process_steps: [
-        { n: "01", title: "Заявка", body: "Вы описываете ситуацию через направленный интейк. Без созвона." },
+        { n: "01", title: "Заявка", body: "Вы описываете ситуацию через направленный интейк. Звонок не требуется." },
         { n: "02", title: "Рассмотрение", body: "Заявка читается лично. Если работа уместна — приходят условия и сроки." },
-        { n: "03", title: "Анализ", body: "Сфокусированная работа со структурой. От двух до семи дней, в зависимости от масштаба." },
+        { n: "03", title: "Анализ", body: "Сфокусированная работа со структурой. 3–5 рабочих дней, в зависимости от масштаба." },
         { n: "04", title: "Передача", body: "Письменное структурное чтение ситуации. Решение становится возможным." },
       ],
       outcome_label: "Результат",
       outcome_body:
-        "Точное письменное чтение ситуации. Структура сделана видимой, реальная задача названа, диапазон возможных шагов определён.",
+        "Точное письменное чтение ситуации. Структура сделана видимой, реальная задача названа, и следующее осмысленное решение становится видимым.",
       format_label: "Формат",
       format_body:
-        "Асинхронно. Письменно. Поток ограничен. Каждая заявка читается лично. Не все заявки получают продолжение.",
+        "Асинхронно. Письменно. Поток ограничен.\n\nКаждая заявка рассматривается индивидуально.\n\nСтруктурная ясность — €95\n\nСрок: 3–5 рабочих дней\n\nНе все заявки получают продолжение.",
       cta_button: "Перейти к интейку →",
       cta_note: "Пять минут. Звонок не требуется.",
+      bridge: "Почему такой формат\n\nЯ работаю, выявляя скрытую структуру, напряжения и архитектуру решений там, где ситуация кажется неясной, перегруженной или трудной для названия.",
       intake: {
         header: "интейк",
         back_aria: "Назад",
@@ -1181,7 +1184,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       lead_1: "Іноді проблема не в рішенні,",
       lead_2: "а у відсутності структури.",
       body_1:
-        "Структурна ясність — це сфокусований аналіз ситуації, в якій ви перебуваєте, але якої не бачите цілком. Мета — не порада. Мета — структура.",
+        "Структурна ясність — це сфокусоване читання ситуації, в якій ви перебуваєте, але якої ще не можете структурувати цілком. Мета — не порада. Мета — структура.",
       body_2:
         "Після аналізу ситуація отримує форму. Від форми стає можливим рішення.",
       for_label: "Підходить, коли",
@@ -1199,9 +1202,9 @@ export const dictionary: Record<Locale, Dictionary> = {
       ],
       process_label: "Процес",
       process_steps: [
-        { n: "01", title: "Заявка", body: "Ви описуєте ситуацію через спрямований інтейк. Без дзвінка." },
+        { n: "01", title: "Заявка", body: "Ви описуєте ситуацію через спрямований інтейк. Дзвінок не потрібен." },
         { n: "02", title: "Розгляд", body: "Заявка читається особисто. Якщо робота доречна — надходять умови і терміни." },
-        { n: "03", title: "Аналіз", body: "Сфокусована робота зі структурою. Від двох до семи днів, залежно від масштабу." },
+        { n: "03", title: "Аналіз", body: "Сфокусована робота зі структурою. 3–5 робочих днів, залежно від масштабу." },
         { n: "04", title: "Передача", body: "Письмове структурне читання ситуації. Рішення стає можливим." },
       ],
       outcome_label: "Результат",
@@ -1209,9 +1212,10 @@ export const dictionary: Record<Locale, Dictionary> = {
         "Точне письмове читання ситуації. Структура зроблена видимою, реальна задача названа, діапазон можливих кроків визначений.",
       format_label: "Формат",
       format_body:
-        "Асинхронно. Письмово. Потік обмежений. Кожна заявка читається особисто. Не всі заявки отримують продовження.",
+        "Асинхронно. Письмово. Потік обмежений.\n\nКожна заявка розглядається індивідуально.\n\nСтруктурна ясність — €95\n\nТермін: 3–5 робочих днів\n\nНе всі заявки отримують продовження.",
       cta_button: "Перейти до інтейку →",
       cta_note: "П'ять хвилин. Дзвінок не потрібен.",
+      bridge: "Чому такий формат\n\nЯ працюю, виявляючи приховану структуру, напруження та архітектуру рішень там, де ситуація здається неясною, перевантаженою або важкою для назви.",
       intake: {
         header: "інтейк",
         back_aria: "Назад",
