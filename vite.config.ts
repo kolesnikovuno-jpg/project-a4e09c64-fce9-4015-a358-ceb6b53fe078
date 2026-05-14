@@ -17,6 +17,7 @@ type Stage = "concept" | "prototype" | "production";
 const MODELS: { slug: string; name: string; stage: Stage; image: string }[] = [
   { slug: "lyra", name: "LYRA", stage: "prototype", image: "/og/lyra-preview.png" },
   { slug: "nava", name: "NAVA", stage: "prototype", image: "/og/nava-preview.png" },
+  { slug: "void", name: "VOID", stage: "concept", image: "/og/lyra-preview.png" },
 ];
 
 const STAGE_LABEL: Record<Locale, Record<Stage, string>> = {
@@ -74,6 +75,11 @@ const sitemapEntries = [
       alternates,
     }));
   }),
+  // Non-localized utility routes (single-language).
+  { loc: "/doodle", changefreq: "yearly" as const, priority: 0.3 },
+  { loc: "/pixels", changefreq: "yearly" as const, priority: 0.3 },
+  { loc: "/unocalc", changefreq: "yearly" as const, priority: 0.3 },
+  { loc: "/lyra-concept", changefreq: "yearly" as const, priority: 0.3 },
 ];
 
 // https://vitejs.dev/config/
