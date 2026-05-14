@@ -1,0 +1,410 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ChevronLeft } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import PageTransition from "@/components/PageTransition";
+import { useLocale } from "@/i18n/useLocale";
+import LanguageSwitcher from "@/i18n/LanguageSwitcher";
+import SEO from "@/components/SEO";
+
+const SectionLabel = ({ children }: { children: string }) => (
+  <p className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground/70 font-normal mb-3">{children}</p>
+);
+
+type FormState = {
+  name: string;
+  email: string;
+  telegram: string;
+  situation: string;
+  unclear: string;
+  scope: string;
+  horizon: string;
+  notes: string;
+};
+
+const initial: FormState = {
+  name: "",
+  email: "",
+  telegram: "",
+  situation: "",
+  unclear: "",
+  scope: "",
+  horizon: "",
+  notes: "",
+};
+
+const TOTAL = 4;
+
+const ClarityIntake = () => {
+  const navigate = useNavigate();
+  const { t, localePath } = useLocale();
+  const C = t.clarity;
+  const I = C.intake;
+
+  const [step, setStep] = useState(1);
+  const [data, setData] = useState<FormState>(initial);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
+    setData((d) => ({ ...d, [k]: v }));
+
+  const validateStep = (): boolean => {
+    const e: Record<string, string> = {};
+    if (step === 1) {
+      if (!data.name.trim()) e.name = I.validation_required;
+      if (!data.email.trim()) e.email = I.validation_required;
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) e.email = I.validation_email;
+    }
+    if (step === 2 && !data.situation.trim()) e.situation = I.validation_required;
+    if (step === 3 && !data.unclear.trim()) e.unclear = I.validation_required;
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const goNext = () => {
+    if (!validateStep()) return;
+    if (step < TOTAL) setStep(step + 1);
+  };
+  const goBack = () => {
+    setErrors({});
+    if (step > 1) setStep(step - 1);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateStep()) return;
+    setSubmitting(true);
+    // Frontend-only: simulate brief processing then move to confirmation.
+    await new Promise((r) => setTimeout(r, 600));
+    setSubmitting(false);
+    setDone(true);
+  };
+
+  return (
+    <PageTransition>
+      <SEO
+        title={`${I.header} — ${C.seo_title}`}
+        description={C.seo_description}
+        image="/og/lyra-preview.png"
+      />
+      <div className="min-h-screen bg-background px-6 sm:px-10 md:px-16 lg:px-20 pt-16 sm:pt-20 md:pt-24 pb-20 md:pb-28">
+        <LanguageSwitcher />
+        <div className="max-w-2xl w-full mx-auto">
+          <div className="flex items-center justify-between mb-12 md:mb-16">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => (done ? navigate(localePath("/")) : navigate(-1))}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={I.back_aria}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <h1 className="text-[13px] md:text-[14px] tracking-[0.06em] text-muted-foreground">
+                {C.header} <span className="text-muted-foreground/50">/ {I.header}</span>
+              </h1>
+            </div>
+            <a
+              href={localePath("/")}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate(localePath("/"));
+              }}
+              className="text-[13px] text-primary font-medium hover:text-primary/80 transition-colors"
+            >
+              {t.nav.uno}
+            </a>
+          </div>
+
+          {/* Progress indicator (numerals only — no bars) */}
+          {!done && (
+            <div className="flex items-center gap-3 mb-10 md:mb-12">
+              <span className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground/60">
+                {I.step_label}
+              </span>
+              <span className="tabular-nums text-[12px] text-muted-foreground/80">
+                {String(step).padStart(2, "0")}
+              </span>
+              <span className="text-muted-foreground/40">/</span>
+              <span className="tabular-nums text-[12px] text-muted-foreground/50">
+                {String(TOTAL).padStart(2, "0")}
+              </span>
+              <div className="flex-1 ml-4 h-px bg-border/20 relative">
+                <div
+                  className="absolute left-0 top-0 h-px bg-primary/50 transition-all duration-700 ease-out"
+                  style={{ width: `${(step / TOTAL) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {!done ? (
+            <form onSubmit={step === TOTAL ? handleSubmit : (e) => e.preventDefault()} noValidate>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={step}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                  className="text-[13px] md:text-[14px] text-muted-foreground leading-[1.7]"
+                >
+                  {step === 1 && (
+                    <section className="space-y-7">
+                      <div>
+                        <SectionLabel>{I.step1_title}</SectionLabel>
+                        <p className="max-w-md">{I.step1_intro}</p>
+                      </div>
+                      <Field label={I.step1_name} error={errors.name}>
+                        <input
+                          type="text"
+                          value={data.name}
+                          onChange={(e) => set("name", e.target.value)}
+                          maxLength={100}
+                          autoComplete="name"
+                          className="ci-input"
+                        />
+                      </Field>
+                      <Field label={I.step1_email} error={errors.email}>
+                        <input
+                          type="email"
+                          value={data.email}
+                          onChange={(e) => set("email", e.target.value)}
+                          maxLength={255}
+                          autoComplete="email"
+                          className="ci-input"
+                        />
+                      </Field>
+                      <Field
+                        label={`${I.step1_telegram} · ${I.step1_optional}`}
+                      >
+                        <input
+                          type="text"
+                          value={data.telegram}
+                          onChange={(e) => set("telegram", e.target.value)}
+                          maxLength={200}
+                          placeholder={I.step1_telegram_placeholder}
+                          className="ci-input"
+                        />
+                      </Field>
+                    </section>
+                  )}
+
+                  {step === 2 && (
+                    <section className="space-y-7">
+                      <div>
+                        <SectionLabel>{I.step2_title}</SectionLabel>
+                        <p className="max-w-md">{I.step2_intro}</p>
+                      </div>
+                      <Field label={I.step2_field_label} error={errors.situation}>
+                        <textarea
+                          value={data.situation}
+                          onChange={(e) => set("situation", e.target.value)}
+                          maxLength={2500}
+                          rows={6}
+                          placeholder={I.step2_field_placeholder}
+                          className="ci-textarea"
+                        />
+                      </Field>
+                    </section>
+                  )}
+
+                  {step === 3 && (
+                    <section className="space-y-7">
+                      <div>
+                        <SectionLabel>{I.step3_title}</SectionLabel>
+                        <p className="max-w-md">{I.step3_intro}</p>
+                      </div>
+                      <Field label={I.step3_field_label} error={errors.unclear}>
+                        <textarea
+                          value={data.unclear}
+                          onChange={(e) => set("unclear", e.target.value)}
+                          maxLength={2000}
+                          rows={5}
+                          placeholder={I.step3_field_placeholder}
+                          className="ci-textarea"
+                        />
+                      </Field>
+                    </section>
+                  )}
+
+                  {step === 4 && (
+                    <section className="space-y-8">
+                      <div>
+                        <SectionLabel>{I.step4_title}</SectionLabel>
+                        <p className="max-w-md">{I.step4_intro}</p>
+                      </div>
+
+                      <RadioGroup
+                        label={I.step4_scope_label}
+                        name="scope"
+                        value={data.scope}
+                        options={I.step4_scope_options}
+                        onChange={(v) => set("scope", v)}
+                      />
+
+                      <RadioGroup
+                        label={I.step4_horizon_label}
+                        name="horizon"
+                        value={data.horizon}
+                        options={I.step4_horizon_options}
+                        onChange={(v) => set("horizon", v)}
+                      />
+
+                      <Field label={`${I.step4_notes_label} · ${I.step1_optional}`}>
+                        <textarea
+                          value={data.notes}
+                          onChange={(e) => set("notes", e.target.value)}
+                          maxLength={1500}
+                          rows={4}
+                          placeholder={I.step4_notes_placeholder}
+                          className="ci-textarea"
+                        />
+                      </Field>
+                    </section>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+
+              <div className="mt-12 pt-6 border-t border-border/20 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={goBack}
+                  disabled={step === 1}
+                  className="text-[13px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30 disabled:hover:text-muted-foreground"
+                >
+                  {I.back}
+                </button>
+
+                {step < TOTAL ? (
+                  <button
+                    type="button"
+                    onClick={goNext}
+                    className="text-[13px] text-primary font-medium border-b border-primary/30 hover:border-primary transition-colors pb-0.5"
+                  >
+                    {I.next}
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="text-[13px] text-primary font-medium border-b border-primary/30 hover:border-primary transition-colors pb-0.5 disabled:opacity-50"
+                  >
+                    {submitting ? I.submitting : I.submit}
+                  </button>
+                )}
+              </div>
+            </form>
+          ) : (
+            <motion.section
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+              className="text-[13px] md:text-[14px] text-muted-foreground leading-[1.75]"
+            >
+              <SectionLabel>{I.confirm_title}</SectionLabel>
+              <p className="text-foreground text-[15px] md:text-[16px] leading-[1.6] max-w-md font-light">
+                {I.confirm_body}
+              </p>
+              <p className="mt-8 text-[11px] tracking-[0.12em] text-muted-foreground/70">
+                {I.confirm_signature}
+              </p>
+              <div className="mt-12 pt-6 border-t border-border/20">
+                <button
+                  type="button"
+                  onClick={() => navigate(localePath("/"))}
+                  className="text-[13px] text-muted-foreground hover:text-foreground transition-colors border-b border-border/50 hover:border-foreground pb-0.5"
+                >
+                  {I.back_to_site}
+                </button>
+              </div>
+            </motion.section>
+          )}
+        </div>
+      </div>
+
+      <style>{`
+        .ci-input, .ci-textarea {
+          width: 100%;
+          background: transparent;
+          border: 0;
+          border-bottom: 1px solid hsl(var(--border));
+          padding: 8px 0;
+          font: inherit;
+          color: hsl(var(--foreground));
+          outline: none;
+          border-radius: 0;
+          transition: border-color .25s ease;
+        }
+        .ci-textarea {
+          resize: vertical;
+          min-height: 96px;
+          line-height: 1.6;
+        }
+        .ci-input:focus, .ci-textarea:focus {
+          border-bottom-color: hsl(var(--primary) / 0.7);
+        }
+        .ci-input::placeholder, .ci-textarea::placeholder {
+          color: hsl(var(--muted-foreground) / 0.5);
+        }
+      `}</style>
+    </PageTransition>
+  );
+};
+
+const Field = ({
+  label,
+  error,
+  children,
+}: {
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+}) => (
+  <div>
+    <label className="block text-[10px] tracking-[0.14em] uppercase text-muted-foreground/70 mb-2">
+      {label}
+    </label>
+    {children}
+    {error && <p className="mt-1 text-[11px] text-destructive/80">{error}</p>}
+  </div>
+);
+
+const RadioGroup = ({
+  label,
+  name,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  name: string;
+  value: string;
+  options: readonly { value: string; label: string }[];
+  onChange: (v: string) => void;
+}) => (
+  <div>
+    <p className="text-[10px] tracking-[0.14em] uppercase text-muted-foreground/70 mb-3">{label}</p>
+    <div className="flex flex-col gap-2">
+      {options.map((o) => (
+        <label
+          key={o.value}
+          className="inline-flex items-center gap-3 cursor-pointer text-[13px] md:text-[14px] text-foreground/85 hover:text-foreground transition-colors"
+        >
+          <input
+            type="radio"
+            name={name}
+            value={o.value}
+            checked={value === o.value}
+            onChange={() => onChange(o.value)}
+            className="appearance-none w-[11px] h-[11px] rounded-full border border-border checked:border-primary checked:bg-primary/80 transition-colors"
+          />
+          <span>{o.label}</span>
+        </label>
+      ))}
+    </div>
+  </div>
+);
+
+export default ClarityIntake;
