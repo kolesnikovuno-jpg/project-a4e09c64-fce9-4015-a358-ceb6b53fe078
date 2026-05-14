@@ -52,6 +52,59 @@ const ogPagesList = MODELS.flatMap((m) => {
   });
 });
 
+// Per-locale titles/descriptions for non-model static pages, so social
+// crawlers (which don't execute JS) see unique previews per route.
+const STATIC_META: Record<
+  string,
+  Record<Locale, { title: string; description: string }>
+> = {
+  "": {
+    en: { title: ".uno studio — Kolesnikov", description: "Architecture, design, art by Kolesnikov." },
+    ru: { title: ".uno studio — Колесников", description: "Архитектура, дизайн, искусство — Колесников." },
+    uk: { title: ".uno studio — Колесников", description: "Архітектура, дизайн, мистецтво — Колесніков." },
+  },
+  about: {
+    en: { title: "About — Kolesnikov", description: "About .uno studio: practice, principles and the people behind the work." },
+    ru: { title: "О студии — Колесников", description: "О .uno studio: практика, принципы и люди, стоящие за работой." },
+    uk: { title: "Про студію — Колесников", description: "Про .uno studio: практика, принципи і люди, що стоять за роботою." },
+  },
+  pricing: {
+    en: { title: "Pricing — Kolesnikov", description: "Pricing and engagement model for working with .uno studio." },
+    ru: { title: "Стоимость — Колесников", description: "Стоимость и модель работы со студией .uno." },
+    uk: { title: "Вартість — Колесников", description: "Вартість і модель співпраці зі студією .uno." },
+  },
+  garden: {
+    en: { title: "Garden — Kolesnikov", description: "Garden: an index of objects developed within the Kolesnikov system." },
+    ru: { title: "Сад — Колесников", description: "Сад: указатель объектов, созданных в системе Kolesnikov." },
+    uk: { title: "Сад — Колесников", description: "Сад: покажчик об'єктів, створених у системі Kolesnikov." },
+  },
+  gateway: {
+    en: { title: "Gateway — Kolesnikov", description: "Gateway into the Kolesnikov system." },
+    ru: { title: "Врата — Колесников", description: "Вход в систему Kolesnikov." },
+    uk: { title: "Брама — Колесников", description: "Вхід у систему Kolesnikov." },
+  },
+  unostudio: {
+    en: { title: ".uno studio — Kolesnikov", description: ".uno studio: architecture, design and art practice by Kolesnikov." },
+    ru: { title: ".uno studio — Колесников", description: ".uno studio: практика архитектуры, дизайна и искусства Колесникова." },
+    uk: { title: ".uno studio — Колесников", description: ".uno studio: практика архітектури, дизайну та мистецтва Колесникова." },
+  },
+};
+
+const staticOgPages = Object.entries(STATIC_META).flatMap(([p, byLocale]) => {
+  const alternates: Record<string, string> = { "x-default": `/en/${p}` };
+  for (const l of LOCALES) alternates[l] = `/${l}/${p}`;
+  return LOCALES.map((l) => ({
+    route: `/${l}${p ? "/" + p : ""}`,
+    title: byLocale[l].title,
+    description: byLocale[l].description,
+    image: "/og/lyra-preview.png",
+    type: "website",
+    alternates,
+  }));
+});
+
+const allOgPages = [...ogPagesList, ...staticOgPages];
+
 // Static (non-model) pages mirrored across locales.
 const STATIC_PAGES = ["", "about", "pricing", "garden", "gateway", "unostudio"];
 const sitemapEntries = [
@@ -94,7 +147,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === "development" && componentTagger(),
-    ogPages({ siteUrl: SITE_URL, pages: ogPagesList }),
+    ogPages({ siteUrl: SITE_URL, pages: allOgPages }),
     sitemap({ siteUrl: SITE_URL, entries: sitemapEntries }),
   ].filter(Boolean),
   resolve: {
