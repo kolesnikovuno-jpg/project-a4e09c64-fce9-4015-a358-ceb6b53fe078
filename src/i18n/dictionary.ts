@@ -202,6 +202,68 @@ export type Dictionary = {
     action_allowed_title: string;
     action_greeting: string;
   };
+  clarity: {
+    seo_title: string;
+    seo_description: string;
+    teaser_link: string;
+    header: string;
+    back_aria: string;
+    lead_1: string;
+    lead_2: string;
+    body_1: string;
+    body_2: string;
+    for_label: string;
+    for_items: readonly string[];
+    not_for_label: string;
+    not_for_items: readonly string[];
+    process_label: string;
+    process_steps: readonly { n: string; title: string; body: string }[];
+    outcome_label: string;
+    outcome_body: string;
+    format_label: string;
+    format_body: string;
+    cta_button: string;
+    cta_note: string;
+    intake: {
+      header: string;
+      back_aria: string;
+      step_label: string;
+      of_label: string;
+      next: string;
+      back: string;
+      submit: string;
+      submitting: string;
+      step1_title: string;
+      step1_intro: string;
+      step1_name: string;
+      step1_email: string;
+      step1_telegram: string;
+      step1_telegram_placeholder: string;
+      step1_optional: string;
+      step2_title: string;
+      step2_intro: string;
+      step2_field_label: string;
+      step2_field_placeholder: string;
+      step3_title: string;
+      step3_intro: string;
+      step3_field_label: string;
+      step3_field_placeholder: string;
+      step4_title: string;
+      step4_intro: string;
+      step4_scope_label: string;
+      step4_scope_options: readonly { value: string; label: string }[];
+      step4_horizon_label: string;
+      step4_horizon_options: readonly { value: string; label: string }[];
+      step4_notes_label: string;
+      step4_notes_placeholder: string;
+      validation_required: string;
+      validation_email: string;
+      confirm_title: string;
+      confirm_body: string;
+      confirm_signature: string;
+      back_to_site: string;
+    };
+  };
 };
 
 // EN is the source of truth. RU and UA are adapted (not literal translation).
@@ -447,6 +509,96 @@ export const dictionary: Record<Locale, Dictionary> = {
       action_allowed_title: "Access confirmed",
       action_greeting: "Welcome",
     },
+    clarity: {
+      seo_title: "Structural Clarity — .uno studio",
+      seo_description:
+        "Structural Clarity — a curated structural analysis of your situation. The work begins where structure is missing.",
+      teaser_link: "Structural Clarity →",
+      header: "structural clarity",
+      back_aria: "Back",
+      lead_1: "Sometimes the problem is not the solution,",
+      lead_2: "it is the absence of structure.",
+      body_1:
+        "Structural Clarity is a focused analysis of a situation you are inside but cannot see clearly. The aim is not advice. The aim is structure.",
+      body_2:
+        "After the analysis the situation has a shape. From a shape, a decision becomes possible.",
+      for_label: "Suitable when",
+      for_items: [
+        "the direction is unclear and decisions stall",
+        "many parts move at once and none of them lock",
+        "you sense a problem but cannot name it",
+        "the project must be defined before it can be built",
+      ],
+      not_for_label: "Not suitable when",
+      not_for_items: [
+        "you are looking for execution-only services",
+        "the answer is already known and only needs validation",
+        "the format is general consulting or coaching",
+      ],
+      process_label: "Process",
+      process_steps: [
+        { n: "01", title: "Submission", body: "You describe the situation through a guided intake. No call yet." },
+        { n: "02", title: "Review", body: "The intake is read. If the work is suitable, terms and timing are sent back." },
+        { n: "03", title: "Analysis", body: "Focused work on the structure of your situation. Two to seven days, depending on scale." },
+        { n: "04", title: "Delivery", body: "A written structural reading and the next decision becomes possible." },
+      ],
+      outcome_label: "Outcome",
+      outcome_body:
+        "A precise written reading of the situation. The structure made visible, the real task named, and the range of possible next steps defined.",
+      format_label: "Format",
+      format_body:
+        "Asynchronous. Written. Limited intake. Each request is read personally. Not all requests proceed.",
+      cta_button: "Begin intake →",
+      cta_note: "Five minutes. No call required.",
+      intake: {
+        header: "intake",
+        back_aria: "Back",
+        step_label: "step",
+        of_label: "of",
+        next: "next →",
+        back: "← back",
+        submit: "submit →",
+        submitting: "sending…",
+        step1_title: "Who is writing",
+        step1_intro: "So the reading can be addressed to a person, not a form.",
+        step1_name: "Name",
+        step1_email: "Email",
+        step1_telegram: "Telegram",
+        step1_telegram_placeholder: "@username or link",
+        step1_optional: "optional",
+        step2_title: "The situation",
+        step2_intro: "Describe what is in front of you. Not what you want — what is.",
+        step2_field_label: "Situation",
+        step2_field_placeholder: "Where you are, what is moving, what is stuck.",
+        step3_title: "What is unclear",
+        step3_intro: "Name the part that does not hold. The question behind the question.",
+        step3_field_label: "The unclear part",
+        step3_field_placeholder: "What you cannot see, decide, or name.",
+        step4_title: "Scale & timing",
+        step4_intro: "Helps frame the analysis at the right depth.",
+        step4_scope_label: "Scale",
+        step4_scope_options: [
+          { value: "single", label: "A single decision" },
+          { value: "project", label: "A project or product" },
+          { value: "direction", label: "A direction or practice" },
+        ],
+        step4_horizon_label: "Horizon",
+        step4_horizon_options: [
+          { value: "now", label: "Now" },
+          { value: "weeks", label: "Within weeks" },
+          { value: "open", label: "Open" },
+        ],
+        step4_notes_label: "Anything else",
+        step4_notes_placeholder: "Constraints, context, what you have already tried.",
+        validation_required: "Required",
+        validation_email: "Invalid email",
+        confirm_title: "Received",
+        confirm_body:
+          "Your intake has been recorded. It will be read personally. If the work is suitable, a written response with terms will follow.",
+        confirm_signature: "— .uno studio",
+        back_to_site: "Back to the site",
+      },
+    },
   },
   ru: {
     nav: { back: "← назад", info: "инфо", ar: "ar", uno: ".uno" },
@@ -688,6 +840,96 @@ export const dictionary: Record<Locale, Dictionary> = {
       action_allowed_title: "Доступ подтверждён",
       action_greeting: "Добро пожаловать",
     },
+    clarity: {
+      seo_title: "Структурная ясность — .uno studio",
+      seo_description:
+        "Структурная ясность — точечный структурный анализ ситуации. Работа начинается там, где не хватает структуры.",
+      teaser_link: "Структурная ясность →",
+      header: "структурная ясность",
+      back_aria: "Назад",
+      lead_1: "Иногда проблема не в решении,",
+      lead_2: "а в отсутствии структуры.",
+      body_1:
+        "Структурная ясность — это сфокусированный анализ ситуации, в которой вы находитесь, но которую не видите целиком. Цель — не совет. Цель — структура.",
+      body_2:
+        "После анализа у ситуации появляется форма. От формы становится возможным решение.",
+      for_label: "Подходит, когда",
+      for_items: [
+        "направление неясно и решения тормозят",
+        "много частей движутся одновременно и ни одна не фиксируется",
+        "ощущение проблемы есть, но её нельзя назвать",
+        "проект нужно определить прежде, чем строить",
+      ],
+      not_for_label: "Не подходит, когда",
+      not_for_items: [
+        "нужны только исполнительские услуги",
+        "ответ уже известен и нужна лишь валидация",
+        "формат — общий консалтинг или коучинг",
+      ],
+      process_label: "Процесс",
+      process_steps: [
+        { n: "01", title: "Заявка", body: "Вы описываете ситуацию через направленный интейк. Без созвона." },
+        { n: "02", title: "Рассмотрение", body: "Заявка читается лично. Если работа уместна — приходят условия и сроки." },
+        { n: "03", title: "Анализ", body: "Сфокусированная работа со структурой. От двух до семи дней, в зависимости от масштаба." },
+        { n: "04", title: "Передача", body: "Письменное структурное чтение ситуации. Решение становится возможным." },
+      ],
+      outcome_label: "Результат",
+      outcome_body:
+        "Точное письменное чтение ситуации. Структура сделана видимой, реальная задача названа, диапазон возможных шагов определён.",
+      format_label: "Формат",
+      format_body:
+        "Асинхронно. Письменно. Поток ограничен. Каждая заявка читается лично. Не все заявки получают продолжение.",
+      cta_button: "Перейти к интейку →",
+      cta_note: "Пять минут. Звонок не требуется.",
+      intake: {
+        header: "интейк",
+        back_aria: "Назад",
+        step_label: "шаг",
+        of_label: "из",
+        next: "далее →",
+        back: "← назад",
+        submit: "отправить →",
+        submitting: "отправка…",
+        step1_title: "Кто пишет",
+        step1_intro: "Чтобы чтение было адресовано человеку, а не форме.",
+        step1_name: "Имя",
+        step1_email: "Email",
+        step1_telegram: "Telegram",
+        step1_telegram_placeholder: "@username или ссылка",
+        step1_optional: "необязательно",
+        step2_title: "Ситуация",
+        step2_intro: "Опишите то, что перед вами. Не то, что хочется — то, что есть.",
+        step2_field_label: "Ситуация",
+        step2_field_placeholder: "Где вы, что движется, что стоит.",
+        step3_title: "Что неясно",
+        step3_intro: "Назовите то, что не держится. Вопрос за вопросом.",
+        step3_field_label: "Неясная часть",
+        step3_field_placeholder: "Что не видно, не решается, не называется.",
+        step4_title: "Масштаб и горизонт",
+        step4_intro: "Помогает выбрать правильную глубину анализа.",
+        step4_scope_label: "Масштаб",
+        step4_scope_options: [
+          { value: "single", label: "Одно решение" },
+          { value: "project", label: "Проект или продукт" },
+          { value: "direction", label: "Направление или практика" },
+        ],
+        step4_horizon_label: "Горизонт",
+        step4_horizon_options: [
+          { value: "now", label: "Сейчас" },
+          { value: "weeks", label: "В пределах недель" },
+          { value: "open", label: "Открыт" },
+        ],
+        step4_notes_label: "Что-то ещё",
+        step4_notes_placeholder: "Ограничения, контекст, то, что уже пробовали.",
+        validation_required: "Обязательно",
+        validation_email: "Неверный email",
+        confirm_title: "Получено",
+        confirm_body:
+          "Заявка зафиксирована. Она будет прочитана лично. Если работа уместна — придёт письменный ответ с условиями.",
+        confirm_signature: "— .uno studio",
+        back_to_site: "Вернуться на сайт",
+      },
+    },
   },
   uk: {
     nav: { back: "← назад", info: "інфо", ar: "ar", uno: ".uno" },
@@ -928,6 +1170,96 @@ export const dictionary: Record<Locale, Dictionary> = {
       action_requested_title: "Запит отримано",
       action_allowed_title: "Доступ підтверджено",
       action_greeting: "Ласкаво просимо",
+    },
+    clarity: {
+      seo_title: "Структурна ясність — .uno studio",
+      seo_description:
+        "Структурна ясність — точковий структурний аналіз ситуації. Робота починається там, де бракує структури.",
+      teaser_link: "Структурна ясність →",
+      header: "структурна ясність",
+      back_aria: "Назад",
+      lead_1: "Іноді проблема не в рішенні,",
+      lead_2: "а у відсутності структури.",
+      body_1:
+        "Структурна ясність — це сфокусований аналіз ситуації, в якій ви перебуваєте, але якої не бачите цілком. Мета — не порада. Мета — структура.",
+      body_2:
+        "Після аналізу ситуація отримує форму. Від форми стає можливим рішення.",
+      for_label: "Підходить, коли",
+      for_items: [
+        "напрямок неясний і рішення гальмують",
+        "багато частин рухаються одночасно і жодна не фіксується",
+        "відчуття проблеми є, але її не можна назвати",
+        "проєкт треба визначити перш ніж будувати",
+      ],
+      not_for_label: "Не підходить, коли",
+      not_for_items: [
+        "потрібні лише виконавчі послуги",
+        "відповідь уже відома і потрібна лише валідація",
+        "формат — загальний консалтинг або коучинг",
+      ],
+      process_label: "Процес",
+      process_steps: [
+        { n: "01", title: "Заявка", body: "Ви описуєте ситуацію через спрямований інтейк. Без дзвінка." },
+        { n: "02", title: "Розгляд", body: "Заявка читається особисто. Якщо робота доречна — надходять умови і терміни." },
+        { n: "03", title: "Аналіз", body: "Сфокусована робота зі структурою. Від двох до семи днів, залежно від масштабу." },
+        { n: "04", title: "Передача", body: "Письмове структурне читання ситуації. Рішення стає можливим." },
+      ],
+      outcome_label: "Результат",
+      outcome_body:
+        "Точне письмове читання ситуації. Структура зроблена видимою, реальна задача названа, діапазон можливих кроків визначений.",
+      format_label: "Формат",
+      format_body:
+        "Асинхронно. Письмово. Потік обмежений. Кожна заявка читається особисто. Не всі заявки отримують продовження.",
+      cta_button: "Перейти до інтейку →",
+      cta_note: "П'ять хвилин. Дзвінок не потрібен.",
+      intake: {
+        header: "інтейк",
+        back_aria: "Назад",
+        step_label: "крок",
+        of_label: "з",
+        next: "далі →",
+        back: "← назад",
+        submit: "надіслати →",
+        submitting: "надсилання…",
+        step1_title: "Хто пише",
+        step1_intro: "Щоб читання було адресоване людині, а не формі.",
+        step1_name: "Ім'я",
+        step1_email: "Email",
+        step1_telegram: "Telegram",
+        step1_telegram_placeholder: "@username або посилання",
+        step1_optional: "необов'язково",
+        step2_title: "Ситуація",
+        step2_intro: "Опишіть те, що перед вами. Не те, чого хочеться — те, що є.",
+        step2_field_label: "Ситуація",
+        step2_field_placeholder: "Де ви, що рухається, що стоїть.",
+        step3_title: "Що неясно",
+        step3_intro: "Назвіть те, що не тримається. Питання за питанням.",
+        step3_field_label: "Неясна частина",
+        step3_field_placeholder: "Що не видно, не вирішується, не називається.",
+        step4_title: "Масштаб і горизонт",
+        step4_intro: "Допомагає обрати правильну глибину аналізу.",
+        step4_scope_label: "Масштаб",
+        step4_scope_options: [
+          { value: "single", label: "Одне рішення" },
+          { value: "project", label: "Проєкт або продукт" },
+          { value: "direction", label: "Напрямок або практика" },
+        ],
+        step4_horizon_label: "Горизонт",
+        step4_horizon_options: [
+          { value: "now", label: "Зараз" },
+          { value: "weeks", label: "У межах тижнів" },
+          { value: "open", label: "Відкритий" },
+        ],
+        step4_notes_label: "Щось іще",
+        step4_notes_placeholder: "Обмеження, контекст, те, що вже пробували.",
+        validation_required: "Обов'язково",
+        validation_email: "Невірний email",
+        confirm_title: "Отримано",
+        confirm_body:
+          "Заявку зафіксовано. Її буде прочитано особисто. Якщо робота доречна — надійде письмова відповідь з умовами.",
+        confirm_signature: "— .uno studio",
+        back_to_site: "Повернутися на сайт",
+      },
     },
   },
 };

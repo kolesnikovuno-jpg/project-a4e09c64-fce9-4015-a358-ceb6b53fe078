@@ -88,6 +88,11 @@ const STATIC_META: Record<
     ru: { title: ".uno studio — Колесников", description: ".uno studio: практика архитектуры, дизайна и искусства Колесникова." },
     uk: { title: ".uno studio — Колесников", description: ".uno studio: практика архітектури, дизайну та мистецтва Колесникова." },
   },
+  clarity: {
+    en: { title: "Structural Clarity — Kolesnikov", description: "Structural Clarity — a curated structural analysis of your situation by .uno studio." },
+    ru: { title: "Структурная ясность — Колесников", description: "Структурная ясность — точечный структурный анализ вашей ситуации от .uno studio." },
+    uk: { title: "Структурна ясність — Колесников", description: "Структурна ясність — точковий структурний аналіз вашої ситуації від .uno studio." },
+  },
 };
 
 const staticOgPages = Object.entries(STATIC_META).flatMap(([p, byLocale]) => {
@@ -106,7 +111,7 @@ const staticOgPages = Object.entries(STATIC_META).flatMap(([p, byLocale]) => {
 const allOgPages = [...ogPagesList, ...staticOgPages];
 
 // Static (non-model) pages mirrored across locales.
-const STATIC_PAGES = ["", "about", "pricing", "garden", "gateway", "unostudio"];
+const STATIC_PAGES = ["", "about", "pricing", "garden", "gateway", "unostudio", "clarity"];
 const sitemapEntries = [
   ...STATIC_PAGES.flatMap((p) => {
     const alternates: Record<string, string> = { "x-default": `/en/${p}` };
