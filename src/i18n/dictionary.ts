@@ -234,29 +234,25 @@ export type Dictionary = {
       back: string;
       submit: string;
       submitting: string;
-      step1_title: string;
-      step1_intro: string;
-      step1_name: string;
-      step1_email: string;
-      step1_telegram: string;
-      step1_telegram_placeholder: string;
-      step1_optional: string;
-      step2_title: string;
-      step2_intro: string;
-      step2_field_label: string;
-      step2_field_placeholder: string;
-      step3_title: string;
-      step3_intro: string;
-      step3_field_label: string;
-      step3_field_placeholder: string;
-      step4_title: string;
-      step4_intro: string;
-      step4_scope_label: string;
-      step4_scope_options: readonly { value: string; label: string }[];
-      step4_horizon_label: string;
-      step4_horizon_options: readonly { value: string; label: string }[];
-      step4_notes_label: string;
-      step4_notes_placeholder: string;
+      optional: string;
+      situation_title: string;
+      situation_intro: string;
+      situation_field_label: string;
+      situation_field_placeholder: string;
+      uncertain_title: string;
+      uncertain_intro: string;
+      uncertain_field_label: string;
+      uncertain_field_placeholder: string;
+      scope_title: string;
+      scope_intro: string;
+      scope_field_label: string;
+      scope_field_placeholder: string;
+      scope_refs_label: string;
+      scope_refs_placeholder: string;
+      contact_title: string;
+      contact_intro: string;
+      contact_name_label: string;
+      contact_email_label: string;
       validation_required: string;
       validation_email: string;
       confirm_title: string;
@@ -561,39 +557,27 @@ export const dictionary: Record<Locale, Dictionary> = {
         back: "← back",
         submit: "submit →",
         submitting: "sending…",
-        step1_title: "Who is writing",
-        step1_intro: "So the reading can be addressed to a person, not a form.",
-        step1_name: "Name",
-        step1_email: "Email",
-        step1_telegram: "Telegram",
-        step1_telegram_placeholder: "@username or link",
-        step1_optional: "optional",
-        step2_title: "The situation",
-        step2_intro: "Describe what is in front of you. Not what you want — what is.",
-        step2_field_label: "Situation",
-        step2_field_placeholder: "Where you are, what is moving, what is stuck.",
-        step3_title: "What is unclear",
-        step3_intro: "Name the part that does not hold. The question behind the question.",
-        step3_field_label: "The unclear part",
-        step3_field_placeholder: "What you cannot see, decide, or name.",
-        step4_title: "Scale & timing",
-        step4_intro: "Helps frame the analysis at the right depth.",
-        step4_scope_label: "Scale",
-        step4_scope_options: [
-          { value: "single", label: "A single decision" },
-          { value: "project", label: "A project or product" },
-          { value: "direction", label: "A direction or practice" },
-        ],
-        step4_horizon_label: "Horizon",
-        step4_horizon_options: [
-          { value: "now", label: "Now" },
-          { value: "weeks", label: "Within weeks" },
-          { value: "open", label: "Open" },
-        ],
-        step4_notes_label: "Anything else",
-        step4_notes_placeholder: "Constraints, context, what you have already tried.",
-        validation_required: "Required",
-        validation_email: "Invalid email",
+        optional: "optional",
+        situation_title: "What is the situation?",
+        situation_intro: "Describe the situation you are currently inside.",
+        situation_field_label: "Situation",
+        situation_field_placeholder: "Where you are, what is moving, what is stuck.",
+        uncertain_title: "What feels unclear?",
+        uncertain_intro: "What feels unresolved, overloaded, difficult to name, or blocking movement?",
+        uncertain_field_label: "The unclear part",
+        uncertain_field_placeholder: "What you cannot see, decide, or name.",
+        scope_title: "Scope",
+        scope_intro: "What is the scale, horizon, or relevant context of this situation?",
+        scope_field_label: "Scope & context",
+        scope_field_placeholder: "Scale, horizon, constraints, what you have already tried.",
+        scope_refs_label: "Supporting references",
+        scope_refs_placeholder: "Links or URLs, one per line.",
+        contact_title: "Contact",
+        contact_intro: "So the response can be addressed correctly.",
+        contact_name_label: "Name",
+        contact_email_label: "Email",
+        validation_required: "This field is needed to continue.",
+        validation_email: "This email doesn't look complete.",
         confirm_title: "Received",
         confirm_body:
           "Your intake has been recorded. It will be read personally. If the work is suitable, a written response with terms will follow.",
@@ -893,39 +877,27 @@ export const dictionary: Record<Locale, Dictionary> = {
         back: "← назад",
         submit: "отправить →",
         submitting: "отправка…",
-        step1_title: "Кто пишет",
-        step1_intro: "Чтобы чтение было адресовано человеку, а не форме.",
-        step1_name: "Имя",
-        step1_email: "Email",
-        step1_telegram: "Telegram",
-        step1_telegram_placeholder: "@username или ссылка",
-        step1_optional: "необязательно",
-        step2_title: "Ситуация",
-        step2_intro: "Опишите то, что перед вами. Не то, что хочется — то, что есть.",
-        step2_field_label: "Ситуация",
-        step2_field_placeholder: "Где вы, что движется, что стоит.",
-        step3_title: "Что неясно",
-        step3_intro: "Назовите то, что не держится. Вопрос за вопросом.",
-        step3_field_label: "Неясная часть",
-        step3_field_placeholder: "Что не видно, не решается, не называется.",
-        step4_title: "Масштаб и горизонт",
-        step4_intro: "Помогает выбрать правильную глубину анализа.",
-        step4_scope_label: "Масштаб",
-        step4_scope_options: [
-          { value: "single", label: "Одно решение" },
-          { value: "project", label: "Проект или продукт" },
-          { value: "direction", label: "Направление или практика" },
-        ],
-        step4_horizon_label: "Горизонт",
-        step4_horizon_options: [
-          { value: "now", label: "Сейчас" },
-          { value: "weeks", label: "В пределах недель" },
-          { value: "open", label: "Открыт" },
-        ],
-        step4_notes_label: "Что-то ещё",
-        step4_notes_placeholder: "Ограничения, контекст, то, что уже пробовали.",
-        validation_required: "Обязательно",
-        validation_email: "Неверный email",
+        optional: "необязательно",
+        situation_title: "Какова ситуация?",
+        situation_intro: "Опишите ситуацию, внутри которой вы сейчас находитесь.",
+        situation_field_label: "Ситуация",
+        situation_field_placeholder: "Где вы, что движется, что стоит.",
+        uncertain_title: "Что ощущается неясным?",
+        uncertain_intro: "Что ощущается нерешённым, перегруженным, трудно называемым или блокирующим движение?",
+        uncertain_field_label: "Неясная часть",
+        uncertain_field_placeholder: "Что не видно, не решается, не называется.",
+        scope_title: "Масштаб",
+        scope_intro: "Каков масштаб, горизонт или релевантный контекст этой ситуации?",
+        scope_field_label: "Масштаб и контекст",
+        scope_field_placeholder: "Масштаб, горизонт, ограничения, что уже пробовали.",
+        scope_refs_label: "Дополнительные ссылки",
+        scope_refs_placeholder: "Ссылки или URL, по одной в строке.",
+        contact_title: "Контакт",
+        contact_intro: "Чтобы ответ был адресован корректно.",
+        contact_name_label: "Имя",
+        contact_email_label: "Email",
+        validation_required: "Это поле нужно, чтобы продолжить.",
+        validation_email: "Этот email выглядит неполным.",
         confirm_title: "Получено",
         confirm_body:
           "Заявка зафиксирована. Она будет прочитана лично. Если работа уместна — придёт письменный ответ с условиями.",
@@ -1225,39 +1197,27 @@ export const dictionary: Record<Locale, Dictionary> = {
         back: "← назад",
         submit: "надіслати →",
         submitting: "надсилання…",
-        step1_title: "Хто пише",
-        step1_intro: "Щоб читання було адресоване людині, а не формі.",
-        step1_name: "Ім'я",
-        step1_email: "Email",
-        step1_telegram: "Telegram",
-        step1_telegram_placeholder: "@username або посилання",
-        step1_optional: "необов'язково",
-        step2_title: "Ситуація",
-        step2_intro: "Опишіть те, що перед вами. Не те, чого хочеться — те, що є.",
-        step2_field_label: "Ситуація",
-        step2_field_placeholder: "Де ви, що рухається, що стоїть.",
-        step3_title: "Що неясно",
-        step3_intro: "Назвіть те, що не тримається. Питання за питанням.",
-        step3_field_label: "Неясна частина",
-        step3_field_placeholder: "Що не видно, не вирішується, не називається.",
-        step4_title: "Масштаб і горизонт",
-        step4_intro: "Допомагає обрати правильну глибину аналізу.",
-        step4_scope_label: "Масштаб",
-        step4_scope_options: [
-          { value: "single", label: "Одне рішення" },
-          { value: "project", label: "Проєкт або продукт" },
-          { value: "direction", label: "Напрямок або практика" },
-        ],
-        step4_horizon_label: "Горизонт",
-        step4_horizon_options: [
-          { value: "now", label: "Зараз" },
-          { value: "weeks", label: "У межах тижнів" },
-          { value: "open", label: "Відкритий" },
-        ],
-        step4_notes_label: "Щось іще",
-        step4_notes_placeholder: "Обмеження, контекст, те, що вже пробували.",
-        validation_required: "Обов'язково",
-        validation_email: "Невірний email",
+        optional: "необов'язково",
+        situation_title: "Якою є ситуація?",
+        situation_intro: "Опишіть ситуацію, всередині якої ви зараз перебуваєте.",
+        situation_field_label: "Ситуація",
+        situation_field_placeholder: "Де ви, що рухається, що стоїть.",
+        uncertain_title: "Що відчувається неясним?",
+        uncertain_intro: "Що відчувається невирішеним, перевантаженим, важко називаним або блокує рух?",
+        uncertain_field_label: "Неясна частина",
+        uncertain_field_placeholder: "Що не видно, не вирішується, не називається.",
+        scope_title: "Масштаб",
+        scope_intro: "Який масштаб, горизонт або релевантний контекст цієї ситуації?",
+        scope_field_label: "Масштаб і контекст",
+        scope_field_placeholder: "Масштаб, горизонт, обмеження, те, що вже пробували.",
+        scope_refs_label: "Додаткові посилання",
+        scope_refs_placeholder: "Посилання або URL, по одному в рядку.",
+        contact_title: "Контакт",
+        contact_intro: "Щоб відповідь було адресовано коректно.",
+        contact_name_label: "Ім'я",
+        contact_email_label: "Email",
+        validation_required: "Це поле потрібне, щоб продовжити.",
+        validation_email: "Цей email виглядає неповним.",
         confirm_title: "Отримано",
         confirm_body:
           "Заявку зафіксовано. Її буде прочитано особисто. Якщо робота доречна — надійде письмова відповідь з умовами.",

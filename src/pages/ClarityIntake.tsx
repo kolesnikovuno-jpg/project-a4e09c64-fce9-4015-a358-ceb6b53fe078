@@ -12,25 +12,21 @@ const SectionLabel = ({ children }: { children: string }) => (
 );
 
 type FormState = {
-  name: string;
-  email: string;
-  telegram: string;
   situation: string;
   unclear: string;
   scope: string;
-  horizon: string;
-  notes: string;
+  refs: string;
+  name: string;
+  email: string;
 };
 
 const initial: FormState = {
-  name: "",
-  email: "",
-  telegram: "",
   situation: "",
   unclear: "",
   scope: "",
-  horizon: "",
-  notes: "",
+  refs: "",
+  name: "",
+  email: "",
 };
 
 const TOTAL = 4;
@@ -52,13 +48,13 @@ const ClarityIntake = () => {
 
   const validateStep = (): boolean => {
     const e: Record<string, string> = {};
-    if (step === 1) {
-      if (!data.name.trim()) e.name = I.validation_required;
+    if (step === 1 && !data.situation.trim()) e.situation = I.validation_required;
+    if (step === 2 && !data.unclear.trim()) e.unclear = I.validation_required;
+    if (step === 3 && !data.scope.trim()) e.scope = I.validation_required;
+    if (step === 4) {
       if (!data.email.trim()) e.email = I.validation_required;
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) e.email = I.validation_email;
     }
-    if (step === 2 && !data.situation.trim()) e.situation = I.validation_required;
-    if (step === 3 && !data.unclear.trim()) e.unclear = I.validation_required;
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -153,39 +149,17 @@ const ClarityIntake = () => {
                   {step === 1 && (
                     <section className="space-y-7">
                       <div>
-                        <SectionLabel>{I.step1_title}</SectionLabel>
-                        <p className="max-w-md">{I.step1_intro}</p>
+                        <SectionLabel>{I.situation_title}</SectionLabel>
+                        <p className="max-w-md">{I.situation_intro}</p>
                       </div>
-                      <Field label={I.step1_name} error={errors.name}>
-                        <input
-                          type="text"
-                          value={data.name}
-                          onChange={(e) => set("name", e.target.value)}
-                          maxLength={100}
-                          autoComplete="name"
-                          className="ci-input"
-                        />
-                      </Field>
-                      <Field label={I.step1_email} error={errors.email}>
-                        <input
-                          type="email"
-                          value={data.email}
-                          onChange={(e) => set("email", e.target.value)}
-                          maxLength={255}
-                          autoComplete="email"
-                          className="ci-input"
-                        />
-                      </Field>
-                      <Field
-                        label={`${I.step1_telegram} · ${I.step1_optional}`}
-                      >
-                        <input
-                          type="text"
-                          value={data.telegram}
-                          onChange={(e) => set("telegram", e.target.value)}
-                          maxLength={200}
-                          placeholder={I.step1_telegram_placeholder}
-                          className="ci-input"
+                      <Field label={I.situation_field_label} error={errors.situation}>
+                        <textarea
+                          value={data.situation}
+                          onChange={(e) => set("situation", e.target.value)}
+                          maxLength={2500}
+                          rows={6}
+                          placeholder={I.situation_field_placeholder}
+                          className="ci-textarea"
                         />
                       </Field>
                     </section>
@@ -194,16 +168,16 @@ const ClarityIntake = () => {
                   {step === 2 && (
                     <section className="space-y-7">
                       <div>
-                        <SectionLabel>{I.step2_title}</SectionLabel>
-                        <p className="max-w-md">{I.step2_intro}</p>
+                        <SectionLabel>{I.uncertain_title}</SectionLabel>
+                        <p className="max-w-md">{I.uncertain_intro}</p>
                       </div>
-                      <Field label={I.step2_field_label} error={errors.situation}>
+                      <Field label={I.uncertain_field_label} error={errors.unclear}>
                         <textarea
-                          value={data.situation}
-                          onChange={(e) => set("situation", e.target.value)}
-                          maxLength={2500}
-                          rows={6}
-                          placeholder={I.step2_field_placeholder}
+                          value={data.unclear}
+                          onChange={(e) => set("unclear", e.target.value)}
+                          maxLength={2000}
+                          rows={5}
+                          placeholder={I.uncertain_field_placeholder}
                           className="ci-textarea"
                         />
                       </Field>
@@ -213,16 +187,26 @@ const ClarityIntake = () => {
                   {step === 3 && (
                     <section className="space-y-7">
                       <div>
-                        <SectionLabel>{I.step3_title}</SectionLabel>
-                        <p className="max-w-md">{I.step3_intro}</p>
+                        <SectionLabel>{I.scope_title}</SectionLabel>
+                        <p className="max-w-md">{I.scope_intro}</p>
                       </div>
-                      <Field label={I.step3_field_label} error={errors.unclear}>
+                      <Field label={I.scope_field_label} error={errors.scope}>
                         <textarea
-                          value={data.unclear}
-                          onChange={(e) => set("unclear", e.target.value)}
+                          value={data.scope}
+                          onChange={(e) => set("scope", e.target.value)}
                           maxLength={2000}
                           rows={5}
-                          placeholder={I.step3_field_placeholder}
+                          placeholder={I.scope_field_placeholder}
+                          className="ci-textarea"
+                        />
+                      </Field>
+                      <Field label={`${I.scope_refs_label} · ${I.optional}`}>
+                        <textarea
+                          value={data.refs}
+                          onChange={(e) => set("refs", e.target.value)}
+                          maxLength={1500}
+                          rows={3}
+                          placeholder={I.scope_refs_placeholder}
                           className="ci-textarea"
                         />
                       </Field>
@@ -230,36 +214,29 @@ const ClarityIntake = () => {
                   )}
 
                   {step === 4 && (
-                    <section className="space-y-8">
+                    <section className="space-y-7">
                       <div>
-                        <SectionLabel>{I.step4_title}</SectionLabel>
-                        <p className="max-w-md">{I.step4_intro}</p>
+                        <SectionLabel>{I.contact_title}</SectionLabel>
+                        <p className="max-w-md">{I.contact_intro}</p>
                       </div>
-
-                      <RadioGroup
-                        label={I.step4_scope_label}
-                        name="scope"
-                        value={data.scope}
-                        options={I.step4_scope_options}
-                        onChange={(v) => set("scope", v)}
-                      />
-
-                      <RadioGroup
-                        label={I.step4_horizon_label}
-                        name="horizon"
-                        value={data.horizon}
-                        options={I.step4_horizon_options}
-                        onChange={(v) => set("horizon", v)}
-                      />
-
-                      <Field label={`${I.step4_notes_label} · ${I.step1_optional}`}>
-                        <textarea
-                          value={data.notes}
-                          onChange={(e) => set("notes", e.target.value)}
-                          maxLength={1500}
-                          rows={4}
-                          placeholder={I.step4_notes_placeholder}
-                          className="ci-textarea"
+                      <Field label={`${I.contact_name_label} · ${I.optional}`}>
+                        <input
+                          type="text"
+                          value={data.name}
+                          onChange={(e) => set("name", e.target.value)}
+                          maxLength={100}
+                          autoComplete="name"
+                          className="ci-input"
+                        />
+                      </Field>
+                      <Field label={I.contact_email_label} error={errors.email}>
+                        <input
+                          type="email"
+                          value={data.email}
+                          onChange={(e) => set("email", e.target.value)}
+                          maxLength={255}
+                          autoComplete="email"
+                          className="ci-input"
                         />
                       </Field>
                     </section>
@@ -367,43 +344,11 @@ const Field = ({
       {label}
     </label>
     {children}
-    {error && <p className="mt-1 text-[11px] text-destructive/80">{error}</p>}
-  </div>
-);
-
-const RadioGroup = ({
-  label,
-  name,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  name: string;
-  value: string;
-  options: readonly { value: string; label: string }[];
-  onChange: (v: string) => void;
-}) => (
-  <div>
-    <p className="text-[10px] tracking-[0.14em] uppercase text-muted-foreground/70 mb-3">{label}</p>
-    <div className="flex flex-col gap-2">
-      {options.map((o) => (
-        <label
-          key={o.value}
-          className="inline-flex items-center gap-3 cursor-pointer text-[13px] md:text-[14px] text-foreground/85 hover:text-foreground transition-colors"
-        >
-          <input
-            type="radio"
-            name={name}
-            value={o.value}
-            checked={value === o.value}
-            onChange={() => onChange(o.value)}
-            className="appearance-none w-[11px] h-[11px] rounded-full border border-border checked:border-primary checked:bg-primary/80 transition-colors"
-          />
-          <span>{o.label}</span>
-        </label>
-      ))}
-    </div>
+    {error && (
+      <p className="mt-2 text-[11px] tracking-[0.04em] text-muted-foreground/70">
+        {error}
+      </p>
+    )}
   </div>
 );
 
