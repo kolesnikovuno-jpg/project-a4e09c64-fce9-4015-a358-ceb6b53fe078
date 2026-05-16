@@ -112,7 +112,7 @@ const Clarity = () => {
               </div>
               <div>
                 <SectionLabel>{C.format_label}</SectionLabel>
-                <p>{C.format_body}</p>
+                <p className="whitespace-pre-wrap">{C.format_body}</p>
               </div>
             </section>
 
