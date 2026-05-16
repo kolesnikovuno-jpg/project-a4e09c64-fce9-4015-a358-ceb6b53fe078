@@ -344,43 +344,11 @@ const Field = ({
       {label}
     </label>
     {children}
-    {error && <p className="mt-1 text-[11px] text-destructive/80">{error}</p>}
-  </div>
-);
-
-const RadioGroup = ({
-  label,
-  name,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  name: string;
-  value: string;
-  options: readonly { value: string; label: string }[];
-  onChange: (v: string) => void;
-}) => (
-  <div>
-    <p className="text-[10px] tracking-[0.14em] uppercase text-muted-foreground/70 mb-3">{label}</p>
-    <div className="flex flex-col gap-2">
-      {options.map((o) => (
-        <label
-          key={o.value}
-          className="inline-flex items-center gap-3 cursor-pointer text-[13px] md:text-[14px] text-foreground/85 hover:text-foreground transition-colors"
-        >
-          <input
-            type="radio"
-            name={name}
-            value={o.value}
-            checked={value === o.value}
-            onChange={() => onChange(o.value)}
-            className="appearance-none w-[11px] h-[11px] rounded-full border border-border checked:border-primary checked:bg-primary/80 transition-colors"
-          />
-          <span>{o.label}</span>
-        </label>
-      ))}
-    </div>
+    {error && (
+      <p className="mt-2 text-[11px] tracking-[0.04em] text-muted-foreground/70">
+        {error}
+      </p>
+    )}
   </div>
 );
 
