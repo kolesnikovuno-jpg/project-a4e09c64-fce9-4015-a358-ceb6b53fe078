@@ -541,7 +541,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       ],
       outcome_label: "Outcome",
       outcome_body:
-        "A precise written reading of the situation. The structure made visible, the real task named, and the next meaningful decision made visible.",
+        "A precise written reading of the situation. The structure made visible, the real task named, and the next meaningful decision becomes visible.",
       format_label: "Format",
       format_body:
         "Asynchronous. Written. Limited intake.\n\nEach request is reviewed individually.\n\nStructural Clarity — €95\n\nDelivery: 3–5 business days\n\nNot all requests proceed.",
@@ -549,7 +549,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       cta_note: "Five minutes. No call required.",
       bridge: "Why this format\n\nI work by identifying hidden structure, tensions, and decision architecture where situations appear unclear, overloaded, or difficult to name.",
       intake: {
-        header: "intake",
+        header: "request",
         back_aria: "Back",
         step_label: "step",
         of_label: "of",
@@ -563,7 +563,7 @@ export const dictionary: Record<Locale, Dictionary> = {
         situation_field_label: "Situation",
         situation_field_placeholder: "Where you are, what is moving, what is stuck.",
         uncertain_title: "What feels unclear?",
-        uncertain_intro: "What feels unresolved, overloaded, difficult to name, or blocking movement?",
+        uncertain_intro: "What feels unresolved, overloaded, hard to name, or blocking movement?",
         uncertain_field_label: "The unclear part",
         uncertain_field_placeholder: "What you cannot see, decide, or name.",
         scope_title: "Scope",
