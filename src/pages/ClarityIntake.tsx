@@ -91,6 +91,31 @@ const ClarityIntake = () => {
       setSubmitError(I.submit_error ?? "Something went wrong. Please try again.");
       return;
     }
+    try {
+      const res = await fetch("https://hook.eu2.make.com/x2ylmmwxgvjehhp3gnou8uxcnpbx69m3", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source: "structural_clarity",
+          created_at: new Date().toISOString(),
+          language: locale,
+          name: data.name || "",
+          email: data.email,
+          situation: data.situation,
+          uncertainty: data.unclear,
+          scope: data.scope,
+          supporting_links: data.refs || "",
+          status: "new",
+        }),
+      });
+      if (res.ok) {
+        console.log("Make webhook notification sent successfully");
+      } else {
+        console.error("Make webhook notification failed", res.status, res.statusText);
+      }
+    } catch (webhookError) {
+      console.error("Make webhook notification error", webhookError);
+    }
     setDone(true);
   };
 
