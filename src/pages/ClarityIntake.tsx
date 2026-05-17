@@ -354,11 +354,20 @@ const ClarityIntake = () => {
           border: 0;
           border-bottom: 1px solid hsl(var(--border));
           padding: 8px 0;
-          font: inherit;
+          font-family: inherit;
+          font-weight: inherit;
+          letter-spacing: inherit;
+          /* 16px prevents iOS Safari auto-zoom on focus */
+          font-size: 16px;
           color: hsl(var(--foreground));
           outline: none;
           border-radius: 0;
           transition: border-color .25s ease;
+        }
+        @media (min-width: 768px) {
+          .ci-input, .ci-textarea {
+            font-size: 14px;
+          }
         }
         .ci-textarea {
           resize: vertical;
