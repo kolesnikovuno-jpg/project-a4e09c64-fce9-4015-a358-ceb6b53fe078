@@ -418,7 +418,7 @@ const Void = () => {
               pointerEvents: "none",
               display: "flex",
               alignItems: "center",
-              justifyContent: "flex-end",
+              justifyContent: "flex-start",
             }}
           >
             <div style={{ textAlign: "left" }}>
