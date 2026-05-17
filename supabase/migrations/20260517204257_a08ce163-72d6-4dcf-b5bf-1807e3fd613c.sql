@@ -1,0 +1,1 @@
+ALTER TABLE public.submissions ADD COLUMN IF NOT EXISTS payment_confirmation_sent boolean DEFAULT false;

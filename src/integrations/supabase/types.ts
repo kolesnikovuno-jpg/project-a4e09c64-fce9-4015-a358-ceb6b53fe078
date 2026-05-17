@@ -141,6 +141,7 @@ export type Database = {
           id: string
           language: string | null
           name: string | null
+          payment_confirmation_sent: boolean | null
           payment_email_sent: boolean | null
           scope: string
           situation: string
@@ -154,6 +155,7 @@ export type Database = {
           id?: string
           language?: string | null
           name?: string | null
+          payment_confirmation_sent?: boolean | null
           payment_email_sent?: boolean | null
           scope: string
           situation: string
@@ -167,6 +169,7 @@ export type Database = {
           id?: string
           language?: string | null
           name?: string | null
+          payment_confirmation_sent?: boolean | null
           payment_email_sent?: boolean | null
           scope?: string
           situation?: string
