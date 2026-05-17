@@ -134,6 +134,45 @@ export type Database = {
         }
         Relationships: []
       }
+      submissions: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          language: string | null
+          name: string | null
+          scope: string
+          situation: string
+          status: string
+          supporting_links: string | null
+          uncertainty: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          language?: string | null
+          name?: string | null
+          scope: string
+          situation: string
+          status?: string
+          supporting_links?: string | null
+          uncertainty: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          language?: string | null
+          name?: string | null
+          scope?: string
+          situation?: string
+          status?: string
+          supporting_links?: string | null
+          uncertainty?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string

@@ -259,6 +259,7 @@ export type Dictionary = {
       confirm_body: string;
       confirm_signature: string;
       back_to_site: string;
+      submit_error: string;
     };
   };
 };
@@ -583,6 +584,7 @@ export const dictionary: Record<Locale, Dictionary> = {
           "Your intake has been recorded. It will be read personally. If the work is suitable, a written response with terms will follow.",
         confirm_signature: "— .uno studio",
         back_to_site: "Back to the site",
+        submit_error: "Submission failed. Please check your connection and try again.",
       },
     },
   },
@@ -903,6 +905,7 @@ export const dictionary: Record<Locale, Dictionary> = {
           "Заявка зафиксирована. Она будет прочитана лично. Если работа уместна — придёт письменный ответ с условиями.",
         confirm_signature: "— .uno studio",
         back_to_site: "Вернуться на сайт",
+        submit_error: "Не удалось отправить. Проверьте соединение и попробуйте снова.",
       },
     },
   },
@@ -1223,6 +1226,7 @@ export const dictionary: Record<Locale, Dictionary> = {
           "Заявку зафіксовано. Її буде прочитано особисто. Якщо робота доречна — надійде письмова відповідь з умовами.",
         confirm_signature: "— .uno studio",
         back_to_site: "Повернутися на сайт",
+        submit_error: "Не вдалося надіслати. Перевірте з'єднання та спробуйте ще раз.",
       },
     },
   },

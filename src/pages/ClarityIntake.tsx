@@ -6,6 +6,7 @@ import PageTransition from "@/components/PageTransition";
 import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import SEO from "@/components/SEO";
+import { supabase } from "@/integrations/supabase/client";
 
 const SectionLabel = ({ children }: { children: string }) => (
   <p className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground/70 font-normal mb-3">{children}</p>
@@ -33,7 +34,7 @@ const TOTAL = 4;
 
 const ClarityIntake = () => {
   const navigate = useNavigate();
-  const { t, localePath } = useLocale();
+  const { t, localePath, locale } = useLocale();
   const C = t.clarity;
   const I = C.intake;
 
@@ -42,6 +43,7 @@ const ClarityIntake = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setData((d) => ({ ...d, [k]: v }));
@@ -72,9 +74,23 @@ const ClarityIntake = () => {
     e.preventDefault();
     if (!validateStep()) return;
     setSubmitting(true);
-    // Frontend-only: simulate brief processing then move to confirmation.
-    await new Promise((r) => setTimeout(r, 600));
+    setSubmitError(null);
+    const { error } = await supabase.from("submissions").insert({
+      language: locale,
+      situation: data.situation.trim(),
+      uncertainty: data.unclear.trim(),
+      scope: data.scope.trim(),
+      supporting_links: data.refs.trim() || null,
+      name: data.name.trim() || null,
+      email: data.email.trim(),
+      status: "new",
+    });
     setSubmitting(false);
+    if (error) {
+      console.error("Clarity intake submission failed", error);
+      setSubmitError(I.submit_error ?? "Something went wrong. Please try again.");
+      return;
+    }
     setDone(true);
   };
 
@@ -272,6 +288,11 @@ const ClarityIntake = () => {
                   </button>
                 )}
               </div>
+              {submitError && (
+                <p className="mt-4 text-[11px] tracking-[0.04em] text-muted-foreground/70">
+                  {submitError}
+                </p>
+              )}
             </form>
           ) : (
             <motion.section
