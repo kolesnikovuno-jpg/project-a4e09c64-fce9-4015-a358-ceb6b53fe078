@@ -288,6 +288,11 @@ const ClarityIntake = () => {
                   </button>
                 )}
               </div>
+              {submitError && (
+                <p className="mt-4 text-[11px] tracking-[0.04em] text-muted-foreground/70">
+                  {submitError}
+                </p>
+              )}
             </form>
           ) : (
             <motion.section
