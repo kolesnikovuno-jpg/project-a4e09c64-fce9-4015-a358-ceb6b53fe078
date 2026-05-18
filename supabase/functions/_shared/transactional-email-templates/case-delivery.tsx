@@ -97,4 +97,12 @@ const main = {
 const container = { padding: '32px 28px', maxWidth: '560px' }
 const h1 = { fontSize: '20px', fontWeight: 400, color: '#1A1A1A', margin: '0 0 18px', letterSpacing: '0.02em' }
 const text = { fontSize: '14px', color: '#1F1F1F', margin: '0 0 14px', lineHeight: '1.6' }
-const link = { color: '#1A1A1A', textDecoration: 'underline' }
+const btn = {
+  backgroundColor: '#1A1A1A',
+  color: '#ffffff',
+  fontSize: '14px',
+  padding: '12px 24px',
+  textDecoration: 'none',
+  display: 'inline-block',
+  margin: '4px 0 14px',
+}
