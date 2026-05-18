@@ -63,9 +63,11 @@ const CaseDeliveryEmail = ({ pdf_url, language }: CaseDeliveryProps) => {
           <Text style={text}>{c.greeting}</Text>
           <Text style={text}>{c.body}</Text>
           {pdf_url ? (
-            <Button href={pdf_url} style={btn}>
-              {c.download}
-            </Button>
+            <Text style={text}>
+              <Link href={pdf_url} style={link}>
+                {c.download}
+              </Link>
+            </Text>
           ) : null}
           <Text style={text}>{c.thanks}</Text>
           <Text style={text}>
