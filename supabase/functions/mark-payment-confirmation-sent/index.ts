@@ -1,5 +1,10 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
 
 function json(data: Record<string, unknown>, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -17,9 +22,38 @@ Deno.serve(async (req) => {
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  if (!supabaseUrl || !serviceKey) {
+  if (!supabaseUrl || !anonKey || !serviceKey) {
     return json({ error: 'Server configuration error' }, 500)
+  }
+
+  // Require Authorization header
+  const authHeader = req.headers.get('Authorization') || ''
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim()
+  if (!token) {
+    return json({ error: 'Unauthorized' }, 401)
+  }
+
+  // Validate user from JWT
+  const userClient = createClient(supabaseUrl, anonKey, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  })
+  const { data: userData, error: userErr } = await userClient.auth.getUser(token)
+  if (userErr || !userData?.user) {
+    return json({ error: 'Unauthorized' }, 401)
+  }
+
+  // Service-role client for privileged ops
+  const supabase = createClient(supabaseUrl, serviceKey)
+
+  // Check admin role via has_role()
+  const { data: isAdmin, error: roleErr } = await supabase.rpc('has_role', {
+    _user_id: userData.user.id,
+    _role: 'admin',
+  })
+  if (roleErr || !isAdmin) {
+    return json({ error: 'Forbidden' }, 403)
   }
 
   let body: { id?: string; payment_confirmation_sent?: boolean }
@@ -43,8 +77,6 @@ Deno.serve(async (req) => {
     return json({ error: 'Invalid id format' }, 400)
   }
 
-  const supabase = createClient(supabaseUrl, serviceKey)
-
   const { data, error } = await supabase
     .from('submissions')
     .update({ payment_confirmation_sent: flag })
@@ -61,6 +93,6 @@ Deno.serve(async (req) => {
     return json({ success: false, error: 'Submission not found' }, 404)
   }
 
-  console.log('payment_confirmation_sent updated', { id: data.id, value: data.payment_confirmation_sent })
+  console.log('payment_confirmation_sent updated', { id: data.id, value: data.payment_confirmation_sent, actor: userData.user.id })
   return json({ success: true, id: data.id, payment_confirmation_sent: data.payment_confirmation_sent })
 })
