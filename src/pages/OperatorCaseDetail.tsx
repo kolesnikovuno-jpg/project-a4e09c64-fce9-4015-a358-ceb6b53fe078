@@ -302,10 +302,10 @@ export default function OperatorCaseDetail() {
               value={SERVICE_STATUS_VALUES.includes(serviceStatus) ? serviceStatus : "queued"}
               onValueChange={setServiceStatus}
             >
-              <SelectTrigger id="service_status">
+              <SelectTrigger id="service_status" className="rounded-none">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-none">
                 {SERVICE_STATUSES.map((s) => (
                   <SelectItem key={s.value} value={s.value}>
                     {s.label}
