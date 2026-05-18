@@ -282,7 +282,19 @@ export default function OperatorCaseDetail() {
 
         <section className="border border-border rounded-lg p-4 bg-card space-y-2 text-sm">
           <div><span className="text-muted-foreground">Case ID:</span> <span className="font-mono">{c.id}</span></div>
-          <div><span className="text-muted-foreground">Submission:</span> <span className="font-mono">{c.submission_id}</span></div>
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-muted-foreground">Source Submission:</span>
+            {c.submission_id ? (
+              <>
+                <span className="font-mono text-xs">SUB-{c.submission_id.slice(0, 8)}</span>
+                <Button asChild size="sm" variant="outline">
+                  <Link to={`/operator/submissions/${c.submission_id}`}>Open Submission</Link>
+                </Button>
+              </>
+            ) : (
+              <span className="text-muted-foreground italic">Submission link missing</span>
+            )}
+          </div>
           <div><span className="text-muted-foreground">Client:</span> {c.client_name || "—"}</div>
           <div><span className="text-muted-foreground">Email:</span> {c.email}</div>
           <div><span className="text-muted-foreground">Language:</span> {c.language ?? "—"}</div>
