@@ -580,7 +580,7 @@ export const dictionary: Record<Locale, Dictionary> = {
         scope_refs_label: "Links",
         scope_refs_placeholder: "Links or URLs, one per line.",
         attachments_title: "Supporting materials",
-        attachments_intro: "If context is better conveyed through materials, add links, images, or documents.",
+        attachments_intro: "If needed, add additional materials.",
         attachments_hint: "JPG, PNG, WEBP or PDF · up to 10 MB each",
         attachments_add: "Add files",
         attachments_remove: "Remove",
