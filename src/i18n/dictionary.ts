@@ -254,6 +254,7 @@ export type Dictionary = {
       attachments_hint: string;
       attachments_add: string;
       attachments_remove: string;
+      attachments_expand: string;
       contact_title: string;
       contact_intro: string;
       contact_name_label: string;
