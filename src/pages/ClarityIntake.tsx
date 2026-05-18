@@ -284,7 +284,7 @@ const ClarityIntake = () => {
                   )}
 
                   {step === 3 && (
-                    <section className="space-y-10">
+                    <section className="space-y-8">
                       <div>
                         <SectionLabel>{I.scope_title}</SectionLabel>
                         <p className="max-w-md">{I.scope_intro}</p>
