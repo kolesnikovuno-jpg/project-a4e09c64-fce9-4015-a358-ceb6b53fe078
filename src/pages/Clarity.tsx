@@ -135,7 +135,7 @@ const Clarity = () => {
               <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
                 <button
                   onClick={() => navigate(localePath("/clarity/intake"))}
-                  className="text-left text-[14px] md:text-[15px] text-primary font-medium border-b border-primary/30 hover:border-primary transition-colors pb-1 self-start"
+                  className="text-left text-[13px] md:text-[14px] text-primary font-normal border-b border-primary/20 hover:border-primary/50 transition-colors pb-0.5 self-start"
                 >
                   {C.cta_button}
                 </button>
