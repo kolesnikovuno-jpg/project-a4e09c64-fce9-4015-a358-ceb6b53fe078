@@ -198,6 +198,7 @@ export type Database = {
       }
       submissions: {
         Row: {
+          assessment_notes: string | null
           created_at: string
           email: string
           id: string
@@ -212,6 +213,7 @@ export type Database = {
           uncertainty: string
         }
         Insert: {
+          assessment_notes?: string | null
           created_at?: string
           email: string
           id?: string
@@ -226,6 +228,7 @@ export type Database = {
           uncertainty: string
         }
         Update: {
+          assessment_notes?: string | null
           created_at?: string
           email?: string
           id?: string
