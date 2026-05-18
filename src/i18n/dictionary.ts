@@ -277,7 +277,7 @@ export const dictionary: Record<Locale, Dictionary> = {
     nav: { back: "← back", info: "info", ar: "ar", uno: ".uno" },
     index: {
       structure_label: "no structure — no solution.",
-      tagline: "I uncover the structure and assemble the form where everything falls into place.",
+      tagline: "studio, experiments, systems, observations.",
       pricing_link: "Format & pricing →",
       architect_design_art: "architect  .  design  .  art",
       studio_suffix: "studio",
