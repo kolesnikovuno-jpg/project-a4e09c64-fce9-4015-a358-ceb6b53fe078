@@ -112,7 +112,12 @@ export default function OperatorCases() {
       <div className="max-w-5xl mx-auto space-y-6">
         <header className="flex items-center justify-between">
           <h1 className="text-2xl font-medium">Cases</h1>
-          <Button variant="ghost" onClick={signOut}>Sign out</Button>
+          <div className="flex gap-2">
+            <Button variant="outline" asChild>
+              <Link to="/operator/submissions">Submissions</Link>
+            </Button>
+            <Button variant="ghost" onClick={signOut}>Sign out</Button>
+          </div>
         </header>
 
         {cases === null ? (
