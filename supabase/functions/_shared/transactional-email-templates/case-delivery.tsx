@@ -17,7 +17,7 @@ const COPY: Record<Lang, { preview: string; heading: string; greeting: string; b
     heading: 'Ваш результат готов',
     greeting: 'Здравствуйте.',
     body: 'Ваш результат подготовлен.',
-    download: 'Скачать PDF',
+    download: 'Скачать результат PDF',
     thanks: 'Благодарю за обращение.',
     signoff: 'С уважением,',
     name: 'Ростислав Колесников',
