@@ -23,6 +23,8 @@ import ClarityIntake from "./pages/ClarityIntake";
 import OperatorLogin from "./pages/OperatorLogin";
 import OperatorCases from "./pages/OperatorCases";
 import OperatorCaseDetail from "./pages/OperatorCaseDetail";
+import OperatorSubmissions from "./pages/OperatorSubmissions";
+import OperatorSubmissionDetail from "./pages/OperatorSubmissionDetail";
 import { DEFAULT_LOCALE, LOCALES, isLocale } from "./i18n/config";
 import { initialLocale } from "./i18n/storage";
 import LocalePersistenceGuard from "./i18n/LocalePersistenceGuard";
@@ -101,6 +103,8 @@ const App = () => (
           <Route path="/operator/login" element={<OperatorLogin />} />
           <Route path="/operator/cases" element={<OperatorCases />} />
           <Route path="/operator/cases/:id" element={<OperatorCaseDetail />} />
+          <Route path="/operator/submissions" element={<OperatorSubmissions />} />
+          <Route path="/operator/submissions/:id" element={<OperatorSubmissionDetail />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
