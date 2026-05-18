@@ -10,24 +10,38 @@ type Case = Tables<"cases">;
 const buildAiBrief = (c: Case) => `CASE ID: ${c.id}
 
 Client:
-Name: ${c.client_name ?? ""}
+Name: ${c.client_name || "Not provided"}
 Email: ${c.email ?? ""}
 Language: ${c.language ?? ""}
 
-Submission Input:
+Client Input:
 ${c.raw_input ?? ""}
 
 Task:
-Create a structured draft analysis based on the client input.
+Use this case as an expert structural diagnostic draft.
 
-Output format:
-1. Situation diagnosis
-2. Core uncertainty / hidden tension
-3. Structural interpretation
-4. Possible correction directions
-5. Draft recommendation framework
+Goal:
+Generate an internal working draft for expert review, not final client output.
 
-This is a draft for expert review, not final client output.`;
+Required output:
+
+1. Explicit client problem
+What the client directly describes.
+
+2. Hidden structural tension
+What underlying contradiction, mismatch, uncertainty, or pattern may be driving the issue.
+
+3. Structural diagnosis
+Interpret the architecture of the situation.
+
+4. Possible correction vectors
+Suggest meaningful structural shifts, reframing directions, or interventions.
+
+5. Draft expert response
+Create a preliminary expert working response that can later be refined.
+
+Important:
+This is an internal production draft, not final client-facing output.`;
 
 export default function OperatorCases() {
   const navigate = useNavigate();
