@@ -68,7 +68,7 @@ const Clarity = () => {
               </div>
             </section>
 
-            <div className="w-full h-px bg-border/20 mb-14 md:mb-16" />
+            <div className="w-full h-px bg-border/20 mb-12 md:mb-14" />
 
             {/* For / Not for */}
             <section className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 mb-14 md:mb-16">
