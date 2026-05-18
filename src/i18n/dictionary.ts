@@ -902,7 +902,7 @@ export const dictionary: Record<Locale, Dictionary> = {
         uncertain_field_placeholder: "Что остаётся нерешённым, вызывает перегрузку или блокирует движение?",
         scope_title: "Какие рамки важно учитывать?",
         scope_intro: "Масштаб, сроки, ограничения, уже предпринятые шаги или важные условия.",
-        scope_field_label: "Рамки и контекст",
+        scope_field_label: "Условия и ограничения",
         scope_field_placeholder: "Например: сроки, бюджет, ресурсы, ограничения или что уже предпринималось.",
         scope_refs_label: "Ссылки",
         scope_refs_placeholder: "Ссылки или URL, по одной в строке.",
