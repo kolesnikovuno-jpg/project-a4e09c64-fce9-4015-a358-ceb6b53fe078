@@ -82,8 +82,9 @@ const ClarityIntake = () => {
         setUploadError(`${file.name}: ${upErr.message}`);
         continue;
       }
-      const { data: pub } = supabase.storage.from("clarity-attachments").getPublicUrl(path);
-      next.push({ name: file.name, url: pub.publicUrl, size: file.size });
+      // Private bucket: store only the storage path. Operators generate
+      // short-lived signed URLs on demand from this path.
+      next.push({ name: file.name, url: path, size: file.size });
       void ext;
     }
     if (next.length) setUploads((u) => [...u, ...next]);
@@ -359,14 +360,9 @@ const ClarityIntake = () => {
                                         key={f.url}
                                         className="flex items-center justify-between gap-3 text-[12px] text-foreground/80 border-b border-border/20 pb-2"
                                       >
-                                        <a
-                                          href={f.url}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                          className="truncate hover:text-foreground underline-offset-4 hover:underline"
-                                        >
+                                        <span className="truncate text-foreground/80">
                                           {f.name}
-                                        </a>
+                                        </span>
                                         <button
                                           type="button"
                                           onClick={() => removeUpload(f.url)}

@@ -181,7 +181,37 @@ export default function OperatorSubmissionDetail() {
           {s.supporting_links && (
             <div>
               <div className="text-muted-foreground mt-3 mb-1">Supporting links:</div>
-              <pre className="text-xs whitespace-pre-wrap bg-muted/30 p-3 max-h-72 overflow-auto">{s.supporting_links}</pre>
+              <div className="text-xs bg-muted/30 p-3 max-h-72 overflow-auto space-y-1">
+                {s.supporting_links.split("\n").map((line, i) => {
+                  const m = line.match(/(intake\/[^\s]+)$/);
+                  if (m) {
+                    const path = m[1];
+                    const label = line.replace(/\s*—\s*intake\/.*$/, "").trim() || path;
+                    return (
+                      <div key={i} className="flex items-center gap-2">
+                        <span className="truncate">{label}</span>
+                        <button
+                          type="button"
+                          className="underline underline-offset-2 hover:text-foreground"
+                          onClick={async () => {
+                            const { data, error } = await supabase.storage
+                              .from("clarity-attachments")
+                              .createSignedUrl(path, 3600);
+                            if (error || !data) {
+                              toast({ title: "Не удалось открыть файл", description: error?.message, variant: "destructive" });
+                              return;
+                            }
+                            window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+                          }}
+                        >
+                          open
+                        </button>
+                      </div>
+                    );
+                  }
+                  return <div key={i} className="whitespace-pre-wrap">{line}</div>;
+                })}
+              </div>
             </div>
           )}
         </section>
