@@ -89,3 +89,10 @@
     letter-spacing: 0.04em;
   }
 }
+
+@layer components {
+  .operator-workspace,
+  .operator-workspace * {
+    border-radius: 0 !important;
+  }
+}

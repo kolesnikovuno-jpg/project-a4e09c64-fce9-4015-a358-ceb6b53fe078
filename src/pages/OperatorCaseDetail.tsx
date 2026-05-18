@@ -247,7 +247,7 @@ export default function OperatorCaseDetail() {
 
   if (!c) {
     return (
-      <main className="min-h-screen bg-background px-6 py-8">
+<main className="operator-workspace min-h-screen bg-background px-6 py-8">
         <p className="text-muted-foreground">Загрузка…</p>
       </main>
     );
