@@ -73,6 +73,8 @@ const CaseDeliveryEmail = ({ pdf_url, language }: CaseDeliveryProps) => {
             </Text>
           ) : null}
           <Text style={text}>{c.thanks}</Text>
+          <Text style={{ ...text, marginTop: '18px' }}>{c.boundary.split('\n\n')[0]}</Text>
+          <Text style={text}>{c.boundary.split('\n\n')[1]}</Text>
           <Text style={text}>
             {c.signoff}
             <br />
