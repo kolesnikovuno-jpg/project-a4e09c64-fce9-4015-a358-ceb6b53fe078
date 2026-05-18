@@ -277,7 +277,7 @@ export const dictionary: Record<Locale, Dictionary> = {
     nav: { back: "← back", info: "info", ar: "ar", uno: ".uno" },
     index: {
       structure_label: "no structure — no solution.",
-      tagline: "I uncover the structure and assemble the form where everything falls into place.",
+      tagline: "studio, experiments, systems, observations.",
       pricing_link: "Format & pricing →",
       architect_design_art: "architect  .  design  .  art",
       studio_suffix: "studio",
@@ -604,7 +604,7 @@ export const dictionary: Record<Locale, Dictionary> = {
     nav: { back: "← назад", info: "инфо", ar: "ar", uno: ".uno" },
     index: {
       structure_label: "нет структуры — нет решения.",
-      tagline: "выявляю структуру и собираю форму, в которой всё становится на место.",
+      tagline: "studio, experiments, systems, observations.",
       pricing_link: "Формат и стоимость →",
       architect_design_art: "architect  .  design  .  art",
       studio_suffix: "studio",
@@ -931,7 +931,7 @@ export const dictionary: Record<Locale, Dictionary> = {
     nav: { back: "← назад", info: "інфо", ar: "ar", uno: ".uno" },
     index: {
       structure_label: "немає структури — немає рішення.",
-      tagline: "виявляю структуру і збираю форму, в якій усе стає на місце.",
+      tagline: "studio, experiments, systems, observations.",
       pricing_link: "Формат і вартість →",
       architect_design_art: "architect  .  design  .  art",
       studio_suffix: "studio",
