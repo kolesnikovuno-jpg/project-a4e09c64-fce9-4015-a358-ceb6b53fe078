@@ -20,6 +20,8 @@ import Void from "./pages/Void";
 import Unsubscribe from "./pages/Unsubscribe";
 import Clarity from "./pages/Clarity";
 import ClarityIntake from "./pages/ClarityIntake";
+import OperatorLogin from "./pages/OperatorLogin";
+import OperatorCases from "./pages/OperatorCases";
 import { DEFAULT_LOCALE, LOCALES, isLocale } from "./i18n/config";
 import { initialLocale } from "./i18n/storage";
 import LocalePersistenceGuard from "./i18n/LocalePersistenceGuard";
@@ -93,6 +95,10 @@ const App = () => (
           <Route path="/unocalc" element={<UnoCalc />} />
           <Route path="/lyra-concept" element={<LyraConcept />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
+
+          {/* Internal operator workspace */}
+          <Route path="/operator/login" element={<OperatorLogin />} />
+          <Route path="/operator/cases" element={<OperatorCases />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
