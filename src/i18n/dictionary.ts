@@ -575,7 +575,7 @@ export const dictionary: Record<Locale, Dictionary> = {
         uncertain_field_placeholder: "What remains unresolved, overloads you, or blocks movement?",
         scope_title: "What frames matter here?",
         scope_intro: "Scale, timing, constraints, steps already taken, or important conditions.",
-        scope_field_label: "Frames & context",
+        scope_field_label: "Conditions & constraints",
         scope_field_placeholder: "For example: timing, budget, resources, constraints, or what has already been tried.",
         scope_refs_label: "Links",
         scope_refs_placeholder: "Links or URLs, one per line.",
