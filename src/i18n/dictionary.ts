@@ -249,6 +249,11 @@ export type Dictionary = {
       scope_field_placeholder: string;
       scope_refs_label: string;
       scope_refs_placeholder: string;
+      attachments_title: string;
+      attachments_intro: string;
+      attachments_hint: string;
+      attachments_add: string;
+      attachments_remove: string;
       contact_title: string;
       contact_intro: string;
       contact_name_label: string;
@@ -559,25 +564,30 @@ export const dictionary: Record<Locale, Dictionary> = {
         submit: "submit →",
         submitting: "sending…",
         optional: "optional",
-        situation_title: "What is the situation?",
-        situation_intro: "Describe the situation you are currently inside.",
+        situation_title: "What is happening?",
+        situation_intro: "Briefly describe the situation you are facing.",
         situation_field_label: "Situation",
-        situation_field_placeholder: "Where you are, what is moving, what is stuck.",
-        uncertain_title: "What feels unclear?",
-        uncertain_intro: "What feels unresolved, overloaded, hard to name, or blocking movement?",
-        uncertain_field_label: "The unclear part",
-        uncertain_field_placeholder: "What you cannot see, decide, or name.",
-        scope_title: "Scope",
-        scope_intro: "What is the scale, horizon, or relevant context of this situation?",
-        scope_field_label: "Scope & context",
-        scope_field_placeholder: "Scale, horizon, constraints, what you have already tried.",
-        scope_refs_label: "Supporting references",
+        situation_field_placeholder: "What is happening right now? What brought you to this request?",
+        uncertain_title: "What is the main difficulty?",
+        uncertain_intro: "What is keeping you from moving forward, deciding, or seeing the next step?",
+        uncertain_field_label: "The difficulty",
+        uncertain_field_placeholder: "What remains unresolved, overloads you, or blocks movement?",
+        scope_title: "What frames matter here?",
+        scope_intro: "Scale, timing, constraints, steps already taken, or important conditions.",
+        scope_field_label: "Frames & context",
+        scope_field_placeholder: "For example: timing, budget, resources, constraints, or what has already been tried.",
+        scope_refs_label: "Links",
         scope_refs_placeholder: "Links or URLs, one per line.",
+        attachments_title: "Supporting materials",
+        attachments_intro: "If context is better conveyed through materials, add links, images, or documents.",
+        attachments_hint: "JPG, PNG, WEBP or PDF · up to 10 MB each",
+        attachments_add: "Add files",
+        attachments_remove: "Remove",
         contact_title: "Contact",
         contact_intro: "So the response can be addressed correctly.",
         contact_name_label: "Name",
         contact_email_label: "Email",
-        validation_required: "This field is needed to continue.",
+        validation_required: "Please describe this to continue.",
         validation_email: "This email doesn't look complete.",
         confirm_title: "Received",
         confirm_body:
