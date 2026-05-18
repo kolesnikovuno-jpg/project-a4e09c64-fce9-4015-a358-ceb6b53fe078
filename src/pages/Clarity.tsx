@@ -45,7 +45,7 @@ const Clarity = () => {
 
           <div className="text-[13px] md:text-[14px] text-muted-foreground leading-[1.7]">
             {/* Hero */}
-            <section className="mb-14 md:mb-20">
+            <section className="mb-12 md:mb-16">
               <p className="text-foreground text-[17px] md:text-[20px] leading-[1.45] max-w-xl font-light tracking-[-0.005em]">
                 {C.lead_1}<br />{C.lead_2}
               </p>
@@ -68,10 +68,10 @@ const Clarity = () => {
               </div>
             </section>
 
-            <div className="w-full h-px bg-border/20 mb-14 md:mb-16" />
+            <div className="w-full h-px bg-border/20 mb-12 md:mb-14" />
 
             {/* For / Not for */}
-            <section className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 mb-14 md:mb-16">
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 mb-12 md:mb-14">
               <div>
                 <SectionLabel>{C.for_label}</SectionLabel>
                 <ul className="space-y-1.5">
@@ -94,10 +94,10 @@ const Clarity = () => {
               </div>
             </section>
 
-            <div className="w-full h-px bg-border/20 mb-14 md:mb-16" />
+            <div className="w-full h-px bg-border/20 mb-12 md:mb-14" />
 
             {/* Process */}
-            <section className="mb-14 md:mb-16">
+            <section className="mb-12 md:mb-14">
               <SectionLabel>{C.process_label}</SectionLabel>
               <ol className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8 mt-2">
                 {C.process_steps.map((step) => (
@@ -114,10 +114,10 @@ const Clarity = () => {
               </ol>
             </section>
 
-            <div className="w-full h-px bg-border/20 mb-14 md:mb-16" />
+            <div className="w-full h-px bg-border/20 mb-12 md:mb-14" />
 
             {/* Outcome / Format */}
-            <section className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 mb-14 md:mb-16">
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 mb-12 md:mb-14">
               <div>
                 <SectionLabel>{C.outcome_label}</SectionLabel>
                 <p className="whitespace-pre-wrap">{C.outcome_body}</p>
@@ -128,11 +128,11 @@ const Clarity = () => {
               </div>
             </section>
 
-            <div className="w-full h-px bg-border/20 mb-14 md:mb-16" />
+            <div className="w-full h-px bg-border/20 mb-12 md:mb-14" />
 
             {/* CTA */}
             <section>
-              <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-baseline gap-2">
                 <button
                   onClick={() => navigate(localePath("/clarity/intake"))}
                   className="text-left text-[13px] md:text-[14px] text-primary font-normal border-b border-primary/20 hover:border-primary/50 transition-colors pb-0.5 self-start"
