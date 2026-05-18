@@ -1,0 +1,1 @@
+ALTER TABLE public.submissions ADD COLUMN assessment_notes TEXT NULL;
