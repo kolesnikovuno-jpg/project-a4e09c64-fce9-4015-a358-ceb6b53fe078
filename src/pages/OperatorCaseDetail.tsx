@@ -5,10 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Case = Tables<"cases">;
+
+const SERVICE_STATUSES = [
+  { value: "queued", label: "Queued" },
+  { value: "drafting", label: "Drafting" },
+  { value: "review", label: "Review" },
+  { value: "finalized", label: "Finalized" },
+  { value: "delivered", label: "Delivered" },
+  { value: "revision", label: "Revision" },
+  { value: "closed", label: "Closed" },
+] as const;
+const SERVICE_STATUS_VALUES = SERVICE_STATUSES.map((s) => s.value) as readonly string[];
 
 const buildAiBrief = (c: Case) => `CASE ID: ${c.id}
 
@@ -262,7 +274,21 @@ export default function OperatorCaseDetail() {
         <section className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="service_status">Service status</Label>
-            <Input id="service_status" value={serviceStatus} onChange={(e) => setServiceStatus(e.target.value)} />
+            <Select
+              value={SERVICE_STATUS_VALUES.includes(serviceStatus) ? serviceStatus : "queued"}
+              onValueChange={setServiceStatus}
+            >
+              <SelectTrigger id="service_status">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                {SERVICE_STATUSES.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>
+                    {s.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="ai_draft">AI draft</Label>
