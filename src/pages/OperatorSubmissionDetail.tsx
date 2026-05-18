@@ -27,6 +27,7 @@ export default function OperatorSubmissionDetail() {
   const [assessmentNotes, setAssessmentNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [linkedCaseId, setLinkedCaseId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -61,6 +62,12 @@ export default function OperatorSubmissionDetail() {
         setS(row);
         setStatus(row.status ?? "new");
         setAssessmentNotes(row.assessment_notes ?? "");
+        const { data: caseRow } = await supabase
+          .from("cases")
+          .select("id")
+          .eq("submission_id", row.id)
+          .maybeSingle();
+        if (active && caseRow) setLinkedCaseId(caseRow.id);
       }
     })();
     return () => { active = false; };
@@ -129,6 +136,11 @@ export default function OperatorSubmissionDetail() {
         <header className="flex items-center justify-between">
           <Link to="/operator/submissions" className="text-sm text-muted-foreground hover:text-foreground">← Submissions</Link>
           <div className="flex gap-2">
+            {linkedCaseId && (
+              <Button asChild size="sm" variant="outline">
+                <Link to={`/operator/cases/${linkedCaseId}`}>Open Case</Link>
+              </Button>
+            )}
             <Button size="sm" variant="outline" onClick={generateAssessment} disabled={generating}>
               {generating ? "Генерация…" : "Generate Assessment"}
             </Button>
@@ -144,6 +156,15 @@ export default function OperatorSubmissionDetail() {
           <div><span className="text-muted-foreground">Language:</span> {s.language ?? "—"}</div>
           <div><span className="text-muted-foreground">Status:</span> {s.status}</div>
           <div><span className="text-muted-foreground">Created:</span> {s.created_at ? new Date(s.created_at).toLocaleString() : "—"}</div>
+          {linkedCaseId && (
+            <div className="flex items-center gap-3 flex-wrap pt-1">
+              <span className="text-muted-foreground">Linked Case:</span>
+              <span className="font-mono text-xs">CASE-{linkedCaseId.slice(0, 8)}</span>
+              <Button asChild size="sm" variant="outline">
+                <Link to={`/operator/cases/${linkedCaseId}`}>Open Case</Link>
+              </Button>
+            </div>
+          )}
 
           <div>
             <div className="text-muted-foreground mt-3 mb-1">Situation:</div>
