@@ -17,10 +17,7 @@ const Clarity = () => {
   return (
     <PageTransition>
       <SEO title={C.seo_title} description={C.seo_description} image="/og/lyra-preview.png" />
-      <div
-        data-publish-refresh="clarity-2026-05-18"
-        className="min-h-screen bg-background px-6 sm:px-10 md:px-16 lg:px-20 pt-16 sm:pt-20 md:pt-24 pb-20 md:pb-28"
-      >
+      <div className="min-h-screen bg-background px-6 sm:px-10 md:px-16 lg:px-20 pt-16 sm:pt-20 md:pt-24 pb-20 md:pb-28">
         <LanguageSwitcher />
         <div className="max-w-5xl w-full mx-auto">
           <div className="flex items-center justify-between mb-16 md:mb-20">
