@@ -82,23 +82,33 @@ Rules:
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) return json({ error: "LOVABLE_API_KEY not configured" }, 500);
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
-        messages: [
-          { role: "system", content: "You are an expert structural diagnostic assistant producing internal expert drafts." },
-          { role: "user", content: prompt },
-        ],
-      }),
-    });
+    console.log("[ai-draft] calling AI gateway for case", caseId);
+    const t0 = Date.now();
+    let aiResp: Response;
+    try {
+      aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: "You are an expert structural diagnostic assistant producing internal expert drafts." },
+            { role: "user", content: prompt },
+          ],
+        }),
+      });
+    } catch (e) {
+      console.error("[ai-draft] fetch failed", e);
+      return json({ error: `AI fetch failed: ${String(e)}` }, 500);
+    }
+    console.log("[ai-draft] AI gateway responded", aiResp.status, "in", Date.now() - t0, "ms");
 
     if (!aiResp.ok) {
       const text = await aiResp.text();
+      console.error("[ai-draft] AI error body", text);
       if (aiResp.status === 429) return json({ error: "Rate limit exceeded, try again later" }, 429);
       if (aiResp.status === 402) return json({ error: "AI credits exhausted" }, 402);
       return json({ error: `AI error: ${text}` }, 500);
@@ -107,6 +117,7 @@ Rules:
     const aiJson = await aiResp.json();
     const draft = aiJson?.choices?.[0]?.message?.content;
     if (!draft || typeof draft !== "string") {
+      console.error("[ai-draft] empty response", JSON.stringify(aiJson).slice(0, 500));
       return json({ error: "Empty AI response" }, 500);
     }
 
@@ -114,7 +125,10 @@ Rules:
       .from("cases")
       .update({ ai_draft: draft, service_status: "drafting" })
       .eq("id", caseId);
-    if (updErr) return json({ error: updErr.message }, 500);
+    if (updErr) {
+      console.error("[ai-draft] db update failed", updErr.message);
+      return json({ error: updErr.message }, 500);
+    }
 
     return json({ ai_draft: draft, service_status: "drafting" }, 200);
   } catch (e) {
