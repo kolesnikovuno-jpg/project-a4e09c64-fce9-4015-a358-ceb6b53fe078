@@ -254,6 +254,7 @@ export type Dictionary = {
       attachments_hint: string;
       attachments_add: string;
       attachments_remove: string;
+      attachments_expand: string;
       contact_title: string;
       contact_intro: string;
       contact_name_label: string;
@@ -583,6 +584,7 @@ export const dictionary: Record<Locale, Dictionary> = {
         attachments_hint: "JPG, PNG, WEBP or PDF · up to 10 MB each",
         attachments_add: "Add files",
         attachments_remove: "Remove",
+        attachments_expand: "+ Add supporting materials",
         contact_title: "Contact",
         contact_intro: "So the response can be addressed correctly.",
         contact_name_label: "Name",
@@ -909,6 +911,7 @@ export const dictionary: Record<Locale, Dictionary> = {
         attachments_hint: "JPG, PNG, WEBP или PDF · до 10 МБ каждый",
         attachments_add: "Добавить файлы",
         attachments_remove: "Удалить",
+        attachments_expand: "+ Добавить материалы",
         contact_title: "Контакт",
         contact_intro: "Чтобы ответ был адресован корректно.",
         contact_name_label: "Имя",
@@ -1235,6 +1238,7 @@ export const dictionary: Record<Locale, Dictionary> = {
         attachments_hint: "JPG, PNG, WEBP або PDF · до 10 МБ кожен",
         attachments_add: "Додати файли",
         attachments_remove: "Видалити",
+        attachments_expand: "+ Додати матеріали",
         contact_title: "Контакт",
         contact_intro: "Щоб відповідь було адресовано коректно.",
         contact_name_label: "Ім'я",
