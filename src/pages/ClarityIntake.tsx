@@ -218,9 +218,9 @@ const ClarityIntake = () => {
               <span className="tabular-nums text-[12px] text-muted-foreground/60">
                 {String(TOTAL).padStart(2, "0")}
               </span>
-              <div className="flex-1 ml-4 h-px bg-border/30 relative">
+              <div className="flex-1 ml-4 h-px bg-border/30 relative overflow-hidden">
                 <div
-                  className="absolute left-0 top-0 h-px bg-primary/60 transition-all duration-700 ease-out"
+                  className="h-full bg-primary/60 transition-all duration-700 ease-out"
                   style={{ width: `${(step / TOTAL) * 100}%` }}
                 />
               </div>
