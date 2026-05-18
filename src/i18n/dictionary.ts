@@ -931,7 +931,7 @@ export const dictionary: Record<Locale, Dictionary> = {
     nav: { back: "← назад", info: "інфо", ar: "ar", uno: ".uno" },
     index: {
       structure_label: "немає структури — немає рішення.",
-      tagline: "виявляю структуру і збираю форму, в якій усе стає на місце.",
+      tagline: "studio, experiments, systems, observations.",
       pricing_link: "Формат і вартість →",
       architect_design_art: "architect  .  design  .  art",
       studio_suffix: "studio",
