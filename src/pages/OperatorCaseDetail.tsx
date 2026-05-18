@@ -236,7 +236,7 @@ export default function OperatorCaseDetail() {
 
   if (authorized === false) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-background px-4">
+      <main className="operator-workspace min-h-screen flex items-center justify-center bg-background px-4">
         <div className="text-center space-y-4">
           <p className="text-foreground">Доступ только для администраторов.</p>
           <Button variant="outline" onClick={signOut}>Выйти</Button>
@@ -254,7 +254,7 @@ export default function OperatorCaseDetail() {
   }
 
   return (
-    <main className="min-h-screen bg-background px-6 py-8">
+    <main className="operator-workspace min-h-screen bg-background px-6 py-8">
       <div className="max-w-3xl mx-auto space-y-6">
         <header className="flex items-center justify-between">
           <Link to="/operator/cases" className="text-sm text-muted-foreground hover:text-foreground">← Cases</Link>
