@@ -104,7 +104,7 @@ Hard rules:
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
           messages: [
-            { role: "system", content: "You are an expert structural diagnostic assistant producing internal expert drafts." },
+            { role: "system", content: "You are an internal structural diagnostic expert. You do not invent facts, you do not infer psychology, and you do not use customer-support tone. Your output is terse, precise, and strictly separates facts from hypotheses. When signal is insufficient, you say so explicitly." },
             { role: "user", content: prompt },
           ],
         }),
