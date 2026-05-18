@@ -51,6 +51,7 @@ const ClarityIntake = () => {
   const [uploads, setUploads] = useState<UploadedFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [attachmentsOpen, setAttachmentsOpen] = useState(false);
   const sessionIdRef = useRef<string>(crypto.randomUUID());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
