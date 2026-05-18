@@ -315,7 +315,28 @@ export default function OperatorCaseDetail() {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="ai_draft">AI draft</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="ai_draft">AI draft</Label>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={async () => {
+                  if (!aiDraft) {
+                    toast({ title: "Черновик пуст", variant: "destructive" });
+                    return;
+                  }
+                  try {
+                    await navigator.clipboard.writeText(aiDraft);
+                    toast({ title: "AI Draft скопирован" });
+                  } catch (e) {
+                    toast({ title: "Не удалось скопировать", description: String(e), variant: "destructive" });
+                  }
+                }}
+                disabled={!aiDraft}
+              >
+                Copy AI Draft
+              </Button>
+            </div>
             <Textarea id="ai_draft" rows={10} value={aiDraft} onChange={(e) => setAiDraft(e.target.value)} />
           </div>
           <div className="space-y-2">
