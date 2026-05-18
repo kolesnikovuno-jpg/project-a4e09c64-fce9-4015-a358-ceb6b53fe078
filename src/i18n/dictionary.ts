@@ -907,7 +907,7 @@ export const dictionary: Record<Locale, Dictionary> = {
         scope_refs_label: "Ссылки",
         scope_refs_placeholder: "Ссылки или URL, по одной в строке.",
         attachments_title: "Дополнительные материалы",
-        attachments_intro: "Если контекст лучше передаётся через материалы, добавьте ссылки, изображения или документы.",
+        attachments_intro: "Если нужно, добавьте дополнительные материалы.",
         attachments_hint: "JPG, PNG, WEBP или PDF · до 10 МБ каждый",
         attachments_add: "Добавить файлы",
         attachments_remove: "Удалить",
