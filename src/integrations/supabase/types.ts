@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      cases: {
+        Row: {
+          ai_draft: string | null
+          client_name: string | null
+          created_at: string | null
+          delivered_at: string | null
+          email: string
+          final_output: string | null
+          id: string
+          language: string | null
+          pdf_url: string | null
+          raw_input: string | null
+          service_status: string | null
+          submission_id: string
+          updated_at: string | null
+          working_notes: string | null
+        }
+        Insert: {
+          ai_draft?: string | null
+          client_name?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          email: string
+          final_output?: string | null
+          id?: string
+          language?: string | null
+          pdf_url?: string | null
+          raw_input?: string | null
+          service_status?: string | null
+          submission_id: string
+          updated_at?: string | null
+          working_notes?: string | null
+        }
+        Update: {
+          ai_draft?: string | null
+          client_name?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          email?: string
+          final_output?: string | null
+          id?: string
+          language?: string | null
+          pdf_url?: string | null
+          raw_input?: string | null
+          service_status?: string | null
+          submission_id?: string
+          updated_at?: string | null
+          working_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cases_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_send_log: {
         Row: {
           created_at: string
