@@ -1234,7 +1234,7 @@ export const dictionary: Record<Locale, Dictionary> = {
         scope_refs_label: "Посилання",
         scope_refs_placeholder: "Посилання або URL, по одному в рядку.",
         attachments_title: "Додаткові матеріали",
-        attachments_intro: "Якщо контекст краще передається через матеріали, додайте посилання, зображення або документи.",
+        attachments_intro: "Якщо потрібно, додайте додаткові матеріали.",
         attachments_hint: "JPG, PNG, WEBP або PDF · до 10 МБ кожен",
         attachments_add: "Додати файли",
         attachments_remove: "Видалити",
