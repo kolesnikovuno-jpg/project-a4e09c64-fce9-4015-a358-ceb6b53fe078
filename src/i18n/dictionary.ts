@@ -1229,7 +1229,7 @@ export const dictionary: Record<Locale, Dictionary> = {
         uncertain_field_placeholder: "Що залишається невирішеним, перевантажує або блокує рух?",
         scope_title: "Які рамки важливо врахувати?",
         scope_intro: "Масштаб, терміни, обмеження, вже зроблені кроки або важливі умови.",
-        scope_field_label: "Рамки й контекст",
+        scope_field_label: "Умови та обмеження",
         scope_field_placeholder: "Наприклад: терміни, бюджет, ресурси, обмеження або що вже робилося.",
         scope_refs_label: "Посилання",
         scope_refs_placeholder: "Посилання або URL, по одному в рядку.",
