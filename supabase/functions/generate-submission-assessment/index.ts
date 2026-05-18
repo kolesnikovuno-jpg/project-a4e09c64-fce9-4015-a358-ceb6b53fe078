@@ -71,22 +71,31 @@ Required output:
 1. Explicit request
 What the client is directly asking for.
 
-2. Hidden ambiguity / uncertainty
-Unclear assumptions, contradictions, or missing framing.
+2. Ambiguities / missing signal
+Unclear assumptions, contradictions, or missing framing. Label uncertainty clearly.
 
 3. Structural fit assessment
 How well this request fits the studio's structural diagnostic work.
 
-4. Potential risks / missing information
+4. Risks / blockers
 Concrete risks, red flags, or critical missing context.
 
-5. Preliminary recommendation
+5. Recommendation
 One of: accept / clarify / reject — with a short reason.
 
-Rules:
-- match output language to client language (${s.language ?? "match client"})
-- internal operator use only, not client-facing
-- no sales language`;
+Hard rules:
+- Do NOT invent facts. If input lacks signal, explicitly state insufficient information.
+- Separate facts from hypotheses. Label uncertainty clearly.
+- Do NOT infer client psychology, motives, or hidden causes without evidence.
+- If input is semantically invalid, diagnose intake failure instead of inventing a case analysis.
+- Internal expert draft only. Not customer support. Not client-facing communication. Not sales tone.
+- Focus on structural mismatch, constraints, dependencies, ambiguity, and system conditions.
+- Prefer diagnostic precision over helpful verbosity.
+- If analysis is impossible, explicitly say: "Analysis impossible due to insufficient signal."
+- No generic therapeutic language.
+- No fabricated assumptions.
+- No support-agent style responses.
+- Output language: ${s.language ?? "match client"}`;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) return json({ error: "LOVABLE_API_KEY not configured" }, 500);
