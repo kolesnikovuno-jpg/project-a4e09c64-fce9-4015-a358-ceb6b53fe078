@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -130,7 +130,12 @@ export default function OperatorCases() {
                       {c.id} · {c.language ?? "—"} · {c.service_status ?? "—"}
                     </div>
                   </div>
-                  <Button size="sm" onClick={() => copyBrief(c)}>Copy AI Brief</Button>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" asChild>
+                      <Link to={`/operator/cases/${c.id}`}>Open case</Link>
+                    </Button>
+                    <Button size="sm" onClick={() => copyBrief(c)}>Copy AI Brief</Button>
+                  </div>
                 </div>
                 {c.raw_input && (
                   <pre className="text-xs whitespace-pre-wrap text-muted-foreground max-h-40 overflow-auto">

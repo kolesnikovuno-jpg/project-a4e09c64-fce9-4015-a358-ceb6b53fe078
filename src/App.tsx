@@ -22,6 +22,7 @@ import Clarity from "./pages/Clarity";
 import ClarityIntake from "./pages/ClarityIntake";
 import OperatorLogin from "./pages/OperatorLogin";
 import OperatorCases from "./pages/OperatorCases";
+import OperatorCaseDetail from "./pages/OperatorCaseDetail";
 import { DEFAULT_LOCALE, LOCALES, isLocale } from "./i18n/config";
 import { initialLocale } from "./i18n/storage";
 import LocalePersistenceGuard from "./i18n/LocalePersistenceGuard";
@@ -99,6 +100,7 @@ const App = () => (
           {/* Internal operator workspace */}
           <Route path="/operator/login" element={<OperatorLogin />} />
           <Route path="/operator/cases" element={<OperatorCases />} />
+          <Route path="/operator/cases/:id" element={<OperatorCaseDetail />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
