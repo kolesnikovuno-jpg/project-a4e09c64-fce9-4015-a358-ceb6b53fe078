@@ -57,6 +57,7 @@ export default function OperatorCaseDetail() {
   const [finalOutput, setFinalOutput] = useState("");
   const [pdfUrl, setPdfUrl] = useState("");
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -134,6 +135,25 @@ export default function OperatorCaseDetail() {
     navigate("/operator/login", { replace: true });
   };
 
+  const generatePdf = async () => {
+    if (!c) return;
+    setGenerating(true);
+    const { data, error } = await supabase.functions.invoke("generate-case-pdf", {
+      body: { case_id: c.id },
+    });
+    setGenerating(false);
+    if (error) {
+      toast({ title: "Не удалось сгенерировать PDF", description: error.message, variant: "destructive" });
+      return;
+    }
+    const url = (data as { pdf_url?: string })?.pdf_url;
+    if (url) {
+      setPdfUrl(url);
+      setC({ ...c, pdf_url: url });
+      toast({ title: "PDF сгенерирован" });
+    }
+  };
+
   if (authorized === false) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-background px-4">
@@ -160,6 +180,9 @@ export default function OperatorCaseDetail() {
           <Link to="/operator/cases" className="text-sm text-muted-foreground hover:text-foreground">← Cases</Link>
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={copyBrief}>Copy AI Brief</Button>
+            <Button size="sm" variant="outline" onClick={generatePdf} disabled={generating}>
+              {generating ? "Генерация…" : "Generate PDF"}
+            </Button>
             <Button size="sm" onClick={save} disabled={saving}>{saving ? "Сохранение…" : "Save"}</Button>
             <Button size="sm" variant="ghost" onClick={signOut}>Sign out</Button>
           </div>
