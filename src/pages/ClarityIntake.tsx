@@ -360,14 +360,9 @@ const ClarityIntake = () => {
                                         key={f.url}
                                         className="flex items-center justify-between gap-3 text-[12px] text-foreground/80 border-b border-border/20 pb-2"
                                       >
-                                        <a
-                                          href={f.url}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                          className="truncate hover:text-foreground underline-offset-4 hover:underline"
-                                        >
+                                        <span className="truncate text-foreground/80">
                                           {f.name}
-                                        </a>
+                                        </span>
                                         <button
                                           type="button"
                                           onClick={() => removeUpload(f.url)}
