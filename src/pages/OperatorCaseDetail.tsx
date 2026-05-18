@@ -70,6 +70,7 @@ export default function OperatorCaseDetail() {
   const [pdfUrl, setPdfUrl] = useState("");
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [generatingDraft, setGeneratingDraft] = useState(false);
   const [sending, setSending] = useState(false);
   const [deliverySent, setDeliverySent] = useState(false);
 
@@ -169,6 +170,26 @@ export default function OperatorCaseDetail() {
     }
   };
 
+  const generateAiDraft = async () => {
+    if (!c) return;
+    setGeneratingDraft(true);
+    const { data, error } = await supabase.functions.invoke("generate-case-ai-draft", {
+      body: { case_id: c.id },
+    });
+    setGeneratingDraft(false);
+    if (error) {
+      toast({ title: "Не удалось сгенерировать черновик", description: error.message, variant: "destructive" });
+      return;
+    }
+    const draft = (data as { ai_draft?: string; service_status?: string })?.ai_draft;
+    if (draft) {
+      setAiDraft(draft);
+      setServiceStatus("drafting");
+      setC({ ...c, ai_draft: draft, service_status: "drafting" });
+      toast({ title: "AI черновик готов" });
+    }
+  };
+
   const sendToClient = async () => {
     if (!c) return;
     if (!pdfUrl) {
@@ -239,6 +260,9 @@ export default function OperatorCaseDetail() {
           <Link to="/operator/cases" className="text-sm text-muted-foreground hover:text-foreground">← Cases</Link>
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={copyBrief}>Copy AI Brief</Button>
+            <Button size="sm" variant="outline" onClick={generateAiDraft} disabled={generatingDraft}>
+              {generatingDraft ? "Генерация…" : "Generate AI Draft"}
+            </Button>
             <Button size="sm" variant="outline" onClick={generatePdf} disabled={generating}>
               {generating ? "Генерация…" : "Generate PDF"}
             </Button>
