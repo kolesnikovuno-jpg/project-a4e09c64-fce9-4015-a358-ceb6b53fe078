@@ -58,6 +58,8 @@ export default function OperatorCaseDetail() {
   const [pdfUrl, setPdfUrl] = useState("");
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [deliverySent, setDeliverySent] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -94,6 +96,7 @@ export default function OperatorCaseDetail() {
         setWorkingNotes(data.working_notes ?? "");
         setFinalOutput(data.final_output ?? "");
         setPdfUrl(data.pdf_url ?? "");
+        setDeliverySent(Boolean((data as { delivery_email_sent?: boolean }).delivery_email_sent));
       }
     })();
     return () => { active = false; };
@@ -154,6 +157,50 @@ export default function OperatorCaseDetail() {
     }
   };
 
+  const sendToClient = async () => {
+    if (!c) return;
+    if (!pdfUrl) {
+      toast({ title: "Нет PDF", description: "Сначала сгенерируйте PDF.", variant: "destructive" });
+      return;
+    }
+    if (deliverySent) {
+      toast({ title: "Уже отправлено" });
+      return;
+    }
+    setSending(true);
+    const { error: sendError } = await supabase.functions.invoke("send-transactional-email", {
+      body: {
+        templateName: "case-delivery",
+        recipientEmail: c.email,
+        idempotencyKey: `case-delivery-${c.id}`,
+        templateData: {
+          pdf_url: pdfUrl,
+          language: c.language ?? "en",
+        },
+      },
+    });
+    if (sendError) {
+      setSending(false);
+      toast({ title: "Не удалось отправить", description: sendError.message, variant: "destructive" });
+      return;
+    }
+    const { error: updError } = await supabase
+      .from("cases")
+      .update({
+        service_status: "delivered",
+        delivery_email_sent: true,
+      } as never)
+      .eq("id", c.id);
+    setSending(false);
+    if (updError) {
+      toast({ title: "Письмо отправлено, но не удалось обновить кейс", description: updError.message, variant: "destructive" });
+      return;
+    }
+    setDeliverySent(true);
+    setServiceStatus("delivered");
+    toast({ title: "Отправлено клиенту" });
+  };
+
   if (authorized === false) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-background px-4">
@@ -182,6 +229,15 @@ export default function OperatorCaseDetail() {
             <Button size="sm" variant="outline" onClick={copyBrief}>Copy AI Brief</Button>
             <Button size="sm" variant="outline" onClick={generatePdf} disabled={generating}>
               {generating ? "Генерация…" : "Generate PDF"}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={sendToClient}
+              disabled={sending || deliverySent || !pdfUrl}
+              title={!pdfUrl ? "Нужен PDF" : deliverySent ? "Уже отправлено" : ""}
+            >
+              {sending ? "Отправка…" : deliverySent ? "Sent ✓" : "Send to Client"}
             </Button>
             <Button size="sm" onClick={save} disabled={saving}>{saving ? "Сохранение…" : "Save"}</Button>
             <Button size="sm" variant="ghost" onClick={signOut}>Sign out</Button>
