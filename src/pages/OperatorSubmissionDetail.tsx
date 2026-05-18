@@ -183,7 +183,25 @@ export default function OperatorSubmissionDetail() {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="assessment_notes">Assessment notes</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="assessment_notes">Assessment notes</Label>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!assessmentNotes}
+                onClick={async () => {
+                  if (!assessmentNotes) return;
+                  try {
+                    await navigator.clipboard.writeText(assessmentNotes);
+                    toast({ title: "Скопировано" });
+                  } catch {
+                    toast({ title: "Не удалось скопировать", variant: "destructive" });
+                  }
+                }}
+              >
+                Copy Assessment
+              </Button>
+            </div>
             <Textarea
               id="assessment_notes"
               rows={14}
