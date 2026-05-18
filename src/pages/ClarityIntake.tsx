@@ -82,8 +82,9 @@ const ClarityIntake = () => {
         setUploadError(`${file.name}: ${upErr.message}`);
         continue;
       }
-      const { data: pub } = supabase.storage.from("clarity-attachments").getPublicUrl(path);
-      next.push({ name: file.name, url: pub.publicUrl, size: file.size });
+      // Private bucket: store only the storage path. Operators generate
+      // short-lived signed URLs on demand from this path.
+      next.push({ name: file.name, url: path, size: file.size });
       void ext;
     }
     if (next.length) setUploads((u) => [...u, ...next]);
