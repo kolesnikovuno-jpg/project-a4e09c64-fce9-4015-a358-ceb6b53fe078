@@ -45,7 +45,7 @@ const Clarity = () => {
 
           <div className="text-[13px] md:text-[14px] text-muted-foreground leading-[1.7]">
             {/* Hero */}
-            <section className="mb-14 md:mb-20">
+            <section className="mb-12 md:mb-16">
               <p className="text-foreground text-[17px] md:text-[20px] leading-[1.45] max-w-xl font-light tracking-[-0.005em]">
                 {C.lead_1}<br />{C.lead_2}
               </p>
