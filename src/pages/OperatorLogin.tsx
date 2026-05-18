@@ -31,7 +31,7 @@ export default function OperatorLogin() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-background px-4">
+    <main className="operator-workspace min-h-screen flex items-center justify-center bg-background px-4">
       <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 border border-border rounded-lg p-6 bg-card">
         <h1 className="text-xl font-medium">Operator Login</h1>
         <div className="space-y-2">

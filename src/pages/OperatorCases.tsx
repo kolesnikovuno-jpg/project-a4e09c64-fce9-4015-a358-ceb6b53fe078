@@ -108,7 +108,7 @@ export default function OperatorCases() {
   }
 
   return (
-    <main className="min-h-screen bg-background px-6 py-8">
+    <main className="operator-workspace min-h-screen bg-background px-6 py-8">
       <div className="max-w-5xl mx-auto space-y-6">
         <header className="flex items-center justify-between">
           <h1 className="text-2xl font-medium">Cases</h1>
