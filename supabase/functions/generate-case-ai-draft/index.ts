@@ -62,22 +62,31 @@ Required output:
 1. Explicit client problem
 What the client directly describes.
 
-2. Hidden structural tension
-What underlying contradiction, mismatch, uncertainty, or pattern may be driving the issue.
+2. Hidden structural tension (ONLY evidence-based)
+What underlying contradiction, mismatch, uncertainty, or pattern may be driving the issue. Must be grounded in explicit evidence from the input. No speculation without signal.
 
 3. Structural diagnosis
 Interpret the architecture of the situation.
 
-4. Possible correction vectors
+4. Correction vectors
 Suggest meaningful structural shifts, reframing directions, or interventions.
 
-5. Draft expert response
+5. Internal expert working draft
 Create a preliminary expert working response.
 
-Rules:
-- match output language to client language (${c.language ?? "match client"})
-- do not create client-facing sales language
-- this is internal production draft only`;
+Hard rules:
+- Do NOT invent facts. If input lacks signal, explicitly state insufficient information.
+- Separate facts from hypotheses. Label uncertainty clearly.
+- Do NOT infer client psychology, motives, or hidden causes without evidence.
+- If input is semantically invalid, diagnose intake failure instead of inventing a case analysis.
+- Internal expert draft only. Not customer support. Not client-facing communication. Not sales tone.
+- Focus on structural mismatch, constraints, dependencies, ambiguity, and system conditions.
+- Prefer diagnostic precision over helpful verbosity.
+- If analysis is impossible, explicitly say: "Analysis impossible due to insufficient signal."
+- No generic therapeutic language.
+- No fabricated assumptions.
+- No support-agent style responses.
+- Output language: ${c.language ?? "match client"}`;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) return json({ error: "LOVABLE_API_KEY not configured" }, 500);
@@ -95,7 +104,7 @@ Rules:
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
           messages: [
-            { role: "system", content: "You are an expert structural diagnostic assistant producing internal expert drafts." },
+            { role: "system", content: "You are an internal structural diagnostic expert. You do not invent facts, you do not infer psychology, and you do not use customer-support tone. Your output is terse, precise, and strictly separates facts from hypotheses. When signal is insufficient, you say so explicitly." },
             { role: "user", content: prompt },
           ],
         }),
