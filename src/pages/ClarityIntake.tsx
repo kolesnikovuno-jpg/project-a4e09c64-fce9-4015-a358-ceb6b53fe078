@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Paperclip, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import PageTransition from "@/components/PageTransition";
 import { useLocale } from "@/i18n/useLocale";
@@ -9,7 +9,7 @@ import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 
 const SectionLabel = ({ children }: { children: string }) => (
-  <p className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground/70 font-normal mb-3">{children}</p>
+  <p className="text-[11px] tracking-[0.18em] uppercase text-foreground/85 font-normal mb-3">{children}</p>
 );
 
 type FormState = {
@@ -21,6 +21,8 @@ type FormState = {
   email: string;
 };
 
+type UploadedFile = { name: string; url: string; size: number };
+
 const initial: FormState = {
   situation: "",
   unclear: "",
@@ -31,6 +33,8 @@ const initial: FormState = {
 };
 
 const TOTAL = 4;
+const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+const MAX_SIZE = 10 * 1024 * 1024;
 
 const ClarityIntake = () => {
   const navigate = useNavigate();
@@ -44,9 +48,49 @@ const ClarityIntake = () => {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [uploads, setUploads] = useState<UploadedFile[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const sessionIdRef = useRef<string>(crypto.randomUUID());
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setData((d) => ({ ...d, [k]: v }));
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files || !files.length) return;
+    setUploadError(null);
+    setUploading(true);
+    const next: UploadedFile[] = [];
+    for (const file of Array.from(files)) {
+      if (!ACCEPTED_TYPES.includes(file.type)) {
+        setUploadError(`${file.name}: формат не поддерживается`);
+        continue;
+      }
+      if (file.size > MAX_SIZE) {
+        setUploadError(`${file.name}: больше 10 МБ`);
+        continue;
+      }
+      const ext = file.name.split(".").pop() ?? "bin";
+      const safe = file.name.replace(/[^\w.\-]+/g, "_");
+      const path = `intake/${sessionIdRef.current}/${Date.now()}-${safe}`;
+      const { error: upErr } = await supabase.storage
+        .from("clarity-attachments")
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (upErr) {
+        setUploadError(`${file.name}: ${upErr.message}`);
+        continue;
+      }
+      const { data: pub } = supabase.storage.from("clarity-attachments").getPublicUrl(path);
+      next.push({ name: file.name, url: pub.publicUrl, size: file.size });
+      void ext;
+    }
+    if (next.length) setUploads((u) => [...u, ...next]);
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeUpload = (url: string) => setUploads((u) => u.filter((f) => f.url !== url));
 
   const validateStep = (): boolean => {
     const e: Record<string, string> = {};
@@ -75,12 +119,15 @@ const ClarityIntake = () => {
     if (!validateStep()) return;
     setSubmitting(true);
     setSubmitError(null);
+    const linkParts = [data.refs.trim(), ...uploads.map((u) => `${u.name} — ${u.url}`)]
+      .filter(Boolean)
+      .join("\n");
     const { error } = await supabase.from("submissions").insert({
       language: locale,
       situation: data.situation.trim(),
       uncertainty: data.unclear.trim(),
       scope: data.scope.trim(),
-      supporting_links: data.refs.trim() || null,
+      supporting_links: linkParts || null,
       name: data.name.trim() || null,
       email: data.email.trim(),
       status: "new",
@@ -104,7 +151,8 @@ const ClarityIntake = () => {
           situation: data.situation,
           uncertainty: data.unclear,
           scope: data.scope,
-          supporting_links: data.refs || "",
+          supporting_links: linkParts || "",
+          attachments: uploads.map((u) => ({ name: u.name, url: u.url })),
           status: "new",
         }),
       });
@@ -126,10 +174,11 @@ const ClarityIntake = () => {
         description={C.seo_description}
         image="/og/lyra-preview.png"
       />
-      <div className="min-h-screen bg-background px-6 sm:px-10 md:px-16 lg:px-20 pt-16 sm:pt-20 md:pt-24 pb-20 md:pb-28">
+      <div className="min-h-screen bg-background px-6 sm:px-10 md:px-16 lg:px-20 pt-16 sm:pt-20 md:pt-24 pb-12 md:pb-16">
         <LanguageSwitcher />
-        <div className="max-w-2xl w-full mx-auto">
-          <div className="flex items-center justify-between mb-12 md:mb-16">
+        <div className="max-w-2xl w-full mx-auto flex flex-col" style={{ minHeight: "calc(100vh - 9rem)" }}>
+          {/* Fixed top: header */}
+          <div className="flex items-center justify-between mb-10 md:mb-12">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => (done ? navigate(localePath("/")) : navigate(-1))}
@@ -138,8 +187,8 @@ const ClarityIntake = () => {
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <h1 className="text-[13px] md:text-[14px] tracking-[0.06em] text-muted-foreground">
-                {C.header} <span className="text-muted-foreground/50">/ {I.header}</span>
+              <h1 className="text-[13px] md:text-[14px] tracking-[0.06em] text-foreground/80">
+                {C.header} <span className="text-muted-foreground/60">/ {I.header}</span>
               </h1>
             </div>
             <a
@@ -154,38 +203,46 @@ const ClarityIntake = () => {
             </a>
           </div>
 
-          {/* Progress indicator (numerals only — no bars) */}
-          {!done && (
-            <div className="flex items-center gap-3 mb-10 md:mb-12">
-              <span className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground/60">
+          {/* Fixed progress (reserved space stays even on confirm to preserve geometry) */}
+          <div className="flex items-center gap-3 mb-10 md:mb-12 h-5">
+            {!done && (
+              <>
+                <span className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground/80">
                 {I.step_label}
               </span>
-              <span className="tabular-nums text-[12px] text-muted-foreground/80">
+              <span className="tabular-nums text-[12px] text-foreground/80">
                 {String(step).padStart(2, "0")}
               </span>
-              <span className="text-muted-foreground/40">/</span>
-              <span className="tabular-nums text-[12px] text-muted-foreground/50">
+              <span className="text-muted-foreground/50">/</span>
+              <span className="tabular-nums text-[12px] text-muted-foreground/60">
                 {String(TOTAL).padStart(2, "0")}
               </span>
-              <div className="flex-1 ml-4 h-px bg-border/20 relative">
+              <div className="flex-1 ml-4 h-px bg-border/30 relative">
                 <div
-                  className="absolute left-0 top-0 h-px bg-primary/50 transition-all duration-700 ease-out"
+                  className="absolute left-0 top-0 h-px bg-primary/60 transition-all duration-700 ease-out"
                   style={{ width: `${(step / TOTAL) * 100}%` }}
                 />
               </div>
-            </div>
-          )}
+              </>
+            )}
+          </div>
 
+          {/* Content zone with stable min-height keeps footer from jumping */}
           {!done ? (
-            <form onSubmit={step === TOTAL ? handleSubmit : (e) => e.preventDefault()} noValidate>
+            <form
+              onSubmit={step === TOTAL ? handleSubmit : (e) => e.preventDefault()}
+              noValidate
+              className="flex flex-col flex-1"
+            >
+              <div className="flex-1 min-h-[420px] md:min-h-[460px]">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={step}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-                  className="text-[13px] md:text-[14px] text-muted-foreground leading-[1.7]"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                  className="text-[13px] md:text-[14px] text-foreground/75 leading-[1.7]"
                 >
                   {step === 1 && (
                     <section className="space-y-7">
@@ -226,7 +283,7 @@ const ClarityIntake = () => {
                   )}
 
                   {step === 3 && (
-                    <section className="space-y-7">
+                    <section className="space-y-10">
                       <div>
                         <SectionLabel>{I.scope_title}</SectionLabel>
                         <p className="max-w-md">{I.scope_intro}</p>
@@ -241,16 +298,73 @@ const ClarityIntake = () => {
                           className="ci-textarea"
                         />
                       </Field>
-                      <Field label={`${I.scope_refs_label} · ${I.optional}`}>
-                        <textarea
-                          value={data.refs}
-                          onChange={(e) => set("refs", e.target.value)}
-                          maxLength={1500}
-                          rows={3}
-                          placeholder={I.scope_refs_placeholder}
-                          className="ci-textarea"
-                        />
-                      </Field>
+                      {/* Secondary, calm: optional materials */}
+                      <div className="pt-2 border-t border-border/20 space-y-5">
+                        <div>
+                          <SectionLabel>{`${I.attachments_title} · ${I.optional}`}</SectionLabel>
+                          <p className="max-w-md text-muted-foreground/90">{I.attachments_intro}</p>
+                        </div>
+                        <Field label={`${I.scope_refs_label} · ${I.optional}`}>
+                          <textarea
+                            value={data.refs}
+                            onChange={(e) => set("refs", e.target.value)}
+                            maxLength={1500}
+                            rows={2}
+                            placeholder={I.scope_refs_placeholder}
+                            className="ci-textarea"
+                          />
+                        </Field>
+                        <div>
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            multiple
+                            accept={ACCEPTED_TYPES.join(",")}
+                            onChange={(e) => handleFiles(e.target.files)}
+                            className="hidden"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
+                            className="inline-flex items-center gap-2 text-[12px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                          >
+                            <Paperclip className="w-3.5 h-3.5" />
+                            {uploading ? "…" : I.attachments_add}
+                          </button>
+                          <p className="mt-2 text-[11px] text-muted-foreground/70">{I.attachments_hint}</p>
+                          {uploadError && (
+                            <p className="mt-2 text-[11px] text-muted-foreground/80">{uploadError}</p>
+                          )}
+                          {uploads.length > 0 && (
+                            <ul className="mt-4 space-y-2">
+                              {uploads.map((f) => (
+                                <li
+                                  key={f.url}
+                                  className="flex items-center justify-between gap-3 text-[12px] text-foreground/80 border-b border-border/20 pb-2"
+                                >
+                                  <a
+                                    href={f.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="truncate hover:text-foreground underline-offset-4 hover:underline"
+                                  >
+                                    {f.name}
+                                  </a>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeUpload(f.url)}
+                                    aria-label={I.attachments_remove}
+                                    className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      </div>
                     </section>
                   )}
 
@@ -284,8 +398,9 @@ const ClarityIntake = () => {
                   )}
                 </motion.div>
               </AnimatePresence>
+              </div>
 
-              <div className="mt-12 pt-6 border-t border-border/20 flex items-center justify-between">
+              <div className="mt-10 pt-6 border-t border-border/20 flex items-center justify-between">
                 <button
                   type="button"
                   onClick={goBack}
@@ -321,10 +436,10 @@ const ClarityIntake = () => {
             </form>
           ) : (
             <motion.section
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-              className="text-[13px] md:text-[14px] text-muted-foreground leading-[1.75]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+              className="text-[13px] md:text-[14px] text-foreground/75 leading-[1.75] flex-1 min-h-[420px] md:min-h-[460px]"
             >
               <SectionLabel>{I.confirm_title}</SectionLabel>
               <p className="text-foreground text-[15px] md:text-[16px] leading-[1.6] max-w-md font-light">
@@ -378,7 +493,7 @@ const ClarityIntake = () => {
           border-bottom-color: hsl(var(--primary) / 0.7);
         }
         .ci-input::placeholder, .ci-textarea::placeholder {
-          color: hsl(var(--muted-foreground) / 0.5);
+          color: hsl(var(--muted-foreground) / 0.7);
         }
       `}</style>
     </PageTransition>
