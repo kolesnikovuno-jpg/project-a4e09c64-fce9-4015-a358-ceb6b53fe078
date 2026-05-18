@@ -1,11 +1,27 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { PDFDocument, StandardFonts, rgb } from "npm:pdf-lib@1.17.1";
+import fontkit from "npm:@pdf-lib/fontkit@1.1.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
+
+// Unicode TTF fonts with Cyrillic support (Noto Sans).
+const FONT_REGULAR_URL =
+  "https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSans/NotoSans-Regular.ttf";
+const FONT_BOLD_URL =
+  "https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSans/NotoSans-Bold.ttf";
+
+let cachedRegular: Uint8Array | null = null;
+let cachedBold: Uint8Array | null = null;
+
+async function fetchFont(url: string): Promise<Uint8Array> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Font fetch failed ${res.status}: ${url}`);
+  return new Uint8Array(await res.arrayBuffer());
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -27,6 +43,7 @@ Deno.serve(async (req) => {
     });
     const { data: userData, error: userErr } = await userClient.auth.getUser();
     if (userErr || !userData?.user) {
+      console.error("auth.getUser failed", userErr);
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -56,15 +73,20 @@ Deno.serve(async (req) => {
     const { data: c, error: caseErr } = await admin
       .from("cases").select("*").eq("id", caseId).maybeSingle();
     if (caseErr || !c) {
+      console.error("case fetch failed", caseErr);
       return new Response(JSON.stringify({ error: "Case not found" }), {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Build PDF
+    // Build PDF with Unicode (Cyrillic-capable) fonts.
+    if (!cachedRegular) cachedRegular = await fetchFont(FONT_REGULAR_URL);
+    if (!cachedBold) cachedBold = await fetchFont(FONT_BOLD_URL);
+
     const pdf = await PDFDocument.create();
-    const font = await pdf.embedFont(StandardFonts.Helvetica);
-    const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+    pdf.registerFontkit(fontkit);
+    const font = await pdf.embedFont(cachedRegular, { subset: true });
+    const bold = await pdf.embedFont(cachedBold, { subset: true });
 
     const pageWidth = 595.28;
     const pageHeight = 841.89;
@@ -103,9 +125,7 @@ Deno.serve(async (req) => {
         page = pdf.addPage([pageWidth, pageHeight]);
         y = pageHeight - margin;
       }
-      // Replace characters Helvetica (WinAnsi) cannot encode
-      const safe = text.replace(/[^\x00-\xff]/g, "?");
-      page.drawText(safe, { x: margin, y: y - size, size, font: f, color: rgb(0.1, 0.1, 0.1) });
+      page.drawText(text ?? "", { x: margin, y: y - size, size, font: f, color: rgb(0.1, 0.1, 0.1) });
       y -= gap;
     };
 
@@ -172,6 +192,7 @@ Deno.serve(async (req) => {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
+    console.error("generate-case-pdf failed", e);
     return new Response(JSON.stringify({ error: String((e as Error)?.message ?? e) }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
