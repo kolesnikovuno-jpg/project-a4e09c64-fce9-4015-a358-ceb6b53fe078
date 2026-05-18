@@ -9,7 +9,7 @@ import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 
 const SectionLabel = ({ children }: { children: string }) => (
-  <p className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground/70 font-normal mb-3">{children}</p>
+  <p className="text-[11px] tracking-[0.18em] uppercase text-foreground/85 font-normal mb-3">{children}</p>
 );
 
 type FormState = {
@@ -493,7 +493,7 @@ const ClarityIntake = () => {
           border-bottom-color: hsl(var(--primary) / 0.7);
         }
         .ci-input::placeholder, .ci-textarea::placeholder {
-          color: hsl(var(--muted-foreground) / 0.5);
+          color: hsl(var(--muted-foreground) / 0.7);
         }
       `}</style>
     </PageTransition>
