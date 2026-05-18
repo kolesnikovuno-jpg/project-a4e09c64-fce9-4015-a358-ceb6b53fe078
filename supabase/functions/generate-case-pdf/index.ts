@@ -173,7 +173,7 @@ Deno.serve(async (req) => {
 
     const { data: signed, error: signErr } = await admin.storage
       .from("case-pdfs")
-      .createSignedUrl(path, 60 * 60 * 24 * 365);
+      .createSignedUrl(path, 60 * 60 * 24 * 7);
     if (signErr || !signed) {
       return new Response(JSON.stringify({ error: `Sign failed: ${signErr?.message}` }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },

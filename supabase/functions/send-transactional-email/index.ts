@@ -105,6 +105,45 @@ Deno.serve(async (req) => {
     )
   }
 
+  // 1b. Authorization — prevent open email relay abuse.
+  // Templates with a fixed `to` (e.g., operator notifications) are safe for
+  // anonymous callers because the recipient cannot be controlled by the caller.
+  // All other templates allow free-form recipientEmail and therefore must be
+  // restricted to admin users (or service-role callers like internal jobs).
+  if (!template.to) {
+    const authHeader = req.headers.get('Authorization') || ''
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim()
+    let authorized = false
+    if (token) {
+      try {
+        const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
+        const authClient = createClient(supabaseUrl, anonKey || supabaseServiceKey, {
+          global: { headers: { Authorization: `Bearer ${token}` } },
+        })
+        const { data: claimsData } = await authClient.auth.getClaims(token)
+        const claims = claimsData?.claims as Record<string, unknown> | undefined
+        if (claims?.role === 'service_role') {
+          authorized = true
+        } else if (typeof claims?.sub === 'string') {
+          const admin = createClient(supabaseUrl, supabaseServiceKey)
+          const { data: isAdmin } = await admin.rpc('has_role', {
+            _user_id: claims.sub,
+            _role: 'admin',
+          })
+          authorized = Boolean(isAdmin)
+        }
+      } catch (e) {
+        console.warn('send-transactional-email auth check failed', e)
+      }
+    }
+    if (!authorized) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+  }
+
   // Resolve effective recipient: template-level `to` takes precedence over
   // the caller-provided recipientEmail. This allows notification templates
   // to always send to a fixed address (e.g., site owner from env var).
