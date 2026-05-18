@@ -11,7 +11,7 @@ interface CaseDeliveryProps {
 
 type Lang = 'ru' | 'uk' | 'en'
 
-const COPY: Record<Lang, { preview: string; heading: string; greeting: string; body: string; download: string; thanks: string; signoff: string; name: string }> = {
+const COPY: Record<Lang, { preview: string; heading: string; greeting: string; body: string; download: string; thanks: string; boundary: string; signoff: string; name: string }> = {
   ru: {
     preview: 'Ваш результат готов',
     heading: 'Ваш результат готов',
@@ -19,6 +19,7 @@ const COPY: Record<Lang, { preview: string; heading: string; greeting: string; b
     body: 'Ваш результат подготовлен.',
     download: 'Скачать результат PDF',
     thanks: 'Благодарю за обращение.',
+    boundary: 'Если потребуется уточнение в рамках исходного запроса, вы можете просто ответить на это письмо.\n\nЕсли потребуется новая постановка задачи или расширение объёма работы, это оформляется как новый кейс.',
     signoff: 'С уважением,',
     name: 'Ростислав Колесников',
   },
@@ -29,6 +30,7 @@ const COPY: Record<Lang, { preview: string; heading: string; greeting: string; b
     body: 'Ваш результат підготовлено.',
     download: 'Завантажити PDF',
     thanks: 'Дякую за звернення.',
+    boundary: 'Якщо знадобиться уточнення в межах початкового запиту, ви можете просто відповісти на цей лист.\n\nЯкщо буде потрібне нове формулювання задачі або розширення обсягу роботи, це оформлюється як новий кейс.',
     signoff: 'З повагою,',
     name: 'Ростислав Колесников',
   },
@@ -39,6 +41,7 @@ const COPY: Record<Lang, { preview: string; heading: string; greeting: string; b
     body: 'Your result has been prepared.',
     download: 'Download PDF',
     thanks: 'Thank you for your request.',
+    boundary: 'If clarification is needed within the scope of the original request, you can simply reply to this email.\n\nIf a new task definition or expanded scope is required, it will be handled as a new case.',
     signoff: 'Best regards,',
     name: 'Rostyslav Kolesnikov',
   },
@@ -70,6 +73,8 @@ const CaseDeliveryEmail = ({ pdf_url, language }: CaseDeliveryProps) => {
             </Text>
           ) : null}
           <Text style={text}>{c.thanks}</Text>
+          <Text style={{ ...text, marginTop: '18px' }}>{c.boundary.split('\n\n')[0]}</Text>
+          <Text style={text}>{c.boundary.split('\n\n')[1]}</Text>
           <Text style={text}>
             {c.signoff}
             <br />
