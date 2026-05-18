@@ -299,72 +299,90 @@ const ClarityIntake = () => {
                           className="ci-textarea"
                         />
                       </Field>
-                      {/* Secondary, calm: optional materials */}
-                      <div className="pt-2 border-t border-border/20 space-y-5">
-                        <div>
-                          <SectionLabel>{`${I.attachments_title} · ${I.optional}`}</SectionLabel>
-                          <p className="max-w-md text-muted-foreground/90">{I.attachments_intro}</p>
-                        </div>
-                        <Field label={`${I.scope_refs_label} · ${I.optional}`}>
-                          <textarea
-                            value={data.refs}
-                            onChange={(e) => set("refs", e.target.value)}
-                            maxLength={1500}
-                            rows={2}
-                            placeholder={I.scope_refs_placeholder}
-                            className="ci-textarea"
-                          />
-                        </Field>
-                        <div>
-                          <input
-                            ref={fileInputRef}
-                            type="file"
-                            multiple
-                            accept={ACCEPTED_TYPES.join(",")}
-                            onChange={(e) => handleFiles(e.target.files)}
-                            className="hidden"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={uploading}
-                            className="inline-flex items-center gap-2 text-[12px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
-                          >
-                            <Paperclip className="w-3.5 h-3.5" />
-                            {uploading ? "…" : I.attachments_add}
-                          </button>
-                          <p className="mt-2 text-[11px] text-muted-foreground/70">{I.attachments_hint}</p>
-                          {uploadError && (
-                            <p className="mt-2 text-[11px] text-muted-foreground/80">{uploadError}</p>
-                          )}
-                          {uploads.length > 0 && (
-                            <ul className="mt-4 space-y-2">
-                              {uploads.map((f) => (
-                                <li
-                                  key={f.url}
-                                  className="flex items-center justify-between gap-3 text-[12px] text-foreground/80 border-b border-border/20 pb-2"
+                      {/* Optional materials — collapsed by default */}
+                      <div className="pt-2 border-t border-border/20">
+                        <SectionLabel>{`${I.attachments_title} · ${I.optional}`}</SectionLabel>
+                        <p className="max-w-md text-muted-foreground/90">{I.attachments_intro}</p>
+                        <button
+                          type="button"
+                          onClick={() => setAttachmentsOpen((v) => !v)}
+                          className="mt-4 text-[12px] text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5"
+                        >
+                          <span className="text-[13px] select-none">{attachmentsOpen ? "−" : "+"}</span>
+                          <span>{I.attachments_expand.replace(/^\+ /, "")}</span>
+                        </button>
+                        <AnimatePresence>
+                          {attachmentsOpen && (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                              className="pt-6 space-y-5"
+                            >
+                              <Field label={`${I.scope_refs_label} · ${I.optional}`}>
+                                <textarea
+                                  value={data.refs}
+                                  onChange={(e) => set("refs", e.target.value)}
+                                  maxLength={1500}
+                                  rows={2}
+                                  placeholder={I.scope_refs_placeholder}
+                                  className="ci-textarea"
+                                />
+                              </Field>
+                              <div>
+                                <input
+                                  ref={fileInputRef}
+                                  type="file"
+                                  multiple
+                                  accept={ACCEPTED_TYPES.join(",")}
+                                  onChange={(e) => handleFiles(e.target.files)}
+                                  className="hidden"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => fileInputRef.current?.click()}
+                                  disabled={uploading}
+                                  className="inline-flex items-center gap-2 text-[12px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
                                 >
-                                  <a
-                                    href={f.url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="truncate hover:text-foreground underline-offset-4 hover:underline"
-                                  >
-                                    {f.name}
-                                  </a>
-                                  <button
-                                    type="button"
-                                    onClick={() => removeUpload(f.url)}
-                                    aria-label={I.attachments_remove}
-                                    className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
-                                  >
-                                    <X className="w-3.5 h-3.5" />
-                                  </button>
-                                </li>
-                              ))}
-                            </ul>
+                                  <Paperclip className="w-3.5 h-3.5" />
+                                  {uploading ? "…" : I.attachments_add}
+                                </button>
+                                <p className="mt-2 text-[11px] text-muted-foreground/70">{I.attachments_hint}</p>
+                                {uploadError && (
+                                  <p className="mt-2 text-[11px] text-muted-foreground/80">{uploadError}</p>
+                                )}
+                                {uploads.length > 0 && (
+                                  <ul className="mt-4 space-y-2">
+                                    {uploads.map((f) => (
+                                      <li
+                                        key={f.url}
+                                        className="flex items-center justify-between gap-3 text-[12px] text-foreground/80 border-b border-border/20 pb-2"
+                                      >
+                                        <a
+                                          href={f.url}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="truncate hover:text-foreground underline-offset-4 hover:underline"
+                                        >
+                                          {f.name}
+                                        </a>
+                                        <button
+                                          type="button"
+                                          onClick={() => removeUpload(f.url)}
+                                          aria-label={I.attachments_remove}
+                                          className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                                        >
+                                          <X className="w-3.5 h-3.5" />
+                                        </button>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            </motion.div>
                           )}
-                        </div>
+                        </AnimatePresence>
                       </div>
                     </section>
                   )}
