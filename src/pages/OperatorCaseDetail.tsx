@@ -318,14 +318,18 @@ export default function OperatorCaseDetail() {
               {generating ? "…" : "Generate PDF"}
             </ToolButton>
             {!deliverySent ? (
-              <ToolButton
-                onClick={sendToClient}
-                disabled={sending || !pdfUrl}
-                emphasis="primary"
-                title={!pdfUrl ? "Нужен PDF" : ""}
-              >
-                {sending ? "Отправка…" : "Send to Client"}
-              </ToolButton>
+              <div className="flex items-center gap-2">
+                <ToolButton
+                  onClick={sendToClient}
+                  disabled={sending || !pdfUrl}
+                  emphasis="primary"
+                >
+                  {sending ? "Отправка…" : "Send to Client"}
+                </ToolButton>
+                {!pdfUrl && (
+                  <span className="text-[11px] text-muted-foreground/60">(generate PDF first)</span>
+                )}
+              </div>
             ) : null}
           </BarGroup>
 
