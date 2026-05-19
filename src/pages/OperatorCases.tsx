@@ -7,7 +7,24 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type Case = Tables<"cases">;
 
-const buildAiBrief = (c: Case) => `CASE ID: ${c.id}
+const ATTACHMENT_PATH_RE = /(intake\/[^\s]+)/g;
+
+const extractAttachmentPaths = (c: Case): { name: string; path: string }[] => {
+  const text = c.raw_input ?? "";
+  const out: { name: string; path: string }[] = [];
+  for (const line of text.split("\n")) {
+    const matches = line.match(ATTACHMENT_PATH_RE);
+    if (!matches) continue;
+    for (const path of matches) {
+      const before = line.split(path)[0] ?? "";
+      const name = before.replace(/[—\-•:]\s*$/, "").trim() || path.split("/").pop() || path;
+      out.push({ name, path });
+    }
+  }
+  return out;
+};
+
+const buildCaseBriefBase = (c: Case) => `CASE ID: ${c.id}
 
 Client:
 Name: ${c.client_name || "Not provided"}
@@ -42,6 +59,21 @@ Create a preliminary expert working response that can later be refined.
 
 Important:
 This is an internal production draft, not final client-facing output.`;
+
+const buildCaseBrief = async (c: Case): Promise<string> => {
+  const base = buildCaseBriefBase(c);
+  const atts = extractAttachmentPaths(c);
+  if (atts.length === 0) return base + "\n\nAttachments:\nnone";
+  const lines: string[] = [];
+  for (const a of atts) {
+    const { data, error } = await supabase.storage
+      .from("clarity-attachments")
+      .createSignedUrl(a.path, 60 * 60 * 24 * 7);
+    const url = !error && data?.signedUrl ? data.signedUrl : `(signed URL unavailable: ${error?.message ?? "unknown"})`;
+    lines.push(`${a.name}\n${url}`);
+  }
+  return `${base}\n\nAttachments:\n${lines.join("\n\n")}`;
+};
 
 export default function OperatorCases() {
   const navigate = useNavigate();
@@ -84,8 +116,9 @@ export default function OperatorCases() {
 
   const copyBrief = async (c: Case) => {
     try {
-      await navigator.clipboard.writeText(buildAiBrief(c));
-      toast({ title: "AI Brief скопирован" });
+      const brief = await buildCaseBrief(c);
+      await navigator.clipboard.writeText(brief);
+      toast({ title: "Case Brief скопирован" });
     } catch (e) {
       toast({ title: "Не удалось скопировать", description: String(e), variant: "destructive" });
     }
@@ -139,7 +172,7 @@ export default function OperatorCases() {
                     <Button size="sm" variant="outline" asChild>
                       <Link to={`/operator/cases/${c.id}`}>Open case</Link>
                     </Button>
-                    <Button size="sm" onClick={() => copyBrief(c)}>Copy AI Brief</Button>
+                    <Button size="sm" onClick={() => copyBrief(c)}>Copy Case Brief</Button>
                   </div>
                 </div>
                 {c.raw_input && (
