@@ -304,17 +304,17 @@ Deno.serve(async (req) => {
         return;
       }
 
-      let size = 10.5;
-      let lineH = 16;
+      let size = 10;
+      let lineH = 17;
       let baseFont = fRegular;
       let topGap = 0;
-      let bottomGap = 6;
+      let bottomGap = 7;
       let indent = 0;
       let prefix = "";
 
-      if (b.kind === "h1") { size = 18; lineH = 24; baseFont = fDisplay; topGap = 18; bottomGap = 10; }
-      else if (b.kind === "h2") { size = 14; lineH = 20; baseFont = fDisplay; topGap = 16; bottomGap = 8; }
-      else if (b.kind === "h3") { size = 11.5; lineH = 17; baseFont = fBold; topGap = 12; bottomGap = 6; }
+      if (b.kind === "h1") { size = 16; lineH = 22; baseFont = fDisplay; topGap = 22; bottomGap = 10; }
+      else if (b.kind === "h2") { size = 13; lineH = 19; baseFont = fDisplay; topGap = 18; bottomGap = 8; }
+      else if (b.kind === "h3") { size = 11; lineH = 17; baseFont = fBold; topGap = 14; bottomGap = 6; }
       else if (b.kind === "li") {
         indent = 18;
         prefix = b.ordered ? `${b.index}.` : "—";
