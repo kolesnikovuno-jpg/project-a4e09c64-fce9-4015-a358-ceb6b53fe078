@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "@/hooks/use-toast";
@@ -40,6 +40,7 @@ export default function OperatorCaseDetail() {
   const [deliverySent, setDeliverySent] = useState(false);
   const [manualCopyText, setManualCopyText] = useState("");
   const [requestOpen, setRequestOpen] = useState(false);
+  const [aiDraftOpen, setAiDraftOpen] = useState(true);
   const [attachmentUrls, setAttachmentUrls] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -317,14 +318,18 @@ export default function OperatorCaseDetail() {
               {generating ? "…" : "Generate PDF"}
             </ToolButton>
             {!deliverySent ? (
-              <ToolButton
-                onClick={sendToClient}
-                disabled={sending || !pdfUrl}
-                emphasis="primary"
-                title={!pdfUrl ? "Нужен PDF" : ""}
-              >
-                {sending ? "Отправка…" : "Send to Client"}
-              </ToolButton>
+              <div className="flex items-center gap-2">
+                <ToolButton
+                  onClick={sendToClient}
+                  disabled={sending || !pdfUrl}
+                  emphasis="primary"
+                >
+                  {sending ? "Отправка…" : "Send to Client"}
+                </ToolButton>
+                {!pdfUrl && (
+                  <span className="text-[11px] text-muted-foreground/60">(generate PDF first)</span>
+                )}
+              </div>
             ) : null}
           </BarGroup>
 
@@ -471,34 +476,33 @@ export default function OperatorCaseDetail() {
           {/* RIGHT — work area */}
           <section className="space-y-8 min-w-0">
             <WorkBlock
-              label="AI draft"
+              label="Final output"
+              hint="Client-ready response · paste or refine here"
               action={
                 <button
                   type="button"
                   onClick={async () => {
-                    if (!aiDraft) {
-                      toast({ title: "Черновик пуст", variant: "destructive" });
-                      return;
-                    }
+                    if (!finalOutput) return;
                     try {
-                      await navigator.clipboard.writeText(aiDraft);
-                      toast({ title: "AI Draft скопирован" });
+                      await navigator.clipboard.writeText(finalOutput);
+                      toast({ title: "Final output скопирован" });
                     } catch (e) {
                       toast({ title: "Не удалось скопировать", description: String(e), variant: "destructive" });
                     }
                   }}
                   className="text-[11px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
-                  disabled={!aiDraft}
+                  disabled={!finalOutput}
                 >
                   Copy
                 </button>
               }
             >
               <Textarea
-                rows={10}
-                value={aiDraft}
-                onChange={(e) => setAiDraft(e.target.value)}
-                className="text-sm font-mono leading-relaxed bg-transparent border-0 border-t border-border/60 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-y px-0 py-2 shadow-none"
+                rows={16}
+                value={finalOutput}
+                onChange={(e) => setFinalOutput(e.target.value)}
+                className="text-sm leading-relaxed bg-transparent border-0 border-t border-border/60 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-y px-0 py-2 shadow-none"
+                placeholder="Paste or refine the final response…"
               />
             </WorkBlock>
 
@@ -524,7 +528,7 @@ export default function OperatorCaseDetail() {
               }
             >
               <Textarea
-                rows={6}
+                rows={10}
                 value={workingNotes}
                 onChange={(e) => setWorkingNotes(e.target.value)}
                 className="text-sm leading-relaxed bg-transparent border-0 border-t border-border/60 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-y px-0 py-2 shadow-none"
@@ -532,34 +536,52 @@ export default function OperatorCaseDetail() {
             </WorkBlock>
 
             <WorkBlock
-              label="Final output"
-              hint="Client-ready response · paste or refine here"
-              action={
+              label={
                 <button
                   type="button"
-                  onClick={async () => {
-                    if (!finalOutput) return;
-                    try {
-                      await navigator.clipboard.writeText(finalOutput);
-                      toast({ title: "Final output скопирован" });
-                    } catch (e) {
-                      toast({ title: "Не удалось скопировать", description: String(e), variant: "destructive" });
-                    }
-                  }}
-                  className="text-[11px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
-                  disabled={!finalOutput}
+                  onClick={() => setAiDraftOpen((v) => !v)}
+                  className="flex items-center gap-1"
                 >
-                  Copy
+                  AI draft
+                  {aiDraftOpen ? (
+                    <ChevronDown className="h-3 w-3" />
+                  ) : (
+                    <ChevronRight className="h-3 w-3" />
+                  )}
                 </button>
               }
+              action={
+                aiDraftOpen ? (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!aiDraft) {
+                        toast({ title: "Черновик пуст", variant: "destructive" });
+                        return;
+                      }
+                      try {
+                        await navigator.clipboard.writeText(aiDraft);
+                        toast({ title: "AI Draft скопирован" });
+                      } catch (e) {
+                        toast({ title: "Не удалось скопировать", description: String(e), variant: "destructive" });
+                      }
+                    }}
+                    className="text-[11px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
+                    disabled={!aiDraft}
+                  >
+                    Copy
+                  </button>
+                ) : null
+              }
             >
-              <Textarea
-                rows={12}
-                value={finalOutput}
-                onChange={(e) => setFinalOutput(e.target.value)}
-                className="text-sm leading-relaxed bg-transparent border-0 border-t border-border/60 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-y px-0 py-2 shadow-none"
-                placeholder="Paste or refine the final response…"
-              />
+              {aiDraftOpen && (
+                <Textarea
+                  rows={6}
+                  value={aiDraft}
+                  onChange={(e) => setAiDraft(e.target.value)}
+                  className="text-sm font-mono leading-relaxed bg-transparent border-0 border-t border-border/60 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-y px-0 py-2 shadow-none"
+                />
+              )}
             </WorkBlock>
           </section>
         </div>
@@ -630,7 +652,7 @@ function WorkBlock({
   action,
   children,
 }: {
-  label: string;
+  label: React.ReactNode;
   hint?: string;
   action?: React.ReactNode;
   children: React.ReactNode;
@@ -639,9 +661,9 @@ function WorkBlock({
     <div>
       <div className="flex items-center justify-between">
         <div className="flex items-baseline gap-2">
-          <Label className="text-[10px] uppercase tracking-[0.14em] text-foreground/80 font-semibold">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-foreground/80 font-semibold">
             {label}
-          </Label>
+          </span>
           {hint && <span className="text-[10px] text-muted-foreground/80">{hint}</span>}
         </div>
         {action}
@@ -658,11 +680,10 @@ function StatusChip({ value, onChange }: { value: string; onChange: (v: string) 
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.1em] text-foreground/85 hover:text-foreground border border-border/70 hover:border-border px-2 py-1 transition-colors"
+          className="inline-flex items-center gap-1 text-[11px] font-medium text-foreground/85 hover:text-foreground transition-colors"
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-foreground/60" />
           {current.label}
-          <ChevronDown className="h-3 w-3 text-muted-foreground/70" />
+          <ChevronDown className="h-3 w-3 text-muted-foreground/60" />
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -678,7 +699,7 @@ function StatusChip({ value, onChange }: { value: string; onChange: (v: string) 
                 key={s.value}
                 type="button"
                 onClick={() => onChange(s.value)}
-                className={`text-left text-[11px] uppercase tracking-[0.1em] px-2 py-1.5 transition-colors ${
+                className={`text-left text-[11px] px-2 py-1.5 transition-colors ${
                   active ? "text-foreground bg-muted/60" : "text-foreground/70 hover:text-foreground hover:bg-muted/50"
                 }`}
               >
