@@ -109,6 +109,21 @@ const Index = () => {
         {/* Toggle button — asymmetric placement, shifted right */}
         <div className="flex items-center justify-center mt-[72px] md:mt-0 translate-x-[22vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
           <div className="group/uno relative flex items-center justify-center">
+            {/* Ambient governing principle — resonance trace emerging to the left of the .uno mark */}
+            <motion.span
+              aria-hidden
+              className="pointer-events-none absolute right-full top-1/2 mr-10 md:mr-16 whitespace-nowrap text-[10px] md:text-[11px] font-light uppercase tracking-[0.42em] text-primary select-none"
+              initial={{ opacity: 0, x: -6, filter: "blur(10px)" }}
+              animate={{ opacity: 0.42, x: 0, filter: "blur(0px)" }}
+              transition={{
+                opacity: { delay: 0.9, duration: 2.6, ease: [0.22, 1, 0.36, 1] },
+                x: { delay: 0.9, duration: 2.6, ease: [0.22, 1, 0.36, 1] },
+                filter: { delay: 0.9, duration: 2.2, ease: [0.22, 1, 0.36, 1] },
+              }}
+              style={{ y: "-50%", willChange: "opacity, filter, transform" }}
+            >
+              Form emergence through structural resonance
+            </motion.span>
             {/* Surrounding circle — same fill as button, mirrors hover/toggled state */}
             <span
               aria-hidden
