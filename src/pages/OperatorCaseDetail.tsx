@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
 import { buildCaseBrief, downloadBriefFile } from "@/lib/caseBrief";
@@ -240,29 +241,46 @@ export default function OperatorCaseDetail() {
   return (
     <main className="operator-workspace min-h-screen bg-background px-6 py-8">
       <ManualCopyDialog text={manualCopyText} onClose={() => setManualCopyText("")} />
-      <div className="max-w-3xl mx-auto space-y-6">
-        <header className="flex items-center justify-between">
-          <Link to="/operator/cases" className="text-sm text-muted-foreground hover:text-foreground">← Cases</Link>
-          <div className="flex gap-2">
-            <Button size="sm" onClick={downloadBrief}>Download Brief</Button>
-            <Button size="sm" variant="ghost" onClick={copyBrief}>Copy</Button>
-            <Button size="sm" variant="ghost" onClick={generateAiDraft} disabled={generatingDraft}>
-              {generatingDraft ? "Генерация…" : "Quick Draft (optional)"}
-            </Button>
-            <Button size="sm" variant="outline" onClick={generatePdf} disabled={generating}>
-              {generating ? "Генерация…" : "Generate PDF"}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={sendToClient}
-              disabled={sending || deliverySent || !pdfUrl}
-              title={!pdfUrl ? "Нужен PDF" : deliverySent ? "Уже отправлено" : ""}
-            >
-              {sending ? "Отправка…" : deliverySent ? "Sent ✓" : "Send to Client"}
-            </Button>
-            <Button size="sm" onClick={save} disabled={saving}>{saving ? "Сохранение…" : "Save"}</Button>
-            <Button size="sm" variant="ghost" onClick={signOut}>Sign out</Button>
+      <div className="max-w-3xl mx-auto space-y-5">
+        <div className="flex items-center justify-between">
+          <Link to="/operator/cases" className="text-xs text-muted-foreground hover:text-foreground">← Cases</Link>
+          <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-muted-foreground" onClick={signOut}>Sign out</Button>
+        </div>
+        <header className="flex items-center justify-between flex-wrap gap-3 border border-border rounded-md bg-card px-3 py-2">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-1">Case</span>
+              <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs font-normal" onClick={downloadBrief}>Download Brief</Button>
+              <Button size="sm" variant="ghost" className="h-7 px-2 text-xs font-normal text-muted-foreground" onClick={copyBrief}>Copy Brief</Button>
+              <Button size="sm" variant="ghost" className="h-7 px-2 text-xs font-normal text-muted-foreground" onClick={generateAiDraft} disabled={generatingDraft}>
+                {generatingDraft ? "Генерация…" : "Quick Draft"}
+              </Button>
+            </div>
+            <div className="h-5 w-px bg-border" />
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-1">Delivery</span>
+              <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs font-normal" onClick={generatePdf} disabled={generating}>
+                {generating ? "Генерация…" : "Generate PDF"}
+              </Button>
+              {deliverySent ? (
+                <Badge variant="default" className="h-6 px-2 text-[11px] rounded-sm font-normal">Delivered ✓</Badge>
+              ) : (
+                <Button
+                  size="sm"
+                  className="h-7 px-2.5 text-xs font-normal"
+                  onClick={sendToClient}
+                  disabled={sending || !pdfUrl}
+                  title={!pdfUrl ? "Нужен PDF" : ""}
+                >
+                  {sending ? "Отправка…" : "Send to Client"}
+                </Button>
+              )}
+            </div>
+            <div className="h-5 w-px bg-border" />
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-1">System</span>
+              <Button size="sm" className="h-7 px-2.5 text-xs font-normal" onClick={save} disabled={saving}>{saving ? "Сохранение…" : "Save"}</Button>
+            </div>
           </div>
         </header>
 
