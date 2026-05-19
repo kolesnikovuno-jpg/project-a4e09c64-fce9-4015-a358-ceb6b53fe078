@@ -663,11 +663,10 @@ function StatusChip({ value, onChange }: { value: string; onChange: (v: string) 
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.1em] text-foreground/85 hover:text-foreground border border-border/70 hover:border-border px-2 py-1 transition-colors"
+          className="inline-flex items-center gap-1 text-[11px] font-medium text-foreground/85 hover:text-foreground transition-colors"
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-foreground/60" />
           {current.label}
-          <ChevronDown className="h-3 w-3 text-muted-foreground/70" />
+          <ChevronDown className="h-3 w-3 text-muted-foreground/60" />
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -683,7 +682,7 @@ function StatusChip({ value, onChange }: { value: string; onChange: (v: string) 
                 key={s.value}
                 type="button"
                 onClick={() => onChange(s.value)}
-                className={`text-left text-[11px] uppercase tracking-[0.1em] px-2 py-1.5 transition-colors ${
+                className={`text-left text-[11px] px-2 py-1.5 transition-colors ${
                   active ? "text-foreground bg-muted/60" : "text-foreground/70 hover:text-foreground hover:bg-muted/50"
                 }`}
               >
