@@ -39,6 +39,7 @@ export default function OperatorCaseDetail() {
   const [generatingDraft, setGeneratingDraft] = useState(false);
   const [sending, setSending] = useState(false);
   const [deliverySent, setDeliverySent] = useState(false);
+  const [manualCopyText, setManualCopyText] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -85,10 +86,15 @@ export default function OperatorCaseDetail() {
     if (!c) return;
     try {
       const brief = await buildCaseBrief(c);
-      await navigator.clipboard.writeText(brief);
-      toast({ title: "Case Brief скопирован" });
+      try {
+        await navigator.clipboard.writeText(brief);
+        toast({ title: "Case Brief скопирован" });
+      } catch {
+        setManualCopyText(brief);
+        toast({ title: "Clipboard blocked", description: "Открыл ручное копирование." });
+      }
     } catch (e) {
-      toast({ title: "Не удалось скопировать", description: String(e), variant: "destructive" });
+      toast({ title: "Не удалось подготовить Case Brief", description: String(e), variant: "destructive" });
     }
   };
 
@@ -222,6 +228,7 @@ export default function OperatorCaseDetail() {
 
   return (
     <main className="operator-workspace min-h-screen bg-background px-6 py-8">
+      <ManualCopyDialog text={manualCopyText} onClose={() => setManualCopyText("")} />
       <div className="max-w-3xl mx-auto space-y-6">
         <header className="flex items-center justify-between">
           <Link to="/operator/cases" className="text-sm text-muted-foreground hover:text-foreground">← Cases</Link>
