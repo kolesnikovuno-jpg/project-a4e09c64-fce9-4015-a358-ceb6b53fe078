@@ -131,7 +131,7 @@ const Index = () => {
               return (
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-1.5 md:mr-2.5 whitespace-nowrap text-[11px] md:text-xs font-light lowercase text-primary select-none flex"
+                  className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-1.5 md:mr-2.5 whitespace-nowrap text-[12.5px] md:text-[13.5px] lowercase text-primary select-none flex"
                   style={{ willChange: "opacity" }}
                 >
                   {chars.map((ch, i) => {
@@ -155,7 +155,9 @@ const Index = () => {
                     const focusShape = Math.pow(nearness, 0.7);
                     const targetBlur = (1 - focusShape) * 0.24;
                     // Weight gradient reinforces structural density near the source.
-                    const targetWeight = Math.round(270 + 190 * contrastShape);
+                    // Closer to .uno weight (semibold ≈ 600) but never reaching it —
+                    // same material, softer state.
+                    const targetWeight = Math.round(360 + 180 * contrastShape);
                     return (
                       <motion.span
                         key={i}
