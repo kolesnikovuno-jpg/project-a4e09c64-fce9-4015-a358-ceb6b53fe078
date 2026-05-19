@@ -375,6 +375,9 @@ export const buildCaseBrief = async (c: Case): Promise<string> => {
   parts.push("");
   parts.push(t.evidenceNote);
   parts.push("");
+  parts.push(divider, t.protocolTitle, divider, "");
+  parts.push(t.protocolBody);
+  parts.push("");
   parts.push(divider);
 
   return parts.join("\n");
