@@ -76,13 +76,20 @@ const summarizeDraft = (draft: string | null | undefined): string => {
   const cleaned = draft
     .split("\n")
     .map((l) => l.trim())
-    .filter((l) => l && !/^[#*\-—=]+$/.test(l) && !/^\d+\.\s*$/.test(l));
-  // Keep concise: max ~5 lines, ~600 chars
+    .filter(
+      (l) =>
+        l &&
+        !/^[#*\-—=]+$/.test(l) &&
+        !/^\d+\.\s*$/.test(l) &&
+        !/^#{1,6}\s/.test(l) &&
+        !/^\d+\.\s+/.test(l),
+    );
+  // Keep concise: max ~4 lines, ~500 chars
   const picked: string[] = [];
   let total = 0;
   for (const line of cleaned) {
-    if (picked.length >= 5) break;
-    if (total + line.length > 600) break;
+    if (picked.length >= 4) break;
+    if (total + line.length > 500) break;
     picked.push(line);
     total += line.length;
   }
