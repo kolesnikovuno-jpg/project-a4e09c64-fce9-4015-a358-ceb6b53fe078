@@ -176,18 +176,44 @@ export default function OperatorCaseDetail() {
 
   const sendToClient = async () => {
     if (!c) return;
-    if (!pdfUrl) {
+    if (!pdfUrl && !deliverySent) {
       toast({ title: "Нет PDF", description: "Сначала сгенерируйте PDF.", variant: "destructive" });
       return;
     }
     setSending(true);
+
+    // On resend, regenerate the PDF so the signed URL is fresh.
+    let effectivePdfUrl = pdfUrl;
+    if (deliverySent) {
+      const { data: regen, error: regenErr } = await supabase.functions.invoke("generate-case-pdf", {
+        body: { case_id: c.id },
+      });
+      if (regenErr) {
+        setSending(false);
+        toast({ title: "Не удалось обновить PDF", description: regenErr.message, variant: "destructive" });
+        return;
+      }
+      const fresh = (regen as { pdf_url?: string })?.pdf_url;
+      if (fresh) {
+        effectivePdfUrl = fresh;
+        setPdfUrl(fresh);
+        setC({ ...c, pdf_url: fresh });
+      }
+    }
+
+    // Unique idempotency key per send attempt — first send uses a stable key,
+    // every resend appends a timestamp so the email queue does not dedupe it.
+    const idempotencyKey = deliverySent
+      ? `case-delivery-${c.id}-resend-${Date.now()}`
+      : `case-delivery-${c.id}`;
+
     const { error: sendError } = await supabase.functions.invoke("send-transactional-email", {
       body: {
         templateName: "case-delivery",
         recipientEmail: c.email,
-        idempotencyKey: `case-delivery-${c.id}`,
+        idempotencyKey,
         templateData: {
-          pdf_url: pdfUrl,
+          pdf_url: effectivePdfUrl,
           language: c.language ?? "en",
         },
       },
@@ -197,6 +223,7 @@ export default function OperatorCaseDetail() {
       toast({ title: "Не удалось отправить", description: sendError.message, variant: "destructive" });
       return;
     }
+    const wasResend = deliverySent;
     const { error: updError } = await supabase
       .from("cases")
       .update({
@@ -211,7 +238,7 @@ export default function OperatorCaseDetail() {
     }
     setDeliverySent(true);
     setServiceStatus("delivered");
-    toast({ title: deliverySent ? "Повторно отправлено клиенту" : "Отправлено клиенту" });
+    toast({ title: wasResend ? "Повторно отправлено клиенту" : "Отправлено клиенту" });
   };
 
   if (authorized === false) {
