@@ -203,25 +203,21 @@ export default function OperatorSubmissionDetail() {
                   if (m) {
                     const path = m[1];
                     const label = line.replace(/\s*—\s*intake\/.*$/, "").trim() || path;
+                    const href = signedLinks[path];
                     return (
                       <div key={i} className="flex items-center gap-2">
-                        <span className="truncate">{label}</span>
-                        <button
-                          type="button"
-                          className="underline underline-offset-2 hover:text-foreground"
-                          onClick={async () => {
-                            const { data, error } = await supabase.storage
-                              .from("clarity-attachments")
-                              .createSignedUrl(path, 3600);
-                            if (error || !data) {
-                              toast({ title: "Не удалось открыть файл", description: error?.message, variant: "destructive" });
-                              return;
-                            }
-                            window.open(data.signedUrl, "_blank", "noopener,noreferrer");
-                          }}
-                        >
-                          open
-                        </button>
+                        {href ? (
+                          <a
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline underline-offset-2 hover:text-foreground truncate"
+                          >
+                            {label}
+                          </a>
+                        ) : (
+                          <span className="truncate text-muted-foreground">{label} (загрузка…)</span>
+                        )}
                       </div>
                     );
                   }
