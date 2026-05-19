@@ -176,13 +176,13 @@ const Index = () => {
             {/* Surrounding circle — same fill as button, mirrors hover/toggled state */}
             <span
               aria-hidden
-              className={`pointer-events-none absolute rounded-full w-[76px] h-[76px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/20 ${
+              className={`pointer-events-none absolute rounded-full w-[76px] h-[76px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/40 ${
                 buttonActive ? "bg-primary/55" : "bg-primary/30"
               }`}
             />
           <button
             onClick={handleToggle}
-            className="group/uno relative flex items-center justify-center bg-primary/30 rounded-full w-[76px] h-[76px] hover:bg-primary/20 transition-colors duration-300 cursor-pointer active:scale-[1.06]"
+            className="group/uno relative flex items-center justify-center bg-primary/30 rounded-full w-[76px] h-[76px] hover:bg-primary/40 transition-colors duration-300 cursor-pointer active:scale-[1.06]"
           >
             {!open && (
               <motion.div
