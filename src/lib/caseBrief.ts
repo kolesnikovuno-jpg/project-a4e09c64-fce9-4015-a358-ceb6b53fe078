@@ -39,8 +39,9 @@ const signAttachmentUrls = async (attachments: CaseAttachment[]) => {
       SIGNED_URL_TTL_SECONDS,
     );
 
-  data?.forEach((item) => {
-    if (item.path && item.signedUrl) urlByPath.set(item.path, item.signedUrl);
+  data?.forEach((item, index) => {
+    const path = item.path ?? attachments[index]?.path;
+    if (path && item.signedUrl) urlByPath.set(path, item.signedUrl);
   });
 
   return urlByPath;
