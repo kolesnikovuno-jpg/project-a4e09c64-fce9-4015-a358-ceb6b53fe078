@@ -476,34 +476,33 @@ export default function OperatorCaseDetail() {
           {/* RIGHT — work area */}
           <section className="space-y-8 min-w-0">
             <WorkBlock
-              label="AI draft"
+              label="Final output"
+              hint="Client-ready response · paste or refine here"
               action={
                 <button
                   type="button"
                   onClick={async () => {
-                    if (!aiDraft) {
-                      toast({ title: "Черновик пуст", variant: "destructive" });
-                      return;
-                    }
+                    if (!finalOutput) return;
                     try {
-                      await navigator.clipboard.writeText(aiDraft);
-                      toast({ title: "AI Draft скопирован" });
+                      await navigator.clipboard.writeText(finalOutput);
+                      toast({ title: "Final output скопирован" });
                     } catch (e) {
                       toast({ title: "Не удалось скопировать", description: String(e), variant: "destructive" });
                     }
                   }}
                   className="text-[11px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
-                  disabled={!aiDraft}
+                  disabled={!finalOutput}
                 >
                   Copy
                 </button>
               }
             >
               <Textarea
-                rows={10}
-                value={aiDraft}
-                onChange={(e) => setAiDraft(e.target.value)}
-                className="text-sm font-mono leading-relaxed bg-transparent border-0 border-t border-border/60 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-y px-0 py-2 shadow-none"
+                rows={16}
+                value={finalOutput}
+                onChange={(e) => setFinalOutput(e.target.value)}
+                className="text-sm leading-relaxed bg-transparent border-0 border-t border-border/60 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-y px-0 py-2 shadow-none"
+                placeholder="Paste or refine the final response…"
               />
             </WorkBlock>
 
@@ -529,7 +528,7 @@ export default function OperatorCaseDetail() {
               }
             >
               <Textarea
-                rows={6}
+                rows={10}
                 value={workingNotes}
                 onChange={(e) => setWorkingNotes(e.target.value)}
                 className="text-sm leading-relaxed bg-transparent border-0 border-t border-border/60 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-y px-0 py-2 shadow-none"
@@ -537,34 +536,52 @@ export default function OperatorCaseDetail() {
             </WorkBlock>
 
             <WorkBlock
-              label="Final output"
-              hint="Client-ready response · paste or refine here"
-              action={
+              label={
                 <button
                   type="button"
-                  onClick={async () => {
-                    if (!finalOutput) return;
-                    try {
-                      await navigator.clipboard.writeText(finalOutput);
-                      toast({ title: "Final output скопирован" });
-                    } catch (e) {
-                      toast({ title: "Не удалось скопировать", description: String(e), variant: "destructive" });
-                    }
-                  }}
-                  className="text-[11px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
-                  disabled={!finalOutput}
+                  onClick={() => setAiDraftOpen((v) => !v)}
+                  className="flex items-center gap-1"
                 >
-                  Copy
+                  AI draft
+                  {aiDraftOpen ? (
+                    <ChevronDown className="h-3 w-3" />
+                  ) : (
+                    <ChevronRight className="h-3 w-3" />
+                  )}
                 </button>
               }
+              action={
+                aiDraftOpen ? (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!aiDraft) {
+                        toast({ title: "Черновик пуст", variant: "destructive" });
+                        return;
+                      }
+                      try {
+                        await navigator.clipboard.writeText(aiDraft);
+                        toast({ title: "AI Draft скопирован" });
+                      } catch (e) {
+                        toast({ title: "Не удалось скопировать", description: String(e), variant: "destructive" });
+                      }
+                    }}
+                    className="text-[11px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
+                    disabled={!aiDraft}
+                  >
+                    Copy
+                  </button>
+                ) : null
+              }
             >
-              <Textarea
-                rows={12}
-                value={finalOutput}
-                onChange={(e) => setFinalOutput(e.target.value)}
-                className="text-sm leading-relaxed bg-transparent border-0 border-t border-border/60 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-y px-0 py-2 shadow-none"
-                placeholder="Paste or refine the final response…"
-              />
+              {aiDraftOpen && (
+                <Textarea
+                  rows={6}
+                  value={aiDraft}
+                  onChange={(e) => setAiDraft(e.target.value)}
+                  className="text-sm font-mono leading-relaxed bg-transparent border-0 border-t border-border/60 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-y px-0 py-2 shadow-none"
+                />
+              )}
             </WorkBlock>
           </section>
         </div>
