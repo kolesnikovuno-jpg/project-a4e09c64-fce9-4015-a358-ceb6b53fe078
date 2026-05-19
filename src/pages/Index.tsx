@@ -140,19 +140,27 @@ const Index = () => {
                     const trackEm = trackingFarEm + (trackingNearEm - trackingFarEm) * nearness;
                     // Rightmost reveals first → delay grows leftward
                     const delay = baseDelay + (n - 1 - i) * perLetter;
-                    // Emanation gradient: dense zone pulled slightly toward the button,
-                    // so fade boundary sits closer to the source.
-                    const shaped = Math.pow(nearness, 1.55);
-                    const targetOpacity = 0.34 + 0.5 * shaped;
-                    const targetBlur = (1 - shaped) * 1.45;
+                    // Resonance field: density and contrast bloom near the source,
+                    // dissolving organically (not linearly) toward the left.
+                    // Two shaped curves — one steep for opacity (contrast loss),
+                    // one gentle for blur (very subtle focus loss).
+                    const contrastShape = Math.pow(nearness, 2.1);
+                    const focusShape = Math.pow(nearness, 1.3);
+                    // Wider dynamic range: far letters nearly dissolve, near letters dense.
+                    const targetOpacity = 0.08 + 0.82 * contrastShape;
+                    // Blur is now a whisper — preserves structural readability.
+                    const targetBlur = (1 - focusShape) * 0.45;
+                    // Subtle weight shift reinforces contrast dissipation.
+                    const targetWeight = Math.round(250 + 200 * contrastShape);
                     return (
                       <motion.span
                         key={i}
-                        initial={{ opacity: 0, x: 4, filter: "blur(10px)" }}
+                        initial={{ opacity: 0, x: 4, filter: "blur(6px)" }}
                         animate={{
                           opacity: targetOpacity,
                           x: 0,
                           filter: `blur(${targetBlur}px)`,
+                          fontWeight: targetWeight,
                         }}
                         transition={{
                           delay,
@@ -163,7 +171,7 @@ const Index = () => {
                           marginRight: `${trackEm}em`,
                           display: "inline-block",
                           whiteSpace: "pre",
-                          willChange: "opacity, filter, transform",
+                          willChange: "opacity, filter, transform, font-weight",
                         }}
                       >
                         {ch}
