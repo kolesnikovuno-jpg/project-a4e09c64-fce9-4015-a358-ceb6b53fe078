@@ -8,8 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
-import { buildCaseBrief, downloadBriefFile } from "@/lib/caseBrief";
+import { buildCaseBrief, downloadBriefFile, extractCaseAttachmentPaths } from "@/lib/caseBrief";
 import { ManualCopyDialog } from "@/components/operator/ManualCopyDialog";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 type Case = Tables<"cases">;
 
@@ -40,6 +41,7 @@ export default function OperatorCaseDetail() {
   const [sending, setSending] = useState(false);
   const [deliverySent, setDeliverySent] = useState(false);
   const [manualCopyText, setManualCopyText] = useState("");
+  const [requestOpen, setRequestOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -260,144 +262,291 @@ export default function OperatorCaseDetail() {
     );
   }
 
+  const attachments = extractCaseAttachmentPaths(c);
+
   return (
-    <main className="operator-workspace min-h-screen bg-background px-6 py-8">
+    <main className="operator-workspace min-h-screen bg-background px-6 py-6">
       <ManualCopyDialog text={manualCopyText} onClose={() => setManualCopyText("")} />
-      <div className="max-w-3xl mx-auto space-y-5">
-        <div className="flex items-center justify-between">
+      <div className="max-w-6xl mx-auto space-y-4">
+        {/* Top action bar */}
+        <header className="flex items-center flex-wrap gap-x-5 gap-y-2 border-b border-border pb-3">
           <Link to="/operator/cases" className="text-xs text-muted-foreground hover:text-foreground">← Cases</Link>
-          <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-muted-foreground" onClick={signOut}>Sign out</Button>
-        </div>
-        <header className="flex items-center flex-wrap gap-x-4 gap-y-2 border border-border rounded-md bg-card px-3 py-2">
-          <div className="flex items-center gap-1">
-            <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-1">Case</span>
-            <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs font-normal" onClick={downloadBrief}>Download Brief</Button>
-            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs font-normal text-muted-foreground" onClick={copyBrief}>Copy</Button>
-          </div>
-          <div className="h-5 w-px bg-border" />
-          <div className="flex items-center gap-1">
-            <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-1">Work</span>
-            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs font-normal text-muted-foreground" onClick={generateAiDraft} disabled={generatingDraft}>
-              {generatingDraft ? "Генерация…" : "Quick Draft"}
-            </Button>
-            <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs font-normal" onClick={generatePdf} disabled={generating}>
-              {generating ? "Генерация…" : "Generate PDF"}
-            </Button>
-          </div>
-          <div className="h-5 w-px bg-border" />
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-1">Delivery</span>
-            <Button
-              size="sm"
-              className="h-7 px-2.5 text-xs font-normal"
-              onClick={sendToClient}
-              disabled={sending || !pdfUrl}
-              title={!pdfUrl ? "Нужен PDF" : ""}
-            >
-              {sending ? (deliverySent ? "Отправка…" : "Отправка…") : deliverySent ? "Resend" : "Send to Client"}
-            </Button>
-            {deliverySent && (
-              <span className="text-[11px] text-muted-foreground select-none" aria-live="polite">
-                Status: <span className="text-foreground">Delivered ✓</span>
-              </span>
+
+          <div className="h-4 w-px bg-border" />
+
+          <ActionGroup label="Brief">
+            <ToolButton onClick={downloadBrief}>Download</ToolButton>
+            <ToolButton onClick={copyBrief}>Copy</ToolButton>
+          </ActionGroup>
+
+          <div className="h-4 w-px bg-border" />
+
+          <ActionGroup label="Work">
+            <ToolButton onClick={generateAiDraft} disabled={generatingDraft}>
+              {generatingDraft ? "…" : "Quick Draft"}
+            </ToolButton>
+            <ToolButton onClick={generatePdf} disabled={generating} emphasis="primary">
+              {generating ? "…" : "Generate PDF"}
+            </ToolButton>
+          </ActionGroup>
+
+          <div className="h-4 w-px bg-border" />
+
+          <ActionGroup label="Delivery">
+            {!deliverySent ? (
+              <ToolButton
+                onClick={sendToClient}
+                disabled={sending || !pdfUrl}
+                emphasis="primary"
+                title={!pdfUrl ? "Нужен PDF" : ""}
+              >
+                {sending ? "Отправка…" : "Send to Client"}
+              </ToolButton>
+            ) : (
+              <div className="flex items-center gap-2.5">
+                <span
+                  className="text-[11px] text-muted-foreground select-none"
+                  aria-live="polite"
+                >
+                  <span className="text-foreground">Delivered ✓</span>
+                </span>
+                <ToolButton onClick={sendToClient} disabled={sending}>
+                  {sending ? "Отправка…" : "Resend"}
+                </ToolButton>
+              </div>
             )}
-          </div>
-          <div className="h-5 w-px bg-border" />
-          <div className="flex items-center gap-1">
-            <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-1">System</span>
-            <Button size="sm" className="h-7 px-2.5 text-xs font-normal" onClick={save} disabled={saving}>{saving ? "Сохранение…" : "Save"}</Button>
-          </div>
+          </ActionGroup>
+
+          <div className="flex-1" />
+
+          <ToolButton onClick={save} disabled={saving}>
+            {saving ? "…" : "Save"}
+          </ToolButton>
+          <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-muted-foreground" onClick={signOut}>
+            Sign out
+          </Button>
         </header>
 
-        <section className="border border-border rounded-lg p-4 bg-card space-y-2 text-sm">
-          <div><span className="text-muted-foreground">Case ID:</span> <span className="font-mono">{c.id}</span></div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-muted-foreground">Source Submission:</span>
-            {c.submission_id ? (
-              <>
-                <span className="font-mono text-xs">SUB-{c.submission_id.slice(0, 8)}</span>
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/operator/submissions/${c.submission_id}`}>Open Submission</Link>
-                </Button>
-              </>
-            ) : (
-              <span className="text-muted-foreground italic">Submission link missing</span>
-            )}
-          </div>
-          <div><span className="text-muted-foreground">Client:</span> {c.client_name || "—"}</div>
-          <div><span className="text-muted-foreground">Email:</span> {c.email}</div>
-          <div><span className="text-muted-foreground">Language:</span> {c.language ?? "—"}</div>
-          <div><span className="text-muted-foreground">Created:</span> {c.created_at ? new Date(c.created_at).toLocaleString() : "—"}</div>
-          {c.raw_input && (
-            <div>
-              <div className="text-muted-foreground mt-2 mb-1">Raw input:</div>
-              <pre className="text-xs whitespace-pre-wrap bg-muted/30 p-3 rounded max-h-72 overflow-auto">{c.raw_input}</pre>
-            </div>
-          )}
-        </section>
+        {/* Two-column workspace */}
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+          {/* LEFT — context */}
+          <aside className="space-y-5 text-xs">
+            <section className="space-y-1.5">
+              <SectionLabel>Case info</SectionLabel>
+              <MetaRow label="ID" value={<span className="font-mono">{c.id.slice(0, 8)}</span>} />
+              <MetaRow
+                label="Source"
+                value={
+                  c.submission_id ? (
+                    <Link
+                      to={`/operator/submissions/${c.submission_id}`}
+                      className="font-mono underline-offset-2 hover:underline"
+                    >
+                      SUB-{c.submission_id.slice(0, 8)}
+                    </Link>
+                  ) : (
+                    <span className="italic text-muted-foreground">—</span>
+                  )
+                }
+              />
+              <MetaRow label="Client" value={c.client_name || "—"} />
+              <MetaRow label="Email" value={<span className="break-all">{c.email}</span>} />
+              <MetaRow label="Language" value={c.language ?? "—"} />
+              <MetaRow
+                label="Created"
+                value={c.created_at ? new Date(c.created_at).toLocaleDateString() : "—"}
+              />
+              <div className="pt-1.5">
+                <Select
+                  value={SERVICE_STATUS_VALUES.includes(serviceStatus) ? serviceStatus : "queued"}
+                  onValueChange={setServiceStatus}
+                >
+                  <SelectTrigger className="h-7 text-xs rounded-sm">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SERVICE_STATUSES.map((s) => (
+                      <SelectItem key={s.value} value={s.value} className="text-xs">
+                        {s.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </section>
 
-        <section className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="service_status">Service status</Label>
-            <Select
-              value={SERVICE_STATUS_VALUES.includes(serviceStatus) ? serviceStatus : "queued"}
-              onValueChange={setServiceStatus}
+            {c.raw_input && (
+              <section className="space-y-1.5">
+                <button
+                  type="button"
+                  onClick={() => setRequestOpen((v) => !v)}
+                  className="flex items-center gap-1 w-full text-[10px] uppercase tracking-wide text-muted-foreground hover:text-foreground"
+                >
+                  {requestOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                  Client request
+                </button>
+                {requestOpen && (
+                  <pre className="text-[11px] whitespace-pre-wrap bg-muted/30 p-2.5 rounded-sm max-h-80 overflow-auto leading-relaxed">
+                    {c.raw_input}
+                  </pre>
+                )}
+              </section>
+            )}
+
+            {attachments.length > 0 && (
+              <section className="space-y-1.5">
+                <SectionLabel>Attachments ({attachments.length})</SectionLabel>
+                <ul className="space-y-1">
+                  {attachments.map((a) => (
+                    <li key={a.path} className="truncate text-[11px] text-muted-foreground" title={a.name}>
+                      · {a.name}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            <section className="space-y-1.5">
+              <SectionLabel>PDF URL</SectionLabel>
+              <Input
+                value={pdfUrl}
+                onChange={(e) => setPdfUrl(e.target.value)}
+                className="h-7 text-[11px] rounded-sm font-mono"
+                placeholder="—"
+              />
+            </section>
+          </aside>
+
+          {/* RIGHT — work area */}
+          <section className="space-y-5 min-w-0">
+            <WorkBlock
+              label="AI draft"
+              action={
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!aiDraft) {
+                      toast({ title: "Черновик пуст", variant: "destructive" });
+                      return;
+                    }
+                    try {
+                      await navigator.clipboard.writeText(aiDraft);
+                      toast({ title: "AI Draft скопирован" });
+                    } catch (e) {
+                      toast({ title: "Не удалось скопировать", description: String(e), variant: "destructive" });
+                    }
+                  }}
+                  className="text-[11px] text-muted-foreground hover:text-foreground disabled:opacity-40"
+                  disabled={!aiDraft}
+                >
+                  Copy
+                </button>
+              }
             >
-              <SelectTrigger id="service_status" className="rounded-none">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent className="rounded-none">
-                {SERVICE_STATUSES.map((s) => (
-                  <SelectItem key={s.value} value={s.value}>
-                    {s.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="ai_draft">AI draft</Label>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={async () => {
-                  if (!aiDraft) {
-                    toast({ title: "Черновик пуст", variant: "destructive" });
-                    return;
-                  }
-                  try {
-                    await navigator.clipboard.writeText(aiDraft);
-                    toast({ title: "AI Draft скопирован" });
-                  } catch (e) {
-                    toast({ title: "Не удалось скопировать", description: String(e), variant: "destructive" });
-                  }
-                }}
-                disabled={!aiDraft}
-              >
-                Copy AI Draft
-              </Button>
-            </div>
-            <Textarea id="ai_draft" rows={10} value={aiDraft} onChange={(e) => setAiDraft(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="working_notes">Working notes</Label>
-            <Textarea id="working_notes" rows={6} value={workingNotes} onChange={(e) => setWorkingNotes(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="final_output">Final output</Label>
-            <p className="text-xs text-muted-foreground">Paste final client-ready response here</p>
-            <Textarea id="final_output" rows={10} value={finalOutput} onChange={(e) => setFinalOutput(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="pdf_url">PDF URL</Label>
-            <Input id="pdf_url" value={pdfUrl} onChange={(e) => setPdfUrl(e.target.value)} />
-          </div>
-          <div className="flex justify-end">
-            <Button onClick={save} disabled={saving}>{saving ? "Сохранение…" : "Save"}</Button>
-          </div>
-        </section>
+              <Textarea
+                rows={10}
+                value={aiDraft}
+                onChange={(e) => setAiDraft(e.target.value)}
+                className="text-sm font-mono leading-relaxed"
+              />
+            </WorkBlock>
+
+            <WorkBlock label="Working notes">
+              <Textarea
+                rows={6}
+                value={workingNotes}
+                onChange={(e) => setWorkingNotes(e.target.value)}
+                className="text-sm leading-relaxed"
+              />
+            </WorkBlock>
+
+            <WorkBlock label="Final output" hint="Paste final client-ready response here">
+              <Textarea
+                rows={12}
+                value={finalOutput}
+                onChange={(e) => setFinalOutput(e.target.value)}
+                className="text-sm leading-relaxed"
+              />
+            </WorkBlock>
+          </section>
+        </div>
       </div>
     </main>
+  );
+}
+
+/* ---------- Local presentational helpers ---------- */
+
+function ActionGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 mr-1">{label}</span>
+      {children}
+    </div>
+  );
+}
+
+function ToolButton({
+  children,
+  onClick,
+  disabled,
+  emphasis = "ghost",
+  title,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  emphasis?: "ghost" | "primary";
+  title?: string;
+}) {
+  const base = "h-7 px-2 text-xs font-normal rounded-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed";
+  const styles =
+    emphasis === "primary"
+      ? "text-foreground border border-border hover:bg-muted"
+      : "text-muted-foreground hover:text-foreground hover:bg-muted/60";
+  return (
+    <button type="button" onClick={onClick} disabled={disabled} title={title} className={`${base} ${styles}`}>
+      {children}
+    </button>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="text-[10px] uppercase tracking-wider text-muted-foreground/70">{children}</div>
+  );
+}
+
+function MetaRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex gap-2 text-[11px] leading-relaxed">
+      <span className="w-16 shrink-0 text-muted-foreground">{label}</span>
+      <span className="min-w-0 flex-1 text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function WorkBlock({
+  label,
+  hint,
+  action,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-baseline justify-between">
+        <Label className="text-[10px] uppercase tracking-wider text-muted-foreground/80 font-normal">
+          {label}
+        </Label>
+        {action}
+      </div>
+      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      {children}
+    </div>
   );
 }
