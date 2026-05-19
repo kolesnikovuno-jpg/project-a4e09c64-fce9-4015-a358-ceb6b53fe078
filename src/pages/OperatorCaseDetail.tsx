@@ -22,7 +22,25 @@ const SERVICE_STATUSES = [
 ] as const;
 const SERVICE_STATUS_VALUES = SERVICE_STATUSES.map((s) => s.value) as readonly string[];
 
-const buildAiBrief = (c: Case) => `CASE ID: ${c.id}
+const ATTACHMENT_PATH_RE = /(intake\/[^\s]+)/g;
+
+const extractAttachmentPaths = (c: Case): { name: string; path: string }[] => {
+  const text = c.raw_input ?? "";
+  const lines = text.split("\n");
+  const out: { name: string; path: string }[] = [];
+  for (const line of lines) {
+    const matches = line.match(ATTACHMENT_PATH_RE);
+    if (!matches) continue;
+    for (const path of matches) {
+      const before = line.split(path)[0] ?? "";
+      const name = before.replace(/[—\-•:]\s*$/, "").trim() || path.split("/").pop() || path;
+      out.push({ name, path });
+    }
+  }
+  return out;
+};
+
+const buildCaseBriefBase = (c: Case) => `CASE ID: ${c.id}
 
 Client:
 Name: ${c.client_name || "Not provided"}
@@ -57,6 +75,21 @@ Create a preliminary expert working response that can later be refined.
 
 Important:
 This is an internal production draft, not final client-facing output.`;
+
+const buildCaseBrief = async (c: Case): Promise<string> => {
+  const base = buildCaseBriefBase(c);
+  const atts = extractAttachmentPaths(c);
+  if (atts.length === 0) return base + "\n\nAttachments:\nnone";
+  const lines: string[] = [];
+  for (const a of atts) {
+    const { data, error } = await supabase.storage
+      .from("clarity-attachments")
+      .createSignedUrl(a.path, 60 * 60 * 24 * 7);
+    const url = !error && data?.signedUrl ? data.signedUrl : `(signed URL unavailable: ${error?.message ?? "unknown"})`;
+    lines.push(`${a.name}\n${url}`);
+  }
+  return `${base}\n\nAttachments:\n${lines.join("\n\n")}`;
+};
 
 export default function OperatorCaseDetail() {
   const { id } = useParams<{ id: string }>();
@@ -118,8 +151,9 @@ export default function OperatorCaseDetail() {
   const copyBrief = async () => {
     if (!c) return;
     try {
-      await navigator.clipboard.writeText(buildAiBrief(c));
-      toast({ title: "AI Brief скопирован" });
+      const brief = await buildCaseBrief(c);
+      await navigator.clipboard.writeText(brief);
+      toast({ title: "Case Brief скопирован" });
     } catch (e) {
       toast({ title: "Не удалось скопировать", description: String(e), variant: "destructive" });
     }
@@ -259,9 +293,9 @@ export default function OperatorCaseDetail() {
         <header className="flex items-center justify-between">
           <Link to="/operator/cases" className="text-sm text-muted-foreground hover:text-foreground">← Cases</Link>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={copyBrief}>Copy AI Brief</Button>
-            <Button size="sm" variant="outline" onClick={generateAiDraft} disabled={generatingDraft}>
-              {generatingDraft ? "Генерация…" : "Generate AI Draft"}
+            <Button size="sm" variant="outline" onClick={copyBrief}>Copy Case Brief</Button>
+            <Button size="sm" variant="ghost" onClick={generateAiDraft} disabled={generatingDraft}>
+              {generatingDraft ? "Генерация…" : "Quick Draft (optional)"}
             </Button>
             <Button size="sm" variant="outline" onClick={generatePdf} disabled={generating}>
               {generating ? "Генерация…" : "Generate PDF"}
@@ -357,6 +391,7 @@ export default function OperatorCaseDetail() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="final_output">Final output</Label>
+            <p className="text-xs text-muted-foreground">Paste final client-ready response here</p>
             <Textarea id="final_output" rows={10} value={finalOutput} onChange={(e) => setFinalOutput(e.target.value)} />
           </div>
           <div className="space-y-2">
