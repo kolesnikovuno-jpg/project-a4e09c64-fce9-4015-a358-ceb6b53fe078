@@ -1,12 +1,21 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
 import { buildCaseBrief, downloadBriefFile } from "@/lib/caseBrief";
 import { ManualCopyDialog } from "@/components/operator/ManualCopyDialog";
+import {
+  OperatorShell,
+  UtilityRow,
+  ActionBar,
+  BarGroup,
+  ToolLink,
+  ToolButton,
+  PageTitle,
+  StateLabel,
+  ListRow,
+} from "@/components/operator/ui";
 
 type Case = Tables<"cases">;
 
@@ -18,12 +27,6 @@ const STATUS_LABEL: Record<string, string> = {
   delivered: "Delivered",
   revision: "Revision",
   closed: "Closed",
-};
-
-const statusVariant = (s?: string | null): "default" | "secondary" | "outline" => {
-  if (s === "delivered" || s === "finalized") return "default";
-  if (s === "queued") return "outline";
-  return "secondary";
 };
 
 export default function OperatorCases() {
@@ -98,72 +101,68 @@ export default function OperatorCases() {
 
   if (authorized === false) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-background px-4">
+      <main className="operator-workspace min-h-screen flex items-center justify-center bg-background px-6">
         <div className="text-center space-y-4">
-          <p className="text-foreground">Доступ только для администраторов.</p>
-          <Button variant="outline" onClick={signOut}>Выйти</Button>
+          <p className="text-foreground text-sm">Доступ только для администраторов.</p>
+          <ToolButton onClick={signOut}>Sign out</ToolButton>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="operator-workspace min-h-screen bg-background px-6 py-8">
+    <OperatorShell>
       <ManualCopyDialog text={manualCopyText} onClose={() => setManualCopyText("")} />
-      <div className="max-w-5xl mx-auto space-y-6">
-        <header className="flex items-center justify-between">
-          <h1 className="text-2xl font-medium">Cases</h1>
-          <div className="flex gap-2">
-            <Button variant="outline" asChild>
-              <Link to="/operator/submissions">Submissions</Link>
-            </Button>
-            <Button variant="ghost" onClick={signOut}>Sign out</Button>
-          </div>
-        </header>
+      <UtilityRow onSignOut={signOut} />
+      <ActionBar>
+        <BarGroup label="View">
+          <PageTitle>Cases</PageTitle>
+        </BarGroup>
+        <BarGroup label="Switch">
+          <ToolLink to="/operator/submissions">Submissions</ToolLink>
+        </BarGroup>
+      </ActionBar>
 
         {cases === null ? (
-          <p className="text-muted-foreground">Загрузка…</p>
+          <p className="text-muted-foreground text-sm">Загрузка…</p>
         ) : cases.length === 0 ? (
-          <p className="text-muted-foreground">Пока нет кейсов.</p>
+          <p className="text-muted-foreground text-sm">Пока нет кейсов.</p>
         ) : (
-          <ul className="space-y-2">
+          <ul>
             {cases.map((c) => (
-              <li key={c.id} className="border border-border rounded-md px-3 py-2 bg-card space-y-2">
-                <div className="flex items-center justify-between gap-3">
+              <ListRow key={c.id}>
+                <div className="flex items-start justify-between gap-6">
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium truncate">
-                      {c.client_name ?? "—"} <span className="text-muted-foreground font-normal">· {c.email}</span>
+                    <div className="text-sm text-foreground truncate">
+                      <span className="font-medium">{c.client_name ?? "—"}</span>
+                      <span className="text-muted-foreground"> · {c.email}</span>
                     </div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
-                      <Badge variant={statusVariant(c.service_status)} className="h-4 px-1.5 text-[10px] font-normal rounded-sm">
+                    <div className="mt-1 flex items-center gap-3 flex-wrap text-[11px] text-muted-foreground">
+                      <StateLabel>
                         {STATUS_LABEL[c.service_status ?? ""] ?? (c.service_status ?? "—")}
-                      </Badge>
+                      </StateLabel>
                       <span className="font-mono">{c.id.slice(0, 8)}</span>
                       <span>· {c.language ?? "—"}</span>
+                      {c.created_at && <span>· {new Date(c.created_at).toLocaleDateString()}</span>}
                     </div>
+                    {c.raw_input && (
+                      <p className="text-[11px] text-muted-foreground/80 mt-2 line-clamp-2 leading-relaxed">
+                        {c.raw_input}
+                      </p>
+                    )}
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Button size="sm" className="h-7 px-2.5 text-xs" asChild>
-                      <Link to={`/operator/cases/${c.id}`}>Open case</Link>
-                    </Button>
-                    <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs font-normal" onClick={() => downloadBrief(c)}>
-                      Download Brief
-                    </Button>
-                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs font-normal text-muted-foreground" onClick={() => copyBrief(c)}>
-                      Copy
-                    </Button>
+                  <div className="flex items-center gap-4 shrink-0 pt-0.5">
+                    <ToolLink to={`/operator/cases/${c.id}`} emphasis="primary">
+                      Open
+                    </ToolLink>
+                    <ToolButton onClick={() => downloadBrief(c)}>Download Brief</ToolButton>
+                    <ToolButton onClick={() => copyBrief(c)}>Copy</ToolButton>
                   </div>
                 </div>
-                {c.raw_input && (
-                  <pre className="text-[11px] whitespace-pre-wrap text-muted-foreground max-h-24 overflow-auto leading-snug">
-                    {c.raw_input}
-                  </pre>
-                )}
-              </li>
+              </ListRow>
             ))}
           </ul>
         )}
-      </div>
-    </main>
+    </OperatorShell>
   );
 }
