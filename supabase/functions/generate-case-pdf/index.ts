@@ -36,6 +36,7 @@ type Block =
   | { kind: "h1" | "h2" | "h3"; inlines: Inline[] }
   | { kind: "p"; inlines: Inline[] }
   | { kind: "li"; inlines: Inline[]; ordered?: boolean; index?: number }
+  | { kind: "quote"; inlines: Inline[] }
   | { kind: "hr" }
   | { kind: "space" };
 
@@ -81,6 +82,12 @@ function parseMarkdown(src: string): Block[] {
       blocks.push({ kind: "hr" });
       continue;
     }
+    const bq = line.match(/^\s*>\s+(.*)$/);
+    if (bq) {
+      flushPara();
+      blocks.push({ kind: "quote", inlines: parseInlines(bq[1]) });
+      continue;
+    }
     const h = line.match(/^(#{1,3})\s+(.*)$/);
     if (h) {
       flushPara();
@@ -98,7 +105,22 @@ function parseMarkdown(src: string): Block[] {
     if (ol) {
       flushPara();
       orderedIndex += 1;
-      blocks.push({ kind: "li", inlines: parseInlines(ol[2]), ordered: true, index: orderedIndex });
+      // Treat ordered list items as section headings ("2. Title") when the
+      // payload reads as a title (short, no terminal punctuation) — separates
+      // the number/title from the explanatory paragraph below.
+      const payload = ol[2].trim();
+      const looksLikeHeading =
+        payload.length <= 90 &&
+        !/[.?!:;]$/.test(payload) &&
+        payload.split(/\s+/).length <= 12;
+      if (looksLikeHeading) {
+        blocks.push({
+          kind: "h2",
+          inlines: parseInlines(`${orderedIndex}. ${payload}`),
+        });
+      } else {
+        blocks.push({ kind: "li", inlines: parseInlines(payload), ordered: true, index: orderedIndex });
+      }
       continue;
     }
     para.push(line.trim());
@@ -203,14 +225,19 @@ Deno.serve(async (req) => {
     const pageWidth = 595.28;
     const pageHeight = 841.89;
     const marginX = 90; // ~32mm
-    const marginTop = 104;
-    const marginBottom = 104;
-    const contentWidth = pageWidth - marginX * 2;
+    const marginTop = 92;   // reduced top whitespace (~10%)
+    const marginBottom = 96;
+    // Full grid width (used for header, divider, metadata, footer).
+    const gridWidth = pageWidth - marginX * 2;
+    // Narrowed body measure for editorial reading proportions (~15% tighter).
+    const bodyWidth = Math.round(gridWidth * 0.86);
+    const contentWidth = bodyWidth;
 
     // Palette — warm paper, charcoal ink, restrained brand accent.
     const paper = rgb(0.969, 0.965, 0.953);   // #F7F6F3
     const ink = rgb(0.180, 0.192, 0.208);     // #2E3135 charcoal
-    const muted = rgb(0.52, 0.52, 0.54);
+    const quoteInk = rgb(0.34, 0.34, 0.36);   // softer for diagnostic quotes
+    const muted = rgb(0.46, 0.46, 0.48);      // slightly stronger footer
     const labelMuted = rgb(0.62, 0.62, 0.64);
     const faint = rgb(0.84, 0.83, 0.81);
     const accent = rgb(0.42, 0.36, 0.28);     // quiet warm bronze
@@ -302,13 +329,13 @@ Deno.serve(async (req) => {
     };
 
     const drawBlock = (b: Block) => {
-      if (b.kind === "space") { y -= 6; return; }
+      if (b.kind === "space") { y -= 5; return; }
       if (b.kind === "hr") {
         ensureSpace(20);
         y -= 8;
         page.drawLine({
           start: { x: marginX, y },
-          end: { x: pageWidth - marginX, y },
+          end: { x: marginX + contentWidth, y },
           thickness: 0.5,
           color: faint,
         });
@@ -317,20 +344,29 @@ Deno.serve(async (req) => {
       }
 
       let size = 10;
-      let lineH = 17;
+      let lineH = 17.5;
       let baseFont = fRegular;
       let topGap = 0;
-      let bottomGap = 7;
+      let bottomGap = 8;
       let indent = 0;
       let prefix = "";
+      let color = ink;
 
-      if (b.kind === "h1") { size = 16; lineH = 22; baseFont = fDisplay; topGap = 22; bottomGap = 10; }
-      else if (b.kind === "h2") { size = 13; lineH = 19; baseFont = fDisplay; topGap = 18; bottomGap = 8; }
-      else if (b.kind === "h3") { size = 11; lineH = 17; baseFont = fBold; topGap = 14; bottomGap = 6; }
+      if (b.kind === "h1") { size = 16; lineH = 22; baseFont = fDisplay; topGap = 24; bottomGap = 12; }
+      else if (b.kind === "h2") { size = 12.5; lineH = 18; baseFont = fDisplay; topGap = 22; bottomGap = 12; }
+      else if (b.kind === "h3") { size = 10.5; lineH = 16; baseFont = fBold; topGap = 16; bottomGap = 7; }
       else if (b.kind === "li") {
+        indent = 16;
+        prefix = b.ordered ? `${b.index}.` : "•";
+        bottomGap = 5;
+        lineH = 16.5;
+      } else if (b.kind === "quote") {
+        baseFont = fItalic;
+        color = quoteInk;
         indent = 18;
-        prefix = b.ordered ? `${b.index}.` : "—";
-        bottomGap = 4;
+        topGap = 6;
+        bottomGap = 10;
+        lineH = 17.5;
       }
 
       y -= topGap;
@@ -346,10 +382,10 @@ Deno.serve(async (req) => {
             y: baselineY,
             size,
             font: fRegular,
-            color: muted,
+            color: b.kind === "li" && b.ordered ? labelMuted : labelMuted,
           });
         }
-        drawInlineLine(lines[i], marginX + indent, baselineY, size, baseFont);
+        drawInlineLine(lines[i], marginX + indent, baselineY, size, baseFont, color);
         y -= lineH;
       }
       y -= bottomGap;
@@ -373,7 +409,7 @@ Deno.serve(async (req) => {
     };
 
     drawTrackedText("STRUCTURAL CLARITY", marginX, y - 9, 8.5, fDisplay, accent, 2.2);
-    y -= 34;
+    y -= 30;
 
     // Title (reduced ~12%)
     const title = "Structural Diagnostic Response";
@@ -384,16 +420,16 @@ Deno.serve(async (req) => {
       font: fDisplay,
       color: ink,
     });
-    y -= 42;
+    y -= 38;
 
     // Hairline — quieter
     page.drawLine({
       start: { x: marginX, y },
-      end: { x: pageWidth - marginX, y },
+      end: { x: marginX + gridWidth, y },
       thickness: 0.3,
       color: faint,
     });
-    y -= 26;
+    y -= 22;
 
     // Metadata block
     const clientName = (c.client_name || "").trim() || "Private Client";
@@ -411,7 +447,7 @@ Deno.serve(async (req) => {
       y -= 18;
     }
 
-    y -= 56;
+    y -= 40;
 
     // ---------- BODY ----------
     const blocks = parseMarkdown(finalOutput);
@@ -422,19 +458,21 @@ Deno.serve(async (req) => {
     // ---------- FOOTER & PAGE NUMBERS ----------
     const pages = pdf.getPages();
     pages.forEach((p, idx) => {
+      const footerBaseline = 50;
+      const footerSize = 8;
       p.drawText("Structural Clarity  ·  kolesnikov.uno", {
         x: marginX,
-        y: 52,
-        size: 7.5,
+        y: footerBaseline,
+        size: footerSize,
         font: fRegular,
         color: muted,
       });
       const num = String(idx + 1).padStart(2, "0");
-      const numWidth = fDisplay.widthOfTextAtSize(num, 8);
+      const numWidth = fDisplay.widthOfTextAtSize(num, footerSize);
       p.drawText(num, {
-        x: pageWidth - marginX - numWidth,
-        y: 52,
-        size: 8,
+        x: marginX + gridWidth - numWidth,
+        y: footerBaseline,
+        size: footerSize,
         font: fDisplay,
         color: accent,
       });
