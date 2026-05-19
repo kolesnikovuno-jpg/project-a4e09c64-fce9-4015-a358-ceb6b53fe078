@@ -378,6 +378,15 @@ export default function OperatorCaseDetail() {
             <ToolButton onClick={generatePdf} disabled={generating}>
               {generating ? "…" : "Generate PDF"}
             </ToolButton>
+            {pdfStatus && (
+              <span className="text-[11px] text-muted-foreground/70">
+                {pdfStatus === "saving"
+                  ? "Saving…"
+                  : pdfStatus === "generating"
+                  ? "Generating PDF…"
+                  : "Done."}
+              </span>
+            )}
             {!deliverySent ? (
               <div className="flex items-center gap-2">
                 <ToolButton
