@@ -1,12 +1,22 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
+import { FileText } from "lucide-react";
+import {
+  OperatorShell,
+  UtilityRow,
+  ActionBar,
+  BarGroup,
+  ToolButton,
+  ToolLink,
+  SectionLabel,
+  MetaRow,
+  WorkBlock,
+  CompactSelect,
+} from "@/components/operator/ui";
 
 type Submission = Tables<"submissions"> & { assessment_notes?: string | null };
 
@@ -129,10 +139,10 @@ export default function OperatorSubmissionDetail() {
 
   if (authorized === false) {
     return (
-      <main className="operator-workspace min-h-screen flex items-center justify-center bg-background px-4">
+      <main className="operator-workspace min-h-screen flex items-center justify-center bg-background px-6">
         <div className="text-center space-y-4">
-          <p className="text-foreground">Доступ только для администраторов.</p>
-          <Button variant="outline" onClick={signOut}>Выйти</Button>
+          <p className="text-foreground text-sm">Доступ только для администраторов.</p>
+          <ToolButton onClick={signOut}>Sign out</ToolButton>
         </div>
       </main>
     );
@@ -140,64 +150,76 @@ export default function OperatorSubmissionDetail() {
 
   if (!s) {
     return (
-      <main className="operator-workspace min-h-screen bg-background px-6 py-8">
-        <p className="text-muted-foreground">Загрузка…</p>
-      </main>
+      <OperatorShell>
+        <p className="text-muted-foreground text-sm">Загрузка…</p>
+      </OperatorShell>
     );
   }
 
   return (
-    <main className="operator-workspace min-h-screen bg-background px-6 py-8">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <header className="flex items-center justify-between">
-          <Link to="/operator/submissions" className="text-sm text-muted-foreground hover:text-foreground">← Submissions</Link>
-          <div className="flex gap-2">
+    <OperatorShell>
+      <UtilityRow back={{ to: "/operator/submissions", label: "Submissions" }} onSignOut={signOut} />
+
+      <ActionBar>
+        <BarGroup label="Review">
+          <ToolButton onClick={generateAssessment} disabled={generating} emphasis="primary">
+            {generating ? "…" : "Generate Assessment"}
+          </ToolButton>
+        </BarGroup>
+        {linkedCaseId && (
+          <BarGroup label="Case">
+            <ToolLink to={`/operator/cases/${linkedCaseId}`}>Open Case</ToolLink>
+          </BarGroup>
+        )}
+        <div className="flex-1" />
+        <button
+          type="button"
+          onClick={save}
+          disabled={saving}
+          className="text-[11px] font-medium text-foreground/70 hover:text-foreground transition-colors disabled:opacity-40 pb-[2px]"
+        >
+          {saving ? "Saving…" : "Save"}
+        </button>
+      </ActionBar>
+
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+        {/* LEFT — context */}
+        <aside className="space-y-7 text-xs">
+          <section className="space-y-2">
+            <SectionLabel>Submission</SectionLabel>
+            <MetaRow label="ID" value={<span className="font-mono">{s.id.slice(0, 8)}</span>} />
+            <MetaRow label="Name" value={s.name || "—"} />
+            <MetaRow label="Email" value={<span className="break-all">{s.email}</span>} />
+            <MetaRow label="Language" value={s.language ?? "—"} />
+            <MetaRow
+              label="Created"
+              value={s.created_at ? new Date(s.created_at).toLocaleDateString() : "—"}
+            />
             {linkedCaseId && (
-              <Button asChild size="sm" variant="outline">
-                <Link to={`/operator/cases/${linkedCaseId}`}>Open Case</Link>
-              </Button>
+              <MetaRow
+                label="Case"
+                value={
+                  <ToolLink to={`/operator/cases/${linkedCaseId}`}>
+                    CASE-{linkedCaseId.slice(0, 8)}
+                  </ToolLink>
+                }
+              />
             )}
-            <Button size="sm" variant="outline" onClick={generateAssessment} disabled={generating}>
-              {generating ? "Генерация…" : "Generate Assessment"}
-            </Button>
-            <Button size="sm" onClick={save} disabled={saving}>{saving ? "Сохранение…" : "Save"}</Button>
-            <Button size="sm" variant="ghost" onClick={signOut}>Sign out</Button>
-          </div>
-        </header>
+          </section>
 
-        <section className="border border-border p-4 bg-card space-y-2 text-sm">
-          <div><span className="text-muted-foreground">Submission ID:</span> <span className="font-mono">{s.id}</span></div>
-          <div><span className="text-muted-foreground">Name:</span> {s.name || "—"}</div>
-          <div><span className="text-muted-foreground">Email:</span> {s.email}</div>
-          <div><span className="text-muted-foreground">Language:</span> {s.language ?? "—"}</div>
-          <div><span className="text-muted-foreground">Status:</span> {s.status}</div>
-          <div><span className="text-muted-foreground">Created:</span> {s.created_at ? new Date(s.created_at).toLocaleString() : "—"}</div>
-          {linkedCaseId && (
-            <div className="flex items-center gap-3 flex-wrap pt-1">
-              <span className="text-muted-foreground">Linked Case:</span>
-              <span className="font-mono text-xs">CASE-{linkedCaseId.slice(0, 8)}</span>
-              <Button asChild size="sm" variant="outline">
-                <Link to={`/operator/cases/${linkedCaseId}`}>Open Case</Link>
-              </Button>
-            </div>
-          )}
+          <section className="space-y-2">
+            <SectionLabel>Status</SectionLabel>
+            <CompactSelect
+              value={STATUS_VALUES.includes(status) ? status : "new"}
+              onChange={setStatus}
+              options={STATUSES as unknown as { value: string; label: string }[]}
+            />
+          </section>
 
-          <div>
-            <div className="text-muted-foreground mt-3 mb-1">Situation:</div>
-            <pre className="text-xs whitespace-pre-wrap bg-muted/30 p-3 max-h-72 overflow-auto">{s.situation ?? ""}</pre>
-          </div>
-          <div>
-            <div className="text-muted-foreground mt-3 mb-1">Uncertainty:</div>
-            <pre className="text-xs whitespace-pre-wrap bg-muted/30 p-3 max-h-72 overflow-auto">{s.uncertainty ?? ""}</pre>
-          </div>
-          <div>
-            <div className="text-muted-foreground mt-3 mb-1">Scope:</div>
-            <pre className="text-xs whitespace-pre-wrap bg-muted/30 p-3 max-h-72 overflow-auto">{s.scope ?? ""}</pre>
-          </div>
           {s.supporting_links && (
-            <div>
-              <div className="text-muted-foreground mt-3 mb-1">Supporting links:</div>
-              <div className="text-xs bg-muted/30 p-3 max-h-72 overflow-auto space-y-1">
+            <section className="space-y-2">
+              <SectionLabel>Attachments</SectionLabel>
+              <ul className="space-y-0.5">
                 {s.supporting_links.split("\n").map((line, i) => {
                   const m = line.match(/(intake\/[^\s]+)$/);
                   if (m) {
@@ -205,53 +227,64 @@ export default function OperatorSubmissionDetail() {
                     const label = line.replace(/\s*—\s*intake\/.*$/, "").trim() || path;
                     const href = signedLinks[path];
                     return (
-                      <div key={i} className="flex items-center gap-2">
+                      <li key={i}>
                         {href ? (
                           <a
                             href={href}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="underline underline-offset-2 hover:text-foreground truncate"
+                            className="group flex items-center gap-1.5 py-0.5 text-[11px] text-foreground/75 hover:text-foreground transition-colors"
+                            title={label}
                           >
-                            {label}
+                            <FileText className="h-3 w-3 shrink-0 text-muted-foreground/60 group-hover:text-foreground" />
+                            <span className="truncate underline-offset-2 group-hover:underline">{label}</span>
                           </a>
                         ) : (
-                          <span className="truncate text-muted-foreground">{label} (загрузка…)</span>
+                          <span className="flex items-center gap-1.5 py-0.5 text-[11px] text-muted-foreground/70">
+                            <FileText className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{label} …</span>
+                          </span>
                         )}
-                      </div>
+                      </li>
                     );
                   }
-                  return <div key={i} className="whitespace-pre-wrap">{line}</div>;
+                  return (
+                    <li key={i} className="text-[11px] text-muted-foreground whitespace-pre-wrap">
+                      {line}
+                    </li>
+                  );
                 })}
-              </div>
-            </div>
+              </ul>
+            </section>
           )}
-        </section>
+        </aside>
 
-        <section className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select
-              value={STATUS_VALUES.includes(status) ? status : "new"}
-              onValueChange={setStatus}
-            >
-              <SelectTrigger id="status" className="rounded-none">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent className="rounded-none">
-                {STATUSES.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="assessment_notes">Assessment notes</Label>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!assessmentNotes}
+        {/* RIGHT — request content + assessment */}
+        <section className="space-y-8 min-w-0">
+          <WorkBlock label="Situation">
+            <pre className="text-sm leading-relaxed border-t border-border/60 pt-2 whitespace-pre-wrap text-foreground/90">
+              {s.situation ?? "—"}
+            </pre>
+          </WorkBlock>
+
+          <WorkBlock label="Uncertainty">
+            <pre className="text-sm leading-relaxed border-t border-border/60 pt-2 whitespace-pre-wrap text-foreground/90">
+              {s.uncertainty ?? "—"}
+            </pre>
+          </WorkBlock>
+
+          <WorkBlock label="Scope">
+            <pre className="text-sm leading-relaxed border-t border-border/60 pt-2 whitespace-pre-wrap text-foreground/90">
+              {s.scope ?? "—"}
+            </pre>
+          </WorkBlock>
+
+          <WorkBlock
+            label="Assessment notes"
+            hint="Operator working notes for this submission"
+            action={
+              <button
+                type="button"
                 onClick={async () => {
                   if (!assessmentNotes) return;
                   try {
@@ -261,22 +294,23 @@ export default function OperatorSubmissionDetail() {
                     toast({ title: "Не удалось скопировать", variant: "destructive" });
                   }
                 }}
+                className="text-[11px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
+                disabled={!assessmentNotes}
               >
-                Copy Assessment
-              </Button>
-            </div>
+                Copy
+              </button>
+            }
+          >
             <Textarea
               id="assessment_notes"
               rows={14}
               value={assessmentNotes}
               onChange={(e) => setAssessmentNotes(e.target.value)}
+              className="text-sm leading-relaxed bg-transparent border-0 border-t border-border/60 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-y px-0 py-2 shadow-none"
             />
-          </div>
-          <div className="flex justify-end">
-            <Button onClick={save} disabled={saving}>{saving ? "Сохранение…" : "Save"}</Button>
-          </div>
+          </WorkBlock>
         </section>
       </div>
-    </main>
+    </OperatorShell>
   );
 }

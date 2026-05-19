@@ -1,14 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +13,18 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
+import {
+  OperatorShell,
+  UtilityRow,
+  ActionBar,
+  BarGroup,
+  PageTitle,
+  ToolLink,
+  ToolButton,
+  StateLabel,
+  ListRow,
+  CompactSelect,
+} from "@/components/operator/ui";
 
 type Submission = Tables<"submissions">;
 
@@ -166,91 +170,77 @@ export default function OperatorSubmissions() {
 
   if (authorized === false) {
     return (
-      <main className="operator-workspace min-h-screen flex items-center justify-center bg-background px-4">
+      <main className="operator-workspace min-h-screen flex items-center justify-center bg-background px-6">
         <div className="text-center space-y-4">
-          <p className="text-foreground">Доступ только для администраторов.</p>
-          <Button variant="outline" onClick={signOut}>Выйти</Button>
+          <p className="text-foreground text-sm">Доступ только для администраторов.</p>
+          <ToolButton onClick={signOut}>Sign out</ToolButton>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="operator-workspace min-h-screen bg-background px-6 py-8">
-      <div className="max-w-5xl mx-auto space-y-6">
-        <header className="flex items-center justify-between">
-          <h1 className="text-2xl font-medium">Submissions</h1>
-          <div className="flex gap-2">
-            <Button variant="outline" asChild>
-              <Link to="/operator/cases">Cases</Link>
-            </Button>
-            <Button variant="ghost" onClick={signOut}>Sign out</Button>
-          </div>
-        </header>
+    <OperatorShell>
+      <UtilityRow onSignOut={signOut} />
+      <ActionBar>
+        <BarGroup label="View">
+          <PageTitle>Submissions</PageTitle>
+        </BarGroup>
+        <BarGroup label="Switch">
+          <ToolLink to="/operator/cases">Cases</ToolLink>
+        </BarGroup>
+      </ActionBar>
 
         {items === null ? (
-          <p className="text-muted-foreground">Загрузка…</p>
+          <p className="text-muted-foreground text-sm">Загрузка…</p>
         ) : items.length === 0 ? (
-          <p className="text-muted-foreground">Пока нет заявок.</p>
+          <p className="text-muted-foreground text-sm">Пока нет заявок.</p>
         ) : (
-          <ul className="space-y-4">
+          <ul>
             {items.map((s) => {
               const statusLabel = STATUS_LABELS[s.status] ?? s.status;
               const isGenerating = generatingIds.has(s.id);
               const isSaving = savingIds.has(s.id);
               const currentRowValue = rowStatusValues[s.id] ?? s.status;
               return (
-                <li key={s.id} className="border border-border p-4 bg-card space-y-2">
-                  <div className="flex items-start justify-between gap-4">
+                <ListRow key={s.id}>
+                  <div className="flex items-start justify-between gap-6">
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium truncate">{s.name ?? "—"} · {s.email}</div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {s.language ?? "—"} · {s.created_at ? new Date(s.created_at).toLocaleString() : "—"}
+                      <div className="text-sm text-foreground truncate">
+                        <span className="font-medium">{s.name ?? "—"}</span>
+                        <span className="text-muted-foreground"> · {s.email}</span>
                       </div>
-                      <div className="mt-2 flex items-center gap-3 flex-wrap">
-                        <span className="inline-block border border-border px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
-                          {statusLabel}
-                        </span>
+                      <div className="mt-1 flex items-center gap-3 flex-wrap text-[11px] text-muted-foreground">
+                        <StateLabel>{statusLabel}</StateLabel>
+                        <span>· {s.language ?? "—"}</span>
+                        {s.created_at && <span>· {new Date(s.created_at).toLocaleDateString()}</span>}
                         {s.assessment_notes && (
-                          <span className="inline-block border border-border px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-foreground">
-                            Assessment ready
-                          </span>
+                          <span>· assessment ready</span>
                         )}
-                        <div className="w-40">
-                          <Select
-                            value={currentRowValue}
-                            onValueChange={(value) => handleStatusChange(s.id, value)}
-                            disabled={isSaving}
-                          >
-                            <SelectTrigger className="h-8 text-xs rounded-none">
-                              <SelectValue placeholder="Status" />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-none">
-                              {STATUS_OPTIONS.map((opt) => (
-                                <SelectItem key={opt.value} value={opt.value} className="text-xs">
-                                  {opt.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
+                      </div>
+                      <div className="mt-2">
+                        <CompactSelect
+                          value={currentRowValue}
+                          onChange={(value) => handleStatusChange(s.id, value)}
+                          options={STATUS_OPTIONS as unknown as { value: string; label: string }[]}
+                          disabled={isSaving}
+                        />
                       </div>
                     </div>
-                    <div className="flex gap-2 shrink-0">
-                      <Button size="sm" variant="outline" onClick={() => generateAssessment(s)} disabled={isGenerating}>
-                        {isGenerating ? "Генерация…" : "Generate Assessment"}
-                      </Button>
-                      <Button size="sm" variant="outline" asChild>
-                        <Link to={`/operator/submissions/${s.id}`}>Open submission</Link>
-                      </Button>
+                    <div className="flex items-center gap-4 shrink-0 pt-0.5">
+                      <ToolButton onClick={() => generateAssessment(s)} disabled={isGenerating}>
+                        {isGenerating ? "…" : "Generate Assessment"}
+                      </ToolButton>
+                      <ToolLink to={`/operator/submissions/${s.id}`} emphasis="primary">
+                        Open
+                      </ToolLink>
                     </div>
                   </div>
-                </li>
+                </ListRow>
               );
             })}
           </ul>
         )}
-      </div>
 
       <AlertDialog open={confirmOpen} onOpenChange={(open) => { if (!open) cancelAccept(); }}>
         <AlertDialogContent className="rounded-none">
@@ -266,6 +256,6 @@ export default function OperatorSubmissions() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </main>
+    </OperatorShell>
   );
 }
