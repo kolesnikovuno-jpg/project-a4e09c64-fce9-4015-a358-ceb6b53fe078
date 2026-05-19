@@ -115,7 +115,7 @@ type Labels = {
   clientRequest: string;
   situation: string; uncertainty: string; scope: string;
   attachments: string; none: string; urlUnavailable: string;
-  optionalContext: string; primaryAssessment: string;
+  optionalContext: string; primaryOrientation: string;
   objectiveTitle: string;
   objectiveLead: string;
   focus: string;
