@@ -28,6 +28,7 @@ export default function OperatorSubmissionDetail() {
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [linkedCaseId, setLinkedCaseId] = useState<string | null>(null);
+  const [signedLinks, setSignedLinks] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let active = true;
@@ -68,6 +69,21 @@ export default function OperatorSubmissionDetail() {
           .eq("submission_id", row.id)
           .maybeSingle();
         if (active && caseRow) setLinkedCaseId(caseRow.id);
+
+        const links = (row.supporting_links ?? "")
+          .split("\n")
+          .map((l) => l.match(/(intake\/[^\s]+)$/)?.[1])
+          .filter((p): p is string => !!p);
+        if (links.length) {
+          const { data: signed } = await supabase.storage
+            .from("clarity-attachments")
+            .createSignedUrls(links, 3600);
+          if (active && signed) {
+            const map: Record<string, string> = {};
+            signed.forEach((s) => { if (s.path && s.signedUrl) map[s.path] = s.signedUrl; });
+            setSignedLinks(map);
+          }
+        }
       }
     })();
     return () => { active = false; };
