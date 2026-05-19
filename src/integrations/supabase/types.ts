@@ -196,6 +196,24 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_confirmation_webhook_deliveries: {
+        Row: {
+          created_at: string
+          submission_id: string
+          webhook_request_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          submission_id: string
+          webhook_request_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          submission_id?: string
+          webhook_request_id?: number | null
+        }
+        Relationships: []
+      }
       submissions: {
         Row: {
           assessment_notes: string | null
