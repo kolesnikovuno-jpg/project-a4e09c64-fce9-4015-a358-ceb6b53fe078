@@ -76,13 +76,20 @@ const summarizeDraft = (draft: string | null | undefined): string => {
   const cleaned = draft
     .split("\n")
     .map((l) => l.trim())
-    .filter((l) => l && !/^[#*\-—=]+$/.test(l) && !/^\d+\.\s*$/.test(l));
-  // Keep concise: max ~5 lines, ~600 chars
+    .filter(
+      (l) =>
+        l &&
+        !/^[#*\-—=]+$/.test(l) &&
+        !/^\d+\.\s*$/.test(l) &&
+        !/^#{1,6}\s/.test(l) &&
+        !/^\d+\.\s+/.test(l),
+    );
+  // Keep concise: max ~4 lines, ~500 chars
   const picked: string[] = [];
   let total = 0;
   for (const line of cleaned) {
-    if (picked.length >= 5) break;
-    if (total + line.length > 600) break;
+    if (picked.length >= 4) break;
+    if (total + line.length > 500) break;
     picked.push(line);
     total += line.length;
   }
@@ -108,7 +115,7 @@ type Labels = {
   clientRequest: string;
   situation: string; uncertainty: string; scope: string;
   attachments: string; none: string; urlUnavailable: string;
-  optionalContext: string; primaryAssessment: string;
+  optionalContext: string; primaryOrientation: string;
   objectiveTitle: string;
   objectiveLead: string;
   focus: string;
@@ -126,7 +133,7 @@ const L: Record<Lang, Labels> = {
     situation: "Situation", uncertainty: "Uncertainty", scope: "Scope",
     attachments: "ATTACHMENTS", none: "none", urlUnavailable: "[signed URL unavailable]",
     optionalContext: "OPTIONAL INTERNAL CONTEXT",
-    primaryAssessment: "Primary assessment (orientation only — not a diagnosis):",
+    primaryOrientation: "Primary orientation:",
     objectiveTitle: "EXPERT WORKING OBJECTIVE",
     objectiveLead: "Develop a client-ready expert response.",
     focus: "Focus:",
@@ -146,7 +153,7 @@ const L: Record<Lang, Labels> = {
     situation: "Ситуация", uncertainty: "Неопределённость", scope: "Объём",
     attachments: "ВЛОЖЕНИЯ", none: "нет", urlUnavailable: "[подписанная ссылка недоступна]",
     optionalContext: "ВНУТРЕННИЙ КОНТЕКСТ (опционально)",
-    primaryAssessment: "Первичная оценка (только для ориентации, не диагноз):",
+    primaryOrientation: "Первичная ориентация:",
     objectiveTitle: "ЗАДАЧА ЭКСПЕРТА",
     objectiveLead: "Подготовить ответ клиенту, готовый к отправке.",
     focus: "Фокус:",
@@ -166,7 +173,7 @@ const L: Record<Lang, Labels> = {
     situation: "Ситуація", uncertainty: "Невизначеність", scope: "Обсяг",
     attachments: "ВКЛАДЕННЯ", none: "немає", urlUnavailable: "[підписане посилання недоступне]",
     optionalContext: "ВНУТРІШНІЙ КОНТЕКСТ (опціонально)",
-    primaryAssessment: "Первинна оцінка (лише для орієнтації, не діагноз):",
+    primaryOrientation: "Первинна орієнтація:",
     objectiveTitle: "ЗАВДАННЯ ЕКСПЕРТА",
     objectiveLead: "Підготувати відповідь клієнту, готову до надсилання.",
     focus: "Фокус:",
@@ -218,7 +225,7 @@ export const buildCaseBrief = async (c: Case): Promise<string> => {
   const draftSummary = summarizeDraft(c.ai_draft);
   if (draftSummary) {
     parts.push(divider, t.optionalContext, divider, "");
-    parts.push(t.primaryAssessment);
+    parts.push(t.primaryOrientation);
     parts.push(draftSummary);
     parts.push("");
   }
