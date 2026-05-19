@@ -121,6 +121,8 @@ type Labels = {
   focus: string;
   bullets: string[];
   evidenceNote: string;
+  protocolTitle: string;
+  protocolBody: string;
   dash: string;
 };
 
