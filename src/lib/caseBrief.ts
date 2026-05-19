@@ -84,7 +84,6 @@ const summarizeDraft = (draft: string | null | undefined): string => {
         !/^#{1,6}\s/.test(l) &&
         !/^\d+\.\s+/.test(l),
     );
-  // Keep concise: max ~4 lines, ~500 chars
   const picked: string[] = [];
   let total = 0;
   for (const line of cleaned) {
@@ -114,24 +113,12 @@ type Labels = {
   caseId: string; clientName: string; clientEmail: string; language: string; created: string;
   clientRequest: string;
   situation: string; uncertainty: string; scope: string;
-  attachments: string; none: string; urlUnavailable: string;
-  attachmentLabel: string;
-  filenameLabel: string;
-  urlLabel: string;
-  optionalContext: string;
-  primaryOrientation: string;
-  biasControlText: string;
-  objectiveTitle: string;
-  objectiveLead: string;
-  focus: string;
-  bullets: string[];
-  evidenceNote: string;
-  outputStructureTitle: string;
-  outputStructureBody: string;
-  protocolTitle: string;
-  protocolBody: string;
-  disciplineTitle: string;
-  disciplineBody: string;
+  attachments: string; urlUnavailable: string; attachmentsUseNote: string;
+  optionalHypothesisTitle: string; optionalHypothesisIntro: string;
+  expertTaskTitle: string; expertTaskBody: string;
+  protocolTitle: string; protocolBody: string;
+  outputStructureTitle: string; outputStructureBody: string;
+  readyNote: string;
   dash: string;
 };
 
@@ -142,110 +129,70 @@ const L: Record<Lang, Labels> = {
     language: "Language", created: "Created",
     clientRequest: "CLIENT REQUEST",
     situation: "Situation", uncertainty: "Uncertainty", scope: "Scope",
-    attachments: "ATTACHMENTS", none: "none", urlUnavailable: "[signed URL unavailable]",
-    attachmentLabel: "ATTACHMENT",
-    filenameLabel: "Filename:",
-    urlLabel: "URL:",
-    optionalContext: "INTERNAL ORIENTATION (OPTIONAL)",
-    primaryOrientation: "Primary orientation:",
-    biasControlText: `Use only as orientation.
-Do not copy automatically.
-Re-evaluate the case independently based on the request and attachments.`,
-    objectiveTitle: "EXPERT WORKING OBJECTIVE",
-    objectiveLead: "Develop a client-ready expert response.",
-    focus: "Focus:",
-    bullets: [
-      "- identify root structural issue",
-      "- determine whether this is correction / logic shift / rebuild",
-      "- propose viable solution direction",
-    ],
-    evidenceNote: "If attachments exist, use them as evidence.",
-    outputStructureTitle: "OUTPUT STRUCTURE",
-    outputStructureBody: `1. What is actually happening
-Briefly describe the observable situation.
+    attachments: "ATTACHMENTS",
+    urlUnavailable: "[signed URL unavailable]",
+    attachmentsUseNote: `If attachments exist:
+use them as primary evidence.
+Do not ignore them.`,
+    optionalHypothesisTitle: "OPTIONAL PRIOR HYPOTHESIS",
+    optionalHypothesisIntro: `This section is optional orientation only.
 
-2. Root structural problem
-Identify the main source of tension or misalignment.
+It may contain a preliminary operator interpretation.
 
-3. Why this conclusion was reached
-Show evidence and reasoning chain.
+Rules:
+- do NOT treat it as truth
+- do NOT simply confirm it
+- independently verify against actual case evidence`,
+    expertTaskTitle: "EXPERT TASK",
+    expertTaskBody: `Prepare a client-ready expert response.
 
-4. Scale of required intervention
-Determine:
-— local correction
-— logic shift
-— partial rebuild
-— full rebuild
+Your task:
 
-5. Working direction for resolution
-Propose the next constructive step.`,
-    protocolTitle: "DELIVERY STYLE PROTOCOL",
-    protocolBody: `Response style:
+1. Determine what is actually happening structurally.
+2. Identify root issue:
+   - bad elements?
+   - broken system logic?
+   - conflicting scenarios?
+   - architectural mismatch?
+3. Decide intervention level:
+   - correction
+   - logic shift
+   - partial rebuild
+   - full rebuild
+4. Propose practical next direction.`,
+    protocolTitle: "RESPONSE PROTOCOL",
+    protocolBody: `Constraints:
 
-The response must be client-ready and suitable for delivery.
+- no generic consulting language
+- no bureaucratic AI tone
+- no filler
+- no theatrical language
+- no marketing tone
+- no unsupported speculation
 
-Requirements:
+Use:
+- structural reasoning
+- evidence from request
+- evidence from attachments
+- clear explanation of logic
 
-— do not use generic consulting language
-— do not use bureaucratic AI-style phrasing
-— do not produce templated "consulting" formulations
-— do not drift into decorative stylistic commentary without evidentiary basis
-
-The response must:
-
-— be grounded in facts from the client request
-— use attachments as evidence, if provided
-— explain not only the conclusion but also the reasoning behind it
-— distinguish between:
-   * problems with individual elements
-   * problems with systemic logic
-   * scenario conflicts
-   * architectural misalignment
-
-Prefer structural reasoning over style commentary.
-
-Look for:
-— hidden tension
-— competing logics
-— hierarchy conflicts
-— scenario incompatibility
-— systemic causes, not just surface symptoms
+Prefer:
+system diagnosis over style commentary
 
 Tone:
+calm
+precise
+human
+expert`,
+    outputStructureTitle: "OUTPUT STRUCTURE",
+    outputStructureBody: `Return final client-facing response in this structure:
 
-— calm
-— precise
-— expert
-— human
-— without theatrics
-— without marketing bombast
-— without excessive academicism
-
-Goal:
-
-Give the client clarity, an explanation of the root cause, and a working direction for resolution.`,
-    disciplineTitle: "ANALYSIS DISCIPLINE",
-    disciplineBody: `When analyzing:
-
-Strictly distinguish:
-
-FACT
-= what directly follows from the client request or attachments
-
-INTERPRETATION
-= analytical reading of the observed signal
-
-HYPOTHESIS
-= possible explanation when direct evidence is insufficient
-
-Prohibited:
-
-— presenting hypotheses as facts
-— constructing missing context without labeling it
-— inventing client intentions without basis
-
-If the signal is insufficient:
-state this directly.`,
+1. What is actually happening
+2. Root structural issue
+3. Why this creates the current problem
+4. Required intervention level
+5. Practical direction forward`,
+    readyNote: "Response must be ready to send to client.",
     dash: "—",
   },
   ru: {
@@ -254,110 +201,70 @@ state this directly.`,
     language: "Язык", created: "Создан",
     clientRequest: "ЗАПРОС КЛИЕНТА",
     situation: "Ситуация", uncertainty: "Неопределённость", scope: "Объём",
-    attachments: "ВЛОЖЕНИЯ", none: "нет", urlUnavailable: "[подписанная ссылка недоступна]",
-    attachmentLabel: "ВЛОЖЕНИЕ",
-    filenameLabel: "Файл:",
-    urlLabel: "URL:",
-    optionalContext: "ВНУТРЕННЯЯ ОРИЕНТАЦИЯ (НЕ ОБЯЗАТЕЛЬНО)",
-    primaryOrientation: "Первичная ориентация:",
-    biasControlText: `Использовать только как ориентир.
-Не копировать автоматически.
-Переоценивать кейс самостоятельно на основе запроса и вложений.`,
-    objectiveTitle: "ЗАДАЧА ЭКСПЕРТА",
-    objectiveLead: "Подготовить ответ клиенту, готовый к отправке.",
-    focus: "Фокус:",
-    bullets: [
-      "- определить корневую структурную проблему",
-      "- понять: коррекция / смена логики / пересборка",
-      "- предложить рабочее направление решения",
-    ],
-    evidenceNote: "Если есть вложения — использовать как доказательную базу.",
-    outputStructureTitle: "СТРУКТУРА ИТОГОВОГО ОТВЕТА",
-    outputStructureBody: `1. Что реально происходит
-Кратко описать наблюдаемую ситуацию.
+    attachments: "ВЛОЖЕНИЯ",
+    urlUnavailable: "[подписанная ссылка недоступна]",
+    attachmentsUseNote: `Если вложения есть:
+использовать их как основную доказательную базу.
+Не игнорировать.`,
+    optionalHypothesisTitle: "ОПЦИОНАЛЬНАЯ ПРЕДВАРИТЕЛЬНАЯ ГИПОТЕЗА",
+    optionalHypothesisIntro: `Этот раздел — только опциональная ориентация.
 
-2. Корневая структурная проблема
-Определить основной источник напряжения или несоответствия.
+Может содержать предварительную интерпретацию оператора.
 
-3. Почему сделан этот вывод
-Показать evidence and reasoning chain.
+Правила:
+- НЕ воспринимать как истину
+- НЕ подтверждать автоматически
+- независимо проверять по реальным данным кейса`,
+    expertTaskTitle: "ЗАДАЧА ЭКСПЕРТА",
+    expertTaskBody: `Подготовить экспертный ответ, готовый к отправке клиенту.
 
-4. Масштаб необходимого вмешательства
-Определить:
-— локальная корректировка
-— смена логики
-— частичная пересборка
-— полная пересборка
+Задача:
 
-5. Рабочее направление решения
-Предложить следующий конструктивный шаг.`,
-    protocolTitle: "ПРОТОКОЛ ЭКСПЕРТНОЙ ПОДАЧИ",
-    protocolBody: `Стиль ответа:
+1. Определить, что реально происходит структурно.
+2. Определить корневую проблему:
+   - плохие элементы?
+   - сломанная системная логика?
+   - конфликт сценариев?
+   - архитектурное несоответствие?
+3. Определить уровень вмешательства:
+   - коррекция
+   - смена логики
+   - частичная пересборка
+   - полная пересборка
+4. Предложить практическое направление дальше.`,
+    protocolTitle: "ПРОТОКОЛ ОТВЕТА",
+    protocolBody: `Ограничения:
 
-Ответ должен быть клиентским, готовым к отправке.
+- никакого generic consulting language
+- никакого бюрократического AI-тона
+- никакого филлера
+- никакой театральности
+- никакого маркетингового тона
+- никаких необоснованных спекуляций
 
-Требования:
+Использовать:
+- структурное рассуждение
+- доказательства из запроса
+- доказательства из вложений
+- ясное объяснение логики
 
-— не использовать generic consulting language
-— не использовать бюрократический AI-стиль
-— не выдавать шаблонные "консультационные" формулировки
-— не уходить в декоративные стилистические рассуждения без доказательной базы
-
-Ответ должен:
-
-— опираться на факты из клиентского запроса
-— использовать вложения как evidence, если они приложены
-— объяснять не только вывод, но и логику вывода
-— различать:
-   * проблему отдельных элементов
-   * проблему системной логики
-   * конфликт сценариев
-   * архитектурное несоответствие
-
-Предпочитать structural reasoning over style commentary.
-
-Искать:
-— скрытое напряжение
-— конкурирующие логики
-— конфликт иерархий
-— несовместимость сценариев
-— системные причины, а не только поверхностные симптомы
+Предпочитать:
+системную диагностику над стилистическим комментарием
 
 Тон:
+спокойный
+точный
+человеческий
+экспертный`,
+    outputStructureTitle: "СТРУКТУРА ОТВЕТА",
+    outputStructureBody: `Итоговый ответ клиенту вернуть в следующей структуре:
 
-— спокойный
-— точный
-— экспертный
-— человеческий
-— без театральности
-— без маркетингового пафоса
-— без чрезмерной академичности
-
-Цель:
-
-Дать клиенту ясность, объяснение причины проблемы и рабочее направление решения.`,
-    disciplineTitle: "ДИСЦИПЛИНА АНАЛИЗА",
-    disciplineBody: `При анализе:
-
-Строго различать:
-
-ФАКТ
-= то, что прямо следует из клиентского запроса или вложений
-
-ИНТЕРПРЕТАЦИЯ
-= аналитическое чтение наблюдаемого сигнала
-
-ГИПОТЕЗА
-= возможное объяснение, если прямых доказательств недостаточно
-
-Запрещено:
-
-— выдавать гипотезы как факты
-— достраивать отсутствующий контекст без маркировки
-— придумывать намерения клиента без основания
-
-Если сигнал недостаточен:
-прямо указывать это.`,
+1. Что реально происходит
+2. Корневая структурная проблема
+3. Почему это создаёт текущую проблему
+4. Необходимый уровень вмешательства
+5. Практическое направление дальше`,
+    readyNote: "Ответ должен быть готов к отправке клиенту.",
     dash: "—",
   },
   uk: {
@@ -366,110 +273,70 @@ state this directly.`,
     language: "Мова", created: "Створено",
     clientRequest: "ЗАПИТ КЛІЄНТА",
     situation: "Ситуація", uncertainty: "Невизначеність", scope: "Обсяг",
-    attachments: "ВКЛАДЕННЯ", none: "немає", urlUnavailable: "[підписане посилання недоступне]",
-    attachmentLabel: "ВКЛАДЕННЯ",
-    filenameLabel: "Файл:",
-    urlLabel: "URL:",
-    optionalContext: "ВНУТРІШНЯ ОРІЄНТАЦІЯ (НЕ ОБОВʼЯЗКОВО)",
-    primaryOrientation: "Первинна орієнтація:",
-    biasControlText: `Використовувати лише як орієнтир.
-Не копіювати автоматично.
-Переоцінювати кейс самостійно на основі запиту та вкладень.`,
-    objectiveTitle: "ЗАВДАННЯ ЕКСПЕРТА",
-    objectiveLead: "Підготувати відповідь клієнту, готову до надсилання.",
-    focus: "Фокус:",
-    bullets: [
-      "- визначити кореневу структурну проблему",
-      "- зрозуміти: корекція / зміна логіки / перебудова",
-      "- запропонувати робочий напрямок рішення",
-    ],
-    evidenceNote: "Якщо є вкладення — використати як доказову базу.",
-    outputStructureTitle: "СТРУКТУРА ПІДСУМКОВОЇ ВІДПОВІДІ",
-    outputStructureBody: `1. Що реально відбувається
-Коротко описати спостережувану ситуацію.
+    attachments: "ВКЛАДЕННЯ",
+    urlUnavailable: "[підписане посилання недоступне]",
+    attachmentsUseNote: `Якщо вкладення є:
+використати їх як основну доказову базу.
+Не ігнорувати.`,
+    optionalHypothesisTitle: "ОПЦІОНАЛЬНА ПОПЕРЕДНЯ ГІПОТЕЗА",
+    optionalHypothesisIntro: `Цей розділ — лише опціональна орієнтація.
 
-2. Коренева структурна проблема
-Визначити основне джерело напруги або невідповідності.
+Може містити попередню інтерпретацію оператора.
 
-3. Чому зроблено цей висновок
-Показати evidence and reasoning chain.
+Правила:
+- НЕ сприймати як істину
+- НЕ підтверджувати автоматично
+- незалежно перевіряти за реальними даними кейсу`,
+    expertTaskTitle: "ЗАВДАННЯ ЕКСПЕРТА",
+    expertTaskBody: `Підготувати експертну відповідь, готову до надсилання клієнту.
 
-4. Масштаб необхідного втручання
-Визначити:
-— локальне коригування
-— зміна логіки
-— часткова перебудова
-— повна перебудова
+Завдання:
 
-5. Робочий напрямок вирішення
-Запропонувати наступний конструктивний крок.`,
-    protocolTitle: "ПРОТОКОЛ ЕКСПЕРТНОЇ ПОДАЧІ",
-    protocolBody: `Стиль відповіді:
+1. Визначити, що реально відбувається структурно.
+2. Визначити кореневу проблему:
+   - погані елементи?
+   - зламана системна логіка?
+   - конфлікт сценаріїв?
+   - архітектурна невідповідність?
+3. Визначити рівень втручання:
+   - корекція
+   - зміна логіки
+   - часткова перебудова
+   - повна перебудова
+4. Запропонувати практичний напрямок далі.`,
+    protocolTitle: "ПРОТОКОЛ ВІДПОВІДІ",
+    protocolBody: `Обмеження:
 
-Відповідь має бути клієнтською, готовою до надсилання.
+- ніякої generic consulting language
+- ніякого бюрократичного AI-тону
+- ніякого філера
+- ніякої театральності
+- ніякого маркетингового тону
+- ніяких необґрунтованих спекуляцій
 
-Вимоги:
+Використовувати:
+- структурне міркування
+- докази із запиту
+- докази із вкладень
+- ясне пояснення логіки
 
-— не використовувати generic consulting language
-— не використовувати бюрократичний AI-стиль
-— не видавати шаблонні "консультаційні" формулювання
-— не вдаватися в декоративні стилістичні міркування без доказової бази
-
-Відповідь має:
-
-— спиратися на факти з клієнтського запиту
-— використовувати вкладення як evidence, якщо вони додані
-— пояснювати не тільки висновок, але й логіку висновку
-— розрізняти:
-   * проблему окремих елементів
-   * проблему системної логіки
-   * конфлікт сценаріїв
-   * архітектурну невідповідність
-
-Надавати перевагу structural reasoning над style commentary.
-
-Шукати:
-— приховану напругу
-— конкуруючі логіки
-— конфлікт ієрархій
-— несумісність сценаріїв
-— системні причини, а не тільки поверхневі симптоми
+Надавати перевагу:
+системній діагностиці над стилістичним коментарем
 
 Тон:
+спокійний
+точний
+людський
+експертний`,
+    outputStructureTitle: "СТРУКТУРА ВІДПОВІДІ",
+    outputStructureBody: `Підсумкову відповідь клієнту повернути в такій структурі:
 
-— спокійний
-— точний
-— експертний
-— людський
-— без театральності
-— без маркетингового пафосу
-— без надмірної академічності
-
-Мета:
-
-Дати клієнту ясність, пояснення причини проблеми та робочий напрямок вирішення.`,
-    disciplineTitle: "ДИСЦИПЛІНА АНАЛІЗУ",
-    disciplineBody: `При аналізі:
-
-Строго розрізняти:
-
-ФАКТ
-= те, що прямо випливає з клієнтського запиту або вкладень
-
-ІНТЕРПРЕТАЦІЯ
-= аналітичне прочитання спостережуваного сигналу
-
-ГІПОТЕЗА
-= можливе пояснення, якщо прямих доказів недостатньо
-
-Заборонено:
-
-— видавати гіпотези за факти
-— добудовувати відсутній контекст без маркування
-— вигадувати наміри клієнта без підстави
-
-Якщо сигналу недостатньо:
-прямо вказувати на це.`,
+1. Що реально відбувається
+2. Коренева структурна проблема
+3. Чому це створює поточну проблему
+4. Необхідний рівень втручання
+5. Практичний напрямок далі`,
+    readyNote: "Відповідь має бути готова до надсилання клієнту.",
     dash: "—",
   },
 };
@@ -497,47 +364,42 @@ export const buildCaseBrief = async (c: Case): Promise<string> => {
   parts.push(`${t.uncertainty}:`); parts.push(sections.Uncertainty || t.dash); parts.push("");
   parts.push(`${t.scope}:`); parts.push(sections.Scope || t.dash); parts.push("");
 
-  parts.push(divider, t.attachments, divider, "");
-  if (attachments.length === 0) {
-    parts.push(t.none);
-  } else {
+  if (attachments.length > 0) {
+    parts.push(divider, t.attachments, divider, "");
     parts.push(
       attachments
         .map(
           (a, i) =>
-            `${t.attachmentLabel} ${i + 1}\n${t.filenameLabel} ${a.name}\n${t.urlLabel}\n${urlByPath.get(a.path) ?? t.urlUnavailable}`,
+            `[${i + 1}] ${a.name}\n${urlByPath.get(a.path) ?? t.urlUnavailable}`,
         )
         .join("\n\n"),
     );
+    parts.push("");
+    parts.push(t.attachmentsUseNote);
+    parts.push("");
   }
-  parts.push("");
 
   const draftSummary = summarizeDraft(c.ai_draft);
   if (draftSummary) {
-    parts.push(divider, t.optionalContext, divider, "");
-    parts.push(t.primaryOrientation);
-    parts.push(draftSummary);
+    parts.push(divider, t.optionalHypothesisTitle, divider, "");
+    parts.push(t.optionalHypothesisIntro);
     parts.push("");
-    parts.push(t.biasControlText);
+    parts.push(draftSummary);
     parts.push("");
   }
 
-  parts.push(divider, t.objectiveTitle, divider, "");
-  parts.push(t.objectiveLead);
+  parts.push(divider, t.expertTaskTitle, divider, "");
+  parts.push(t.expertTaskBody);
   parts.push("");
-  parts.push(t.focus);
-  parts.push(...t.bullets);
-  parts.push("");
-  parts.push(t.evidenceNote);
-  parts.push("");
-  parts.push(divider, t.outputStructureTitle, divider, "");
-  parts.push(t.outputStructureBody);
-  parts.push("");
+
   parts.push(divider, t.protocolTitle, divider, "");
   parts.push(t.protocolBody);
   parts.push("");
-  parts.push(divider, t.disciplineTitle, divider, "");
-  parts.push(t.disciplineBody);
+
+  parts.push(divider, t.outputStructureTitle, divider, "");
+  parts.push(t.outputStructureBody);
+  parts.push("");
+  parts.push(t.readyNote);
   parts.push("");
   parts.push(divider);
 
@@ -545,11 +407,11 @@ export const buildCaseBrief = async (c: Case): Promise<string> => {
 };
 
 export const downloadBriefFile = (text: string, caseId: string) => {
-  const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `case-brief-${caseId}.md`;
+  link.download = `case-brief-${caseId}.txt`;
   document.body.appendChild(link);
   link.click();
   link.remove();

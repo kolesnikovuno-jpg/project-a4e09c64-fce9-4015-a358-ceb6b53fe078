@@ -245,7 +245,7 @@ export default function OperatorCaseDetail() {
           <div className="flex items-center gap-1">
             <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-1">Case</span>
             <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs font-normal" onClick={downloadBrief}>Download Brief</Button>
-            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs font-normal text-muted-foreground" onClick={copyBrief}>Copy Brief</Button>
+            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs font-normal text-muted-foreground" onClick={copyBrief}>Copy</Button>
           </div>
           <div className="h-5 w-px bg-border" />
           <div className="flex items-center gap-1">
