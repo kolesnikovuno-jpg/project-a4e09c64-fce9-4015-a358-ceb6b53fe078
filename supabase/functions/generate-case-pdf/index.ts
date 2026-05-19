@@ -9,7 +9,7 @@ const corsHeaders = {
 };
 
 // Unicode TTF fonts with Cyrillic support.
-// Body: Noto Sans (editorial sans). Display: Montserrat (geometric).
+// Single Inter family for editorial coherence.
 const FONT_BODY_REGULAR_URL =
   "https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSans/NotoSans-Regular.ttf";
 const FONT_BODY_BOLD_URL =
@@ -17,7 +17,7 @@ const FONT_BODY_BOLD_URL =
 const FONT_BODY_ITALIC_URL =
   "https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSans/NotoSans-Italic.ttf";
 const FONT_DISPLAY_URL =
-  "https://github.com/JulietaUla/Montserrat/raw/master/fonts/ttf/Montserrat-Medium.ttf";
+  "https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSans/NotoSans-Medium.ttf";
 
 const cachedFonts: Record<string, Uint8Array> = {};
 
