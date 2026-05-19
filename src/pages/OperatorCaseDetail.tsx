@@ -430,7 +430,7 @@ export default function OperatorCaseDetail() {
           </BarGroup>
 
           <BarGroup label="Output">
-            <ToolButton onClick={generatePdf} disabled={generating}>
+            <ToolButton onClick={generatePdf} disabled={generating || !finalOutput.trim()}>
               {generating ? "…" : "Generate PDF"}
             </ToolButton>
             {pdfStatus && (
