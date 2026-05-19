@@ -111,20 +111,21 @@ const Index = () => {
           <div className="group/uno relative flex items-center justify-center">
             {/* Ambient governing principle — resonance trace emerging from the .uno node */}
             {(() => {
-              const phrase = "FORM EMERGES THROUGH RESONANCE";
+              const phrase = "form emerges through resonance";
               const chars = Array.from(phrase);
               const n = chars.length;
               // Per-letter progressive tracking: tighter near circle, more open far from it
-              const trackingNearEm = 0.22;
-              const trackingFarEm = 0.5;
-              // Reveal sweeps right→left: rightmost letter (closest to circle) reveals first
-              const baseDelay = 1.05;
-              const perLetter = 0.045;
-              const revealDur = 1.4;
+              const trackingNearEm = 0.16;
+              const trackingFarEm = 0.42;
+              // Text begins emerging while the circle is ~70–80% materialized.
+              // Circle fade-in runs ~1.6s starting at 0; text begins around 1.15s.
+              const baseDelay = 1.15;
+              const perLetter = 0.05;
+              const revealDur = 1.6;
               return (
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-4 md:mr-6 whitespace-nowrap text-[11px] md:text-xs font-light uppercase text-primary select-none flex"
+                  className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-3 md:mr-5 whitespace-nowrap text-[11px] md:text-xs font-light lowercase text-primary select-none flex"
                   style={{ willChange: "opacity" }}
                 >
                   {chars.map((ch, i) => {
@@ -133,14 +134,17 @@ const Index = () => {
                     const trackEm = trackingFarEm + (trackingNearEm - trackingFarEm) * nearness;
                     // Rightmost reveals first → delay grows leftward
                     const delay = baseDelay + (n - 1 - i) * perLetter;
+                    // Emanation gradient: near source = denser, far = dissipated
+                    const targetOpacity = 0.22 + 0.55 * nearness;
+                    const targetBlur = (1 - nearness) * 1.3;
                     return (
                       <motion.span
                         key={i}
-                        initial={{ opacity: 0, x: -3, filter: "blur(8px)" }}
+                        initial={{ opacity: 0, x: 4, filter: "blur(10px)" }}
                         animate={{
-                          opacity: 0.42 + 0.18 * nearness,
+                          opacity: targetOpacity,
                           x: 0,
-                          filter: `blur(${(1 - nearness) * 0.4}px)`,
+                          filter: `blur(${targetBlur}px)`,
                         }}
                         transition={{
                           delay,
@@ -162,11 +166,15 @@ const Index = () => {
               );
             })()}
             {/* Surrounding circle — same fill as button, mirrors hover/toggled state */}
-            <span
+            <motion.span
               aria-hidden
               className={`pointer-events-none absolute rounded-full w-[76px] h-[76px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/75 ${
                 buttonActive ? "bg-primary/75" : "bg-primary/45"
               }`}
+              initial={{ opacity: 0, scale: 0.92, filter: "blur(6px)" }}
+              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+              transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
+              style={{ willChange: "opacity, transform, filter" }}
             />
           <button
             onClick={handleToggle}
