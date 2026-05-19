@@ -131,7 +131,7 @@ const Index = () => {
               return (
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-3 md:mr-5 whitespace-nowrap text-[11px] md:text-xs font-light lowercase text-primary select-none flex"
+                  className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-1.5 md:mr-2.5 whitespace-nowrap text-[11px] md:text-xs font-light lowercase text-primary select-none flex"
                   style={{ willChange: "opacity" }}
                 >
                   {chars.map((ch, i) => {
@@ -140,22 +140,25 @@ const Index = () => {
                     const trackEm = trackingFarEm + (trackingNearEm - trackingFarEm) * nearness;
                     // Rightmost reveals first → delay grows leftward
                     const delay = baseDelay + (n - 1 - i) * perLetter;
-                    // Resonance field: density and contrast bloom near the source,
-                    // dissolving organically (not linearly) toward the left.
-                    // Two shaped curves — one steep for opacity (contrast loss),
-                    // one gentle for blur (very subtle focus loss).
-                    const contrastShape = Math.pow(nearness, 2.1);
-                    const focusShape = Math.pow(nearness, 1.3);
-                    // Wider dynamic range: far letters nearly dissolve, near letters dense.
-                    const targetOpacity = 0.08 + 0.82 * contrastShape;
-                    // Blur is now a whisper — preserves structural readability.
-                    const targetBlur = (1 - focusShape) * 0.45;
-                    // Subtle weight shift reinforces contrast dissipation.
-                    const targetWeight = Math.round(250 + 200 * contrastShape);
+                    // Resonance field: organic, non-linear emergence.
+                    // Use a smoothstep-like curve so the rightmost ~20–25% blooms
+                    // distinctly past the rest of the phrase.
+                    const smooth = nearness * nearness * (3 - 2 * nearness);
+                    // Additional bloom for the source-adjacent zone (last ~25%).
+                    const bloomZone = Math.max(0, (nearness - 0.75) / 0.25);
+                    const bloom = bloomZone * bloomZone;
+                    const contrastShape = Math.min(1, smooth + bloom * 0.18);
+                    // Wider dynamic range: far letters nearly dissolve into nothing.
+                    const targetOpacity = 0.05 + 0.92 * contrastShape;
+                    // Blur further reduced — barely perceptible, never reads as defocus.
+                    const focusShape = Math.pow(nearness, 1.1);
+                    const targetBlur = (1 - focusShape) * 0.28;
+                    // Weight gradient reinforces structural density near the source.
+                    const targetWeight = Math.round(240 + 230 * contrastShape);
                     return (
                       <motion.span
                         key={i}
-                        initial={{ opacity: 0, x: 4, filter: "blur(6px)" }}
+                        initial={{ opacity: 0, x: 4, filter: "blur(5px)" }}
                         animate={{
                           opacity: targetOpacity,
                           x: 0,
