@@ -40,6 +40,7 @@ export default function OperatorCaseDetail() {
   const [deliverySent, setDeliverySent] = useState(false);
   const [manualCopyText, setManualCopyText] = useState("");
   const [requestOpen, setRequestOpen] = useState(false);
+  const [aiDraftOpen, setAiDraftOpen] = useState(true);
   const [attachmentUrls, setAttachmentUrls] = useState<Record<string, string>>({});
 
   useEffect(() => {
