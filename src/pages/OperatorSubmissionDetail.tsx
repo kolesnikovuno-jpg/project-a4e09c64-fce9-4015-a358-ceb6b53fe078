@@ -28,6 +28,7 @@ export default function OperatorSubmissionDetail() {
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [linkedCaseId, setLinkedCaseId] = useState<string | null>(null);
+  const [signedLinks, setSignedLinks] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let active = true;
@@ -68,6 +69,21 @@ export default function OperatorSubmissionDetail() {
           .eq("submission_id", row.id)
           .maybeSingle();
         if (active && caseRow) setLinkedCaseId(caseRow.id);
+
+        const links = (row.supporting_links ?? "")
+          .split("\n")
+          .map((l) => l.match(/(intake\/[^\s]+)$/)?.[1])
+          .filter((p): p is string => !!p);
+        if (links.length) {
+          const { data: signed } = await supabase.storage
+            .from("clarity-attachments")
+            .createSignedUrls(links, 3600);
+          if (active && signed) {
+            const map: Record<string, string> = {};
+            signed.forEach((s) => { if (s.path && s.signedUrl) map[s.path] = s.signedUrl; });
+            setSignedLinks(map);
+          }
+        }
       }
     })();
     return () => { active = false; };
@@ -187,25 +203,21 @@ export default function OperatorSubmissionDetail() {
                   if (m) {
                     const path = m[1];
                     const label = line.replace(/\s*—\s*intake\/.*$/, "").trim() || path;
+                    const href = signedLinks[path];
                     return (
                       <div key={i} className="flex items-center gap-2">
-                        <span className="truncate">{label}</span>
-                        <button
-                          type="button"
-                          className="underline underline-offset-2 hover:text-foreground"
-                          onClick={async () => {
-                            const { data, error } = await supabase.storage
-                              .from("clarity-attachments")
-                              .createSignedUrl(path, 3600);
-                            if (error || !data) {
-                              toast({ title: "Не удалось открыть файл", description: error?.message, variant: "destructive" });
-                              return;
-                            }
-                            window.open(data.signedUrl, "_blank", "noopener,noreferrer");
-                          }}
-                        >
-                          open
-                        </button>
+                        {href ? (
+                          <a
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline underline-offset-2 hover:text-foreground truncate"
+                          >
+                            {label}
+                          </a>
+                        ) : (
+                          <span className="truncate text-muted-foreground">{label} (загрузка…)</span>
+                        )}
                       </div>
                     );
                   }
