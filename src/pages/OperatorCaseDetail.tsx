@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -10,7 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
 import { buildCaseBrief, downloadBriefFile, extractCaseAttachmentPaths } from "@/lib/caseBrief";
 import { ManualCopyDialog } from "@/components/operator/ManualCopyDialog";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, FileText, ExternalLink, LogOut } from "lucide-react";
 
 type Case = Tables<"cases">;
 
@@ -42,6 +41,7 @@ export default function OperatorCaseDetail() {
   const [deliverySent, setDeliverySent] = useState(false);
   const [manualCopyText, setManualCopyText] = useState("");
   const [requestOpen, setRequestOpen] = useState(false);
+  const [attachmentUrls, setAttachmentUrls] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let active = true;
@@ -79,6 +79,18 @@ export default function OperatorCaseDetail() {
         setFinalOutput(data.final_output ?? "");
         setPdfUrl(data.pdf_url ?? "");
         setDeliverySent(Boolean((data as { delivery_email_sent?: boolean }).delivery_email_sent));
+        const atts = extractCaseAttachmentPaths(data);
+        if (atts.length > 0) {
+          const { data: signed } = await supabase.storage
+            .from("clarity-attachments")
+            .createSignedUrls(atts.map((a) => a.path), 60 * 60);
+          const map: Record<string, string> = {};
+          signed?.forEach((s, i) => {
+            const p = s.path ?? atts[i]?.path;
+            if (p && s.signedUrl) map[p] = s.signedUrl;
+          });
+          if (active) setAttachmentUrls(map);
+        }
       }
     })();
     return () => { active = false; };
@@ -153,7 +165,9 @@ export default function OperatorCaseDetail() {
       setPdfUrl(url);
       setC({ ...c, pdf_url: url });
       toast({ title: "PDF сгенерирован" });
+      return url;
     }
+    return null;
   };
 
   const generateAiDraft = async () => {
@@ -267,32 +281,46 @@ export default function OperatorCaseDetail() {
   return (
     <main className="operator-workspace min-h-screen bg-background px-6 py-6">
       <ManualCopyDialog text={manualCopyText} onClose={() => setManualCopyText("")} />
-      <div className="max-w-6xl mx-auto space-y-4">
-        {/* Top action bar */}
-        <header className="flex items-center flex-wrap gap-x-5 gap-y-2 border-b border-border pb-3">
-          <Link to="/operator/cases" className="text-xs text-muted-foreground hover:text-foreground">← Cases</Link>
+      <div className="max-w-6xl mx-auto space-y-5">
+        {/* Account / utility row */}
+        <div className="flex items-center justify-between text-xs">
+          <Link
+            to="/operator/cases"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            ← Cases
+          </Link>
+          <button
+            type="button"
+            onClick={signOut}
+            className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <LogOut className="h-3 w-3" />
+            Sign out
+          </button>
+        </div>
 
-          <div className="h-4 w-px bg-border" />
+        {/* Workflow top bar */}
+        <header className="flex items-center flex-wrap gap-x-3 gap-y-2 rounded-md border border-border bg-card px-3 py-2 shadow-sm">
+          <BarGroup>
+            <ToolButton onClick={downloadBrief}>Download Brief</ToolButton>
+            <ToolButton onClick={copyBrief}>Copy Brief</ToolButton>
+          </BarGroup>
 
-          <ActionGroup label="Brief">
-            <ToolButton onClick={downloadBrief}>Download</ToolButton>
-            <ToolButton onClick={copyBrief}>Copy</ToolButton>
-          </ActionGroup>
+          <BarDivider />
 
-          <div className="h-4 w-px bg-border" />
-
-          <ActionGroup label="Work">
+          <BarGroup>
             <ToolButton onClick={generateAiDraft} disabled={generatingDraft}>
               {generatingDraft ? "…" : "Quick Draft"}
             </ToolButton>
             <ToolButton onClick={generatePdf} disabled={generating} emphasis="primary">
               {generating ? "…" : "Generate PDF"}
             </ToolButton>
-          </ActionGroup>
+          </BarGroup>
 
-          <div className="h-4 w-px bg-border" />
+          <BarDivider />
 
-          <ActionGroup label="Delivery">
+          <BarGroup>
             {!deliverySent ? (
               <ToolButton
                 onClick={sendToClient}
@@ -303,35 +331,29 @@ export default function OperatorCaseDetail() {
                 {sending ? "Отправка…" : "Send to Client"}
               </ToolButton>
             ) : (
-              <div className="flex items-center gap-2.5">
-                <span
-                  className="text-[11px] text-muted-foreground select-none"
-                  aria-live="polite"
-                >
-                  <span className="text-foreground">Delivered ✓</span>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1 rounded-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 text-[11px] font-medium">
+                  Delivered ✓
                 </span>
                 <ToolButton onClick={sendToClient} disabled={sending}>
                   {sending ? "Отправка…" : "Resend"}
                 </ToolButton>
               </div>
             )}
-          </ActionGroup>
+          </BarGroup>
 
           <div className="flex-1" />
 
-          <ToolButton onClick={save} disabled={saving}>
+          <ToolButton onClick={save} disabled={saving} emphasis="primary">
             {saving ? "…" : "Save"}
           </ToolButton>
-          <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-muted-foreground" onClick={signOut}>
-            Sign out
-          </Button>
         </header>
 
         {/* Two-column workspace */}
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
           {/* LEFT — context */}
-          <aside className="space-y-5 text-xs">
-            <section className="space-y-1.5">
+          <aside className="space-y-6 text-xs">
+            <section className="space-y-2">
               <SectionLabel>Case info</SectionLabel>
               <MetaRow label="ID" value={<span className="font-mono">{c.id.slice(0, 8)}</span>} />
               <MetaRow
@@ -356,37 +378,39 @@ export default function OperatorCaseDetail() {
                 label="Created"
                 value={c.created_at ? new Date(c.created_at).toLocaleDateString() : "—"}
               />
-              <div className="pt-1.5">
-                <Select
-                  value={SERVICE_STATUS_VALUES.includes(serviceStatus) ? serviceStatus : "queued"}
-                  onValueChange={setServiceStatus}
-                >
-                  <SelectTrigger className="h-7 text-xs rounded-sm">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SERVICE_STATUSES.map((s) => (
-                      <SelectItem key={s.value} value={s.value} className="text-xs">
-                        {s.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            </section>
+
+            <section className="space-y-2">
+              <SectionLabel>Workflow status</SectionLabel>
+              <Select
+                value={SERVICE_STATUS_VALUES.includes(serviceStatus) ? serviceStatus : "queued"}
+                onValueChange={setServiceStatus}
+              >
+                <SelectTrigger className="h-8 text-xs rounded-md bg-muted/40 border-border hover:bg-muted/70 transition-colors font-medium [&>span]:flex [&>span]:items-center [&>span]:gap-1.5 [&>span]:before:content-[''] [&>span]:before:h-1.5 [&>span]:before:w-1.5 [&>span]:before:rounded-full [&>span]:before:bg-foreground/60">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SERVICE_STATUSES.map((s) => (
+                    <SelectItem key={s.value} value={s.value} className="text-xs">
+                      {s.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </section>
 
             {c.raw_input && (
-              <section className="space-y-1.5">
+              <section className="space-y-2">
                 <button
                   type="button"
                   onClick={() => setRequestOpen((v) => !v)}
-                  className="flex items-center gap-1 w-full text-[10px] uppercase tracking-wide text-muted-foreground hover:text-foreground"
+                  className="flex items-center gap-1 w-full text-[10px] uppercase tracking-wider font-semibold text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {requestOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
                   Client request
                 </button>
                 {requestOpen && (
-                  <pre className="text-[11px] whitespace-pre-wrap bg-muted/30 p-2.5 rounded-sm max-h-80 overflow-auto leading-relaxed">
+                  <pre className="text-[11px] whitespace-pre-wrap bg-muted/60 border border-border p-2.5 rounded-md max-h-80 overflow-auto leading-relaxed text-foreground/90">
                     {c.raw_input}
                   </pre>
                 )}
@@ -394,31 +418,69 @@ export default function OperatorCaseDetail() {
             )}
 
             {attachments.length > 0 && (
-              <section className="space-y-1.5">
+              <section className="space-y-2">
                 <SectionLabel>Attachments ({attachments.length})</SectionLabel>
-                <ul className="space-y-1">
-                  {attachments.map((a) => (
-                    <li key={a.path} className="truncate text-[11px] text-muted-foreground" title={a.name}>
-                      · {a.name}
-                    </li>
-                  ))}
+                <ul className="space-y-0.5">
+                  {attachments.map((a) => {
+                    const url = attachmentUrls[a.path];
+                    return (
+                      <li key={a.path}>
+                        <a
+                          href={url || "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => {
+                            if (!url) {
+                              e.preventDefault();
+                              toast({ title: "Ссылка недоступна", variant: "destructive" });
+                            }
+                          }}
+                          className="group flex items-center gap-1.5 rounded-sm px-1.5 py-1 -mx-1.5 text-[11px] text-foreground/80 hover:text-foreground hover:bg-muted/60 transition-colors"
+                          title={a.name}
+                        >
+                          <FileText className="h-3 w-3 shrink-0 text-muted-foreground group-hover:text-foreground" />
+                          <span className="truncate">{a.name}</span>
+                        </a>
+                      </li>
+                    );
+                  })}
                 </ul>
               </section>
             )}
 
-            <section className="space-y-1.5">
-              <SectionLabel>PDF URL</SectionLabel>
-              <Input
-                value={pdfUrl}
-                onChange={(e) => setPdfUrl(e.target.value)}
-                className="h-7 text-[11px] rounded-sm font-mono"
-                placeholder="—"
-              />
+            <section className="space-y-2">
+              <SectionLabel>PDF</SectionLabel>
+              <div className="flex flex-col gap-1">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    let url = pdfUrl;
+                    if (!url) {
+                      const fresh = await generatePdf();
+                      url = fresh ?? "";
+                    }
+                    if (url) window.open(url, "_blank", "noopener,noreferrer");
+                  }}
+                  disabled={!pdfUrl && generating}
+                  className="inline-flex items-center gap-1.5 text-[11px] text-foreground/80 hover:text-foreground hover:bg-muted/60 rounded-sm px-1.5 py-1 -mx-1.5 transition-colors disabled:opacity-40 text-left"
+                >
+                  <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                  {pdfUrl ? "Open latest PDF" : "No PDF yet"}
+                </button>
+                <button
+                  type="button"
+                  onClick={generatePdf}
+                  disabled={generating}
+                  className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/60 rounded-sm px-1.5 py-1 -mx-1.5 transition-colors disabled:opacity-40 text-left"
+                >
+                  {generating ? "Regenerating…" : "Regenerate PDF"}
+                </button>
+              </div>
             </section>
           </aside>
 
           {/* RIGHT — work area */}
-          <section className="space-y-5 min-w-0">
+          <section className="space-y-4 min-w-0">
             <WorkBlock
               label="AI draft"
               action={
@@ -436,7 +498,7 @@ export default function OperatorCaseDetail() {
                       toast({ title: "Не удалось скопировать", description: String(e), variant: "destructive" });
                     }
                   }}
-                  className="text-[11px] text-muted-foreground hover:text-foreground disabled:opacity-40"
+                  className="text-[11px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
                   disabled={!aiDraft}
                 >
                   Copy
@@ -447,25 +509,66 @@ export default function OperatorCaseDetail() {
                 rows={10}
                 value={aiDraft}
                 onChange={(e) => setAiDraft(e.target.value)}
-                className="text-sm font-mono leading-relaxed"
+                className="text-sm font-mono leading-relaxed bg-muted/30 border-border focus-visible:bg-background resize-y rounded-t-none border-t-0"
               />
             </WorkBlock>
 
-            <WorkBlock label="Working notes">
+            <WorkBlock
+              label="Working notes"
+              action={
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!workingNotes) return;
+                    try {
+                      await navigator.clipboard.writeText(workingNotes);
+                      toast({ title: "Notes скопированы" });
+                    } catch (e) {
+                      toast({ title: "Не удалось скопировать", description: String(e), variant: "destructive" });
+                    }
+                  }}
+                  className="text-[11px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
+                  disabled={!workingNotes}
+                >
+                  Copy
+                </button>
+              }
+            >
               <Textarea
                 rows={6}
                 value={workingNotes}
                 onChange={(e) => setWorkingNotes(e.target.value)}
-                className="text-sm leading-relaxed"
+                className="text-sm leading-relaxed bg-muted/30 border-border focus-visible:bg-background resize-y rounded-t-none border-t-0"
               />
             </WorkBlock>
 
-            <WorkBlock label="Final output" hint="Paste final client-ready response here">
+            <WorkBlock
+              label="Final output"
+              hint="Paste final client-ready response here"
+              action={
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!finalOutput) return;
+                    try {
+                      await navigator.clipboard.writeText(finalOutput);
+                      toast({ title: "Final output скопирован" });
+                    } catch (e) {
+                      toast({ title: "Не удалось скопировать", description: String(e), variant: "destructive" });
+                    }
+                  }}
+                  className="text-[11px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
+                  disabled={!finalOutput}
+                >
+                  Copy
+                </button>
+              }
+            >
               <Textarea
                 rows={12}
                 value={finalOutput}
                 onChange={(e) => setFinalOutput(e.target.value)}
-                className="text-sm leading-relaxed"
+                className="text-sm leading-relaxed bg-muted/30 border-border focus-visible:bg-background resize-y rounded-t-none border-t-0"
               />
             </WorkBlock>
           </section>
@@ -477,13 +580,12 @@ export default function OperatorCaseDetail() {
 
 /* ---------- Local presentational helpers ---------- */
 
-function ActionGroup({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 mr-1">{label}</span>
-      {children}
-    </div>
-  );
+function BarGroup({ children }: { children: React.ReactNode }) {
+  return <div className="flex items-center gap-1">{children}</div>;
+}
+
+function BarDivider() {
+  return <div className="h-5 w-px bg-border/80" />;
 }
 
 function ToolButton({
@@ -499,11 +601,12 @@ function ToolButton({
   emphasis?: "ghost" | "primary";
   title?: string;
 }) {
-  const base = "h-7 px-2 text-xs font-normal rounded-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed";
+  const base =
+    "h-7 px-2.5 text-xs font-medium rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed";
   const styles =
     emphasis === "primary"
-      ? "text-foreground border border-border hover:bg-muted"
-      : "text-muted-foreground hover:text-foreground hover:bg-muted/60";
+      ? "text-foreground bg-foreground/[0.06] hover:bg-foreground/10 border border-border/60"
+      : "text-foreground/70 hover:text-foreground hover:bg-muted";
   return (
     <button type="button" onClick={onClick} disabled={disabled} title={title} className={`${base} ${styles}`}>
       {children}
@@ -513,15 +616,15 @@ function ToolButton({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="text-[10px] uppercase tracking-wider text-muted-foreground/70">{children}</div>
+    <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">{children}</div>
   );
 }
 
 function MetaRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex gap-2 text-[11px] leading-relaxed">
-      <span className="w-16 shrink-0 text-muted-foreground">{label}</span>
-      <span className="min-w-0 flex-1 text-foreground">{value}</span>
+      <span className="w-16 shrink-0 text-muted-foreground/80">{label}</span>
+      <span className="min-w-0 flex-1 text-foreground font-medium">{value}</span>
     </div>
   );
 }
@@ -538,15 +641,19 @@ function WorkBlock({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1.5">
-      <div className="flex items-baseline justify-between">
-        <Label className="text-[10px] uppercase tracking-wider text-muted-foreground/80 font-normal">
-          {label}
-        </Label>
+    <div className="rounded-md border border-border bg-card shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-border bg-muted/40">
+        <div className="flex items-baseline gap-2">
+          <Label className="text-[10px] uppercase tracking-wider text-foreground/80 font-semibold">
+            {label}
+          </Label>
+          {hint && <span className="text-[10px] text-muted-foreground">{hint}</span>}
+        </div>
         {action}
       </div>
-      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
-      {children}
+      <div>
+        {children}
+      </div>
     </div>
   );
 }
