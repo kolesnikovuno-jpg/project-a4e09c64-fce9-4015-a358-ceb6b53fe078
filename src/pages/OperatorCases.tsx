@@ -4,81 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
+import { buildCaseBrief } from "@/lib/caseBrief";
+import { ManualCopyDialog } from "@/components/operator/ManualCopyDialog";
 
 type Case = Tables<"cases">;
-
-const ATTACHMENT_PATH_RE = /(intake\/[^\s]+)/g;
-
-const extractAttachmentPaths = (c: Case): { name: string; path: string }[] => {
-  const text = c.raw_input ?? "";
-  const out: { name: string; path: string }[] = [];
-  for (const line of text.split("\n")) {
-    const matches = line.match(ATTACHMENT_PATH_RE);
-    if (!matches) continue;
-    for (const path of matches) {
-      const before = line.split(path)[0] ?? "";
-      const name = before.replace(/[—\-•:]\s*$/, "").trim() || path.split("/").pop() || path;
-      out.push({ name, path });
-    }
-  }
-  return out;
-};
-
-const buildCaseBriefBase = (c: Case) => `CASE ID: ${c.id}
-
-Client:
-Name: ${c.client_name || "Not provided"}
-Email: ${c.email ?? ""}
-Language: ${c.language ?? ""}
-
-Client Input:
-${c.raw_input ?? ""}
-
-Task:
-Use this case as an expert structural diagnostic draft.
-
-Goal:
-Generate an internal working draft for expert review, not final client output.
-
-Required output:
-
-1. Explicit client problem
-What the client directly describes.
-
-2. Hidden structural tension
-What underlying contradiction, mismatch, uncertainty, or pattern may be driving the issue.
-
-3. Structural diagnosis
-Interpret the architecture of the situation.
-
-4. Possible correction vectors
-Suggest meaningful structural shifts, reframing directions, or interventions.
-
-5. Draft expert response
-Create a preliminary expert working response that can later be refined.
-
-Important:
-This is an internal production draft, not final client-facing output.`;
-
-const buildCaseBrief = async (c: Case): Promise<string> => {
-  const base = buildCaseBriefBase(c);
-  const atts = extractAttachmentPaths(c);
-  if (atts.length === 0) return base + "\n\nAttachments:\nnone";
-  const lines: string[] = [];
-  for (const a of atts) {
-    const { data, error } = await supabase.storage
-      .from("clarity-attachments")
-      .createSignedUrl(a.path, 60 * 60 * 24 * 7);
-    const url = !error && data?.signedUrl ? data.signedUrl : `(signed URL unavailable: ${error?.message ?? "unknown"})`;
-    lines.push(`${a.name}\n${url}`);
-  }
-  return `${base}\n\nAttachments:\n${lines.join("\n\n")}`;
-};
 
 export default function OperatorCases() {
   const navigate = useNavigate();
   const [cases, setCases] = useState<Case[] | null>(null);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
+  const [manualCopyText, setManualCopyText] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -117,10 +52,15 @@ export default function OperatorCases() {
   const copyBrief = async (c: Case) => {
     try {
       const brief = await buildCaseBrief(c);
-      await navigator.clipboard.writeText(brief);
-      toast({ title: "Case Brief скопирован" });
+      try {
+        await navigator.clipboard.writeText(brief);
+        toast({ title: "Case Brief скопирован" });
+      } catch {
+        setManualCopyText(brief);
+        toast({ title: "Clipboard blocked", description: "Открыл ручное копирование." });
+      }
     } catch (e) {
-      toast({ title: "Не удалось скопировать", description: String(e), variant: "destructive" });
+      toast({ title: "Не удалось подготовить Case Brief", description: String(e), variant: "destructive" });
     }
   };
 
@@ -142,6 +82,7 @@ export default function OperatorCases() {
 
   return (
     <main className="operator-workspace min-h-screen bg-background px-6 py-8">
+      <ManualCopyDialog text={manualCopyText} onClose={() => setManualCopyText("")} />
       <div className="max-w-5xl mx-auto space-y-6">
         <header className="flex items-center justify-between">
           <h1 className="text-2xl font-medium">Cases</h1>
