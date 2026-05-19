@@ -356,37 +356,44 @@ Deno.serve(async (req) => {
     };
 
     // ---------- HEADER ----------
-    // Eyebrow
-    const eyebrow = "STRUCTURAL CLARITY";
-    page.drawText(eyebrow, {
-      x: marginX,
-      y: y - 9,
-      size: 9,
-      font: fDisplay,
-      color: muted,
-    });
-    // letter spacing approximation by drawing — pdf-lib lacks tracking, so we accept default
-    y -= 28;
+    const drawTrackedText = (
+      text: string,
+      x: number,
+      yPos: number,
+      size: number,
+      font: typeof fDisplay,
+      color = ink,
+      tracking = 1.6,
+    ) => {
+      let cx = x;
+      for (const ch of text) {
+        page.drawText(ch, { x: cx, y: yPos, size, font, color });
+        cx += font.widthOfTextAtSize(ch, size) + tracking;
+      }
+    };
 
-    // Title
+    drawTrackedText("STRUCTURAL CLARITY", marginX, y - 9, 8.5, fDisplay, accent, 2.2);
+    y -= 34;
+
+    // Title (reduced ~12%)
     const title = "Structural Diagnostic Response";
     page.drawText(title, {
       x: marginX,
-      y: y - 22,
-      size: 22,
+      y: y - 20,
+      size: 19,
       font: fDisplay,
       color: ink,
     });
-    y -= 44;
+    y -= 42;
 
-    // Hairline
+    // Hairline — quieter
     page.drawLine({
       start: { x: marginX, y },
       end: { x: pageWidth - marginX, y },
-      thickness: 0.5,
+      thickness: 0.3,
       color: faint,
     });
-    y -= 22;
+    y -= 26;
 
     // Metadata block
     const clientName = (c.client_name || "").trim() || "Private Client";
@@ -396,17 +403,15 @@ Deno.serve(async (req) => {
       ["Date", formatHumanDate(c.created_at) || formatHumanDate(new Date().toISOString())],
     ];
     for (const [k, v] of meta) {
-      ensureSpace(16);
-      page.drawText(k.toUpperCase(), {
-        x: marginX, y: y - 9, size: 8, font: fDisplay, color: muted,
-      });
+      ensureSpace(18);
+      drawTrackedText(k.toUpperCase(), marginX, y - 8, 7.5, fDisplay, labelMuted, 1.4);
       page.drawText(v, {
-        x: marginX + 110, y: y - 9, size: 10.5, font: fRegular, color: ink,
+        x: marginX + 120, y: y - 8, size: 10, font: fRegular, color: ink,
       });
       y -= 18;
     }
 
-    y -= 36;
+    y -= 56;
 
     // ---------- BODY ----------
     const blocks = parseMarkdown(finalOutput);
