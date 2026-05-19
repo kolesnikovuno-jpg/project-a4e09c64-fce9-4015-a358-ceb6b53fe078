@@ -22,35 +22,26 @@ Deno.serve(async (req) => {
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
-  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  if (!supabaseUrl || !anonKey || !serviceKey) {
+  const webhookSecret = Deno.env.get('MAKE_WEBHOOK_SECRET')
+  if (!supabaseUrl || !serviceKey || !webhookSecret) {
     return json({ error: 'Server configuration error' }, 500)
   }
 
-  const authHeader = req.headers.get('Authorization') || ''
-  const token = authHeader.replace(/^Bearer\s+/i, '').trim()
-  if (!token) {
+  // Machine-to-machine auth: shared webhook secret (constant-time compare)
+  const provided = (req.headers.get('x-webhook-secret') || '').trim()
+  if (!provided || provided.length !== webhookSecret.length) {
     return json({ error: 'Unauthorized' }, 401)
   }
-
-  const userClient = createClient(supabaseUrl, anonKey, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
-  })
-  const { data: userData, error: userErr } = await userClient.auth.getUser(token)
-  if (userErr || !userData?.user) {
+  let diff = 0
+  for (let i = 0; i < webhookSecret.length; i++) {
+    diff |= provided.charCodeAt(i) ^ webhookSecret.charCodeAt(i)
+  }
+  if (diff !== 0) {
     return json({ error: 'Unauthorized' }, 401)
   }
 
   const supabase = createClient(supabaseUrl, serviceKey)
-
-  const { data: isAdmin, error: roleErr } = await supabase.rpc('has_role', {
-    _user_id: userData.user.id,
-    _role: 'admin',
-  })
-  if (roleErr || !isAdmin) {
-    return json({ error: 'Forbidden' }, 403)
-  }
 
   let body: { id?: string; payment_email_sent?: boolean }
   try {
@@ -89,6 +80,6 @@ Deno.serve(async (req) => {
     return json({ success: false, error: 'Submission not found' }, 404)
   }
 
-  console.log('payment_email_sent updated', { id: data.id, value: data.payment_email_sent, actor: userData.user.id })
+  console.log('payment_email_sent updated', { id: data.id, value: data.payment_email_sent, actor: 'webhook' })
   return json({ success: true, id: data.id, payment_email_sent: data.payment_email_sent })
 })
