@@ -13,6 +13,7 @@ export default function OperatorCases() {
   const navigate = useNavigate();
   const [cases, setCases] = useState<Case[] | null>(null);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
+  const [manualCopyText, setManualCopyText] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -51,10 +52,15 @@ export default function OperatorCases() {
   const copyBrief = async (c: Case) => {
     try {
       const brief = await buildCaseBrief(c);
-      await navigator.clipboard.writeText(brief);
-      toast({ title: "Case Brief скопирован" });
+      try {
+        await navigator.clipboard.writeText(brief);
+        toast({ title: "Case Brief скопирован" });
+      } catch {
+        setManualCopyText(brief);
+        toast({ title: "Clipboard blocked", description: "Открыл ручное копирование." });
+      }
     } catch (e) {
-      toast({ title: "Не удалось скопировать", description: String(e), variant: "destructive" });
+      toast({ title: "Не удалось подготовить Case Brief", description: String(e), variant: "destructive" });
     }
   };
 
@@ -76,6 +82,7 @@ export default function OperatorCases() {
 
   return (
     <main className="operator-workspace min-h-screen bg-background px-6 py-8">
+      <ManualCopyDialog text={manualCopyText} onClose={() => setManualCopyText("")} />
       <div className="max-w-5xl mx-auto space-y-6">
         <header className="flex items-center justify-between">
           <h1 className="text-2xl font-medium">Cases</h1>
