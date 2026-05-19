@@ -121,6 +121,8 @@ type Labels = {
   focus: string;
   bullets: string[];
   evidenceNote: string;
+  protocolTitle: string;
+  protocolBody: string;
   dash: string;
 };
 
@@ -143,6 +145,51 @@ const L: Record<Lang, Labels> = {
       "- propose viable solution direction",
     ],
     evidenceNote: "If attachments exist, use them as evidence.",
+    protocolTitle: "DELIVERY STYLE PROTOCOL",
+    protocolBody: `Response style:
+
+The response must be client-ready and suitable for delivery.
+
+Requirements:
+
+— do not use generic consulting language
+— do not use bureaucratic AI-style phrasing
+— do not produce templated "consulting" formulations
+— do not drift into decorative stylistic commentary without evidentiary basis
+
+The response must:
+
+— be grounded in facts from the client request
+— use attachments as evidence, if provided
+— explain not only the conclusion but also the reasoning behind it
+— distinguish between:
+   * problems with individual elements
+   * problems with systemic logic
+   * scenario conflicts
+   * architectural misalignment
+
+Prefer structural reasoning over style commentary.
+
+Look for:
+— hidden tension
+— competing logics
+— hierarchy conflicts
+— scenario incompatibility
+— systemic causes, not just surface symptoms
+
+Tone:
+
+— calm
+— precise
+— expert
+— human
+— without theatrics
+— without marketing bombast
+— without excessive academicism
+
+Goal:
+
+Give the client clarity, an explanation of the root cause, and a working direction for resolution.`,
     dash: "—",
   },
   ru: {
@@ -163,6 +210,51 @@ const L: Record<Lang, Labels> = {
       "- предложить рабочее направление решения",
     ],
     evidenceNote: "Если есть вложения — использовать как доказательную базу.",
+    protocolTitle: "ПРОТОКОЛ ЭКСПЕРТНОЙ ПОДАЧИ",
+    protocolBody: `Стиль ответа:
+
+Ответ должен быть клиентским, готовым к отправке.
+
+Требования:
+
+— не использовать generic consulting language
+— не использовать бюрократический AI-стиль
+— не выдавать шаблонные "консультационные" формулировки
+— не уходить в декоративные стилистические рассуждения без доказательной базы
+
+Ответ должен:
+
+— опираться на факты из клиентского запроса
+— использовать вложения как evidence, если они приложены
+— объяснять не только вывод, но и логику вывода
+— различать:
+   * проблему отдельных элементов
+   * проблему системной логики
+   * конфликт сценариев
+   * архитектурное несоответствие
+
+Предпочитать structural reasoning over style commentary.
+
+Искать:
+— скрытое напряжение
+— конкурирующие логики
+— конфликт иерархий
+— несовместимость сценариев
+— системные причины, а не только поверхностные симптомы
+
+Тон:
+
+— спокойный
+— точный
+— экспертный
+— человеческий
+— без театральности
+— без маркетингового пафоса
+— без чрезмерной академичности
+
+Цель:
+
+Дать клиенту ясность, объяснение причины проблемы и рабочее направление решения.`,
     dash: "—",
   },
   uk: {
@@ -183,6 +275,51 @@ const L: Record<Lang, Labels> = {
       "- запропонувати робочий напрямок рішення",
     ],
     evidenceNote: "Якщо є вкладення — використати як доказову базу.",
+    protocolTitle: "ПРОТОКОЛ ЕКСПЕРТНОЇ ПОДАЧІ",
+    protocolBody: `Стиль відповіді:
+
+Відповідь має бути клієнтською, готовою до надсилання.
+
+Вимоги:
+
+— не використовувати generic consulting language
+— не використовувати бюрократичний AI-стиль
+— не видавати шаблонні "консультаційні" формулювання
+— не вдаватися в декоративні стилістичні міркування без доказової бази
+
+Відповідь має:
+
+— спиратися на факти з клієнтського запиту
+— використовувати вкладення як evidence, якщо вони додані
+— пояснювати не тільки висновок, але й логіку висновку
+— розрізняти:
+   * проблему окремих елементів
+   * проблему системної логіки
+   * конфлікт сценаріїв
+   * архітектурну невідповідність
+
+Надавати перевагу structural reasoning над style commentary.
+
+Шукати:
+— приховану напругу
+— конкуруючі логіки
+— конфлікт ієрархій
+— несумісність сценаріїв
+— системні причини, а не тільки поверхневі симптоми
+
+Тон:
+
+— спокійний
+— точний
+— експертний
+— людський
+— без театральності
+— без маркетингового пафосу
+— без надмірної академічності
+
+Мета:
+
+Дати клієнту ясність, пояснення причини проблеми та робочий напрямок вирішення.`,
     dash: "—",
   },
 };
@@ -237,6 +374,9 @@ export const buildCaseBrief = async (c: Case): Promise<string> => {
   parts.push(...t.bullets);
   parts.push("");
   parts.push(t.evidenceNote);
+  parts.push("");
+  parts.push(divider, t.protocolTitle, divider, "");
+  parts.push(t.protocolBody);
   parts.push("");
   parts.push(divider);
 
