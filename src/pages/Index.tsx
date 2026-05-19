@@ -114,9 +114,9 @@ const Index = () => {
               const phrase = "FORM EMERGES THROUGH RESONANCE";
               const chars = Array.from(phrase);
               const n = chars.length;
-              // Per-letter progressive tracking: tight near circle (right end), wider far from circle (left end)
-              const trackingNearEm = 0.14;
-              const trackingFarEm = 0.58;
+              // Per-letter progressive tracking: tighter near circle, more open far from it
+              const trackingNearEm = 0.22;
+              const trackingFarEm = 0.5;
               // Reveal sweeps right→left: rightmost letter (closest to circle) reveals first
               const baseDelay = 1.05;
               const perLetter = 0.045;
@@ -124,7 +124,7 @@ const Index = () => {
               return (
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-9 md:mr-14 whitespace-nowrap text-[10px] md:text-[11px] font-light uppercase text-primary select-none flex"
+                  className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-4 md:mr-6 whitespace-nowrap text-[11px] md:text-xs font-light uppercase text-primary select-none flex"
                   style={{ willChange: "opacity" }}
                 >
                   {chars.map((ch, i) => {
@@ -137,7 +137,11 @@ const Index = () => {
                       <motion.span
                         key={i}
                         initial={{ opacity: 0, x: -3, filter: "blur(8px)" }}
-                        animate={{ opacity: 0.32, x: 0, filter: "blur(0px)" }}
+                        animate={{
+                          opacity: 0.42 + 0.18 * nearness,
+                          x: 0,
+                          filter: `blur(${(1 - nearness) * 0.4}px)`,
+                        }}
                         transition={{
                           delay,
                           duration: revealDur,
