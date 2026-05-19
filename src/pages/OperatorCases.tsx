@@ -150,7 +150,7 @@ export default function OperatorCases() {
                       Download Brief
                     </Button>
                     <Button size="sm" variant="ghost" className="h-7 px-2 text-xs font-normal text-muted-foreground" onClick={() => copyBrief(c)}>
-                      Copy Brief
+                      Copy
                     </Button>
                   </div>
                 </div>
