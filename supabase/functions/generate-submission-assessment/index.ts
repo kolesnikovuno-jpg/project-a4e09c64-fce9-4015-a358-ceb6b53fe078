@@ -43,6 +43,83 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (subErr || !s) return json({ error: subErr?.message ?? "Submission not found" }, 404);
 
+    // --- Ingest submission attachments ---
+    // supporting_links lines look like: "filename.ext — intake/<session>/<ts>-<file>"
+    const linkLines = (s.supporting_links ?? "").split("\n");
+    const attachmentPaths: { name: string; path: string }[] = [];
+    for (const line of linkLines) {
+      const m = line.match(/(intake\/[^\s]+)\s*$/);
+      if (m) {
+        const path = m[1];
+        const name = line.split("—")[0]?.trim() || path.split("/").pop() || path;
+        attachmentPaths.push({ name, path });
+      }
+    }
+
+    type AttachmentPart =
+      | { type: "image_url"; image_url: { url: string }; _name: string }
+      | { type: "pdf_text"; name: string; text: string }
+      | { type: "pdf_inline"; name: string; dataUrl: string };
+    const attachmentParts: AttachmentPart[] = [];
+    const attachmentSummary: string[] = [];
+
+    for (const att of attachmentPaths) {
+      try {
+        const { data: dl, error: dlErr } = await admin.storage
+          .from("clarity-attachments")
+          .download(att.path);
+        if (dlErr || !dl) {
+          attachmentSummary.push(`- ${att.name}: download failed (${dlErr?.message ?? "no data"})`);
+          continue;
+        }
+        const buf = new Uint8Array(await dl.arrayBuffer());
+        const mime = dl.type || guessMime(att.name);
+        const b64 = base64Encode(buf);
+
+        if (mime.startsWith("image/")) {
+          attachmentParts.push({
+            type: "image_url",
+            image_url: { url: `data:${mime};base64,${b64}` },
+            _name: att.name,
+          });
+          attachmentSummary.push(`- ${att.name}: image (${mime}, ${buf.length} bytes) — sent to vision model`);
+        } else if (mime === "application/pdf" || att.name.toLowerCase().endsWith(".pdf")) {
+          let extracted = "";
+          try {
+            const { extractText, getDocumentProxy } = await import("https://esm.sh/unpdf@0.12.1");
+            const pdf = await getDocumentProxy(buf);
+            const out = await extractText(pdf, { mergePages: true });
+            extracted = (Array.isArray(out.text) ? out.text.join("\n") : out.text ?? "")
+              .replace(/\s+/g, " ")
+              .trim();
+          } catch (e) {
+            console.error("[assessment] pdf text extract failed", att.path, e);
+          }
+          if (extracted.length > 50) {
+            attachmentParts.push({ type: "pdf_text", name: att.name, text: extracted });
+            attachmentSummary.push(`- ${att.name}: PDF text extracted (${extracted.length} chars)`);
+          } else {
+            // fall back to inline PDF for vision model OCR
+            attachmentParts.push({
+              type: "pdf_inline",
+              name: att.name,
+              dataUrl: `data:application/pdf;base64,${b64}`,
+            });
+            attachmentSummary.push(`- ${att.name}: PDF inline (${buf.length} bytes) — sent to vision model for OCR`);
+          }
+        } else {
+          attachmentSummary.push(`- ${att.name}: skipped (unsupported mime ${mime})`);
+        }
+      } catch (e) {
+        attachmentSummary.push(`- ${att.name}: error ${String(e)}`);
+      }
+    }
+
+    const pdfTextBlocks = attachmentParts
+      .filter((p): p is Extract<AttachmentPart, { type: "pdf_text" }> => p.type === "pdf_text")
+      .map((p) => `--- BEGIN PDF: ${p.name} ---\n${p.text}\n--- END PDF: ${p.name} ---`)
+      .join("\n\n");
+
     const prompt = `Internal pre-payment evaluation of an incoming client request.
 
 Client language:
@@ -63,6 +140,13 @@ ${s.scope ?? ""}
 Supporting links:
 ${s.supporting_links ?? ""}
 
+Attachments ingested:
+${attachmentSummary.length ? attachmentSummary.join("\n") : "(none)"}
+
+${pdfTextBlocks ? "PDF text content:\n" + pdfTextBlocks + "\n" : ""}
+${attachmentParts.some((p) => p.type === "image_url" || p.type === "pdf_inline")
+  ? "Image and/or PDF attachments are included as multimodal parts in this same user message. You MUST inspect them and explicitly reflect their content in your assessment. Do NOT say 'image context unknown' or 'PDF relation unknown' — those attachments are present in this request.\n"
+  : ""}
 Task:
 Produce an internal pre-payment evaluation of this request for the operator.
 
@@ -95,12 +179,24 @@ Hard rules:
 - No generic therapeutic language.
 - No fabricated assumptions.
 - No support-agent style responses.
+- If attachments are present, explicitly describe what each image/PDF contains and how it relates (or fails to relate) to the request.
 - Output language: ${s.language ?? "match client"}`;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) return json({ error: "LOVABLE_API_KEY not configured" }, 500);
 
+    // Build multimodal user content: text + image_url parts (images and inline PDFs)
+    const userContent: Array<Record<string, unknown>> = [{ type: "text", text: prompt }];
+    for (const p of attachmentParts) {
+      if (p.type === "image_url") {
+        userContent.push({ type: "image_url", image_url: p.image_url });
+      } else if (p.type === "pdf_inline") {
+        userContent.push({ type: "image_url", image_url: { url: p.dataUrl } });
+      }
+    }
+
     console.log("[assessment] calling AI gateway for submission", submissionId);
+    console.log("[assessment] attachments:", attachmentSummary);
     const t0 = Date.now();
     let aiResp: Response;
     try {
@@ -111,10 +207,10 @@ Hard rules:
           Authorization: `Bearer ${LOVABLE_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: "google/gemini-2.5-pro",
           messages: [
             { role: "system", content: "You are an internal structural diagnostic evaluator. You do not invent facts, you do not infer psychology, and you do not use customer-support tone. Your output is terse, precise, and strictly separates facts from hypotheses. When signal is insufficient, you say so explicitly." },
-            { role: "user", content: prompt },
+            { role: "user", content: userContent },
           ],
         }),
       });
