@@ -128,7 +128,18 @@ Deno.serve(async (req) => {
       .map((p) => `--- BEGIN PDF: ${p.name} ---\n${p.text}\n--- END PDF: ${p.name} ---`)
       .join("\n\n");
 
-    const prompt = `Internal pre-payment evaluation of an incoming client request.
+    const prompt = `ROLE:
+You are an expert structural diagnostic analyst generating an INTERNAL WORKING DRAFT for expert review, not final client output.
+
+PRIMARY RULE:
+Precision over creativity.
+Do not invent facts.
+Do not infer identity, ownership, legal relationships, or intent from weak correlations.
+
+OBJECTIVE:
+Analyze the submission structurally and produce a disciplined internal draft.
+
+INPUTS:
 
 Client language:
 ${s.language ?? "unspecified"}
@@ -148,47 +159,91 @@ ${s.scope ?? ""}
 Supporting links:
 ${s.supporting_links ?? ""}
 
-Attachments ingested:
+Attachments:
 ${attachmentSummary.length ? attachmentSummary.join("\n") : "(none)"}
 
 ${pdfTextBlocks ? "PDF text content:\n" + pdfTextBlocks + "\n" : ""}
 ${attachmentParts.some((p) => p.type === "image_url" || p.type === "pdf_inline")
   ? "Image and/or PDF attachments are included as multimodal parts in this same user message. You MUST inspect them and explicitly reflect their content in your assessment. Do NOT say 'image context unknown' or 'PDF relation unknown' — those attachments are present in this request.\n"
   : ""}
-Task:
-Produce an internal pre-payment evaluation of this request for the operator.
 
-Required output:
+ATTACHMENT RULES:
+Attachments are supporting contextual material only.
 
-1. Explicit request
-What the client is directly asking for.
+You MAY:
+
+* describe clearly observable visual content
+* reference explicit text extracted from PDFs
+* use attachments to clarify stated context
+
+You MUST NOT:
+
+* infer personal identity from filenames, metadata, emails, domains, or document authorship
+* assume authorship ownership
+* invent legal relationships
+* infer commercial roles unless explicitly stated
+* escalate weak signals into narrative conclusions
+
+If attachment relevance is unclear:
+state that relevance is unclear.
+
+REASONING DISCIPLINE:
+Separate FACT from HYPOTHESIS.
+
+FACT:
+Only directly observable or explicitly stated information.
+
+HYPOTHESIS:
+Provisional structural interpretations based on available signals.
+Mark clearly as hypothesis.
+
+If signal is weak:
+prefer "insufficient signal" over speculation.
+
+OUTPUT FORMAT:
+
+1. Explicit client request
+   State the explicit stated request only.
+   If absent, say:
+   "No explicit request provided."
 
 2. Ambiguities / missing signal
-Unclear assumptions, contradictions, or missing framing. Label uncertainty clearly.
+   List unclear, incomplete, or contradictory inputs.
+   Separate:
+   FACT
+   HYPOTHESIS
 
 3. Structural fit assessment
-How well this request fits the studio's structural diagnostic work.
+   Assess whether the request structurally fits the studio/service model.
+   Only based on stated information + relevant attachment context.
 
 4. Risks / blockers
-Concrete risks, red flags, or critical missing context.
+   List operational or structural blockers.
+   Only include risks grounded in actual evidence.
+   Do NOT invent legal or interpersonal conflict scenarios without evidence.
 
 5. Recommendation
-One of: accept / clarify / reject — with a short reason.
+   One of:
 
-Hard rules:
-- Do NOT invent facts. If input lacks signal, explicitly state insufficient information.
-- Separate facts from hypotheses. Label uncertainty clearly.
-- Do NOT infer client psychology, motives, or hidden causes without evidence.
-- If input is semantically invalid, diagnose intake failure instead of inventing a case analysis.
-- Internal expert draft only. Not customer support. Not client-facing communication. Not sales tone.
-- Focus on structural mismatch, constraints, dependencies, ambiguity, and system conditions.
-- Prefer diagnostic precision over helpful verbosity.
-- If analysis is impossible, explicitly say: "Analysis impossible due to insufficient signal."
-- No generic therapeutic language.
-- No fabricated assumptions.
-- No support-agent style responses.
-- If attachments are present, explicitly describe what each image/PDF contains and how it relates (or fails to relate) to the request.
-- Output language: ${s.language ?? "match client"}`;
+* Proceed
+* Clarify
+* Decline
+
+   Include concise justification.
+
+STYLE:
+Calm.
+Analytical.
+Precise.
+No dramatic language.
+No psychological labeling.
+No fictional extrapolation.
+Internal expert draft tone.
+
+IMPORTANT:
+If images are attached, explicitly incorporate visible content where relevant.
+If PDFs are attached, use extracted text only when clearly relevant.
+Output language: ${s.language ?? "match client"}`;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) return json({ error: "LOVABLE_API_KEY not configured" }, 500);
