@@ -109,21 +109,54 @@ const Index = () => {
         {/* Toggle button — asymmetric placement, shifted right */}
         <div className="flex items-center justify-center mt-[72px] md:mt-0 translate-x-[22vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
           <div className="group/uno relative flex items-center justify-center">
-            {/* Ambient governing principle — resonance trace emerging to the left of the .uno mark */}
-            <motion.span
-              aria-hidden
-              className="pointer-events-none absolute right-full top-1/2 mr-10 md:mr-16 whitespace-nowrap text-[10px] md:text-[11px] font-light uppercase tracking-[0.42em] text-primary select-none"
-              initial={{ opacity: 0, x: -6, filter: "blur(10px)" }}
-              animate={{ opacity: 0.42, x: 0, filter: "blur(0px)" }}
-              transition={{
-                opacity: { delay: 0.9, duration: 2.6, ease: [0.22, 1, 0.36, 1] },
-                x: { delay: 0.9, duration: 2.6, ease: [0.22, 1, 0.36, 1] },
-                filter: { delay: 0.9, duration: 2.2, ease: [0.22, 1, 0.36, 1] },
-              }}
-              style={{ y: "-50%", willChange: "opacity, filter, transform" }}
-            >
-              Form emergence through structural resonance
-            </motion.span>
+            {/* Ambient governing principle — resonance trace emerging from the .uno node */}
+            {(() => {
+              const phrase = "FORM EMERGES THROUGH RESONANCE";
+              const chars = Array.from(phrase);
+              const n = chars.length;
+              // Per-letter progressive tracking: tight near circle (right end), wider far from circle (left end)
+              const trackingNearEm = 0.14;
+              const trackingFarEm = 0.58;
+              // Reveal sweeps right→left: rightmost letter (closest to circle) reveals first
+              const baseDelay = 1.05;
+              const perLetter = 0.045;
+              const revealDur = 1.4;
+              return (
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-9 md:mr-14 whitespace-nowrap text-[10px] md:text-[11px] font-light uppercase text-primary select-none flex"
+                  style={{ willChange: "opacity" }}
+                >
+                  {chars.map((ch, i) => {
+                    // 0 at left (far), 1 at right (near circle)
+                    const nearness = n === 1 ? 1 : i / (n - 1);
+                    const trackEm = trackingFarEm + (trackingNearEm - trackingFarEm) * nearness;
+                    // Rightmost reveals first → delay grows leftward
+                    const delay = baseDelay + (n - 1 - i) * perLetter;
+                    return (
+                      <motion.span
+                        key={i}
+                        initial={{ opacity: 0, x: -3, filter: "blur(8px)" }}
+                        animate={{ opacity: 0.32, x: 0, filter: "blur(0px)" }}
+                        transition={{
+                          delay,
+                          duration: revealDur,
+                          ease: [0.22, 1, 0.36, 1],
+                        }}
+                        style={{
+                          marginRight: `${trackEm}em`,
+                          display: "inline-block",
+                          whiteSpace: "pre",
+                          willChange: "opacity, filter, transform",
+                        }}
+                      >
+                        {ch}
+                      </motion.span>
+                    );
+                  })}
+                </span>
+              );
+            })()}
             {/* Surrounding circle — same fill as button, mirrors hover/toggled state */}
             <span
               aria-hidden
