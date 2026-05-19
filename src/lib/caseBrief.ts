@@ -115,14 +115,23 @@ type Labels = {
   clientRequest: string;
   situation: string; uncertainty: string; scope: string;
   attachments: string; none: string; urlUnavailable: string;
-  optionalContext: string; primaryOrientation: string;
+  attachmentLabel: string;
+  filenameLabel: string;
+  urlLabel: string;
+  optionalContext: string;
+  primaryOrientation: string;
+  biasControlText: string;
   objectiveTitle: string;
   objectiveLead: string;
   focus: string;
   bullets: string[];
   evidenceNote: string;
+  outputStructureTitle: string;
+  outputStructureBody: string;
   protocolTitle: string;
   protocolBody: string;
+  disciplineTitle: string;
+  disciplineBody: string;
   dash: string;
 };
 
@@ -134,8 +143,14 @@ const L: Record<Lang, Labels> = {
     clientRequest: "CLIENT REQUEST",
     situation: "Situation", uncertainty: "Uncertainty", scope: "Scope",
     attachments: "ATTACHMENTS", none: "none", urlUnavailable: "[signed URL unavailable]",
-    optionalContext: "OPTIONAL INTERNAL CONTEXT",
+    attachmentLabel: "ATTACHMENT",
+    filenameLabel: "Filename:",
+    urlLabel: "URL:",
+    optionalContext: "INTERNAL ORIENTATION (OPTIONAL)",
     primaryOrientation: "Primary orientation:",
+    biasControlText: `Use only as orientation.
+Do not copy automatically.
+Re-evaluate the case independently based on the request and attachments.`,
     objectiveTitle: "EXPERT WORKING OBJECTIVE",
     objectiveLead: "Develop a client-ready expert response.",
     focus: "Focus:",
@@ -145,6 +160,25 @@ const L: Record<Lang, Labels> = {
       "- propose viable solution direction",
     ],
     evidenceNote: "If attachments exist, use them as evidence.",
+    outputStructureTitle: "OUTPUT STRUCTURE",
+    outputStructureBody: `1. What is actually happening
+Briefly describe the observable situation.
+
+2. Root structural problem
+Identify the main source of tension or misalignment.
+
+3. Why this conclusion was reached
+Show evidence and reasoning chain.
+
+4. Scale of required intervention
+Determine:
+— local correction
+— logic shift
+— partial rebuild
+— full rebuild
+
+5. Working direction for resolution
+Propose the next constructive step.`,
     protocolTitle: "DELIVERY STYLE PROTOCOL",
     protocolBody: `Response style:
 
@@ -190,6 +224,28 @@ Tone:
 Goal:
 
 Give the client clarity, an explanation of the root cause, and a working direction for resolution.`,
+    disciplineTitle: "ANALYSIS DISCIPLINE",
+    disciplineBody: `When analyzing:
+
+Strictly distinguish:
+
+FACT
+= what directly follows from the client request or attachments
+
+INTERPRETATION
+= analytical reading of the observed signal
+
+HYPOTHESIS
+= possible explanation when direct evidence is insufficient
+
+Prohibited:
+
+— presenting hypotheses as facts
+— constructing missing context without labeling it
+— inventing client intentions without basis
+
+If the signal is insufficient:
+state this directly.`,
     dash: "—",
   },
   ru: {
@@ -199,8 +255,14 @@ Give the client clarity, an explanation of the root cause, and a working directi
     clientRequest: "ЗАПРОС КЛИЕНТА",
     situation: "Ситуация", uncertainty: "Неопределённость", scope: "Объём",
     attachments: "ВЛОЖЕНИЯ", none: "нет", urlUnavailable: "[подписанная ссылка недоступна]",
-    optionalContext: "ВНУТРЕННИЙ КОНТЕКСТ (опционально)",
+    attachmentLabel: "ВЛОЖЕНИЕ",
+    filenameLabel: "Файл:",
+    urlLabel: "URL:",
+    optionalContext: "ВНУТРЕННЯЯ ОРИЕНТАЦИЯ (НЕ ОБЯЗАТЕЛЬНО)",
     primaryOrientation: "Первичная ориентация:",
+    biasControlText: `Использовать только как ориентир.
+Не копировать автоматически.
+Переоценивать кейс самостоятельно на основе запроса и вложений.`,
     objectiveTitle: "ЗАДАЧА ЭКСПЕРТА",
     objectiveLead: "Подготовить ответ клиенту, готовый к отправке.",
     focus: "Фокус:",
@@ -210,6 +272,25 @@ Give the client clarity, an explanation of the root cause, and a working directi
       "- предложить рабочее направление решения",
     ],
     evidenceNote: "Если есть вложения — использовать как доказательную базу.",
+    outputStructureTitle: "СТРУКТУРА ИТОГОВОГО ОТВЕТА",
+    outputStructureBody: `1. Что реально происходит
+Кратко описать наблюдаемую ситуацию.
+
+2. Корневая структурная проблема
+Определить основной источник напряжения или несоответствия.
+
+3. Почему сделан этот вывод
+Показать evidence and reasoning chain.
+
+4. Масштаб необходимого вмешательства
+Определить:
+— локальная корректировка
+— смена логики
+— частичная пересборка
+— полная пересборка
+
+5. Рабочее направление решения
+Предложить следующий конструктивный шаг.`,
     protocolTitle: "ПРОТОКОЛ ЭКСПЕРТНОЙ ПОДАЧИ",
     protocolBody: `Стиль ответа:
 
@@ -255,6 +336,28 @@ Give the client clarity, an explanation of the root cause, and a working directi
 Цель:
 
 Дать клиенту ясность, объяснение причины проблемы и рабочее направление решения.`,
+    disciplineTitle: "ДИСЦИПЛИНА АНАЛИЗА",
+    disciplineBody: `При анализе:
+
+Строго различать:
+
+ФАКТ
+= то, что прямо следует из клиентского запроса или вложений
+
+ИНТЕРПРЕТАЦИЯ
+= аналитическое чтение наблюдаемого сигнала
+
+ГИПОТЕЗА
+= возможное объяснение, если прямых доказательств недостаточно
+
+Запрещено:
+
+— выдавать гипотезы как факты
+— достраивать отсутствующий контекст без маркировки
+— придумывать намерения клиента без основания
+
+Если сигнал недостаточен:
+прямо указывать это.`,
     dash: "—",
   },
   uk: {
@@ -264,8 +367,14 @@ Give the client clarity, an explanation of the root cause, and a working directi
     clientRequest: "ЗАПИТ КЛІЄНТА",
     situation: "Ситуація", uncertainty: "Невизначеність", scope: "Обсяг",
     attachments: "ВКЛАДЕННЯ", none: "немає", urlUnavailable: "[підписане посилання недоступне]",
-    optionalContext: "ВНУТРІШНІЙ КОНТЕКСТ (опціонально)",
+    attachmentLabel: "ВКЛАДЕННЯ",
+    filenameLabel: "Файл:",
+    urlLabel: "URL:",
+    optionalContext: "ВНУТРІШНЯ ОРІЄНТАЦІЯ (НЕ ОБОВʼЯЗКОВО)",
     primaryOrientation: "Первинна орієнтація:",
+    biasControlText: `Використовувати лише як орієнтир.
+Не копіювати автоматично.
+Переоцінювати кейс самостійно на основі запиту та вкладень.`,
     objectiveTitle: "ЗАВДАННЯ ЕКСПЕРТА",
     objectiveLead: "Підготувати відповідь клієнту, готову до надсилання.",
     focus: "Фокус:",
@@ -275,6 +384,25 @@ Give the client clarity, an explanation of the root cause, and a working directi
       "- запропонувати робочий напрямок рішення",
     ],
     evidenceNote: "Якщо є вкладення — використати як доказову базу.",
+    outputStructureTitle: "СТРУКТУРА ПІДСУМКОВОЇ ВІДПОВІДІ",
+    outputStructureBody: `1. Що реально відбувається
+Коротко описати спостережувану ситуацію.
+
+2. Коренева структурна проблема
+Визначити основне джерело напруги або невідповідності.
+
+3. Чому зроблено цей висновок
+Показати evidence and reasoning chain.
+
+4. Масштаб необхідного втручання
+Визначити:
+— локальне коригування
+— зміна логіки
+— часткова перебудова
+— повна перебудова
+
+5. Робочий напрямок вирішення
+Запропонувати наступний конструктивний крок.`,
     protocolTitle: "ПРОТОКОЛ ЕКСПЕРТНОЇ ПОДАЧІ",
     protocolBody: `Стиль відповіді:
 
@@ -320,6 +448,28 @@ Give the client clarity, an explanation of the root cause, and a working directi
 Мета:
 
 Дати клієнту ясність, пояснення причини проблеми та робочий напрямок вирішення.`,
+    disciplineTitle: "ДИСЦИПЛІНА АНАЛІЗУ",
+    disciplineBody: `При аналізі:
+
+Строго розрізняти:
+
+ФАКТ
+= те, що прямо випливає з клієнтського запиту або вкладень
+
+ІНТЕРПРЕТАЦІЯ
+= аналітичне прочитання спостережуваного сигналу
+
+ГІПОТЕЗА
+= можливе пояснення, якщо прямих доказів недостатньо
+
+Заборонено:
+
+— видавати гіпотези за факти
+— добудовувати відсутній контекст без маркування
+— вигадувати наміри клієнта без підстави
+
+Якщо сигналу недостатньо:
+прямо вказувати на це.`,
     dash: "—",
   },
 };
@@ -353,7 +503,10 @@ export const buildCaseBrief = async (c: Case): Promise<string> => {
   } else {
     parts.push(
       attachments
-        .map((a) => `${a.name}\n${urlByPath.get(a.path) ?? t.urlUnavailable}`)
+        .map(
+          (a, i) =>
+            `${t.attachmentLabel} ${i + 1}\n${t.filenameLabel} ${a.name}\n${t.urlLabel}\n${urlByPath.get(a.path) ?? t.urlUnavailable}`,
+        )
         .join("\n\n"),
     );
   }
@@ -365,6 +518,8 @@ export const buildCaseBrief = async (c: Case): Promise<string> => {
     parts.push(t.primaryOrientation);
     parts.push(draftSummary);
     parts.push("");
+    parts.push(t.biasControlText);
+    parts.push("");
   }
 
   parts.push(divider, t.objectiveTitle, divider, "");
@@ -375,8 +530,14 @@ export const buildCaseBrief = async (c: Case): Promise<string> => {
   parts.push("");
   parts.push(t.evidenceNote);
   parts.push("");
+  parts.push(divider, t.outputStructureTitle, divider, "");
+  parts.push(t.outputStructureBody);
+  parts.push("");
   parts.push(divider, t.protocolTitle, divider, "");
   parts.push(t.protocolBody);
+  parts.push("");
+  parts.push(divider, t.disciplineTitle, divider, "");
+  parts.push(t.disciplineBody);
   parts.push("");
   parts.push(divider);
 
