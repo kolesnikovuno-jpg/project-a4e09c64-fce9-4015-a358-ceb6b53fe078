@@ -107,7 +107,7 @@ const Index = () => {
         onClick={handleBackgroundClick}
       >
         {/* Toggle button — asymmetric placement, shifted right */}
-        <div className="flex items-center justify-center mt-[72px] md:mt-0 translate-x-[22vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
+        <div className="flex items-center justify-center mt-[72px] md:mt-0 translate-x-[36vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
           <motion.div
             className="group/uno relative flex items-center justify-center"
             initial={{ opacity: 0 }}
