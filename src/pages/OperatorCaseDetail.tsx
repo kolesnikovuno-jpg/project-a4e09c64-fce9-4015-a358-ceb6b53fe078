@@ -37,6 +37,7 @@ export default function OperatorCaseDetail() {
   const [generating, setGenerating] = useState(false);
   const [generatingDraft, setGeneratingDraft] = useState(false);
   const [sending, setSending] = useState(false);
+  const [pdfStatus, setPdfStatus] = useState<"" | "saving" | "generating" | "done">("");
   const [deliverySent, setDeliverySent] = useState(false);
   const [manualCopyText, setManualCopyText] = useState("");
   const [requestOpen, setRequestOpen] = useState(false);
@@ -123,9 +124,18 @@ export default function OperatorCaseDetail() {
     }
   };
 
-  const save = async () => {
-    if (!c) return;
-    setSaving(true);
+  const isDirty = (): boolean => {
+    if (!c) return false;
+    return (
+      (c.ai_draft ?? "") !== aiDraft ||
+      (c.working_notes ?? "") !== workingNotes ||
+      (c.final_output ?? "") !== finalOutput ||
+      (c.service_status ?? "") !== serviceStatus
+    );
+  };
+
+  const persist = async (): Promise<boolean> => {
+    if (!c) return false;
     const { error } = await supabase
       .from("cases")
       .update({
@@ -136,12 +146,32 @@ export default function OperatorCaseDetail() {
         pdf_url: pdfUrl,
       })
       .eq("id", c.id);
-    setSaving(false);
     if (error) {
       toast({ title: "Не удалось сохранить", description: error.message, variant: "destructive" });
-      return;
+      return false;
     }
-    toast({ title: "Сохранено" });
+    setC({
+      ...c,
+      ai_draft: aiDraft,
+      working_notes: workingNotes,
+      final_output: finalOutput,
+      service_status: serviceStatus,
+      pdf_url: pdfUrl,
+    });
+    return true;
+  };
+
+  const save = async () => {
+    if (!c) return;
+    setSaving(true);
+    const ok = await persist();
+    setSaving(false);
+    if (ok) toast({ title: "Сохранено" });
+  };
+
+  const ensureSaved = async (): Promise<boolean> => {
+    if (!isDirty()) return true;
+    return await persist();
   };
 
   const signOut = async () => {
@@ -152,21 +182,39 @@ export default function OperatorCaseDetail() {
   const generatePdf = async () => {
     if (!c) return;
     setGenerating(true);
+    if (isDirty()) {
+      setPdfStatus("saving");
+      const saved = await persist();
+      if (!saved) {
+        setGenerating(false);
+        setPdfStatus("");
+        toast({
+          title: "Unable to save latest changes. PDF generation cancelled.",
+          variant: "destructive",
+        });
+        return null;
+      }
+    }
+    setPdfStatus("generating");
     const { data, error } = await supabase.functions.invoke("generate-case-pdf", {
       body: { case_id: c.id },
     });
     setGenerating(false);
     if (error) {
+      setPdfStatus("");
       toast({ title: "Не удалось сгенерировать PDF", description: error.message, variant: "destructive" });
-      return;
+      return null;
     }
     const url = (data as { pdf_url?: string })?.pdf_url;
     if (url) {
       setPdfUrl(url);
-      setC({ ...c, pdf_url: url });
+      setC((prev) => (prev ? { ...prev, pdf_url: url } : prev));
+      setPdfStatus("done");
+      setTimeout(() => setPdfStatus((s) => (s === "done" ? "" : s)), 1800);
       toast({ title: "PDF сгенерирован" });
       return url;
     }
+    setPdfStatus("");
     return null;
   };
 
@@ -198,6 +246,19 @@ export default function OperatorCaseDetail() {
     }
     setSending(true);
 
+    // Ensure latest editor content is persisted before any send/regen.
+    if (isDirty()) {
+      const saved = await ensureSaved();
+      if (!saved) {
+        setSending(false);
+        toast({
+          title: "Unable to save latest changes. Send cancelled.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     // On resend, regenerate the PDF so the signed URL is fresh.
     let effectivePdfUrl = pdfUrl;
     if (deliverySent) {
@@ -213,7 +274,7 @@ export default function OperatorCaseDetail() {
       if (fresh) {
         effectivePdfUrl = fresh;
         setPdfUrl(fresh);
-        setC({ ...c, pdf_url: fresh });
+        setC((prev) => (prev ? { ...prev, pdf_url: fresh } : prev));
       }
     }
 
