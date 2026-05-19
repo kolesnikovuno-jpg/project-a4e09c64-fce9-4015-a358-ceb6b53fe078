@@ -22,7 +22,6 @@ const SERVICE_STATUSES = [
   { value: "revision", label: "Revision" },
   { value: "closed", label: "Closed" },
 ] as const;
-void SERVICE_STATUSES;
 
 export default function OperatorCaseDetail() {
   const { id } = useParams<{ id: string }>();
