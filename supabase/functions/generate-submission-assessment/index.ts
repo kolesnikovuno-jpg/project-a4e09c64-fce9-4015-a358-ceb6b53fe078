@@ -76,31 +76,23 @@ Deno.serve(async (req) => {
         const mime = dl.type || guessMime(att.name);
 
         if (mime.startsWith("image/")) {
-          // Downscale large images so the request stays well under gateway body limits
-          // and the vision model reliably ingests them.
-          let outBytes = buf;
-          let outMime = mime;
-          if (buf.length > 600_000) {
-            try {
-              const { Image } = await import("https://deno.land/x/imagescript@1.2.17/mod.ts");
-              const img = await Image.decode(buf);
-              const maxDim = 1280;
-              const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-              if (scale < 1) img.resize(Math.round(img.width * scale), Math.round(img.height * scale));
-              outBytes = await img.encodeJPEG(82);
-              outMime = "image/jpeg";
-            } catch (e) {
-              console.error("[assessment] image resize failed, sending original", att.name, e);
-            }
+          // Skip in-process image decoding (imagescript blows the 256MB edge-runtime memory cap
+          // when combined with PDF parsing). Instead, hard-cap raw image size and send as-is.
+          const MAX_IMAGE_BYTES = 3_500_000;
+          if (buf.length > MAX_IMAGE_BYTES) {
+            attachmentSummary.push(
+              `- ${att.name}: image skipped (${buf.length} bytes > ${MAX_IMAGE_BYTES} cap)`,
+            );
+            continue;
           }
-          const b64img = base64Encode(outBytes);
+          const b64img = base64Encode(buf);
           attachmentParts.push({
             type: "image_url",
-            image_url: { url: `data:${outMime};base64,${b64img}` },
+            image_url: { url: `data:${mime};base64,${b64img}` },
             _name: att.name,
           });
           attachmentSummary.push(
-            `- ${att.name}: image (${outMime}, ${outBytes.length} bytes${outBytes.length !== buf.length ? `, resized from ${buf.length}` : ""}) — sent to vision model`,
+            `- ${att.name}: image (${mime}, ${buf.length} bytes) — sent to vision model`,
           );
         } else if (mime === "application/pdf" || att.name.toLowerCase().endsWith(".pdf")) {
           let extracted = "";
@@ -115,17 +107,13 @@ Deno.serve(async (req) => {
             console.error("[assessment] pdf text extract failed", att.path, e);
           }
           if (extracted.length > 50) {
-            attachmentParts.push({ type: "pdf_text", name: att.name, text: extracted });
-            attachmentSummary.push(`- ${att.name}: PDF text extracted (${extracted.length} chars)`);
+            // Cap extracted text to avoid blowing the prompt size
+            const capped = extracted.length > 50_000 ? extracted.slice(0, 50_000) + " …[truncated]" : extracted;
+            attachmentParts.push({ type: "pdf_text", name: att.name, text: capped });
+            attachmentSummary.push(`- ${att.name}: PDF text extracted (${capped.length} chars)`);
           } else {
-            // fall back to inline PDF for vision model OCR
-            const b64pdf = base64Encode(buf);
-            attachmentParts.push({
-              type: "pdf_inline",
-              name: att.name,
-              dataUrl: `data:application/pdf;base64,${b64pdf}`,
-            });
-            attachmentSummary.push(`- ${att.name}: PDF inline (${buf.length} bytes) — sent to vision model for OCR`);
+            // Do NOT inline the raw PDF — base64 of a multi-MB PDF blows edge memory.
+            attachmentSummary.push(`- ${att.name}: PDF text unreadable, skipped inline (would exceed memory)`);
           }
         } else {
           attachmentSummary.push(`- ${att.name}: skipped (unsupported mime ${mime})`);
