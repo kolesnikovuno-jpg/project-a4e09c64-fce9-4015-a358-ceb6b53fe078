@@ -635,7 +635,7 @@ function WorkBlock({
   action,
   children,
 }: {
-  label: string;
+  label: React.ReactNode;
   hint?: string;
   action?: React.ReactNode;
   children: React.ReactNode;
@@ -644,9 +644,9 @@ function WorkBlock({
     <div>
       <div className="flex items-center justify-between">
         <div className="flex items-baseline gap-2">
-          <Label className="text-[10px] uppercase tracking-[0.14em] text-foreground/80 font-semibold">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-foreground/80 font-semibold">
             {label}
-          </Label>
+          </span>
           {hint && <span className="text-[10px] text-muted-foreground/80">{hint}</span>}
         </div>
         {action}
