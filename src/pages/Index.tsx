@@ -112,7 +112,7 @@ const Index = () => {
             className="group/uno relative flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.35, duration: 2.2, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ delay: 0.65, duration: 2.6, ease: [0.22, 1, 0.36, 1] }}
             style={{ willChange: "opacity" }}
           >
             {/* Ambient governing principle — resonance trace emerging from the .uno node */}
@@ -123,11 +123,16 @@ const Index = () => {
               // Per-letter progressive tracking: tighter near circle, more open far from it
               const trackingNearEm = 0.16;
               const trackingFarEm = 0.42;
-              // Button starts emerging at 0.45s with a 1.9s fade-in.
-              // Text begins while the button is still materializing (~40% in).
-              const baseDelay = 1.2;
-              const perLetter = 0.05;
-              const revealDur = 1.7;
+              // Sequencing:
+              //   0.00s  page color
+              //   0.65s  button begins emerging (2.6s fade-in, settles ~3.25s)
+              //   1.55s  rightmost letter begins (button ~35% in)
+              //   ~2.71s last letter begins (still before button settles)
+              //   ~4.31s phrase fully settled
+              // Reveal overlaps button emergence so there is no perceptual jump.
+              const baseDelay = 1.55;
+              const perLetter = 0.04;
+              const revealDur = 1.6;
               return (
                 <span
                   aria-hidden
