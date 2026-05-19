@@ -9,13 +9,13 @@ const corsHeaders = {
 };
 
 // Unicode TTF fonts with Cyrillic support.
-// Body: Inter (editorial sans). Display: Montserrat (geometric).
+// Body: Noto Sans (editorial sans). Display: Montserrat (geometric).
 const FONT_BODY_REGULAR_URL =
-  "https://github.com/rsms/inter/raw/master/docs/font-files/Inter-Regular.ttf";
+  "https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSans/NotoSans-Regular.ttf";
 const FONT_BODY_BOLD_URL =
-  "https://github.com/rsms/inter/raw/master/docs/font-files/Inter-SemiBold.ttf";
+  "https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSans/NotoSans-SemiBold.ttf";
 const FONT_BODY_ITALIC_URL =
-  "https://github.com/rsms/inter/raw/master/docs/font-files/Inter-Italic.ttf";
+  "https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSans/NotoSans-Italic.ttf";
 const FONT_DISPLAY_URL =
   "https://github.com/JulietaUla/Montserrat/raw/master/fonts/ttf/Montserrat-Medium.ttf";
 
