@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
 import { buildCaseBrief, downloadBriefFile } from "@/lib/caseBrief";
@@ -181,10 +180,6 @@ export default function OperatorCaseDetail() {
       toast({ title: "Нет PDF", description: "Сначала сгенерируйте PDF.", variant: "destructive" });
       return;
     }
-    if (deliverySent) {
-      toast({ title: "Уже отправлено" });
-      return;
-    }
     setSending(true);
     const { error: sendError } = await supabase.functions.invoke("send-transactional-email", {
       body: {
@@ -216,7 +211,7 @@ export default function OperatorCaseDetail() {
     }
     setDeliverySent(true);
     setServiceStatus("delivered");
-    toast({ title: "Отправлено клиенту" });
+    toast({ title: deliverySent ? "Повторно отправлено клиенту" : "Отправлено клиенту" });
   };
 
   if (authorized === false) {
@@ -246,41 +241,44 @@ export default function OperatorCaseDetail() {
           <Link to="/operator/cases" className="text-xs text-muted-foreground hover:text-foreground">← Cases</Link>
           <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-muted-foreground" onClick={signOut}>Sign out</Button>
         </div>
-        <header className="flex items-center justify-between flex-wrap gap-3 border border-border rounded-md bg-card px-3 py-2">
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-1">Case</span>
-              <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs font-normal" onClick={downloadBrief}>Download Brief</Button>
-              <Button size="sm" variant="ghost" className="h-7 px-2 text-xs font-normal text-muted-foreground" onClick={copyBrief}>Copy Brief</Button>
-              <Button size="sm" variant="ghost" className="h-7 px-2 text-xs font-normal text-muted-foreground" onClick={generateAiDraft} disabled={generatingDraft}>
-                {generatingDraft ? "Генерация…" : "Quick Draft"}
-              </Button>
-            </div>
-            <div className="h-5 w-px bg-border" />
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-1">Delivery</span>
-              <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs font-normal" onClick={generatePdf} disabled={generating}>
-                {generating ? "Генерация…" : "Generate PDF"}
-              </Button>
-              {deliverySent ? (
-                <Badge variant="default" className="h-6 px-2 text-[11px] rounded-sm font-normal">Delivered ✓</Badge>
-              ) : (
-                <Button
-                  size="sm"
-                  className="h-7 px-2.5 text-xs font-normal"
-                  onClick={sendToClient}
-                  disabled={sending || !pdfUrl}
-                  title={!pdfUrl ? "Нужен PDF" : ""}
-                >
-                  {sending ? "Отправка…" : "Send to Client"}
-                </Button>
-              )}
-            </div>
-            <div className="h-5 w-px bg-border" />
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-1">System</span>
-              <Button size="sm" className="h-7 px-2.5 text-xs font-normal" onClick={save} disabled={saving}>{saving ? "Сохранение…" : "Save"}</Button>
-            </div>
+        <header className="flex items-center flex-wrap gap-x-4 gap-y-2 border border-border rounded-md bg-card px-3 py-2">
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-1">Case</span>
+            <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs font-normal" onClick={downloadBrief}>Download Brief</Button>
+            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs font-normal text-muted-foreground" onClick={copyBrief}>Copy Brief</Button>
+          </div>
+          <div className="h-5 w-px bg-border" />
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-1">Work</span>
+            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs font-normal text-muted-foreground" onClick={generateAiDraft} disabled={generatingDraft}>
+              {generatingDraft ? "Генерация…" : "Quick Draft"}
+            </Button>
+            <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs font-normal" onClick={generatePdf} disabled={generating}>
+              {generating ? "Генерация…" : "Generate PDF"}
+            </Button>
+          </div>
+          <div className="h-5 w-px bg-border" />
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-1">Delivery</span>
+            <Button
+              size="sm"
+              className="h-7 px-2.5 text-xs font-normal"
+              onClick={sendToClient}
+              disabled={sending || !pdfUrl}
+              title={!pdfUrl ? "Нужен PDF" : ""}
+            >
+              {sending ? (deliverySent ? "Отправка…" : "Отправка…") : deliverySent ? "Resend" : "Send to Client"}
+            </Button>
+            {deliverySent && (
+              <span className="text-[11px] text-muted-foreground select-none" aria-live="polite">
+                Status: <span className="text-foreground">Delivered ✓</span>
+              </span>
+            )}
+          </div>
+          <div className="h-5 w-px bg-border" />
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-1">System</span>
+            <Button size="sm" className="h-7 px-2.5 text-xs font-normal" onClick={save} disabled={saving}>{saving ? "Сохранение…" : "Save"}</Button>
           </div>
         </header>
 
