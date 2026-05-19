@@ -117,11 +117,11 @@ const Index = () => {
               // Per-letter progressive tracking: tighter near circle, more open far from it
               const trackingNearEm = 0.16;
               const trackingFarEm = 0.42;
-              // Text begins emerging while the circle is ~70–80% materialized.
-              // Circle fade-in runs ~1.6s starting at 0; text begins around 1.15s.
-              const baseDelay = 1.15;
+              // Button starts emerging at 0.45s with a 1.9s fade-in.
+              // Text begins while the button is still materializing (~40% in).
+              const baseDelay = 1.2;
               const perLetter = 0.05;
-              const revealDur = 1.6;
+              const revealDur = 1.7;
               return (
                 <span
                   aria-hidden
@@ -134,9 +134,11 @@ const Index = () => {
                     const trackEm = trackingFarEm + (trackingNearEm - trackingFarEm) * nearness;
                     // Rightmost reveals first → delay grows leftward
                     const delay = baseDelay + (n - 1 - i) * perLetter;
-                    // Emanation gradient: near source = denser, far = dissipated
-                    const targetOpacity = 0.22 + 0.55 * nearness;
-                    const targetBlur = (1 - nearness) * 1.3;
+                    // Emanation gradient: dense zone pulled slightly toward the button,
+                    // so fade boundary sits closer to the source.
+                    const shaped = Math.pow(nearness, 1.55);
+                    const targetOpacity = 0.2 + 0.46 * shaped;
+                    const targetBlur = (1 - shaped) * 1.55;
                     return (
                       <motion.span
                         key={i}
@@ -171,9 +173,9 @@ const Index = () => {
               className={`pointer-events-none absolute rounded-full w-[76px] h-[76px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/75 ${
                 buttonActive ? "bg-primary/75" : "bg-primary/45"
               }`}
-              initial={{ opacity: 0, scale: 0.92, filter: "blur(6px)" }}
+              initial={{ opacity: 0, scale: 0.9, filter: "blur(8px)" }}
               animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ delay: 0.45, duration: 1.9, ease: [0.22, 1, 0.36, 1] }}
               style={{ willChange: "opacity, transform, filter" }}
             />
           <button
