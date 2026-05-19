@@ -202,16 +202,27 @@ Deno.serve(async (req) => {
     // A4 portrait, generous editorial margins
     const pageWidth = 595.28;
     const pageHeight = 841.89;
-    const marginX = 84; // ~30mm
-    const marginTop = 96;
-    const marginBottom = 96;
+    const marginX = 90; // ~32mm
+    const marginTop = 104;
+    const marginBottom = 104;
     const contentWidth = pageWidth - marginX * 2;
 
-    const ink = rgb(0.11, 0.11, 0.12);
-    const muted = rgb(0.46, 0.46, 0.48);
-    const faint = rgb(0.78, 0.78, 0.80);
+    // Palette — warm paper, charcoal ink, restrained brand accent.
+    const paper = rgb(0.969, 0.965, 0.953);   // #F7F6F3
+    const ink = rgb(0.180, 0.192, 0.208);     // #2E3135 charcoal
+    const muted = rgb(0.52, 0.52, 0.54);
+    const labelMuted = rgb(0.62, 0.62, 0.64);
+    const faint = rgb(0.84, 0.83, 0.81);
+    const accent = rgb(0.42, 0.36, 0.28);     // quiet warm bronze
+
+    const paintPaper = (p: ReturnType<typeof pdf.addPage>) => {
+      p.drawRectangle({
+        x: 0, y: 0, width: pageWidth, height: pageHeight, color: paper,
+      });
+    };
 
     let page = pdf.addPage([pageWidth, pageHeight]);
+    paintPaper(page);
     let y = pageHeight - marginTop;
 
     const fontFor = (inl: Inline, base: typeof fRegular = fRegular) => {
@@ -222,6 +233,7 @@ Deno.serve(async (req) => {
 
     const newPage = () => {
       page = pdf.addPage([pageWidth, pageHeight]);
+      paintPaper(page);
       y = pageHeight - marginTop;
     };
 
