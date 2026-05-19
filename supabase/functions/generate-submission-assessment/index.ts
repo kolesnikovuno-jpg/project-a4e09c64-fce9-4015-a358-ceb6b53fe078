@@ -74,15 +74,34 @@ Deno.serve(async (req) => {
         }
         const buf = new Uint8Array(await dl.arrayBuffer());
         const mime = dl.type || guessMime(att.name);
-        const b64 = base64Encode(buf);
 
         if (mime.startsWith("image/")) {
+          // Downscale large images so the request stays well under gateway body limits
+          // and the vision model reliably ingests them.
+          let outBytes = buf;
+          let outMime = mime;
+          if (buf.length > 600_000) {
+            try {
+              const { Image } = await import("https://deno.land/x/imagescript@1.2.17/mod.ts");
+              const img = await Image.decode(buf);
+              const maxDim = 1280;
+              const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+              if (scale < 1) img.resize(Math.round(img.width * scale), Math.round(img.height * scale));
+              outBytes = await img.encodeJPEG(82);
+              outMime = "image/jpeg";
+            } catch (e) {
+              console.error("[assessment] image resize failed, sending original", att.name, e);
+            }
+          }
+          const b64img = base64Encode(outBytes);
           attachmentParts.push({
             type: "image_url",
-            image_url: { url: `data:${mime};base64,${b64}` },
+            image_url: { url: `data:${outMime};base64,${b64img}` },
             _name: att.name,
           });
-          attachmentSummary.push(`- ${att.name}: image (${mime}, ${buf.length} bytes) — sent to vision model`);
+          attachmentSummary.push(
+            `- ${att.name}: image (${outMime}, ${outBytes.length} bytes${outBytes.length !== buf.length ? `, resized from ${buf.length}` : ""}) — sent to vision model`,
+          );
         } else if (mime === "application/pdf" || att.name.toLowerCase().endsWith(".pdf")) {
           let extracted = "";
           try {
@@ -100,10 +119,11 @@ Deno.serve(async (req) => {
             attachmentSummary.push(`- ${att.name}: PDF text extracted (${extracted.length} chars)`);
           } else {
             // fall back to inline PDF for vision model OCR
+            const b64pdf = base64Encode(buf);
             attachmentParts.push({
               type: "pdf_inline",
               name: att.name,
-              dataUrl: `data:application/pdf;base64,${b64}`,
+              dataUrl: `data:application/pdf;base64,${b64pdf}`,
             });
             attachmentSummary.push(`- ${att.name}: PDF inline (${buf.length} bytes) — sent to vision model for OCR`);
           }
@@ -189,11 +209,15 @@ Hard rules:
     const userContent: Array<Record<string, unknown>> = [{ type: "text", text: prompt }];
     for (const p of attachmentParts) {
       if (p.type === "image_url") {
+        userContent.push({ type: "text", text: `Attachment image: ${p._name}` });
         userContent.push({ type: "image_url", image_url: p.image_url });
       } else if (p.type === "pdf_inline") {
+        userContent.push({ type: "text", text: `Attachment PDF (inline): ${p.name}` });
         userContent.push({ type: "image_url", image_url: { url: p.dataUrl } });
       }
     }
+    const approxBytes = JSON.stringify(userContent).length;
+    console.log("[assessment] user content parts:", userContent.length, "approx bytes:", approxBytes);
 
     console.log("[assessment] calling AI gateway for submission", submissionId);
     console.log("[assessment] attachments:", attachmentSummary);
