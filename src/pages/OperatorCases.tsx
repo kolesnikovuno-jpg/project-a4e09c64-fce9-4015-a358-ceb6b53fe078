@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
-import { buildCaseBrief } from "@/lib/caseBrief";
+import { buildCaseBrief, downloadBriefFile } from "@/lib/caseBrief";
 import { ManualCopyDialog } from "@/components/operator/ManualCopyDialog";
 
 type Case = Tables<"cases">;
@@ -48,6 +48,16 @@ export default function OperatorCases() {
       active = false;
     };
   }, [navigate]);
+
+  const downloadBrief = async (c: Case) => {
+    try {
+      const brief = await buildCaseBrief(c);
+      downloadBriefFile(brief, c.id);
+      toast({ title: "Case Brief скачан" });
+    } catch (e) {
+      toast({ title: "Не удалось подготовить Case Brief", description: String(e), variant: "destructive" });
+    }
+  };
 
   const copyBrief = async (c: Case) => {
     try {
@@ -113,7 +123,8 @@ export default function OperatorCases() {
                     <Button size="sm" variant="outline" asChild>
                       <Link to={`/operator/cases/${c.id}`}>Open case</Link>
                     </Button>
-                    <Button size="sm" onClick={() => copyBrief(c)}>Copy Case Brief</Button>
+                    <Button size="sm" onClick={() => downloadBrief(c)}>Download Brief</Button>
+                    <Button size="sm" variant="ghost" onClick={() => copyBrief(c)}>Copy</Button>
                   </div>
                 </div>
                 {c.raw_input && (

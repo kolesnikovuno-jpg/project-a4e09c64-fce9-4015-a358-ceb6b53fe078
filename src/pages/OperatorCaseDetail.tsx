@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
-import { buildCaseBrief } from "@/lib/caseBrief";
+import { buildCaseBrief, downloadBriefFile } from "@/lib/caseBrief";
 import { ManualCopyDialog } from "@/components/operator/ManualCopyDialog";
 
 type Case = Tables<"cases">;
@@ -81,6 +81,17 @@ export default function OperatorCaseDetail() {
     })();
     return () => { active = false; };
   }, [id, navigate]);
+
+  const downloadBrief = async () => {
+    if (!c) return;
+    try {
+      const brief = await buildCaseBrief(c);
+      downloadBriefFile(brief, c.id);
+      toast({ title: "Case Brief скачан" });
+    } catch (e) {
+      toast({ title: "Не удалось подготовить Case Brief", description: String(e), variant: "destructive" });
+    }
+  };
 
   const copyBrief = async () => {
     if (!c) return;
@@ -233,7 +244,8 @@ export default function OperatorCaseDetail() {
         <header className="flex items-center justify-between">
           <Link to="/operator/cases" className="text-sm text-muted-foreground hover:text-foreground">← Cases</Link>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={copyBrief}>Copy Case Brief</Button>
+            <Button size="sm" onClick={downloadBrief}>Download Brief</Button>
+            <Button size="sm" variant="ghost" onClick={copyBrief}>Copy</Button>
             <Button size="sm" variant="ghost" onClick={generateAiDraft} disabled={generatingDraft}>
               {generatingDraft ? "Генерация…" : "Quick Draft (optional)"}
             </Button>
