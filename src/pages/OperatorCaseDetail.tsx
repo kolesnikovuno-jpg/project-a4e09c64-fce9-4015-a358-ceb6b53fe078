@@ -187,6 +187,13 @@ export default function OperatorCaseDetail() {
 
   const generatePdf = async () => {
     if (!c) return;
+    if (!finalOutput.trim()) {
+      toast({
+        title: "Final output is empty. Add client response before generating PDF.",
+        variant: "destructive",
+      });
+      return;
+    }
     setGenerating(true);
     if (isDirty()) {
       setPdfStatus("saving");
@@ -423,7 +430,7 @@ export default function OperatorCaseDetail() {
           </BarGroup>
 
           <BarGroup label="Output">
-            <ToolButton onClick={generatePdf} disabled={generating}>
+            <ToolButton onClick={generatePdf} disabled={generating || !finalOutput.trim()}>
               {generating ? "…" : "Generate PDF"}
             </ToolButton>
             {pdfStatus && (
