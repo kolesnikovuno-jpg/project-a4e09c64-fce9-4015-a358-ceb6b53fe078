@@ -144,17 +144,18 @@ const Index = () => {
                     // Use a smoothstep-like curve so the rightmost ~20–25% blooms
                     // distinctly past the rest of the phrase.
                     const smooth = nearness * nearness * (3 - 2 * nearness);
-                    // Additional bloom for the source-adjacent zone (last ~25%).
-                    const bloomZone = Math.max(0, (nearness - 0.75) / 0.25);
+                    // Reduced bloom — rightmost word no longer reads as emphasized keyword.
+                    const bloomZone = Math.max(0, (nearness - 0.78) / 0.22);
                     const bloom = bloomZone * bloomZone;
-                    const contrastShape = Math.min(1, smooth + bloom * 0.18);
-                    // Wider dynamic range: far letters nearly dissolve into nothing.
-                    const targetOpacity = 0.05 + 0.92 * contrastShape;
-                    // Blur further reduced — barely perceptible, never reads as defocus.
-                    const focusShape = Math.pow(nearness, 1.1);
-                    const targetBlur = (1 - focusShape) * 0.28;
+                    const contrastShape = Math.min(1, smooth + bloom * 0.06);
+                    // Raised floor: "form" remains faintly present, never fully dissolves.
+                    // Lower ceiling: source side gains density via clarity, not brightness.
+                    const targetOpacity = 0.16 + 0.72 * contrastShape;
+                    // Blur drops faster toward source → cleaner letter edges = density.
+                    const focusShape = Math.pow(nearness, 0.7);
+                    const targetBlur = (1 - focusShape) * 0.24;
                     // Weight gradient reinforces structural density near the source.
-                    const targetWeight = Math.round(240 + 230 * contrastShape);
+                    const targetWeight = Math.round(270 + 190 * contrastShape);
                     return (
                       <motion.span
                         key={i}
