@@ -133,7 +133,7 @@ const L: Record<Lang, Labels> = {
     situation: "Situation", uncertainty: "Uncertainty", scope: "Scope",
     attachments: "ATTACHMENTS", none: "none", urlUnavailable: "[signed URL unavailable]",
     optionalContext: "OPTIONAL INTERNAL CONTEXT",
-    primaryAssessment: "Primary assessment (orientation only — not a diagnosis):",
+    primaryOrientation: "Primary orientation:",
     objectiveTitle: "EXPERT WORKING OBJECTIVE",
     objectiveLead: "Develop a client-ready expert response.",
     focus: "Focus:",
@@ -153,7 +153,7 @@ const L: Record<Lang, Labels> = {
     situation: "Ситуация", uncertainty: "Неопределённость", scope: "Объём",
     attachments: "ВЛОЖЕНИЯ", none: "нет", urlUnavailable: "[подписанная ссылка недоступна]",
     optionalContext: "ВНУТРЕННИЙ КОНТЕКСТ (опционально)",
-    primaryAssessment: "Первичная оценка (только для ориентации, не диагноз):",
+    primaryOrientation: "Первичная ориентация:",
     objectiveTitle: "ЗАДАЧА ЭКСПЕРТА",
     objectiveLead: "Подготовить ответ клиенту, готовый к отправке.",
     focus: "Фокус:",
@@ -173,7 +173,7 @@ const L: Record<Lang, Labels> = {
     situation: "Ситуація", uncertainty: "Невизначеність", scope: "Обсяг",
     attachments: "ВКЛАДЕННЯ", none: "немає", urlUnavailable: "[підписане посилання недоступне]",
     optionalContext: "ВНУТРІШНІЙ КОНТЕКСТ (опціонально)",
-    primaryAssessment: "Первинна оцінка (лише для орієнтації, не діагноз):",
+    primaryOrientation: "Первинна орієнтація:",
     objectiveTitle: "ЗАВДАННЯ ЕКСПЕРТА",
     objectiveLead: "Підготувати відповідь клієнту, готову до надсилання.",
     focus: "Фокус:",
@@ -225,7 +225,7 @@ export const buildCaseBrief = async (c: Case): Promise<string> => {
   const draftSummary = summarizeDraft(c.ai_draft);
   if (draftSummary) {
     parts.push(divider, t.optionalContext, divider, "");
-    parts.push(t.primaryAssessment);
+    parts.push(t.primaryOrientation);
     parts.push(draftSummary);
     parts.push("");
   }
