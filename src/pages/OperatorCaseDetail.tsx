@@ -38,6 +38,10 @@ export default function OperatorCaseDetail() {
   const [generatingDraft, setGeneratingDraft] = useState(false);
   const [sending, setSending] = useState(false);
   const [pdfStatus, setPdfStatus] = useState<"" | "saving" | "generating" | "done">("");
+  const [sendStatus, setSendStatus] = useState<"" | "saving" | "generating" | "sending" | "done">("");
+  // Snapshot of final_output that the current pdfUrl was generated from.
+  // Used to detect outdated PDFs without persisting extra DB fields.
+  const [pdfSnapshot, setPdfSnapshot] = useState<string>("");
   const [deliverySent, setDeliverySent] = useState(false);
   const [manualCopyText, setManualCopyText] = useState("");
   const [requestOpen, setRequestOpen] = useState(false);
@@ -79,6 +83,8 @@ export default function OperatorCaseDetail() {
         setWorkingNotes(data.working_notes ?? "");
         setFinalOutput(data.final_output ?? "");
         setPdfUrl(data.pdf_url ?? "");
+        // Assume the persisted PDF matches the persisted final_output.
+        setPdfSnapshot(data.final_output ?? "");
         setDeliverySent(Boolean((data as { delivery_email_sent?: boolean }).delivery_email_sent));
         const atts = extractCaseAttachmentPaths(data);
         if (atts.length > 0) {
@@ -208,6 +214,7 @@ export default function OperatorCaseDetail() {
     const url = (data as { pdf_url?: string })?.pdf_url;
     if (url) {
       setPdfUrl(url);
+      setPdfSnapshot(finalOutput);
       setC((prev) => (prev ? { ...prev, pdf_url: url } : prev));
       setPdfStatus("done");
       setTimeout(() => setPdfStatus((s) => (s === "done" ? "" : s)), 1800);
@@ -240,17 +247,25 @@ export default function OperatorCaseDetail() {
 
   const sendToClient = async () => {
     if (!c) return;
-    if (!pdfUrl && !deliverySent) {
-      toast({ title: "Нет PDF", description: "Сначала сгенерируйте PDF.", variant: "destructive" });
+    if (sending) return;
+
+    if (!finalOutput.trim()) {
+      toast({
+        title: "Final output is empty. Add client response before sending.",
+        variant: "destructive",
+      });
       return;
     }
+
     setSending(true);
+    setSendStatus("saving");
 
     // Ensure latest editor content is persisted before any send/regen.
     if (isDirty()) {
       const saved = await ensureSaved();
       if (!saved) {
         setSending(false);
+        setSendStatus("");
         toast({
           title: "Unable to save latest changes. Send cancelled.",
           variant: "destructive",
@@ -259,24 +274,53 @@ export default function OperatorCaseDetail() {
       }
     }
 
-    // On resend, regenerate the PDF so the signed URL is fresh.
+    // Regenerate PDF if missing, outdated relative to final_output, or on resend.
     let effectivePdfUrl = pdfUrl;
-    if (deliverySent) {
+    const pdfOutdated =
+      !effectivePdfUrl || pdfSnapshot !== finalOutput || deliverySent;
+    if (pdfOutdated) {
+      setSendStatus("generating");
       const { data: regen, error: regenErr } = await supabase.functions.invoke("generate-case-pdf", {
         body: { case_id: c.id },
       });
       if (regenErr) {
         setSending(false);
-        toast({ title: "Не удалось обновить PDF", description: regenErr.message, variant: "destructive" });
+        setSendStatus("");
+        toast({
+          title: "Не удалось сгенерировать PDF. Отправка отменена.",
+          description: regenErr.message,
+          variant: "destructive",
+        });
         return;
       }
       const fresh = (regen as { pdf_url?: string })?.pdf_url;
       if (fresh) {
         effectivePdfUrl = fresh;
         setPdfUrl(fresh);
+        setPdfSnapshot(finalOutput);
         setC((prev) => (prev ? { ...prev, pdf_url: fresh } : prev));
+      } else {
+        setSending(false);
+        setSendStatus("");
+        toast({
+          title: "Не удалось сгенерировать PDF. Отправка отменена.",
+          variant: "destructive",
+        });
+        return;
       }
     }
+
+    if (!effectivePdfUrl) {
+      setSending(false);
+      setSendStatus("");
+      toast({
+        title: "PDF недоступен. Отправка отменена.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSendStatus("sending");
 
     // Unique idempotency key per send attempt — first send uses a stable key,
     // every resend appends a timestamp so the email queue does not dedupe it.
@@ -297,6 +341,7 @@ export default function OperatorCaseDetail() {
     });
     if (sendError) {
       setSending(false);
+      setSendStatus("");
       toast({ title: "Не удалось отправить", description: sendError.message, variant: "destructive" });
       return;
     }
@@ -310,11 +355,14 @@ export default function OperatorCaseDetail() {
       .eq("id", c.id);
     setSending(false);
     if (updError) {
+      setSendStatus("");
       toast({ title: "Письмо отправлено, но не удалось обновить кейс", description: updError.message, variant: "destructive" });
       return;
     }
     setDeliverySent(true);
     setServiceStatus("delivered");
+    setSendStatus("done");
+    setTimeout(() => setSendStatus((s) => (s === "done" ? "" : s)), 1800);
     toast({ title: wasResend ? "Повторно отправлено клиенту" : "Отправлено клиенту" });
   };
 
@@ -391,13 +439,24 @@ export default function OperatorCaseDetail() {
               <div className="flex items-center gap-2">
                 <ToolButton
                   onClick={sendToClient}
-                  disabled={sending || !pdfUrl}
+                  disabled={sending || !finalOutput.trim()}
                   emphasis="primary"
                 >
-                  {sending ? "Отправка…" : "Send to Client"}
+                  {sending ? "…" : "Send to Client"}
                 </ToolButton>
-                {!pdfUrl && (
-                  <span className="text-[11px] text-muted-foreground/60">(generate PDF first)</span>
+                {sendStatus && (
+                  <span className="text-[11px] text-muted-foreground/70">
+                    {sendStatus === "saving"
+                      ? "Saving…"
+                      : sendStatus === "generating"
+                      ? "Generating PDF…"
+                      : sendStatus === "sending"
+                      ? "Sending…"
+                      : "Sent."}
+                  </span>
+                )}
+                {!sendStatus && !finalOutput.trim() && (
+                  <span className="text-[11px] text-muted-foreground/60">(final output empty)</span>
                 )}
               </div>
             ) : null}
@@ -409,9 +468,20 @@ export default function OperatorCaseDetail() {
                 <Check className="h-3 w-3 text-foreground/50" />
                 Delivered
               </span>
-              <ToolButton onClick={sendToClient} disabled={sending}>
-                {sending ? "Отправка…" : "Resend"}
+              <ToolButton onClick={sendToClient} disabled={sending || !finalOutput.trim()}>
+                {sending ? "…" : "Resend"}
               </ToolButton>
+              {sendStatus && (
+                <span className="text-[11px] text-muted-foreground/70">
+                  {sendStatus === "saving"
+                    ? "Saving…"
+                    : sendStatus === "generating"
+                    ? "Generating PDF…"
+                    : sendStatus === "sending"
+                    ? "Sending…"
+                    : "Sent."}
+                </span>
+              )}
             </BarGroup>
           )}
 
