@@ -209,11 +209,15 @@ Hard rules:
     const userContent: Array<Record<string, unknown>> = [{ type: "text", text: prompt }];
     for (const p of attachmentParts) {
       if (p.type === "image_url") {
+        userContent.push({ type: "text", text: `Attachment image: ${p._name}` });
         userContent.push({ type: "image_url", image_url: p.image_url });
       } else if (p.type === "pdf_inline") {
+        userContent.push({ type: "text", text: `Attachment PDF (inline): ${p.name}` });
         userContent.push({ type: "image_url", image_url: { url: p.dataUrl } });
       }
     }
+    const approxBytes = JSON.stringify(userContent).length;
+    console.log("[assessment] user content parts:", userContent.length, "approx bytes:", approxBytes);
 
     console.log("[assessment] calling AI gateway for submission", submissionId);
     console.log("[assessment] attachments:", attachmentSummary);
