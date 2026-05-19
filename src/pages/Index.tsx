@@ -140,24 +140,17 @@ const Index = () => {
                     const trackEm = trackingFarEm + (trackingNearEm - trackingFarEm) * nearness;
                     // Rightmost reveals first → delay grows leftward
                     const delay = baseDelay + (n - 1 - i) * perLetter;
-                    // Resonance field: organic, non-linear emergence.
-                    // Use a smoothstep-like curve so the rightmost ~20–25% blooms
-                    // distinctly past the rest of the phrase.
-                    const smooth = nearness * nearness * (3 - 2 * nearness);
-                    // Reduced bloom — rightmost word no longer reads as emphasized keyword.
-                    const bloomZone = Math.max(0, (nearness - 0.78) / 0.22);
-                    const bloom = bloomZone * bloomZone;
-                    const contrastShape = Math.min(1, smooth + bloom * 0.06);
-                    // Raised floor: "form" remains faintly present, never fully dissolves.
-                    // Lower ceiling: source side gains density via clarity, not brightness.
-                    const targetOpacity = 0.16 + 0.72 * contrastShape;
-                    // Blur drops faster toward source → cleaner letter edges = density.
+                    // Pure smoothstep — continuous gradient, no bloom endpoint,
+                    // so the eye never "lands" on the final word.
+                    const contrastShape = nearness * nearness * (3 - 2 * nearness);
+                    // Slightly raised floor, lowered ceiling — right edge no longer
+                    // reads as a textual endpoint; mid-transition feels more continuous.
+                    const targetOpacity = 0.18 + 0.64 * contrastShape;
+                    // Microscopic residual softness even at the right edge.
                     const focusShape = Math.pow(nearness, 0.7);
-                    const targetBlur = (1 - focusShape) * 0.24;
-                    // Weight gradient reinforces structural density near the source.
-                    // Closer to .uno weight (semibold ≈ 600) but never reaching it —
-                    // same material, softer state.
-                    const targetWeight = Math.round(360 + 180 * contrastShape);
+                    const targetBlur = 0.05 + (1 - focusShape) * 0.22;
+                    // Softened weight peak — same material, never asserting as text.
+                    const targetWeight = Math.round(340 + 150 * contrastShape);
                     return (
                       <motion.span
                         key={i}
