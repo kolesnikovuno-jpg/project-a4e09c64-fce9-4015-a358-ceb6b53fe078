@@ -47,56 +47,103 @@ const signAttachmentUrls = async (attachments: CaseAttachment[]) => {
   return urlByPath;
 };
 
-const replaceInternalAttachmentPaths = (text: string, urlByPath: Map<string, string>) =>
-  text.replace(ATTACHMENT_PATH_RE, (path) => urlByPath.get(path) ?? "[signed URL unavailable]");
+const SECTION_KEYS = ["Situation", "Uncertainty", "Scope", "Supporting links"] as const;
+type SectionKey = typeof SECTION_KEYS[number];
+
+const parseSections = (raw: string): Record<SectionKey, string> => {
+  const out: Record<SectionKey, string> = {
+    Situation: "",
+    Uncertainty: "",
+    Scope: "",
+    "Supporting links": "",
+  };
+  if (!raw) return out;
+  const lines = raw.split("\n");
+  let current: SectionKey | null = null;
+  const buf: Record<SectionKey, string[]> = {
+    Situation: [], Uncertainty: [], Scope: [], "Supporting links": [],
+  };
+  for (const line of lines) {
+    const header = SECTION_KEYS.find((k) => line.trim().toLowerCase() === `${k.toLowerCase()}:`);
+    if (header) { current = header; continue; }
+    if (current) buf[current].push(line);
+  }
+  for (const k of SECTION_KEYS) out[k] = buf[k].join("\n").trim();
+  return out;
+};
+
+const summarizeDraft = (draft: string | null | undefined): string => {
+  if (!draft) return "";
+  const cleaned = draft
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l && !/^[#*\-—]+$/.test(l) && !/^\d+\.\s*$/.test(l));
+  return cleaned.slice(0, 10).join("\n");
+};
+
+const formatDate = (iso: string | null | undefined) => {
+  if (!iso) return "";
+  try { return new Date(iso).toISOString().slice(0, 10); } catch { return iso; }
+};
 
 export const buildCaseBrief = async (c: Case): Promise<string> => {
   const attachments = extractCaseAttachmentPaths(c);
   const urlByPath = await signAttachmentUrls(attachments);
-  const clientInput = replaceInternalAttachmentPaths(c.raw_input ?? "", urlByPath);
+  const sections = parseSections(c.raw_input ?? "");
 
-  const base = `CASE ID: ${c.id}
+  const divider = "--------------------------------------------------";
+  const parts: string[] = [];
 
-Client:
-Name: ${c.client_name || "Not provided"}
-Email: ${c.email ?? ""}
-Language: ${c.language ?? ""}
+  parts.push(divider, "CASE PACKAGE", divider, "");
+  parts.push(`Case ID: ${c.id}`);
+  parts.push(`Client name: ${c.client_name || "—"}`);
+  parts.push(`Client email: ${c.email ?? "—"}`);
+  parts.push(`Language: ${c.language ?? "—"}`);
+  parts.push(`Created: ${formatDate(c.created_at)}`);
+  parts.push("");
 
-Client Input:
-${clientInput}
+  parts.push(divider, "CLIENT REQUEST", divider, "");
+  parts.push("Situation:");
+  parts.push(sections.Situation || "—");
+  parts.push("");
+  parts.push("Uncertainty:");
+  parts.push(sections.Uncertainty || "—");
+  parts.push("");
+  parts.push("Scope:");
+  parts.push(sections.Scope || "—");
+  parts.push("");
 
-Task:
-Use this case as an expert structural diagnostic draft.
+  parts.push(divider, "ATTACHMENTS", divider, "");
+  if (attachments.length === 0) {
+    parts.push("none");
+  } else {
+    const blocks = attachments.map((a) => {
+      const url = urlByPath.get(a.path) ?? "[signed URL unavailable]";
+      return `${a.name}\n${url}`;
+    });
+    parts.push(blocks.join("\n\n"));
+  }
+  parts.push("");
 
-Goal:
-Generate an internal working draft for expert review, not final client output.
+  const draftSummary = summarizeDraft(c.ai_draft);
+  if (draftSummary) {
+    parts.push(divider, "OPTIONAL INTERNAL CONTEXT", divider, "");
+    parts.push("Primary assessment:");
+    parts.push(draftSummary);
+    parts.push("");
+  }
 
-Required output:
+  parts.push(divider, "EXPERT WORKING OBJECTIVE", divider, "");
+  parts.push("Develop a client-ready expert response.");
+  parts.push("");
+  parts.push("Focus:");
+  parts.push("- identify root structural issue");
+  parts.push("- determine whether this is correction / logic shift / rebuild");
+  parts.push("- propose viable solution direction");
+  parts.push("");
+  parts.push("If attachments exist, use them as evidence.");
+  parts.push("");
+  parts.push(divider);
 
-1. Explicit client problem
-What the client directly describes.
-
-2. Hidden structural tension
-What underlying contradiction, mismatch, uncertainty, or pattern may be driving the issue.
-
-3. Structural diagnosis
-Interpret the architecture of the situation.
-
-4. Possible correction vectors
-Suggest meaningful structural shifts, reframing directions, or interventions.
-
-5. Draft expert response
-Create a preliminary expert working response that can later be refined.
-
-Important:
-This is an internal production draft, not final client-facing output.`;
-
-  if (attachments.length === 0) return `${base}\n\nAttachments:\nnone`;
-
-  const attachmentLines = attachments.map((attachment) => {
-    const url = urlByPath.get(attachment.path) ?? "[signed URL unavailable]";
-    return `${attachment.name}\n${url}`;
-  });
-
-  return `${base}\n\nAttachments:\n${attachmentLines.join("\n\n")}`;
+  return parts.join("\n");
 };
