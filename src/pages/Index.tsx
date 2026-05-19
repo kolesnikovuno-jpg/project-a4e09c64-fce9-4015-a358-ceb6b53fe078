@@ -137,8 +137,8 @@ const Index = () => {
                     // Emanation gradient: dense zone pulled slightly toward the button,
                     // so fade boundary sits closer to the source.
                     const shaped = Math.pow(nearness, 1.55);
-                    const targetOpacity = 0.2 + 0.46 * shaped;
-                    const targetBlur = (1 - shaped) * 1.55;
+                    const targetOpacity = 0.34 + 0.5 * shaped;
+                    const targetBlur = (1 - shaped) * 1.45;
                     return (
                       <motion.span
                         key={i}
@@ -170,8 +170,8 @@ const Index = () => {
             {/* Surrounding circle — same fill as button, mirrors hover/toggled state */}
             <motion.span
               aria-hidden
-              className={`pointer-events-none absolute rounded-full w-[76px] h-[76px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/75 ${
-                buttonActive ? "bg-primary/75" : "bg-primary/45"
+              className={`pointer-events-none absolute rounded-full w-[76px] h-[76px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/20 ${
+                buttonActive ? "bg-primary/55" : "bg-primary/30"
               }`}
               initial={{ opacity: 0, scale: 0.9, filter: "blur(8px)" }}
               animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
@@ -180,7 +180,7 @@ const Index = () => {
             />
           <button
             onClick={handleToggle}
-            className="group/uno relative flex items-center justify-center bg-primary/45 rounded-full w-[76px] h-[76px] hover:bg-primary/75 transition-colors duration-300 cursor-pointer active:scale-[1.06]"
+            className="group/uno relative flex items-center justify-center bg-primary/30 rounded-full w-[76px] h-[76px] hover:bg-primary/20 transition-colors duration-300 cursor-pointer active:scale-[1.06]"
           >
             {!open && (
               <motion.div
