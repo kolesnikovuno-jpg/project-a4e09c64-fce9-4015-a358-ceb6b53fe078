@@ -22,7 +22,7 @@ const SERVICE_STATUSES = [
   { value: "revision", label: "Revision" },
   { value: "closed", label: "Closed" },
 ] as const;
-const SERVICE_STATUS_VALUES = SERVICE_STATUSES.map((s) => s.value) as readonly string[];
+void SERVICE_STATUSES;
 
 export default function OperatorCaseDetail() {
   const { id } = useParams<{ id: string }>();
