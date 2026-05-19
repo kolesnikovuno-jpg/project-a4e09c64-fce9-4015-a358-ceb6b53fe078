@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,8 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
-import { buildCaseBrief, downloadBriefFile } from "@/lib/caseBrief";
+import { buildCaseBrief, downloadBriefFile, extractCaseAttachmentPaths } from "@/lib/caseBrief";
 import { ManualCopyDialog } from "@/components/operator/ManualCopyDialog";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 type Case = Tables<"cases">;
 
