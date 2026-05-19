@@ -1,0 +1,2 @@
+REVOKE EXECUTE ON FUNCTION public.notify_payment_confirmation_webhook() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.notify_payment_webhook_on_accept() FROM PUBLIC, anon, authenticated;
