@@ -126,9 +126,9 @@ const Index = () => {
               // Sequencing is bound to the .uno node fade: the phrase starts as
               // the field of the same object, with dense overlap instead of a
               // separate textual entrance.
-              const baseDelay = 0.7;
-              const perLetter = 0.009;
-              const revealDur = 2.29;
+              const baseDelay = 0.65;
+              const perLetter = 0.006;
+              const revealDur = 2.43;
               return (
                 <span
                   aria-hidden
@@ -155,7 +155,7 @@ const Index = () => {
                     return (
                       <motion.span
                         key={i}
-                        initial={{ opacity: 0, x: 0.4, filter: "blur(0.65px)" }}
+                        initial={{ opacity: 0, x: 0.2, filter: "blur(0.48px)" }}
                         animate={{
                           opacity: targetOpacity,
                           x: 0,
@@ -165,7 +165,7 @@ const Index = () => {
                         transition={{
                           delay,
                           duration: revealDur,
-                          ease: [0.22, 1, 0.36, 1],
+                          ease: [0.38, 0, 0.18, 1],
                         }}
                         style={{
                           marginRight: `${trackEm}em`,
