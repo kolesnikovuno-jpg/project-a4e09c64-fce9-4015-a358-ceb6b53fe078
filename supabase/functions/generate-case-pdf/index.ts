@@ -419,15 +419,24 @@ Deno.serve(async (req) => {
     while (blocks.length && blocks[0].kind === "space") blocks.shift();
     for (const b of blocks) drawBlock(b);
 
-    // ---------- FOOTER ----------
+    // ---------- FOOTER & PAGE NUMBERS ----------
     const pages = pdf.getPages();
-    pages.forEach((p) => {
-      p.drawText("Structural Clarity  ·  Confidential Expert Response", {
+    pages.forEach((p, idx) => {
+      p.drawText("Structural Clarity  ·  kolesnikov.uno", {
         x: marginX,
-        y: 48,
+        y: 52,
         size: 7.5,
-        font: fDisplay,
+        font: fRegular,
         color: muted,
+      });
+      const num = String(idx + 1).padStart(2, "0");
+      const numWidth = fDisplay.widthOfTextAtSize(num, 8);
+      p.drawText(num, {
+        x: pageWidth - marginX - numWidth,
+        y: 52,
+        size: 8,
+        font: fDisplay,
+        color: accent,
       });
     });
 
