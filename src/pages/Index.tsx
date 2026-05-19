@@ -108,7 +108,13 @@ const Index = () => {
       >
         {/* Toggle button — asymmetric placement, shifted right */}
         <div className="flex items-center justify-center mt-[72px] md:mt-0 translate-x-[22vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
-          <div className="group/uno relative flex items-center justify-center">
+          <motion.div
+            className="group/uno relative flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.35, duration: 2.2, ease: [0.22, 1, 0.36, 1] }}
+            style={{ willChange: "opacity" }}
+          >
             {/* Ambient governing principle — resonance trace emerging from the .uno node */}
             {(() => {
               const phrase = "form emerges through resonance";
@@ -168,15 +174,11 @@ const Index = () => {
               );
             })()}
             {/* Surrounding circle — same fill as button, mirrors hover/toggled state */}
-            <motion.span
+            <span
               aria-hidden
               className={`pointer-events-none absolute rounded-full w-[76px] h-[76px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/20 ${
                 buttonActive ? "bg-primary/55" : "bg-primary/30"
               }`}
-              initial={{ opacity: 0, scale: 0.9, filter: "blur(8px)" }}
-              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              transition={{ delay: 0.45, duration: 1.9, ease: [0.22, 1, 0.36, 1] }}
-              style={{ willChange: "opacity, transform, filter" }}
             />
           <button
             onClick={handleToggle}
@@ -251,7 +253,7 @@ const Index = () => {
               .uno
             </span>
           </button>
-          </div>
+          </motion.div>
         </div>
 
         {/* Custom overlay popup */}
