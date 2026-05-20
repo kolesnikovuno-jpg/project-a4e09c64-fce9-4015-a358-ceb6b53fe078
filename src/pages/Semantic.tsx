@@ -75,27 +75,27 @@ export default function Semantic() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b0b0c] text-neutral-200 font-light antialiased">
-      <LanguageSwitcher background="#0b0b0c" />
-      <header className="max-w-3xl mx-auto px-6 pt-10 pb-6 flex items-center justify-between text-[11px] uppercase tracking-[0.22em] text-neutral-500">
-        <Link to={localePath("/semantic")} className="hover:text-neutral-200 transition-colors">{S.brand}</Link>
+    <div className="min-h-screen bg-background text-foreground antialiased">
+      <LanguageSwitcher />
+      <header className="max-w-3xl mx-auto px-6 pt-10 pb-6 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+        <Link to={localePath("/semantic")} className="hover:text-foreground transition-colors">{S.brand}</Link>
         <nav className="flex gap-6">
-          <Link to={localePath("/semantic/about")} className="hover:text-neutral-200 transition-colors">{S.nav_about}</Link>
+          <Link to={localePath("/semantic/about")} className="hover:text-foreground transition-colors">{S.nav_about}</Link>
         </nav>
       </header>
 
       <main className="max-w-3xl mx-auto px-6 pb-24">
-        <section className="pt-12 pb-14 border-b border-neutral-900">
-          <h1 className="text-[28px] md:text-[34px] leading-tight tracking-tight text-neutral-100 font-extralight">
+        <section className="pt-12 pb-14 border-b border-border">
+          <h1 className="text-[24px] md:text-[30px] leading-tight tracking-tight text-foreground font-normal">
             {S.hero_title}
           </h1>
-          <p className="mt-4 text-[13px] leading-relaxed text-neutral-500 max-w-xl">
+          <p className="mt-4 text-[13px] leading-[1.75] text-foreground/75 max-w-xl">
             {S.hero_lead}
           </p>
         </section>
 
         <section className="pt-10">
-          <div className="flex gap-6 text-[11px] uppercase tracking-[0.18em]">
+          <div className="flex gap-6 text-[10px] uppercase tracking-[0.18em]">
             {(["current", "manual", "symbol"] as Mode[]).map((m) => (
               <button
                 key={m}
@@ -107,8 +107,8 @@ export default function Semantic() {
                 }}
                 className={`pb-2 border-b transition-colors ${
                   mode === m
-                    ? "text-neutral-100 border-neutral-100"
-                    : "text-neutral-600 border-transparent hover:text-neutral-300"
+                    ? "text-primary border-primary"
+                    : "text-muted-foreground border-transparent hover:text-foreground"
                 }`}
               >
                 {m === "current" ? S.mode_current : m === "manual" ? S.mode_manual : S.mode_symbol}
@@ -119,12 +119,12 @@ export default function Semantic() {
           <div className="mt-10">
             {mode === "current" && (
               <div className="flex items-baseline gap-6">
-                <div className="text-[64px] md:text-[80px] font-extralight tracking-tight tabular-nums text-neutral-100 leading-none">
+                <div className="text-[56px] md:text-[76px] font-light tracking-tight tabular-nums text-foreground leading-none">
                   {currentTime}
                 </div>
                 <button
                   onClick={() => setCurrentTime(currentHHMM())}
-                  className="text-[11px] uppercase tracking-[0.18em] text-neutral-500 hover:text-neutral-200 transition-colors"
+                  className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {S.refresh}
                 </button>
@@ -139,7 +139,7 @@ export default function Semantic() {
                 value={manualTime}
                 onChange={(e) => setManualTime(e.target.value)}
                 maxLength={5}
-                className="w-full bg-transparent border-b border-neutral-800 focus:border-neutral-400 outline-none text-[48px] md:text-[64px] font-extralight tracking-tight tabular-nums text-neutral-100 placeholder:text-neutral-700 pb-2 transition-colors"
+                className="w-full bg-transparent border-b border-border focus:border-primary outline-none text-[44px] md:text-[60px] font-light tracking-tight tabular-nums text-foreground placeholder:text-muted-foreground/60 pb-2 transition-colors"
               />
             )}
 
@@ -151,7 +151,7 @@ export default function Semantic() {
                 value={symbol}
                 onChange={(e) => setSymbol(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 maxLength={6}
-                className="w-full bg-transparent border-b border-neutral-800 focus:border-neutral-400 outline-none text-[48px] md:text-[64px] font-extralight tracking-tight tabular-nums text-neutral-100 placeholder:text-neutral-700 pb-2 transition-colors"
+                className="w-full bg-transparent border-b border-border focus:border-primary outline-none text-[44px] md:text-[60px] font-light tracking-tight tabular-nums text-foreground placeholder:text-muted-foreground/60 pb-2 transition-colors"
               />
             )}
           </div>
@@ -160,11 +160,11 @@ export default function Semantic() {
             <button
               onClick={interpret}
               disabled={!canSubmit || loading}
-              className="text-[11px] uppercase tracking-[0.22em] text-neutral-100 border border-neutral-700 hover:border-neutral-300 px-6 py-3 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="text-[10px] uppercase tracking-[0.22em] text-primary border border-primary/40 hover:border-primary hover:bg-primary/5 px-6 py-3 rounded-none transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
               {loading ? S.interpreting : S.interpret}
             </button>
-            {error && <span className="text-[11px] text-neutral-500">{error}</span>}
+            {error && <span className="text-[11px] text-muted-foreground">{error}</span>}
           </div>
         </section>
 
@@ -180,13 +180,13 @@ export default function Semantic() {
             {interp?.architectural && <Block label={S.label_architectural}><p>{interp.architectural}</p></Block>}
             {interp?.reflection && (
               <Block label={S.label_reflection}>
-                <p className="italic text-neutral-300">{interp.reflection}</p>
+                <p className="italic text-primary/90">{interp.reflection}</p>
               </Block>
             )}
             {interp?.recommendation && <Block label={S.label_recommendation}><p>{interp.recommendation}</p></Block>}
 
             {loading && !interp && (
-              <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-600">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 {S.generating}
               </p>
             )}
@@ -200,8 +200,8 @@ export default function Semantic() {
 function Block({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-[0.28em] text-neutral-600 mb-3">{label}</div>
-      <div className="text-[14px] leading-[1.7] text-neutral-300 max-w-2xl">{children}</div>
+      <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground mb-3">{label}</div>
+      <div className="text-[13px] leading-[1.85] text-foreground/85 max-w-2xl">{children}</div>
     </div>
   );
 }
@@ -217,7 +217,7 @@ function Decomposition({ obj, S }: { obj: SemanticObject; S: ReturnType<typeof u
   const tensionLabel =
     obj.tension === "low" ? S.tension_low : obj.tension === "high" ? S.tension_high : S.tension_medium;
   return (
-    <div className="space-y-2 text-[13px] text-neutral-400 font-mono">
+    <div className="space-y-2 text-[12px] text-foreground/70 font-mono">
       <Row k={S.row_value} v={obj.value} />
       <Row k={S.row_pattern} v={patternLabel} />
       <Row k={S.row_dominant} v={`${obj.dominant} — ${dominantPrinciple}`} />
@@ -225,7 +225,7 @@ function Decomposition({ obj, S }: { obj: SemanticObject; S: ReturnType<typeof u
       <Row k={S.row_direction} v={directionLabel} />
       <Row k={S.row_tension} v={tensionLabel} />
       {obj.interaction.length > 0 && <Row k={S.row_interaction} v={obj.interaction.join("  ")} />}
-      <div className="pt-3 mt-3 border-t border-neutral-900 text-[11px] text-neutral-600">
+      <div className="pt-3 mt-3 border-t border-border text-[11px] text-muted-foreground">
         {S.row_principles}:{" "}
         {Array.from(new Set(obj.digits.split(""))).map((d) => `${d}=${S.principles[d] ?? d}`).join("  ·  ")}
       </div>
@@ -236,8 +236,8 @@ function Decomposition({ obj, S }: { obj: SemanticObject; S: ReturnType<typeof u
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex gap-4">
-      <span className="w-28 shrink-0 text-neutral-600">{k}</span>
-      <span className="text-neutral-300">{v}</span>
+      <span className="w-28 shrink-0 text-muted-foreground">{k}</span>
+      <span className="text-foreground/85">{v}</span>
     </div>
   );
 }
