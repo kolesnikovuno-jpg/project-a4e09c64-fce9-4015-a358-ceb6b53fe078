@@ -250,7 +250,7 @@ function Decomposition({ obj, S }: { obj: SemanticObject; S: ReturnType<typeof u
   const tensionLabel =
     obj.tension === "low" ? S.tension_low : obj.tension === "high" ? S.tension_high : S.tension_medium;
   return (
-    <div className="space-y-2 text-[12px] text-foreground/70 font-mono">
+    <div className="space-y-2 text-[12px] text-foreground/80 font-mono">
       <Row k={S.row_value} v={obj.value} />
       <Row k={S.row_pattern} v={patternLabel} />
       <Row k={S.row_dominant} v={`${obj.dominant} — ${dominantPrinciple}`} />
@@ -258,7 +258,7 @@ function Decomposition({ obj, S }: { obj: SemanticObject; S: ReturnType<typeof u
       <Row k={S.row_direction} v={directionLabel} />
       <Row k={S.row_tension} v={tensionLabel} />
       {obj.interaction.length > 0 && <Row k={S.row_interaction} v={obj.interaction.join("  ")} />}
-      <div className="pt-3 mt-3 border-t border-border text-[11px] text-muted-foreground">
+      <div className="pt-3 mt-3 border-t border-border text-[11px] text-foreground/70">
         {S.row_principles}:{" "}
         {Array.from(new Set(obj.digits.split(""))).map((d) => `${d}=${S.principles[d] ?? d}`).join("  ·  ")}
       </div>
@@ -269,8 +269,8 @@ function Decomposition({ obj, S }: { obj: SemanticObject; S: ReturnType<typeof u
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex gap-4">
-      <span className="w-28 shrink-0 text-muted-foreground">{k}</span>
-      <span className="text-foreground/85">{v}</span>
+      <span className="w-28 shrink-0 text-foreground/60">{k}</span>
+      <span className="text-foreground/90">{v}</span>
     </div>
   );
 }
