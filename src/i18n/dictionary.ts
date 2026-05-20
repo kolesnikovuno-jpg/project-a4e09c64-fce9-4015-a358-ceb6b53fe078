@@ -268,6 +268,7 @@ export type Dictionary = {
       submit_error: string;
     };
   };
+  semantic: SemanticDict;
 };
 
 // Shared structural shape for the Semantic Time block (added to every locale).
