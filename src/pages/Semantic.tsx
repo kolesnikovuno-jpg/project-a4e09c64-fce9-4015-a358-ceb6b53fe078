@@ -86,8 +86,24 @@ export default function Semantic() {
     }
   }
 
-  const appUrl = "https://kolesnikov.uno/semantic-time";
-  const rootUrl = "https://kolesnikov.uno/semantic-time";
+  // Map internal locale code to the public share URL `?lang=` value.
+  // Ukrainian uses ISO "uk" internally but is shared as "ua" per spec.
+  const shareLangParam = locale === "uk" ? "ua" : locale;
+  const appUrl = `https://kolesnikov.uno/semantic-time?lang=${shareLangParam}`;
+  const rootUrl = appUrl;
+
+  // On mount, read `?lang=` and switch the interface language if it differs
+  // from the currently active locale. Accepts "ua" as an alias for "uk".
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = new URLSearchParams(window.location.search).get("lang");
+    if (!raw) return;
+    const normalized = raw.toLowerCase() === "ua" ? "uk" : raw.toLowerCase();
+    if ((LOCALES as readonly string[]).includes(normalized) && normalized !== locale) {
+      switchTo(normalized as Locale);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function buildResultText(): string {
     if (!semantic) return "";
