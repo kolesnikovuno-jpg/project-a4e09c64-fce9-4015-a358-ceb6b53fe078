@@ -1659,6 +1659,10 @@ export const dictionary: Record<Locale, Dictionary> = {
         layered_composition: "шарувата структура",
         composite: "шарувата структура",
         directed_transition: "спрямований перехід",
+        symmetry: "симетрія",
+        partial_return: "часткове повернення",
+        recurrence: "рекурентність",
+        mediated_recurrence: "опосередкована рекурентність",
       },
       dynamics: {
         repetition: "посилення / резонанс",
@@ -1679,6 +1683,10 @@ export const dictionary: Record<Locale, Dictionary> = {
         layered_composition: "шарувата структура під спільним навантаженням",
         composite: "шарувата структура під спільним навантаженням",
         directed_transition: "спрямований перехід / зміна стану",
+        symmetry: "дзеркальна топологія / відображене повернення",
+        partial_return: "повернення до проміжного вузла",
+        recurrence: "посилення вузла без явної геометрії повернення",
+        mediated_recurrence: "опосередкована рекурентність через інший вузол",
       },
       trajectories: {
         repetition: "рекурсивне посилення",
@@ -1699,6 +1707,10 @@ export const dictionary: Record<Locale, Dictionary> = {
         layered_composition: "розподілена структурна поведінка",
         composite: "розподілена структурна поведінка",
         directed_transition: "спрямований перехід між принципами",
+        symmetry: "дзеркальна топологія",
+        partial_return: "повернення до проміжного вузла",
+        recurrence: "посилення повторюваного вузла",
+        mediated_recurrence: "опосередкована рекурентність / осциляція навколо вузла",
       },
       principles: {
         "0": "пауза / потенціал / розрив",
