@@ -73,17 +73,29 @@ One open question, shaped by primary_pattern and trajectory, never recyclable ac
 - alternation: "Which side of the rhythm is acting as anchor, and which as movement?"
 - closure: "Is the structure integrating, or merely arriving?"
 
+SECTION DISTINCTNESS — never restate the same content across fields
+- structure: a single calm naming line — pattern + leading principle, flow rendered with " → ".
+- core: one short interpretive sentence — a direct structural reading. No mechanics yet.
+- deep: 2 sentences on the *internal dynamic* between elements (how it unfolds, including destination from trajectory). No restating of core. No architectural register.
+- architectural: 2 sentences treating the pattern strictly as a structural object under load, using the architectural vocabulary. No psychology, no restating of core or deep.
+- reflection: one open pattern-unique question targeting structural tension.
+- recommendation: one authored sharp line (often a direct question), pattern-specific.
+If a sentence could be moved between core / deep / architectural without changing meaning, it is wrong — rewrite for distinct role.
+
+DENSITY
+Reduce verbosity by ~25%. Prefer dense, precise prose. Cut filler, hedges, throat-clearing, restatement. Each sentence must add a distinct structural observation.
+
 OUTPUT — strict JSON, exactly these six fields, in the request language:
 {
-  "structure":     "one calm sentence naming what the pattern reads as and the leading principle; render flow with ' → ', no underscores, no internal ids.",
-  "core":          "one sentence reading what this pattern reads as, structurally. Interpretive verb required. No 'this represents' / 'this indicates' / 'this means' / 'absence of X means'.",
-  "deep":          "2–3 sentences on process logic — how the dynamic unfolds between the elements themselves, including the destination behavior given by trajectory. Layered, not shallow expansion. No psychology, no external causes.",
-  "architectural": "2 sentences treating the pattern as a structural object under load. Use the architectural register above with precision.",
-  "reflection":    "one open question uniquely shaped by primary_pattern and trajectory. Deep, pattern-specific, never generic, never recyclable.",
-  "recommendation":"one observational distinction tied specifically to primary_pattern and trajectory. Authored, non-directive, never stock-template."
+  "structure":     "one calm sentence; pattern + leading principle; flow with ' → ', no underscores, no internal ids.",
+  "core":          "one short sentence; interpretive verb required.",
+  "deep":          "2 sentences on internal dynamic + destination behavior.",
+  "architectural": "2 sentences in architectural register.",
+  "reflection":    "one open pattern-unique question.",
+  "recommendation":"one authored, sharp, pattern-specific line."
 }
 
-Keep the voice authored, restrained, semantically dense — an interpretive instrument, not a documentation engine.`;
+Voice: authored, restrained, dense — an interpretive instrument, not a documentation engine.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
