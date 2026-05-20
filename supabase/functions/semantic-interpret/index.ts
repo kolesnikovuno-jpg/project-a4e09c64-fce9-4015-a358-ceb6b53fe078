@@ -127,6 +127,38 @@ Never describe the chain as "skipping" or "bypassing" stages, and never list pri
 NO STATE-TRANSFORMATION LANGUAGE
 Forbidden: "state change", "state transfer", "transformation", "changes state", "transmission channel", "смена состояния", "передача состояния", "трансформация", "меняет состояние", "канал передачи", "зміна стану", "передача стану", "трансформація", "змінює стан", "канал передачі". Use instead: "transition", "transfer", "directional relation", "structural movement", "переход", "передача", "направленное отношение", "структурное движение", "перехід", "передача", "спрямоване відношення", "структурний рух".
 
+PRINCIPLE VOCABULARY BINDING (binding, overrides softer guidance)
+Each principle has a fixed semantic domain. Interpretation MUST stay strictly inside the domains of the principles that actually appear in the chain. Never import vocabulary from a principle that is not present.
+- 1 — impulse, initiation, activation, start, drive, trigger. RU: импульс, инициация, активация, начало, запуск. UK: імпульс, ініціація, активація, початок, запуск.
+- 2 — connection, interaction, exchange, relation, link, coupling. RU: связь, взаимодействие, обмен, отношение, соединение. UK: зв'язок, взаємодія, обмін, відношення, з'єднання.
+- 3 — expression, manifestation (as neutral synonym only), articulation, projection, externalisation. RU: выражение, артикуляция, проекция, внешнее проявление. UK: вираження, артикуляція, проекція, зовнішній прояв.
+- 4 — structure, stabilisation, containment, form, consolidation, framework. RU: структура, стабилизация, удержание, форма, каркас. UK: структура, стабілізація, утримання, форма, каркас.
+- 0 — pause, interruption, gap, discontinuity, reset boundary. RU: пауза, прерывание, разрыв, разъединение, граница сброса. UK: пауза, переривання, розрив, межа скидання.
+(Principles 5–9 retain their dictionary domains: 5 movement/change, 6 integration, 7 inquiry, 8 materialisation/execution, 9 completion.)
+Hard rule: if a principle is NOT in the chain, do not use any of its domain words — neither directly nor as decoration. Examples:
+- dominant=2 and 4 absent → forbid "stability", "stabilisation", "containment", "structure", "form", "framework", "стабильность", "устойчивость", "удержание", "каркас", "форма", "стійкість", "стабільність", "утримання".
+- dominant=1 and 2 absent → forbid relational vocabulary ("connection", "exchange", "relation", "связь", "взаимодействие", "зв'язок").
+- 3 absent → forbid "expression", "manifestation", "articulation", "выражение", "проявление", "вираження".
+If the dominant is 2, frame reinforcement as relational coherence / interactional persistence, NOT as "stability" or "return to stable state".
+
+RETURN TO PRINCIPLE ≠ RETURN TO STATE (binding)
+When a chain closes back on its originating principle (loop, partial_return, symmetry, recursive_return), this is a return to the ORIGINATING PRINCIPLE, not necessarily to the original system state. The structure may have been transformed by the intervening principles.
+Preferred wording (EN): "returns to the originating principle", "closes back toward the initial organising principle", "re-establishes the original semantic anchor", "the chain folds back onto its opening principle".
+Preferred wording (RU): "возвращается к исходному принципу", "замыкается на начальном организующем принципе", "восстанавливает исходный смысловой опорный принцип".
+Preferred wording (UK): "повертається до початкового принципу", "замикається на вихідному організуючому принципі", "відновлює початковий смисловий опорний принцип".
+Forbidden unless structurally true (i.e. the chain literally restates the same state, e.g. identical-digit resonance): "returns to original state", "returns to prior state", "restores the initial state", "возвращается к исходному состоянию", "восстанавливает прежнее состояние", "повертається до початкового стану", "відновлює попередній стан". The presence of intervening distinct principles means the state has shifted, even when the anchor principle recurs.
+
+NO SEMANTIC IMPROVISATION
+Interpretation must remain structurally disciplined. No poetic drift, no conceptual embellishment, no inferred meaning outside the detected structure. If a phrasing is elegant but imports vocabulary from absent principles, rewrite it. Better a plain accurate sentence than a beautiful inaccurate one.
+
+PATTERN-FAMILY SEMANTIC ALIGNMENT (reflection & recommendation)
+Reflection and recommendation vocabulary must match the actual pattern family. Do not mix semantics across families.
+- return loop / loop / partial_return / symmetry / recursive_return → repetition, closure, recursion, self-reference, folding back.
+- progression / escalation / closure → development, accumulation, transformation, forward build, integration.
+- interruption (0 present) → recalibration, rupture, discontinuity, pause, reset.
+- resonance / amplification / repetition / recurrence / mediated_recurrence → amplification, reinforcement, escalation of one principle, self-intensification.
+Never apply progression vocabulary to a return-loop reading, and never apply closure/completion vocabulary to a resonance reading.
+
 NO CONTROL OR AGENCY SEMANTICS
 Forbidden: "transfers control", "hands over governance", "command", "governs", "controls", "delegates", "передаёт управление", "передаёт контроль", "управляет", "командует", "делегирует", "передає управління", "передає контроль", "керує", "командує", "делегує". The chain has no agent. Use instead: "transitions toward", "becomes expressed through", "connects to", "moves into", "переходит к", "выражается через", "соединяется с", "переходить до", "виражається через", "з'єднується з".
 
