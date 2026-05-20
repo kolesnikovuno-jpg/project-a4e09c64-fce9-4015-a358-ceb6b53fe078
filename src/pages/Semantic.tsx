@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { parse, type SemanticObject } from "@/lib/semantic/parser";
 import { useLocale } from "@/i18n/useLocale";
-import LanguageSwitcher from "@/i18n/LanguageSwitcher";
+import { LOCALES, LOCALE_LABEL, type Locale } from "@/i18n/config";
 
 type Mode = "current" | "manual" | "symbol";
 
@@ -25,7 +25,7 @@ function currentHHMM() {
 }
 
 export default function Semantic() {
-  const { t, locale, localePath } = useLocale();
+  const { t, locale, localePath, switchTo } = useLocale();
   const S = t.semantic;
   const [mode, setMode] = useState<Mode>("current");
   const [currentTime, setCurrentTime] = useState(currentHHMM());
@@ -78,11 +78,25 @@ export default function Semantic() {
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
-      <LanguageSwitcher />
       <header className="max-w-3xl mx-auto px-6 pt-10 pb-6 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
         <Link to={localePath("/semantic")} className="hover:text-foreground transition-colors">{S.brand}</Link>
-        <nav className="flex gap-6">
+        <nav className="flex items-center gap-6">
           <Link to={localePath("/semantic/about")} className="hover:text-foreground transition-colors">{S.nav_about}</Link>
+          <div className="flex items-center gap-2" aria-label="Language">
+            {(LOCALES as readonly Locale[]).map((l) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => switchTo(l)}
+                aria-current={locale === l}
+                className={`transition-colors ${
+                  locale === l ? "text-foreground" : "text-foreground/40 hover:text-foreground/80"
+                }`}
+              >
+                {LOCALE_LABEL[l]}
+              </button>
+            ))}
+          </div>
         </nav>
       </header>
 
@@ -240,25 +254,30 @@ function Block({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function Decomposition({ obj, S }: { obj: SemanticObject; S: ReturnType<typeof useLocale>["t"]["semantic"] }) {
-  const patternLabel = obj.patterns.map((p) => S.patterns[p] ?? p).join(" · ");
+  const primaryName = S.patterns[obj.primary_pattern] ?? obj.primary_pattern;
+  const secondaryName = obj.secondary_pattern ? (S.patterns[obj.secondary_pattern] ?? obj.secondary_pattern) : null;
+  const patternLabel = secondaryName
+    ? `${primaryName} → ${secondaryName}`
+    : primaryName;
   const dominantPrinciple = S.principles[obj.dominant] ?? obj.dominant_principle;
   const dynamicsLabel = S.dynamics[obj.pattern] ?? obj.dynamics;
   const directionLabel = obj.digits
     .split("")
     .map((c) => S.principles_short[c] ?? c)
     .join(" → ");
+  const chainLabel = obj.digits.split("").join(" → ");
   const tensionLabel =
     obj.tension === "low" ? S.tension_low : obj.tension === "high" ? S.tension_high : S.tension_medium;
   return (
     <div className="space-y-2 text-[12px] text-foreground/80 font-mono">
       <Row k={S.row_value} v={obj.value} />
       <Row k={S.row_pattern} v={patternLabel} />
-      <Row k={S.row_dominant} v={`${obj.dominant} — ${dominantPrinciple}`} />
+      <Row k={S.row_dominant} v={`${obj.dominance_label} · ${obj.dominant} — ${dominantPrinciple}`} />
       <Row k={S.row_dynamics} v={dynamicsLabel} />
       <Row k={S.row_direction} v={directionLabel} />
       <Row k={S.row_tension} v={tensionLabel} />
-      {obj.interaction.length > 0 && (
-        <Row k={S.row_interaction} v={obj.interaction.map((s) => s.replace("→", " → ")).join("   ")} />
+      {obj.digits.length > 1 && (
+        <Row k={S.row_interaction} v={chainLabel} />
       )}
       <div className="pt-3 mt-3 border-t border-border text-[11px] text-foreground/70">
         {S.row_principles}:{" "}

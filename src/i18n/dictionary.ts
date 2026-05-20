@@ -699,6 +699,9 @@ export const dictionary: Record<Locale, Dictionary> = {
         amplification: "amplification",
         interruption: "interruption",
         sequence: "sequence",
+        resonance: "resonance",
+        alternation: "alternation",
+        loop: "loop",
         composite: "composite",
       },
       dynamics: {
@@ -707,6 +710,9 @@ export const dictionary: Record<Locale, Dictionary> = {
         amplification: "concentration / strengthening",
         interruption: "restructuring / semantic pause",
         sequence: "progression / directional development",
+        resonance: "amplified resonance field",
+        alternation: "rhythmic exchange / oscillation",
+        loop: "return / recursion",
         composite: "layered composition",
       },
       principles: {
@@ -1114,6 +1120,9 @@ export const dictionary: Record<Locale, Dictionary> = {
         amplification: "усиление",
         interruption: "прерывание",
         sequence: "последовательность",
+        resonance: "резонанс",
+        alternation: "чередование",
+        loop: "петля",
         composite: "композиция",
       },
       dynamics: {
@@ -1122,6 +1131,9 @@ export const dictionary: Record<Locale, Dictionary> = {
         amplification: "концентрация / нарастание",
         interruption: "пересборка / семантическая пауза",
         sequence: "прогрессия / направленное развитие",
+        resonance: "поле резонанса",
+        alternation: "ритмический обмен / осцилляция",
+        loop: "возврат / рекурсия",
         composite: "многослойная композиция",
       },
       principles: {
@@ -1529,6 +1541,9 @@ export const dictionary: Record<Locale, Dictionary> = {
         amplification: "посилення",
         interruption: "перерва",
         sequence: "послідовність",
+        resonance: "резонанс",
+        alternation: "чергування",
+        loop: "петля",
         composite: "композиція",
       },
       dynamics: {
@@ -1537,6 +1552,9 @@ export const dictionary: Record<Locale, Dictionary> = {
         amplification: "концентрація / наростання",
         interruption: "перебудова / семантична пауза",
         sequence: "прогресія / спрямований розвиток",
+        resonance: "поле резонансу",
+        alternation: "ритмічний обмін / осциляція",
+        loop: "повернення / рекурсія",
         composite: "багатошарова композиція",
       },
       principles: {
