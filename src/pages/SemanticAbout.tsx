@@ -1,25 +1,18 @@
-import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 
 export default function SemanticAbout() {
-  const navigate = useNavigate();
   const { t, localePath } = useLocale();
   const S = t.semantic;
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
       <LanguageSwitcher />
       <header className="max-w-3xl mx-auto px-6 pt-10 pb-6 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate(localePath("/garden"))}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <Link to={localePath("/semantic")} className="hover:text-foreground transition-colors">{S.brand}</Link>
-        </div>
+        <Link to={localePath("/semantic")} className="hover:text-foreground transition-colors">{S.brand}</Link>
+        <nav className="flex gap-6">
+          <Link to={localePath("/semantic")} className="hover:text-foreground transition-colors">{S.nav_interface}</Link>
+        </nav>
       </header>
 
       <main className="max-w-2xl mx-auto px-6 pt-16 pb-24 space-y-8">

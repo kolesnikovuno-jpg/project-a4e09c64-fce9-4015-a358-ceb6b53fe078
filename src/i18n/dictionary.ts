@@ -278,7 +278,6 @@ export type SemanticDict = {
   tagline: string;
   nav_interface: string;
   nav_about: string;
-  nav_garden: string;
   hero_title: string;
   hero_lead: string;
   mode_current: string;
@@ -662,7 +661,6 @@ export const dictionary: Record<Locale, Dictionary> = {
       tagline: "cognitive interface",
       nav_interface: "Interface",
       nav_about: "About",
-      nav_garden: "Garden",
       hero_title: "Semantic Time",
       hero_lead:
         "A cognitive interface for structured observation. Numeric patterns become semantic triggers — not predictions, not signs. A tool for reflection.",
@@ -1123,7 +1121,6 @@ export const dictionary: Record<Locale, Dictionary> = {
       tagline: "когнитивный интерфейс",
       nav_interface: "Интерфейс",
       nav_about: "О проекте",
-      nav_garden: "Сад",
       hero_title: "Semantic Time",
       hero_lead:
         "Когнитивный интерфейс для структурного наблюдения. Числовые паттерны становятся семантическими триггерами — не предсказаниями, не знаками. Инструмент рефлексии.",
@@ -1584,7 +1581,6 @@ export const dictionary: Record<Locale, Dictionary> = {
       tagline: "когнітивний інтерфейс",
       nav_interface: "Інтерфейс",
       nav_about: "Про проєкт",
-      nav_garden: "Сад",
       hero_title: "Semantic Time",
       hero_lead:
         "Когнітивний інтерфейс для структурного спостереження. Числові патерни стають семантичними тригерами — не передбаченнями, не знаками. Інструмент рефлексії.",
