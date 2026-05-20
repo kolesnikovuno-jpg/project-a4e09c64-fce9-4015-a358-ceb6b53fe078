@@ -161,8 +161,9 @@ export default function Semantic() {
 
   async function handleShareResult() {
     // Native share gets the URL as a dedicated field — do not duplicate it
-    // inside the text body.
-    const text = buildResultText(false);
+    // inside the text body. Also strip any raw URLs that may appear inside
+    // the interpretation text as a defensive measure.
+    const text = buildResultText(false).replace(/https?:\/\/\S+/g, "").trim();
     try {
       if (typeof navigator !== "undefined" && (navigator as any).share) {
         await (navigator as any).share({
