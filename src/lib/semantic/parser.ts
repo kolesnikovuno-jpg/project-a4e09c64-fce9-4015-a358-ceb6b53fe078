@@ -110,14 +110,14 @@ function tensionLevel(patterns: string[], digits: string): "low" | "medium" | "h
 }
 
 // Hierarchy — most structurally dominant pattern wins.
+// interruption > mirror > resonance > loop > progression > escalation > alternation > amplification > repetition > composite.
 const PRIMARY_ORDER = [
   "interruption",
   "mirror",
   "resonance",
   "loop",
-  "escalation",
   "progression",
-  "closure",
+  "escalation",
   "alternation",
   "amplification",
   "repetition",
