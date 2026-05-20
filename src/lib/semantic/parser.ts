@@ -51,7 +51,12 @@ function dominantDigit(digits: string): string {
 
 function isRepetition(d: string) { return d.length >= 2 && d.split("").every((c) => c === d[0]); }
 function isResonance(d: string)  { return isRepetition(d) && d.length >= 4; }
-function isMirror(d: string)     { return d.length >= 3 && d === d.split("").reverse().join(""); }
+function isMirror(d: string)     {
+  // Palindrome with at least TWO distinct digits — identity persistence (1111) is not mirror.
+  if (d.length < 3) return false;
+  if (d !== d.split("").reverse().join("")) return false;
+  return new Set(d.split("")).size >= 2;
+}
 function isAmplification(d: string) {
   if (d.length < 3) return false;
   const tail = d.slice(-3);
@@ -94,8 +99,29 @@ function buildInteractions(d: string): string[] {
   for (let i = 1; i < d.length; i++) out.push(`${d[i - 1]}→${d[i]}`);
   return out;
 }
-function direction(d: string): string {
-  return d.split("").map((c) => PRINCIPLE_SHORT[c] ?? c).join(" → ");
+function direction(d: string, primary: string): string {
+  const short = d.split("").map((c) => PRINCIPLE_SHORT[c] ?? c);
+  // Resonance / pure repetition — express as structural state, not literal repeat.
+  if (primary === "resonance" || primary === "repetition") {
+    return `self-reinforcing ${short[0]}`;
+  }
+  // Mirror — half + return.
+  if (primary === "mirror") {
+    const half = short.slice(0, Math.ceil(short.length / 2));
+    return [...half, "return"].join(" → ");
+  }
+  // Loop — start … return.
+  if (primary === "loop") {
+    const inner = short.slice(0, -1);
+    return [...inner, "return"].join(" → ");
+  }
+  // Alternation — describe as oscillation between two principles.
+  if (primary === "alternation") {
+    return `oscillation: ${short[0]} ↔ ${short[1]}`;
+  }
+  // Default — collapse adjacent duplicates so it reads structurally, not literally.
+  const collapsed = short.filter((p, i) => p !== short[i - 1]);
+  return collapsed.join(" → ");
 }
 function chainOf(d: string): string { return d.split("").join(" → "); }
 
@@ -233,7 +259,7 @@ export function parse(raw: string, type: InputType, displayValue: string): Seman
     leading_digit: digits[0] ?? dom,
     trajectory: traj,
     dynamics: DYNAMICS[primary] ?? "layered composition",
-    direction: direction(digits),
+    direction: direction(digits, primary),
     chain: chainOf(digits),
     tension: tensionLevel(patterns, digits),
     interaction: buildInteractions(digits),
