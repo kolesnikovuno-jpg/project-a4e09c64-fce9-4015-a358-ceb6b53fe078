@@ -62,6 +62,7 @@ export type Dictionary = {
     bud_label_lyra: string;
     bud_label_nava: string;
     bud_label_unocalc: string;
+    bud_label_semantic: string;
     aria_element: string;
   };
   gateway: {
@@ -401,6 +402,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       bud_label_lyra: "Lyra — no effort",
       bud_label_nava: "Nava",
       bud_label_unocalc: "unocalc",
+      bud_label_semantic: "semantic time",
       aria_element: "Element",
     },
     gateway: {
@@ -813,6 +815,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       bud_label_lyra: "Lyra — без усилия",
       bud_label_nava: "Nava",
       bud_label_unocalc: "unocalc",
+      bud_label_semantic: "semantic time",
       aria_element: "Элемент",
     },
     gateway: {
@@ -1225,6 +1228,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       bud_label_lyra: "Lyra — без зусилля",
       bud_label_nava: "Nava",
       bud_label_unocalc: "unocalc",
+      bud_label_semantic: "semantic time",
       aria_element: "Елемент",
     },
     gateway: {
