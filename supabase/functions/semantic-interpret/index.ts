@@ -105,6 +105,7 @@ Recommendation reads as a diagnostic question that lets the reader test the patt
 - interrupted_movement: "Does the gap reset the movement, or terminate it?"
 - recursive_return: "Does the return change anything, or only restate the opening?"
 - layered_composition: "Which layer is generating state, and which is passive?"
+- directed_transition: "Is the destination principle actually being reached, or only gestured toward?"
 
 REFLECTION — deep, psychologically intelligent, pattern-unique
 One open OPERATIONAL question, shaped by primary_pattern and trajectory, never recyclable across classes. Reflection must support observation, not abstract contemplation. Target an identifiable element, transition, or state-change in the chain — something the reader could actually locate. Forbidden: "What are you feeling?", generic coaching prompts, "Which step carries the most structural load?" as a default, poetic prompts like "What holds this composition together?", any question that would read identically for a different class. Preferred operational forms: "Which element actually sustains this pattern?", "What happens to the chain if the leading principle is removed?", "Where does the trajectory change state?". Examples by class — match this operational depth:
@@ -121,6 +122,7 @@ One open OPERATIONAL question, shaped by primary_pattern and trajectory, never r
 - interrupted_movement: "Is the interior gap a reset of the movement, or its termination?"
 - recursive_return: "Does the return close the structure, or only restate its opening?"
 - layered_composition: "Which layer is actually carrying load, and which is decoration?"
+- directed_transition: "Where exactly does the initiating principle hand over to the destination — and does the handover complete?"
 
 SECTION DISTINCTNESS — never restate the same content across fields
 - structure: a single calm naming line — pattern + leading principle, flow rendered with " → ".
