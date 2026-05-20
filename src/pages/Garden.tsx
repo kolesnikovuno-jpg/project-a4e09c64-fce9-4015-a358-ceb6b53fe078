@@ -105,11 +105,12 @@ const Garden = () => {
     "01": ".",
     "02": ".",
     "03": t.garden.bud_label_nava,
-    "04": ".",
+    "04": t.garden.bud_label_semantic,
     "05": t.garden.bud_label_lyra,
     "06": ".",
     "06.1": t.garden.bud_label_unocalc,
     "02.1": "void",
+    "04.1": t.garden.bud_label_semantic,
   };
 
   const routes: Record<string, string> = {
@@ -117,6 +118,8 @@ const Garden = () => {
     "03": localePath("/nava"),
     "06.1": "/unocalc",
     "02.1": localePath("/void"),
+    "04": localePath("/semantic"),
+    "04.1": localePath("/semantic"),
   };
 
   const gY = 560;
@@ -402,7 +405,7 @@ const Garden = () => {
                   visible={animated}
                   active={displayedLabelId === stem.id}
                 />
-                {(stem.id === "05" || stem.id === "03") && (
+                {(stem.id === "05" || stem.id === "03" || stem.id === "04") && (
                   <circle
                     cx={stem.x}
                     cy={topY}
@@ -454,7 +457,7 @@ const Garden = () => {
                         visible={animated}
                         active={displayedLabelId === subId}
                       />
-                      {stem.id === "06" && i === 0 && (
+                      {((stem.id === "06" && i === 0) || (stem.id === "04" && i === 0)) && (
                         <circle
                           cx={brEndX}
                           cy={brY}
