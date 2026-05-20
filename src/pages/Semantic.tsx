@@ -86,7 +86,7 @@ export default function Semantic() {
     }
   }
 
-  const appUrl = `https://kolesnikov.uno/${locale}/semantic`;
+  const appUrl = "https://kolesnikov.uno/";
   const rootUrl = "https://kolesnikov.uno/";
 
   function buildResultText(): string {
