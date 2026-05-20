@@ -306,6 +306,8 @@ export type SemanticDict = {
   share_reflection: string;
   result_copied: string;
   link_copied: string;
+  support_helper: string;
+  support_cta: string;
   err_rate: string;
   err_credits: string;
   err_generic: string;
@@ -689,6 +691,8 @@ export const dictionary: Record<Locale, Dictionary> = {
       interpret: "Interpret",
       show_structural: "Show structural analysis",
       hide_structural: "Hide structural analysis",
+      support_helper: "If this tool was useful",
+      support_cta: "Support the project",
       interpreting: "Interpreting…",
       share: "Share",
       share_title: "Semantic Time Interpretation",
@@ -1177,6 +1181,8 @@ export const dictionary: Record<Locale, Dictionary> = {
       interpret: "Интерпретировать",
       show_structural: "Показать структурный анализ",
       hide_structural: "Скрыть структурный анализ",
+      support_helper: "Если инструмент оказался полезен",
+      support_cta: "Поддержать проект",
       interpreting: "Интерпретация…",
       share: "Поделиться",
       share_title: "Интерпретация Semantic Time",
@@ -1665,6 +1671,8 @@ export const dictionary: Record<Locale, Dictionary> = {
       interpret: "Інтерпретувати",
       show_structural: "Показати структурний аналіз",
       hide_structural: "Сховати структурний аналіз",
+      support_helper: "Якщо інструмент виявився корисним",
+      support_cta: "Підтримати проєкт",
       interpreting: "Інтерпретація…",
       share: "Поділитися",
       share_title: "Інтерпретація Semantic Time",
