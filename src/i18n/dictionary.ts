@@ -306,6 +306,8 @@ export type SemanticDict = {
   share_reflection: string;
   result_copied: string;
   link_copied: string;
+  support_helper: string;
+  support_cta: string;
   err_rate: string;
   err_credits: string;
   err_generic: string;
