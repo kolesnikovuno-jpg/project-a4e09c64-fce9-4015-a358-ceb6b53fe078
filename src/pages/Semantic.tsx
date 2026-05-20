@@ -35,11 +35,13 @@ export default function Semantic() {
   const [error, setError] = useState<string | null>(null);
   const [semantic, setSemantic] = useState<SemanticObject | null>(null);
   const [interp, setInterp] = useState<Interpretation | null>(null);
+  const [showStructural, setShowStructural] = useState(false);
 
   // Live clock for current-time mode (no auto-interpret).
   useEffect(() => {
     if (mode !== "current") return;
-    const id = window.setInterval(() => setCurrentTime(currentHHMM()), 1000 * 15);
+    setCurrentTime(currentHHMM());
+    const id = window.setInterval(() => setCurrentTime(currentHHMM()), 1000);
     return () => window.clearInterval(id);
   }, [mode]);
 
@@ -89,13 +91,13 @@ export default function Semantic() {
           <h1 className="text-[24px] md:text-[30px] leading-tight tracking-tight text-foreground font-normal">
             {S.hero_title}
           </h1>
-          <p className="mt-4 text-[13px] leading-[1.75] text-foreground/75 max-w-xl">
+          <p className="mt-4 text-[14px] leading-[1.75] text-foreground/85 max-w-xl">
             {S.hero_lead}
           </p>
         </section>
 
         <section className="pt-10">
-          <div className="flex gap-6 text-[10px] uppercase tracking-[0.18em]">
+          <div className="flex gap-6 text-[11px] uppercase tracking-[0.18em]">
             {(["current", "manual", "symbol"] as Mode[]).map((m) => (
               <button
                 key={m}
@@ -108,7 +110,7 @@ export default function Semantic() {
                 className={`pb-2 border-b transition-colors ${
                   mode === m
                     ? "text-primary border-primary"
-                    : "text-muted-foreground border-transparent hover:text-foreground"
+                    : "text-foreground/60 border-transparent hover:text-foreground"
                 }`}
               >
                 {m === "current" ? S.mode_current : m === "manual" ? S.mode_manual : S.mode_symbol}
@@ -118,16 +120,8 @@ export default function Semantic() {
 
           <div className="mt-10">
             {mode === "current" && (
-              <div className="flex items-baseline gap-6">
-                <div className="text-[56px] md:text-[76px] font-light tracking-tight tabular-nums text-foreground leading-none">
-                  {currentTime}
-                </div>
-                <button
-                  onClick={() => setCurrentTime(currentHHMM())}
-                  className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {S.refresh}
-                </button>
+              <div className="text-[56px] md:text-[76px] font-light tracking-tight tabular-nums text-foreground leading-none">
+                {currentTime}
               </div>
             )}
 
@@ -189,17 +183,12 @@ export default function Semantic() {
             >
               {loading ? S.interpreting : S.interpret}
             </button>
-            {error && <span className="text-[11px] text-muted-foreground">{error}</span>}
+            {error && <span className="text-[12px] text-foreground/70">{error}</span>}
           </div>
         </section>
 
         {semantic && (
           <section className="mt-20 space-y-12 animate-in fade-in duration-700">
-            <Block label={S.label_structure}>
-              <Decomposition obj={semantic} S={S} />
-              {interp?.structure && <p className="mt-4">{interp.structure}</p>}
-            </Block>
-
             {interp?.core && <Block label={S.label_core}><p>{interp.core}</p></Block>}
             {interp?.deep && <Block label={S.label_deep}><p>{interp.deep}</p></Block>}
             {interp?.architectural && <Block label={S.label_architectural}><p>{interp.architectural}</p></Block>}
@@ -211,10 +200,29 @@ export default function Semantic() {
             {interp?.recommendation && <Block label={S.label_recommendation}><p>{interp.recommendation}</p></Block>}
 
             {loading && !interp && (
-              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-foreground/70">
                 {S.generating}
               </p>
             )}
+
+            <div className="pt-8 border-t border-border">
+              <button
+                onClick={() => setShowStructural((v) => !v)}
+                className="text-[10px] uppercase tracking-[0.22em] text-foreground/60 hover:text-foreground transition-colors"
+              >
+                {showStructural ? S.hide_structural : S.show_structural}
+              </button>
+              {showStructural && (
+                <div className="mt-6 animate-in fade-in duration-300">
+                  <Decomposition obj={semantic} S={S} />
+                  {interp?.structure && (
+                    <p className="mt-4 text-[13px] leading-[1.85] text-foreground/85 max-w-2xl">
+                      {interp.structure}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </section>
         )}
       </main>
@@ -225,8 +233,8 @@ export default function Semantic() {
 function Block({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground mb-3">{label}</div>
-      <div className="text-[13px] leading-[1.85] text-foreground/85 max-w-2xl">{children}</div>
+      <div className="text-[11px] uppercase tracking-[0.22em] text-foreground/70 mb-3">{label}</div>
+      <div className="text-[14px] leading-[1.85] text-foreground/90 max-w-2xl">{children}</div>
     </div>
   );
 }
@@ -242,7 +250,7 @@ function Decomposition({ obj, S }: { obj: SemanticObject; S: ReturnType<typeof u
   const tensionLabel =
     obj.tension === "low" ? S.tension_low : obj.tension === "high" ? S.tension_high : S.tension_medium;
   return (
-    <div className="space-y-2 text-[12px] text-foreground/70 font-mono">
+    <div className="space-y-2 text-[12px] text-foreground/80 font-mono">
       <Row k={S.row_value} v={obj.value} />
       <Row k={S.row_pattern} v={patternLabel} />
       <Row k={S.row_dominant} v={`${obj.dominant} — ${dominantPrinciple}`} />
@@ -250,7 +258,7 @@ function Decomposition({ obj, S }: { obj: SemanticObject; S: ReturnType<typeof u
       <Row k={S.row_direction} v={directionLabel} />
       <Row k={S.row_tension} v={tensionLabel} />
       {obj.interaction.length > 0 && <Row k={S.row_interaction} v={obj.interaction.join("  ")} />}
-      <div className="pt-3 mt-3 border-t border-border text-[11px] text-muted-foreground">
+      <div className="pt-3 mt-3 border-t border-border text-[11px] text-foreground/70">
         {S.row_principles}:{" "}
         {Array.from(new Set(obj.digits.split(""))).map((d) => `${d}=${S.principles[d] ?? d}`).join("  ·  ")}
       </div>
@@ -261,8 +269,8 @@ function Decomposition({ obj, S }: { obj: SemanticObject; S: ReturnType<typeof u
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex gap-4">
-      <span className="w-28 shrink-0 text-muted-foreground">{k}</span>
-      <span className="text-foreground/85">{v}</span>
+      <span className="w-28 shrink-0 text-foreground/60">{k}</span>
+      <span className="text-foreground/90">{v}</span>
     </div>
   );
 }

@@ -287,6 +287,8 @@ export type SemanticDict = {
   symbol_placeholder: string;
   refresh: string;
   interpret: string;
+  show_structural: string;
+  hide_structural: string;
   interpreting: string;
   err_rate: string;
   err_credits: string;
@@ -667,6 +669,8 @@ export const dictionary: Record<Locale, Dictionary> = {
       symbol_placeholder: "1–6 digits",
       refresh: "refresh",
       interpret: "Interpret",
+      show_structural: "Show structural analysis",
+      hide_structural: "Hide structural analysis",
       interpreting: "Interpreting…",
       err_rate: "Rate limit reached — try again in a moment.",
       err_credits: "AI credits exhausted.",
@@ -1080,6 +1084,8 @@ export const dictionary: Record<Locale, Dictionary> = {
       symbol_placeholder: "1–6 цифр",
       refresh: "обновить",
       interpret: "Интерпретировать",
+      show_structural: "Показать структурный анализ",
+      hide_structural: "Скрыть структурный анализ",
       interpreting: "Интерпретация…",
       err_rate: "Лимит запросов — попробуйте через мгновение.",
       err_credits: "Ресурс ИИ исчерпан.",
@@ -1493,6 +1499,8 @@ export const dictionary: Record<Locale, Dictionary> = {
       symbol_placeholder: "1–6 цифр",
       refresh: "оновити",
       interpret: "Інтерпретувати",
+      show_structural: "Показати структурний аналіз",
+      hide_structural: "Сховати структурний аналіз",
       interpreting: "Інтерпретація…",
       err_rate: "Ліміт запитів — спробуйте за мить.",
       err_credits: "Ресурс ШІ вичерпано.",
