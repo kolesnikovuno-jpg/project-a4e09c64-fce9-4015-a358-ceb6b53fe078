@@ -147,6 +147,11 @@ const PRIMARY_ORDER = [
   "alternation",
   "amplification",
   "repetition",
+  "activation_cycle",
+  "latent_activation",
+  "interrupted_movement",
+  "recursive_return",
+  "layered_composition",
   "composite",
 ];
 
@@ -161,7 +166,12 @@ const DYNAMICS: Record<string, string> = {
   alternation: "rhythmic exchange / oscillation",
   amplification: "concentration / strengthening",
   repetition: "reinforcement / resonance",
-  composite: "layered composition",
+  activation_cycle: "pulsation between pause and movement",
+  latent_activation: "emergence from pause into impulse",
+  interrupted_movement: "movement interrupted by gap",
+  recursive_return: "circuit closing to its origin",
+  layered_composition: "layered structure",
+  composite: "layered structure",
 };
 
 function trajectoryOf(d: string, patterns: string[]): string {
@@ -198,6 +208,11 @@ const FAMILY: Record<string, string> = {
   escalation: "progression",
   closure: "progression",
   alternation: "alternation",
+  activation_cycle: "composite",
+  latent_activation: "composite",
+  interrupted_movement: "composite",
+  recursive_return: "composite",
+  layered_composition: "composite",
   composite: "composite",
 };
 
@@ -208,9 +223,27 @@ function rankPrimary(patterns: string[]): { primary: string; secondary: string |
   // Secondary must be from a different family and not a generic fallback.
   const secondary =
     ranked.find(
-      (p) => p !== primary && (FAMILY[p] ?? p) !== primaryFamily && p !== "composite"
+      (p) =>
+        p !== primary &&
+        (FAMILY[p] ?? p) !== primaryFamily &&
+        (FAMILY[p] ?? p) !== "composite"
     ) ?? null;
   return { primary, secondary };
+}
+
+// Refine the generic "composite" into a diagnostic structural subtype.
+function compositeSubtype(d: string): string {
+  if (d.length < 2) return "layered_composition";
+  const fives = (d.match(/5/g) ?? []).length;
+  const startsZero = d[0] === "0";
+  const interior = d.length >= 3 ? d.slice(1, -1) : "";
+  const hasInteriorZero = interior.includes("0");
+  const firstLastSame = d.length >= 3 && d[0] === d[d.length - 1];
+  if (startsZero && fives >= 2) return "activation_cycle";
+  if (startsZero && /[1-9]/.test(d)) return "latent_activation";
+  if (hasInteriorZero && fives >= 1) return "interrupted_movement";
+  if (firstLastSame) return "recursive_return";
+  return "layered_composition";
 }
 
 export function parse(raw: string, type: InputType, displayValue: string): SemanticObject {
@@ -243,7 +276,11 @@ export function parse(raw: string, type: InputType, displayValue: string): Seman
   if (patterns.length === 0) patterns.push("composite");
 
   const dom = dominantDigit(digits);
-  const { primary, secondary } = rankPrimary(patterns);
+  let { primary, secondary } = rankPrimary(patterns);
+  // Replace the generic "composite" classification with a diagnostic subtype.
+  if (primary === "composite") {
+    primary = compositeSubtype(digits);
+  }
   const traj = trajectoryOf(digits, patterns);
 
   return {
