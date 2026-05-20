@@ -1187,6 +1187,10 @@ export const dictionary: Record<Locale, Dictionary> = {
         layered_composition: "слоистая структура",
         composite: "слоистая структура",
         directed_transition: "направленный переход",
+        symmetry: "симметрия",
+        partial_return: "частичный возврат",
+        recurrence: "рекуррентность",
+        mediated_recurrence: "опосредованная рекуррентность",
       },
       dynamics: {
         repetition: "усиление / резонанс",
@@ -1207,6 +1211,10 @@ export const dictionary: Record<Locale, Dictionary> = {
         layered_composition: "слоистая структура под общей нагрузкой",
         composite: "слоистая структура под общей нагрузкой",
         directed_transition: "направленный переход / смена состояния",
+        symmetry: "зеркальная топология / отражённый возврат",
+        partial_return: "возврат к промежуточному узлу",
+        recurrence: "усиление узла без явной геометрии возврата",
+        mediated_recurrence: "опосредованная рекуррентность через другой узел",
       },
       trajectories: {
         repetition: "рекурсивное усиление",
@@ -1227,6 +1235,10 @@ export const dictionary: Record<Locale, Dictionary> = {
         layered_composition: "распределённое структурное поведение",
         composite: "распределённое структурное поведение",
         directed_transition: "направленный переход между принципами",
+        symmetry: "зеркальная топология",
+        partial_return: "возврат к промежуточному узлу",
+        recurrence: "усиление повторяющегося узла",
+        mediated_recurrence: "опосредованная рекуррентность / осцилляция вокруг узла",
       },
       principles: {
         "0": "пауза / потенциал / разрыв",
