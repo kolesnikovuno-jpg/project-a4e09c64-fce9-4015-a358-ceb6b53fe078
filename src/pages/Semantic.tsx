@@ -389,8 +389,7 @@ export default function Semantic() {
 
       {/* True fixed action icon — outside scroll flow, aligned to content column's right edge */}
       <div className="fixed inset-0 z-50 pointer-events-none">
-        <div className="max-w-3xl mx-auto h-full px-6 relative">
-          <div className="absolute right-6 top-[calc(env(safe-area-inset-top,0px)+260px)] md:top-[300px] flex items-center gap-3 pointer-events-auto">
+        <div className="absolute right-3 md:right-[max(1rem,calc(50%-24rem+0.5rem))] top-[calc(env(safe-area-inset-top,0px)+260px)] md:top-[300px] flex items-center gap-3 pointer-events-auto">
             {shareToast && (
               <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/60 animate-in fade-in duration-200">
                 {shareToast}
