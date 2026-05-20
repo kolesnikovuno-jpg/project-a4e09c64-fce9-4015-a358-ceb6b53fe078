@@ -1,52 +1,45 @@
 import { Link } from "react-router-dom";
+import { useLocale } from "@/i18n/useLocale";
+import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 
 export default function SemanticAbout() {
+  const { t, localePath } = useLocale();
+  const S = t.semantic;
   return (
     <div className="min-h-screen bg-[#0b0b0c] text-neutral-200 font-light antialiased">
+      <LanguageSwitcher background="#0b0b0c" />
       <header className="max-w-3xl mx-auto px-6 pt-10 pb-6 flex items-center justify-between text-[11px] uppercase tracking-[0.22em] text-neutral-500">
-        <Link to="/semantic" className="hover:text-neutral-200 transition-colors">Semantic Time</Link>
+        <Link to={localePath("/semantic")} className="hover:text-neutral-200 transition-colors">{S.brand}</Link>
         <nav className="flex gap-6">
-          <Link to="/semantic" className="hover:text-neutral-200 transition-colors">Interface</Link>
+          <Link to={localePath("/semantic")} className="hover:text-neutral-200 transition-colors">{S.nav_interface}</Link>
         </nav>
       </header>
 
       <main className="max-w-2xl mx-auto px-6 pt-16 pb-24 space-y-10">
         <h1 className="text-[28px] md:text-[34px] tracking-tight text-neutral-100 font-extralight leading-tight">
-          About
+          {S.about.title}
         </h1>
 
         <p className="text-[15px] leading-[1.75] text-neutral-300">
-          Semantic Time is a cognitive semantic interpretation system for
-          reflective observation and structural thinking.
+          {S.about.p1}
         </p>
 
         <p className="text-[14px] leading-[1.8] text-neutral-400">
-          It treats numeric patterns — times, sequences, repetitions — as
-          structural triggers for attention. Each interpretation is a hypothesis
-          about process dynamics, not a claim about reality.
+          {S.about.p2}
         </p>
 
         <p className="text-[14px] leading-[1.8] text-neutral-400">
-          The system does not predict, divine, or instruct. It does not produce
-          mystical, esoteric, or fortune-telling output. Its only function is to
-          help you observe pattern, structure attention, and frame reflection.
+          {S.about.p3}
         </p>
 
         <div className="pt-6 border-t border-neutral-900 space-y-3 text-[13px] text-neutral-500 font-mono">
-          <Principle d="0" t="potential / semantic gap" />
-          <Principle d="1" t="impulse / initiation" />
-          <Principle d="2" t="connection / interaction" />
-          <Principle d="3" t="manifestation / expression" />
-          <Principle d="4" t="structure / stabilization" />
-          <Principle d="5" t="change / movement" />
-          <Principle d="6" t="harmonization" />
-          <Principle d="7" t="inquiry / depth" />
-          <Principle d="8" t="materialization / density" />
-          <Principle d="9" t="completion / transition" />
+          {Object.entries(S.principles).map(([d, label]) => (
+            <Principle key={d} d={d} t={label} />
+          ))}
         </div>
 
         <p className="text-[12px] text-neutral-600 leading-relaxed pt-6">
-          These are semantic principles. They are not deterministic meanings.
+          {S.about.footnote}
         </p>
       </main>
     </div>
