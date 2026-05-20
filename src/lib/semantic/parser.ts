@@ -94,6 +94,10 @@ function isLoop(d: string) {
   // X … X — same first and last, length ≥ 3, not pure repetition
   return d.length >= 3 && d[0] === d[d.length - 1] && !isRepetition(d);
 }
+// Two distinct digits read as a directed structural transition: A → B.
+function isDirectedTransition(d: string) {
+  return d.length === 2 && d[0] !== d[1];
+}
 
 function buildInteractions(d: string): string[] {
   const out: string[] = [];
@@ -122,6 +126,8 @@ function direction(d: string, primary: string): string {
       return "two-state oscillation";
     case "interruption":
       return "broken continuity / recalibration";
+    case "directed_transition":
+      return "directed transition between principles";
     case "activation_cycle":
       return "pause-to-movement pulsation";
     case "latent_activation":
