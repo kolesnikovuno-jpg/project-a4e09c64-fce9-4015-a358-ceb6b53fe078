@@ -1120,6 +1120,9 @@ export const dictionary: Record<Locale, Dictionary> = {
         amplification: "усиление",
         interruption: "прерывание",
         sequence: "последовательность",
+        resonance: "резонанс",
+        alternation: "чередование",
+        loop: "петля",
         composite: "композиция",
       },
       dynamics: {
@@ -1128,6 +1131,9 @@ export const dictionary: Record<Locale, Dictionary> = {
         amplification: "концентрация / нарастание",
         interruption: "пересборка / семантическая пауза",
         sequence: "прогрессия / направленное развитие",
+        resonance: "поле резонанса",
+        alternation: "ритмический обмен / осцилляция",
+        loop: "возврат / рекурсия",
         composite: "многослойная композиция",
       },
       principles: {
