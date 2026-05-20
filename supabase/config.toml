@@ -13,3 +13,6 @@ verify_jwt = false
 
 [functions.handle-email-suppression]
 verify_jwt = false
+
+[functions.semantic-interpret]
+verify_jwt = false
