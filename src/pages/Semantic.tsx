@@ -85,17 +85,13 @@ export default function Semantic() {
     }
   }
 
-  const appUrl = useMemo(() => {
-    if (typeof window === "undefined") return "";
-    return `${window.location.origin}${localePath("/semantic")}`;
-  }, [localePath]);
+  const appUrl = "https://kolesnikov.uno/semantic-time";
 
   function buildResultText(): string {
     if (!semantic) return "";
     const primaryName = S.patterns[semantic.primary_pattern] ?? semantic.primary_pattern;
     const leadingName = S.principles[semantic.dominant] ?? semantic.dominant_principle;
     const chain = semantic.digits.split("").join(" → ");
-    const url = typeof window !== "undefined" ? window.location.href : "";
     const lines = [
       S.share_app_title,
       `${S.row_value}: ${semantic.value}`,
@@ -106,7 +102,7 @@ export default function Semantic() {
     if (interp?.reflection) {
       lines.push("", `${S.share_reflection}:`, interp.reflection);
     }
-    if (url) lines.push("", url);
+    lines.push("", appUrl);
     return lines.join("\n");
   }
 
