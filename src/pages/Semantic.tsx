@@ -188,6 +188,11 @@ export default function Semantic() {
     await copyText(rootUrl, S.link_copied);
   }
 
+  function handleFeedback() {
+    const url = "https://t.me/kolesnikov_uno?text=Feedback%20about%20Semantic%20Time";
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
   function renderShareMenuItems() {
     return (
       <>
@@ -221,6 +226,12 @@ export default function Semantic() {
           {S.copy_link}
         </DropdownMenuItem>
         <DropdownMenuSeparator className="bg-border/60 my-1.5" />
+        <DropdownMenuItem
+          onSelect={() => handleFeedback()}
+          className="text-[13px] tracking-normal text-foreground/85 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2.5 cursor-pointer"
+        >
+          {S.feedback}
+        </DropdownMenuItem>
         <DropdownMenuItem
           onSelect={() => window.open("https://send.monobank.ua/jar/4a35bdyroD", "_blank", "noopener,noreferrer")}
           className="text-[13px] tracking-normal text-foreground/85 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2.5 cursor-pointer"
