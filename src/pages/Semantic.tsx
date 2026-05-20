@@ -276,8 +276,6 @@ function Decomposition({ obj, S }: { obj: SemanticObject; S: ReturnType<typeof u
   const directionLabel =
     S.trajectories[obj.primary_pattern] ?? obj.direction;
   const chainLabel = obj.digits.split("").join(" → ");
-  const tensionLabel =
-    obj.tension === "low" ? S.tension_low : obj.tension === "high" ? S.tension_high : S.tension_medium;
   return (
     <div className="space-y-2 text-[12px] text-foreground/80 font-mono">
       <Row k={S.row_value} v={obj.value} />
@@ -285,7 +283,6 @@ function Decomposition({ obj, S }: { obj: SemanticObject; S: ReturnType<typeof u
       <Row k={S.row_dominant} v={`${obj.dominant} — ${leadingPrinciple}`} />
       <Row k={S.row_dynamics} v={dynamicsLabel} />
       <Row k={S.row_direction} v={directionLabel} />
-      <Row k={S.row_tension} v={tensionLabel} />
       {obj.digits.length > 1 && (
         <Row k={S.row_interaction} v={chainLabel} />
       )}
