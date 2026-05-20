@@ -26,6 +26,7 @@ function currentHHMM() {
 }
 
 export default function Semantic() {
+  const navigate = useNavigate();
   const { t, locale, localePath, switchTo } = useLocale();
   const S = t.semantic;
   const [mode, setMode] = useState<Mode>("current");
