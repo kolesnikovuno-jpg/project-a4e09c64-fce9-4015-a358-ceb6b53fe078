@@ -317,6 +317,8 @@ export function parse(raw: string, type: InputType, displayValue: string): Seman
   if (isAlternation(digits)) patterns.push("alternation");
   // Loop only when it is NOT also a mirror (mirror is the stronger reading).
   if (isLoop(digits) && !isMirror(digits)) patterns.push("loop");
+  // Two-digit non-repeating pair = directed transition between two principles.
+  if (isDirectedTransition(digits)) patterns.push("directed_transition");
   if (patterns.length === 0) patterns.push("composite");
 
   const dom = dominantDigit(digits);
