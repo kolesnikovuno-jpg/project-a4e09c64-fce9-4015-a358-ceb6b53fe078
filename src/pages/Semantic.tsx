@@ -227,6 +227,12 @@ export default function Semantic() {
         </DropdownMenuItem>
         <DropdownMenuSeparator className="bg-border/60 my-1.5" />
         <DropdownMenuItem
+          onSelect={() => handleFeedback()}
+          className="text-[13px] tracking-normal text-foreground/85 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2.5 cursor-pointer"
+        >
+          {S.feedback}
+        </DropdownMenuItem>
+        <DropdownMenuItem
           onSelect={() => window.open("https://send.monobank.ua/jar/4a35bdyroD", "_blank", "noopener,noreferrer")}
           className="text-[13px] tracking-normal text-foreground/85 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2.5 cursor-pointer"
         >
