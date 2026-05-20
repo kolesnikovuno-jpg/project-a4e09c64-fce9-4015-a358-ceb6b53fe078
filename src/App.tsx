@@ -63,6 +63,8 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   { path: "void", element: <Void /> },
   { path: "clarity", element: <Clarity /> },
   { path: "clarity/intake", element: <ClarityIntake /> },
+  { path: "semantic", element: <Semantic /> },
+  { path: "semantic/about", element: <SemanticAbout /> },
 ];
 
 const App = () => (
@@ -100,10 +102,6 @@ const App = () => (
           <Route path="/unocalc" element={<UnoCalc />} />
           <Route path="/lyra-concept" element={<LyraConcept />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
-
-          {/* Semantic Time — cognitive semantic interpretation MVP */}
-          <Route path="/semantic" element={<Semantic />} />
-          <Route path="/semantic/about" element={<SemanticAbout />} />
 
           {/* Internal operator workspace */}
           <Route path="/operator/login" element={<OperatorLogin />} />
