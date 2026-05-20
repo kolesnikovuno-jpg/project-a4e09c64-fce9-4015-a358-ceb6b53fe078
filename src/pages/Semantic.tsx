@@ -183,17 +183,12 @@ export default function Semantic() {
             >
               {loading ? S.interpreting : S.interpret}
             </button>
-            {error && <span className="text-[11px] text-muted-foreground">{error}</span>}
+            {error && <span className="text-[12px] text-foreground/70">{error}</span>}
           </div>
         </section>
 
         {semantic && (
           <section className="mt-20 space-y-12 animate-in fade-in duration-700">
-            <Block label={S.label_structure}>
-              <Decomposition obj={semantic} S={S} />
-              {interp?.structure && <p className="mt-4">{interp.structure}</p>}
-            </Block>
-
             {interp?.core && <Block label={S.label_core}><p>{interp.core}</p></Block>}
             {interp?.deep && <Block label={S.label_deep}><p>{interp.deep}</p></Block>}
             {interp?.architectural && <Block label={S.label_architectural}><p>{interp.architectural}</p></Block>}
@@ -205,10 +200,29 @@ export default function Semantic() {
             {interp?.recommendation && <Block label={S.label_recommendation}><p>{interp.recommendation}</p></Block>}
 
             {loading && !interp && (
-              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-foreground/70">
                 {S.generating}
               </p>
             )}
+
+            <div className="pt-8 border-t border-border">
+              <button
+                onClick={() => setShowStructural((v) => !v)}
+                className="text-[10px] uppercase tracking-[0.22em] text-foreground/60 hover:text-foreground transition-colors"
+              >
+                {showStructural ? S.hide_structural : S.show_structural}
+              </button>
+              {showStructural && (
+                <div className="mt-6 animate-in fade-in duration-300">
+                  <Decomposition obj={semantic} S={S} />
+                  {interp?.structure && (
+                    <p className="mt-4 text-[13px] leading-[1.85] text-foreground/85 max-w-2xl">
+                      {interp.structure}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </section>
         )}
       </main>
@@ -219,8 +233,8 @@ export default function Semantic() {
 function Block({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground mb-3">{label}</div>
-      <div className="text-[13px] leading-[1.85] text-foreground/85 max-w-2xl">{children}</div>
+      <div className="text-[11px] uppercase tracking-[0.22em] text-foreground/70 mb-3">{label}</div>
+      <div className="text-[14px] leading-[1.85] text-foreground/90 max-w-2xl">{children}</div>
     </div>
   );
 }
