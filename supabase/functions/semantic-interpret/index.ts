@@ -42,7 +42,7 @@ STRUCTURE-FIRST READING
 Classify the emergent structural form before reading individual digits. Identical-digit chains (1→1→1→1) are resonance persistence, not "impulse repeated"; palindromes with distinct digits (1→5→5→1) are mirrored feedback; stepwise rises (1→2→3→4) are progressive assembly; gap-bearing rises (1→7→0→7) are interruption/recalibration. The structural form names the reading; digits only colour it. Never describe the output as a literal list of digit names.
 
 NON-LITERAL TRAJECTORY — never repeat digit semantics as the trajectory
-The user already sees the digit chain. Do not describe the trajectory as "connection → connection → connection" or any literal repetition of one principle. Trajectory describes emergent BEHAVIOR. Acceptable trajectory readings: "self-sustaining resonance" (22:22), "recursive impulse reinforcement" (11:11), "mirrored return loop" (15:51), "progressive structural assembly" (12:34), "ascent toward an open state" (13:57), "broken continuity / recalibration" (10:07). Use the parser's `direction` field as your anchor.
+The user already sees the digit chain. Do not describe the trajectory as "connection → connection → connection" or any literal repetition of one principle. Trajectory describes emergent BEHAVIOR. Acceptable trajectory readings: "self-sustaining resonance" (22:22), "recursive impulse reinforcement" (11:11), "mirrored return loop" (15:51), "progressive structural assembly" (12:34), "ascent toward an open state" (13:57), "broken continuity / recalibration" (10:07). Use the parser's "direction" field as your anchor.
 
 PATTERN CLASS BEHAVIOR — drives every field
 - interruption — a discontinuity in structural load transfer; reads as recalibration, not collapse.
