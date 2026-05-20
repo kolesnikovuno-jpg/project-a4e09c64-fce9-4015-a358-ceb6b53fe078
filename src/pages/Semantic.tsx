@@ -81,26 +81,30 @@ export default function Semantic() {
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
       <header className="max-w-3xl mx-auto px-6 pt-10 pb-6 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-        <Link to={localePath("/semantic")} className="hover:text-foreground transition-colors">{S.brand}</Link>
-        <nav className="flex items-center gap-6">
-          <Link to={localePath("/garden")} className="hover:text-foreground transition-colors">{S.nav_garden}</Link>
-          <Link to={localePath("/semantic/about")} className="hover:text-foreground transition-colors">{S.nav_about}</Link>
-          <div className="flex items-center gap-2" aria-label="Language">
-            {(LOCALES as readonly Locale[]).map((l) => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => switchTo(l)}
-                aria-current={locale === l}
-                className={`transition-colors ${
-                  locale === l ? "text-foreground" : "text-foreground/40 hover:text-foreground/80"
-                }`}
-              >
-                {LOCALE_LABEL[l]}
-              </button>
-            ))}
-          </div>
-        </nav>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <Link to={localePath("/semantic")} className="hover:text-foreground transition-colors">{S.brand}</Link>
+        </div>
+        <div className="flex items-center gap-2" aria-label="Language">
+          {(LOCALES as readonly Locale[]).map((l) => (
+            <button
+              key={l}
+              type="button"
+              onClick={() => switchTo(l)}
+              aria-current={locale === l}
+              className={`transition-colors ${
+                locale === l ? "text-foreground" : "text-foreground/40 hover:text-foreground/80"
+              }`}
+            >
+              {LOCALE_LABEL[l]}
+            </button>
+          ))}
+        </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-6 pb-24">
