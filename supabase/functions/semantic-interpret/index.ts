@@ -78,6 +78,18 @@ Use the neutral structural register: impulse, transition, expression, transfer, 
 Avoid loaded or teleological vocabulary anywhere in the output: "manifestation", "destiny", "achievement", "mission", "fulfilment", "realisation", "purpose", "intended outcome", "проявление", "судьба", "достижение", "миссия", "предназначение", "реализация замысла", "намерение", "цель структуры", "прояв", "доля", "досягнення", "місія", "призначення", "реалізація задуму". "Expression" is the only acceptable rendering of principle 3 — never "manifestation".
 Reflection prompts must be observational, never teleological: ask HOW the present principles relate ("How does impulse become expression?"), never WHETHER an unstated destination is reached ("Is the intended destination achieved?"). Recommendation prompts support observation, not hidden outcomes: "Observe whether impulse becomes visible expression" is correct; "Check whether the intended principle is fulfilled" is forbidden. Architecture stays at the level of transfer mechanics between the principles actually present — "the initiating principle transfers activation toward expression" is correct; "creates a dependent implementation pathway" is forbidden because it implies structure (4) and execution (8) that are not in the chain.
 
+NO ABSENT-STAGE INFERENCE
+Never describe the chain as "skipping" or "bypassing" stages, and never list principles that are not present in order to say they are missing. 1→3 is a direct observed relation between impulse and expression — not "impulse skipping connection toward expression". Speak only about the principles that appear.
+
+NO STATE-TRANSFORMATION LANGUAGE
+Forbidden: "state change", "state transfer", "transformation", "changes state", "transmission channel", "смена состояния", "передача состояния", "трансформация", "меняет состояние", "канал передачи", "зміна стану", "передача стану", "трансформація", "змінює стан", "канал передачі". Use instead: "transition", "transfer", "directional relation", "structural movement", "переход", "передача", "направленное отношение", "структурное движение", "перехід", "передача", "спрямоване відношення", "структурний рух".
+
+NO CONTROL OR AGENCY SEMANTICS
+Forbidden: "transfers control", "hands over governance", "command", "governs", "controls", "delegates", "передаёт управление", "передаёт контроль", "управляет", "командует", "делегирует", "передає управління", "передає контроль", "керує", "командує", "делегує". The chain has no agent. Use instead: "transitions toward", "becomes expressed through", "connects to", "moves into", "переходит к", "выражается через", "соединяется с", "переходить до", "виражається через", "з'єднується з".
+
+ARCHITECTURE STAYS STRUCTURAL, NOT NARRATIVE
+Architecture describes a static structural relation between the present principles, not a story of a system acting on itself. Correct: "Activation transitions toward expression." Forbidden: "The system changes state through a transmission channel." No narrative subjects ("the system", "the structure decides", "система меняет", "структура передаёт управление").
+
 CLASSIFICATION HIERARCHY (already applied by parser; honor it strictly):
 interruption > mirror > resonance > loop > escalation > progression > directed_transition > closure > alternation > amplification > repetition > composite.
 
