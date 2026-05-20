@@ -699,6 +699,9 @@ export const dictionary: Record<Locale, Dictionary> = {
         amplification: "amplification",
         interruption: "interruption",
         sequence: "sequence",
+        resonance: "resonance",
+        alternation: "alternation",
+        loop: "loop",
         composite: "composite",
       },
       dynamics: {
@@ -707,6 +710,9 @@ export const dictionary: Record<Locale, Dictionary> = {
         amplification: "concentration / strengthening",
         interruption: "restructuring / semantic pause",
         sequence: "progression / directional development",
+        resonance: "amplified resonance field",
+        alternation: "rhythmic exchange / oscillation",
+        loop: "return / recursion",
         composite: "layered composition",
       },
       principles: {
