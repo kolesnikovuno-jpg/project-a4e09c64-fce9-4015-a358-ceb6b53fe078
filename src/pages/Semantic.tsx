@@ -251,7 +251,7 @@ export default function Semantic() {
         </section>
 
         <section className="pt-10">
-          <div className="flex items-end gap-6">
+          <div className="sticky top-0 z-40 -mx-6 px-6 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70 flex items-end justify-between gap-6 pt-2 pb-1">
             <div className="flex gap-6 text-[11px] uppercase tracking-[0.18em]">
               {(["current", "manual", "symbol"] as Mode[]).map((m) => (
                 <button
@@ -271,6 +271,34 @@ export default function Semantic() {
                   {m === "current" ? S.mode_current : m === "manual" ? S.mode_manual : S.mode_symbol}
                 </button>
               ))}
+            </div>
+            <div className="flex items-center gap-3 pb-1.5">
+              {shareToast && (
+                <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/60 animate-in fade-in duration-200">
+                  {shareToast}
+                </span>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  aria-label={S.share}
+                  title={S.share}
+                  className="text-foreground/60 hover:text-foreground transition-colors outline-none"
+                >
+                  {shareCopied ? (
+                    <Check className="w-[20px] h-[20px]" strokeWidth={1.5} />
+                  ) : (
+                    <Share2 className="w-[20px] h-[20px]" strokeWidth={1.5} fill="currentColor" />
+                  )}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  side="bottom"
+                  sideOffset={8}
+                  className="min-w-[240px] rounded-none border-border bg-background/95 backdrop-blur p-1"
+                >
+                  {renderShareMenuItems()}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
@@ -383,37 +411,6 @@ export default function Semantic() {
         )}
       </main>
 
-      <div
-        className="fixed left-0 right-0 z-50 pointer-events-none bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:bottom-auto md:top-24"
-        aria-label={S.share}
-      >
-        <div className="max-w-3xl mx-auto px-6 flex justify-end">
-          <div className="pointer-events-auto">
-            {shareToast && (
-              <span className="mr-3 align-middle text-[10px] uppercase tracking-[0.18em] text-foreground/60 animate-in fade-in duration-200">
-                {shareToast}
-              </span>
-            )}
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                aria-label={S.share}
-                title={S.share}
-                className="text-foreground/35 hover:text-foreground/80 transition-colors outline-none p-1 -m-1"
-              >
-                {shareCopied ? <Check className="w-3 h-3" strokeWidth={1.25} /> : <Share2 className="w-3 h-3" strokeWidth={1.25} />}
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                side="top"
-                sideOffset={8}
-                className="min-w-[240px] rounded-none border-border bg-background/95 backdrop-blur p-1"
-              >
-                {renderShareMenuItems()}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
