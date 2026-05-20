@@ -290,6 +290,12 @@ export type SemanticDict = {
   show_structural: string;
   hide_structural: string;
   interpreting: string;
+  share: string;
+  share_title: string;
+  share_summary: string;
+  share_copied: string;
+  share_pattern: string;
+  share_leading: string;
   err_rate: string;
   err_credits: string;
   err_generic: string;
