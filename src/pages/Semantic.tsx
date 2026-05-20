@@ -246,7 +246,7 @@ function Decomposition({ obj, S }: { obj: SemanticObject; S: ReturnType<typeof u
   const directionLabel = obj.digits
     .split("")
     .map((c) => S.principles_short[c] ?? c)
-    .join("_");
+    .join(" → ");
   const tensionLabel =
     obj.tension === "low" ? S.tension_low : obj.tension === "high" ? S.tension_high : S.tension_medium;
   return (
@@ -257,7 +257,9 @@ function Decomposition({ obj, S }: { obj: SemanticObject; S: ReturnType<typeof u
       <Row k={S.row_dynamics} v={dynamicsLabel} />
       <Row k={S.row_direction} v={directionLabel} />
       <Row k={S.row_tension} v={tensionLabel} />
-      {obj.interaction.length > 0 && <Row k={S.row_interaction} v={obj.interaction.join("  ")} />}
+      {obj.interaction.length > 0 && (
+        <Row k={S.row_interaction} v={obj.interaction.map((s) => s.replace("→", " → ")).join("   ")} />
+      )}
       <div className="pt-3 mt-3 border-t border-border text-[11px] text-foreground/70">
         {S.row_principles}:{" "}
         {Array.from(new Set(obj.digits.split(""))).map((d) => `${d}=${S.principles[d] ?? d}`).join("  ·  ")}

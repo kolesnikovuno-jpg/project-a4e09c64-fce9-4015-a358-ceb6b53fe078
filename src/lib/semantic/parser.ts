@@ -101,7 +101,7 @@ function buildInteractions(d: string): string[] {
 }
 
 function direction(d: string): string {
-  return d.split("").map((c) => PRINCIPLE_SHORT[c] ?? c).join("_");
+  return d.split("").map((c) => PRINCIPLE_SHORT[c] ?? c).join(" → ");
 }
 
 function tensionLevel(patterns: string[], digits: string): "low" | "medium" | "high" {
