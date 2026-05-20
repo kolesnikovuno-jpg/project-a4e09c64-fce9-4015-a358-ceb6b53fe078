@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { ChevronLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { parse, type SemanticObject } from "@/lib/semantic/parser";
 import { useLocale } from "@/i18n/useLocale";
@@ -79,7 +80,16 @@ export default function Semantic() {
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
       <header className="max-w-3xl mx-auto px-6 pt-10 pb-6 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-        <Link to={localePath("/semantic")} className="hover:text-foreground transition-colors">{S.brand}</Link>
+        <div className="flex items-center gap-3">
+          <Link
+            to={localePath("/garden")}
+            aria-label="Garden"
+            className="hover:text-foreground transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Link>
+          <Link to={localePath("/semantic")} className="hover:text-foreground transition-colors">{S.brand}</Link>
+        </div>
         <nav className="flex items-center gap-6">
           <Link to={localePath("/semantic/about")} className="hover:text-foreground transition-colors">{S.nav_about}</Link>
           <div className="flex items-center gap-2" aria-label="Language">
