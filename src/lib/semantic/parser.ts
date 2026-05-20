@@ -221,6 +221,10 @@ const STRUCTURAL_CLASS: Record<string, string> = {
   recursive_return: "mirrored",
   layered_composition: "composite",
   composite: "composite",
+  symmetry: "mirrored",
+  partial_return: "partial_return",
+  recurrence: "recurrent",
+  mediated_recurrence: "recurrent",
 };
 
 // Calibrated topology hierarchy (V2):
