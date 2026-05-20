@@ -379,13 +379,20 @@ export function parse(raw: string, type: InputType, displayValue: string): Seman
   const digits = raw.replace(/\D/g, "");
   const patterns: string[] = [];
 
+  // V2 topology classification — symmetry / loop / partial_return / recurrence / progression.
+  if (isSymmetry(digits)) { patterns.push("symmetry"); patterns.push("mirror"); }
+  if (isLoopTopology(digits)) patterns.push("loop");
+  if (isPartialReturn(digits)) patterns.push("partial_return");
+  if (isMediatedRecurrence(digits)) patterns.push("mediated_recurrence");
+  if (isRecurrence(digits)) patterns.push("recurrence");
+
+  // Identical-digit chains keep the resonance / repetition reading.
   if (isResonance(digits)) patterns.push("resonance");
   if (isRepetition(digits)) patterns.push("repetition");
-  // Non-all-equal partial repetition counts as repetition for hierarchy purposes
-  // (so it overrides interruption per calibrated rule).
-  if (!isRepetition(digits) && hasRepeatedDigit(digits)) patterns.push("repetition");
-  if (isMirror(digits)) patterns.push("mirror");
   if (isAmplification(digits)) patterns.push("amplification");
+
+  // Interruption is now a structural modifier (presence of 0), not a primary
+  // override of topology. It is appended last in the priority order.
   if (hasGap(digits)) patterns.push("interruption");
 
   // Strict monotonic-only progression / escalation. Partial returns never qualify.
