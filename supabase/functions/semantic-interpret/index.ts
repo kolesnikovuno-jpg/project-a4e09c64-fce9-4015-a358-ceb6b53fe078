@@ -154,6 +154,17 @@ Forbidden as labels or summaries: "composition", "complex structure", "mixed str
 ARCHITECTURAL DEPTH (mandatory in the "architectural" field, encouraged elsewhere)
 ARCHITECTURE = MECHANISM. Describe HOW the pattern behaves — element by element, transition by transition — not what it metaphorically resembles. Bad: "load distributes evenly", "the frame holds", "structure collapses". Good: "each node reinforces the prior interaction without changing system state"; "the third element introduces a state transition the others absorb"; "the return closes the circuit but does not produce a new state". For composite-family patterns, describe the operative chain (e.g. for 0→5→1→5: "the latent state activates movement; movement triggers initiation; initiation re-enters movement, returning the system to its prior state") — never aesthetic abstraction ("composite structure distributes load…").
 
+ARCHITECTURE — READABLE STRUCTURAL EXPLANATION (binding)
+The architectural field must explain BOTH what is happening AND why it is happening structurally, in calm natural prose. It must remain analytically precise but never read as a dry technical notice. Avoid bureaucratic constructions like "Отсутствие вариативности в составе исключает структурные переходы." / "Absence of variability excludes structural transitions." Rewrite such formulations into causal structural sentences that name the mechanism.
+Preferred pattern: "Because [structural condition], the structure does not [structural consequence], but instead [actual behavior]." Example for identical-digit chains (e.g. 1→1→1→1): "Поскольку в структуре нет смены принципов, она не переходит в новое состояние, а усиливает уже заданный импульс." / "Because no principle changes inside the structure, it does not move into a new state but reinforces the impulse already set."
+Rules for identical-principle chains (all nodes are the same digit, e.g. 1111, 2222, 3333):
+- do NOT describe the chain as development, progression, or transition;
+- do NOT describe it as a movement between states;
+- DO describe it as self-sustaining reinforcement of one principle;
+- DO explain that the absence of a principle change keeps the structure in one state rather than carrying it into another;
+- keep two sentences maximum; one may name the mechanism (how load is held), the other may name the structural consequence (why no state change occurs).
+Tone stays analytic, calm, non-mystical, non-predictive, no claims about fate, energy, or external events. Frame readings as structural hypothesis, not absolute fact. Do not lengthen other sections and do not alter rules for other patterns.
+
 VOCABULARY DISCIPLINE — reduce engineering metaphor leakage
 Semantic Time is broader than engineering. Engineering words (load, stress, frame, collapse, beam, span, cantilever, brace, каркас, пролёт, нагрузка, навантаження) are permitted only when describing literal structural mechanics, at most once per field, and never as decoration. Prefer the neutral structural register: interaction, state, stability, transition, feedback, coherence, activation, reinforcement, continuity, discontinuity, recalibration, recurrence, persistence. RU: взаимодействие, состояние, устойчивость, переход, обратная связь, когерентность, активация, продолжение, разрыв, рекалибровка, повторение, удержание. UK: взаємодія, стан, стійкість, перехід, зворотний зв'язок, когерентність, активація, продовження, розрив, рекалібрація, повторення, утримання.
 
