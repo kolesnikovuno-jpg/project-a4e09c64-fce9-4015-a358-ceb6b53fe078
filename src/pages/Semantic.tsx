@@ -416,7 +416,6 @@ export default function Semantic() {
                 {renderShareMenuItems()}
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
         </div>
       </div>
 
