@@ -166,6 +166,14 @@ function buildInteractions(d: string): string[] {
 // The literal digit-by-digit reading is already exposed via `chain`.
 function direction(d: string, primary: string): string {
   switch (primary) {
+    case "symmetry":
+      return "mirrored topology";
+    case "partial_return":
+      return "return to an intermediate node";
+    case "recurrence":
+      return "node reinforcement without return geometry";
+    case "mediated_recurrence":
+      return "mediated recurrence / oscillation around a node";
     case "resonance":
       return "self-sustaining resonance";
     case "repetition":
