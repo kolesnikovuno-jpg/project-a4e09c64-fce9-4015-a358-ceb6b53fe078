@@ -76,11 +76,56 @@ function hasRepeatedDigit(d: string) {
   for (const c of d) counts[c] = (counts[c] ?? 0) + 1;
   return Object.values(counts).some((n) => n >= 2);
 }
-function isMirror(d: string)     {
-  // Palindrome with at least TWO distinct digits — identity persistence (1111) is not mirror.
+function isMirror(d: string)     { return isSymmetry(d); }
+// Topology: palindrome with at least TWO distinct digits.
+// Identity persistence (1111) is not symmetry.
+function isSymmetry(d: string) {
   if (d.length < 3) return false;
   if (d !== d.split("").reverse().join("")) return false;
   return new Set(d.split("")).size >= 2;
+}
+// Topology: last node === first node, length >= 3, not pure repetition.
+function isLoopTopology(d: string) {
+  return d.length >= 3 && d[0] === d[d.length - 1] && !isRepetition(d);
+}
+// Topology: last node equals an earlier internal node, but NOT the first node,
+// and that earlier occurrence is non-adjacent to the last node.
+// 1232 → partial return (last=2 at idx 1, length-2=2, 1<2). 1122 → recurrence (only adjacent).
+function isPartialReturn(d: string) {
+  if (d.length < 3) return false;
+  const last = d[d.length - 1];
+  if (last === d[0]) return false; // that is loop, not partial return
+  for (let i = 0; i < d.length - 2; i++) {
+    if (d[i] === last) return true;
+  }
+  return false;
+}
+// Topology: any digit appears >=2 times AND chain is not symmetry / loop / partial return.
+// Pure identity (1111) still counts as resonance via repetition family, not recurrence.
+function isRecurrence(d: string) {
+  if (d.length < 2) return false;
+  if (isSymmetry(d) || isLoopTopology(d) || isPartialReturn(d)) return false;
+  if (isRepetition(d)) return false;
+  const counts: Record<string, number> = {};
+  for (const c of d) counts[c] = (counts[c] ?? 0) + 1;
+  return Object.values(counts).some((n) => n >= 2);
+}
+// Recurrence with a non-adjacent repeat mediated by another digit, e.g. 2→1→2→3.
+function isMediatedRecurrence(d: string) {
+  if (!isRecurrence(d)) return false;
+  for (let i = 0; i < d.length; i++) {
+    for (let j = i + 2; j < d.length; j++) {
+      if (d[i] !== d[j]) continue;
+      // Mediation requires that the digits BETWEEN the two occurrences are
+      // all different from the recurring digit (true insertion of another node).
+      let mediated = true;
+      for (let k = i + 1; k < j; k++) {
+        if (d[k] === d[i]) { mediated = false; break; }
+      }
+      if (mediated) return true;
+    }
+  }
+  return false;
 }
 function isAmplification(d: string) {
   if (d.length < 3) return false;
@@ -128,6 +173,14 @@ function buildInteractions(d: string): string[] {
 // The literal digit-by-digit reading is already exposed via `chain`.
 function direction(d: string, primary: string): string {
   switch (primary) {
+    case "symmetry":
+      return "mirrored topology";
+    case "partial_return":
+      return "return to an intermediate node";
+    case "recurrence":
+      return "node reinforcement without return geometry";
+    case "mediated_recurrence":
+      return "mediated recurrence / oscillation around a node";
     case "resonance":
       return "self-sustaining resonance";
     case "repetition":
@@ -183,25 +236,36 @@ const STRUCTURAL_CLASS: Record<string, string> = {
   recursive_return: "mirrored",
   layered_composition: "composite",
   composite: "composite",
+  symmetry: "mirrored",
+  partial_return: "partial_return",
+  recurrence: "recurrent",
+  mediated_recurrence: "recurrent",
 };
 
-// Calibrated hierarchy:
-//   resonance > amplification > repetition  (dominant repetition override)
-// > mirror > loop
-// > interruption                            (0 present, no repetition override)
-// > escalation > progression > directed_transition > alternation
-// > activation_cycle > latent_activation > interrupted_movement > recursive_return > layered_composition > composite.
+// Calibrated topology hierarchy (V2):
+//   symmetry > loop > partial_return > mediated_recurrence > recurrence
+//   > resonance > amplification (resonance-family modifiers for identical-digit chains)
+//   > progression > escalation > directed_transition > alternation
+//   > interruption
+//   > composite-family subtypes.
+// Note: "repetition" and "mirror" are kept as legacy aliases mapped from the new
+// topology ids (mirror ← symmetry, recurrence replaces generic repetition for
+// mixed-digit chains). Identical-digit chains still read as resonance/repetition.
 const PRIMARY_ORDER = [
+  "symmetry",
+  "loop",
+  "partial_return",
+  "mediated_recurrence",
+  "recurrence",
   "resonance",
   "amplification",
   "repetition",
   "mirror",
-  "loop",
-  "interruption",
-  "escalation",
   "progression",
+  "escalation",
   "directed_transition",
   "alternation",
+  "interruption",
   "activation_cycle",
   "latent_activation",
   "interrupted_movement",
@@ -228,6 +292,10 @@ const DYNAMICS: Record<string, string> = {
   recursive_return: "circuit closing to its origin",
   layered_composition: "layered structure",
   composite: "layered structure",
+  symmetry: "mirrored topology / reflective return",
+  partial_return: "return to an intermediate prior node",
+  recurrence: "node reinforcement without explicit return geometry",
+  mediated_recurrence: "non-adjacent recurrence mediated by another node",
 };
 
 function trajectoryOf(d: string, patterns: string[]): string {
@@ -272,7 +340,17 @@ const FAMILY: Record<string, string> = {
   recursive_return: "composite",
   layered_composition: "composite",
   composite: "composite",
+  symmetry: "mirror",
+  // Loop is its own family so symmetry (mirror) + loop can coexist as primary+secondary.
+  // Override above:
+  // (re-declared below to take precedence)
+  // loop: "loop",
+  partial_return: "partial_return",
+  recurrence: "recurrence",
+  mediated_recurrence: "recurrence",
 };
+// Allow loop to coexist with symmetry as a secondary modifier.
+FAMILY.loop = "loop";
 
 function rankPrimary(patterns: string[]): { primary: string; secondary: string | null } {
   const ranked = PRIMARY_ORDER.filter((p) => patterns.includes(p));
@@ -308,13 +386,20 @@ export function parse(raw: string, type: InputType, displayValue: string): Seman
   const digits = raw.replace(/\D/g, "");
   const patterns: string[] = [];
 
+  // V2 topology classification — symmetry / loop / partial_return / recurrence / progression.
+  if (isSymmetry(digits)) { patterns.push("symmetry"); patterns.push("mirror"); }
+  if (isLoopTopology(digits)) patterns.push("loop");
+  if (isPartialReturn(digits)) patterns.push("partial_return");
+  if (isMediatedRecurrence(digits)) patterns.push("mediated_recurrence");
+  if (isRecurrence(digits)) patterns.push("recurrence");
+
+  // Identical-digit chains keep the resonance / repetition reading.
   if (isResonance(digits)) patterns.push("resonance");
   if (isRepetition(digits)) patterns.push("repetition");
-  // Non-all-equal partial repetition counts as repetition for hierarchy purposes
-  // (so it overrides interruption per calibrated rule).
-  if (!isRepetition(digits) && hasRepeatedDigit(digits)) patterns.push("repetition");
-  if (isMirror(digits)) patterns.push("mirror");
   if (isAmplification(digits)) patterns.push("amplification");
+
+  // Interruption is now a structural modifier (presence of 0), not a primary
+  // override of topology. It is appended last in the priority order.
   if (hasGap(digits)) patterns.push("interruption");
 
   // Strict monotonic-only progression / escalation. Partial returns never qualify.
@@ -325,8 +410,6 @@ export function parse(raw: string, type: InputType, displayValue: string): Seman
     else patterns.push("progression");
   }
   if (isAlternation(digits)) patterns.push("alternation");
-  // Loop only when it is NOT also a mirror (mirror is the stronger reading).
-  if (isLoop(digits) && !isMirror(digits)) patterns.push("loop");
   // Two-digit non-repeating pair = directed transition between two principles.
   if (isDirectedTransition(digits)) patterns.push("directed_transition");
   if (patterns.length === 0) patterns.push("composite");

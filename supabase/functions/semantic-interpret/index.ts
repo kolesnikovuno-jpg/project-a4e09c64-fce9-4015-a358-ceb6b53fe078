@@ -41,6 +41,16 @@ CALIBRATION RULES (binding, override softer guidance):
    • progression / escalation → strictly monotonic chains only (no partial returns). Never label 2→3→4→2 or similar as progression.
    • mirror / loop / recursive_return → return structure; never call it directional progression.
    • If primary_pattern does not fit any of the above cleanly, use neutral wording — "complex structure", "mixed structure", "return structure" — and do not invent unverified taxonomy.
+   Topology vocabulary (V2): symmetry, loop, partial_return, recurrence, mediated_recurrence, progression — plus resonance/amplification for identical-digit chains and interruption as a structural modifier when 0 is present.
+   • progression → strictly monotonic forward chain, no returns. Never label 2→3→4→2 as progression.
+   • loop → last node equals the first node (closed circuit). Return / closure of a circuit, never directional progression.
+   • partial_return → last node equals an earlier internal node but NOT the first node. Return to an intermediate state, not a full loop and not reinforcement.
+   • symmetry → mirrored topology (palindrome of distinct principles). Reflective return / feedback; may co-occur with loop as a secondary modifier.
+   • recurrence → a node repeats without forming loop / partial_return / symmetry geometry (e.g. 1112, 1122). Node reinforcement, NOT a return and NOT generic "repetition".
+   • mediated_recurrence → a node recurs with another node inserted between the two occurrences (e.g. 2→1→2→3). Oscillation around the recurring node; not a loop.
+   • resonance / repetition / amplification → identical-digit chains; dominant repeated principle reads as reinforcement, never as progression.
+   • interruption → secondary modifier when 0 sits inside the chain; never overrides the topology primary; reads as pause / discontinuity within the topology.
+   Critical distinctions: recurrence ≠ loop, recurrence ≠ symmetry, partial_return ≠ recurrence, partial_return ≠ loop. Do not collapse them into a generic "repetition" reading.
 5. NO FAKE METRICS — never output or imply tension levels, intensity scores, or numeric confidence. Uncertainty is expressed in interpretive verbs only ("may be read as…", "one possible reading…").
 6. NARRATIVE CONSISTENCY — chain, leader, and pattern are the source of truth. If a sentence contradicts them, rewrite the sentence. Reflection and recommendation stay observational; never ask whether an unstated outcome is "achieved" or "fulfilled".
 
