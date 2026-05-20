@@ -714,6 +714,7 @@ export const dictionary: Record<Locale, Dictionary> = {
         recursive_return: "recursive return",
         layered_composition: "layered structure",
         composite: "layered structure",
+        directed_transition: "directed transition",
       },
       dynamics: {
         repetition: "reinforcement / resonance",
@@ -733,6 +734,7 @@ export const dictionary: Record<Locale, Dictionary> = {
         recursive_return: "circuit closing to its origin",
         layered_composition: "layered structure under shared load",
         composite: "layered structure under shared load",
+        directed_transition: "directed transition / state change",
       },
       trajectories: {
         repetition: "recursive reinforcement",
@@ -752,6 +754,7 @@ export const dictionary: Record<Locale, Dictionary> = {
         recursive_return: "fold back to origin",
         layered_composition: "distributed structural behavior",
         composite: "distributed structural behavior",
+        directed_transition: "directed transition between principles",
       },
       principles: {
         "0": "pause / potential / gap",
