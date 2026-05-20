@@ -272,34 +272,6 @@ export default function Semantic() {
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-3 pb-1.5">
-              {shareToast && (
-                <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/60 animate-in fade-in duration-200">
-                  {shareToast}
-                </span>
-              )}
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  aria-label={S.share}
-                  title={S.share}
-                  className="text-foreground/60 hover:text-foreground transition-colors outline-none"
-                >
-                  {shareCopied ? (
-                    <Check className="w-[20px] h-[20px]" strokeWidth={1.5} />
-                  ) : (
-                    <Share2 className="w-[20px] h-[20px]" strokeWidth={1.5} fill="currentColor" />
-                  )}
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  side="bottom"
-                  sideOffset={8}
-                  className="min-w-[240px] rounded-none border-border bg-background/95 backdrop-blur p-1"
-                >
-                  {renderShareMenuItems()}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
           </div>
 
           <div className="mt-10">
@@ -410,6 +382,40 @@ export default function Semantic() {
           </section>
         )}
       </main>
+
+      {/* True fixed action icon — outside scroll flow, aligned to content column's right edge */}
+      <div className="fixed inset-0 z-50 pointer-events-none">
+        <div className="max-w-3xl mx-auto h-full px-6 relative">
+          <div className="absolute right-6 top-[calc(env(safe-area-inset-top,0px)+72px)] md:top-24 flex items-center gap-3 pointer-events-auto">
+            {shareToast && (
+              <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/60 animate-in fade-in duration-200">
+                {shareToast}
+              </span>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                aria-label={S.share}
+                title={S.share}
+                className="text-foreground/60 hover:text-foreground transition-colors outline-none"
+              >
+                {shareCopied ? (
+                  <Check className="w-[20px] h-[20px]" strokeWidth={1.5} />
+                ) : (
+                  <Share2 className="w-[20px] h-[20px]" strokeWidth={1.5} fill="currentColor" />
+                )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                side="bottom"
+                sideOffset={8}
+                className="min-w-[240px] rounded-none border-border bg-background/95 backdrop-blur p-1"
+              >
+                {renderShareMenuItems()}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </div>
 
     </div>
   );
