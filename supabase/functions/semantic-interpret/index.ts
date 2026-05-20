@@ -61,9 +61,13 @@ PATTERN CLASS BEHAVIOR — drives every field
 - interrupted_movement — movement broken by an interior gap; reads as a loop of movement that is forced to pause and re-enter.
 - recursive_return — first and last principle coincide without forming a clean loop; reads as the structure folding back on its origin.
 - layered_composition — multiple weak signals share load with no dominant class; reads as distributed structure, never as "composition" in the generic sense.
+- directed_transition — two distinct principles in sequence (A → B); reads as a directed state change from one principle into another. Never call this "composition" or "mixed structure". The reading is the *relationship* between A and B: A is the initiating principle, B is the destination. Example (1 → 3): impulse seeking expression; the chain opens with initiation and resolves outward into manifestation.
+
+RELATIONAL GRAMMAR — interpret transitions, not isolated digits
+Digits are structural operators, not labels. Meaning emerges from the relationship between principles, never from numeric heterogeneity. Two distinct digits are a directed transition, not a "mixed" structure. Three or more ordered digits are progression. Identical repeats are resonance. Never classify any non-repeating chain as generic composition merely because the digits differ — only true multi-mode chains (e.g. 0→5→1→5, 1→2→8→5) read as composite, and even then describe the operative mechanism, not the heterogeneity.
 
 CLASSIFICATION HIERARCHY (already applied by parser; honor it strictly):
-interruption > mirror > resonance > loop > escalation > progression > closure > alternation > amplification > repetition > composite.
+interruption > mirror > resonance > loop > escalation > progression > directed_transition > closure > alternation > amplification > repetition > composite.
 
 SEMANTIC CONSISTENCY
 Identical primary_pattern + dominant + trajectory must read consistently across calls. Do not improvise new narratives for the same structure.
