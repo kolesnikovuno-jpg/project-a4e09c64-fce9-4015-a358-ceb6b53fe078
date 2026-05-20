@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Share2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { parse, type SemanticObject } from "@/lib/semantic/parser";
 import { useLocale } from "@/i18n/useLocale";
@@ -37,6 +37,7 @@ export default function Semantic() {
   const [semantic, setSemantic] = useState<SemanticObject | null>(null);
   const [interp, setInterp] = useState<Interpretation | null>(null);
   const [showStructural, setShowStructural] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
   // Live clock for current-time mode (no auto-interpret).
   useEffect(() => {
@@ -74,6 +75,40 @@ export default function Semantic() {
       setError(S.err_generic);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleShare() {
+    const value = semantic?.value ?? "";
+    const primaryName = semantic
+      ? S.patterns[semantic.primary_pattern] ?? semantic.primary_pattern
+      : "";
+    const leadingName = semantic
+      ? S.principles[semantic.dominant] ?? semantic.dominant_principle
+      : "";
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    const summaryLines = [
+      S.share_title,
+      value,
+      primaryName ? `${S.share_pattern}: ${primaryName}` : null,
+      leadingName ? `${S.share_leading}: ${leadingName}` : null,
+      S.share_summary,
+    ].filter(Boolean) as string[];
+    const text = summaryLines.join("\n");
+    try {
+      if (typeof navigator !== "undefined" && (navigator as any).share) {
+        await (navigator as any).share({ title: S.share_title, text, url });
+        return;
+      }
+    } catch {
+      // user cancelled or share failed — fall through to clipboard
+    }
+    try {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      setShareCopied(true);
+      window.setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      // ignore
     }
   }
 
@@ -213,6 +248,22 @@ export default function Semantic() {
 
         {semantic && (
           <section className="mt-20 space-y-12 animate-in fade-in duration-700">
+            <div className="flex items-center justify-end gap-3 -mb-6">
+              {shareCopied && (
+                <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/60 animate-in fade-in duration-200">
+                  {S.share_copied}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={handleShare}
+                aria-label={S.share}
+                title={S.share}
+                className="text-foreground/50 hover:text-foreground transition-colors p-2 -mr-2"
+              >
+                {shareCopied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+              </button>
+            </div>
             {interp?.core && <Block label={S.label_core}><p>{interp.core}</p></Block>}
             {interp?.deep && <Block label={S.label_deep}><p>{interp.deep}</p></Block>}
             {interp?.architectural && <Block label={S.label_architectural}><p>{interp.architectural}</p></Block>}
