@@ -156,6 +156,7 @@ const STRUCTURAL_CLASS: Record<string, string> = {
   escalation: "progressive",
   closure: "progressive",
   alternation: "progressive",
+  directed_transition: "progressive",
   activation_cycle: "composite",
   latent_activation: "composite",
   interrupted_movement: "interrupted",
@@ -183,6 +184,7 @@ const PRIMARY_ORDER = [
   "loop",
   "progression",
   "escalation",
+  "directed_transition",
   "alternation",
   "amplification",
   "repetition",
@@ -201,6 +203,7 @@ const DYNAMICS: Record<string, string> = {
   loop: "return / recursion",
   escalation: "ascent toward depth / inquiry",
   progression: "directional development",
+  directed_transition: "directed transition / state change",
   closure: "approach to integration",
   alternation: "rhythmic exchange / oscillation",
   amplification: "concentration / strengthening",
@@ -232,6 +235,7 @@ function trajectoryOf(d: string, patterns: string[]): string {
   if (patterns.includes("mirror")) return "return";
   if (patterns.includes("loop")) return "return";
   if (patterns.includes("resonance") || patterns.includes("repetition")) return "flat";
+  if (patterns.includes("directed_transition")) return "transition";
   return "mixed";
 }
 
@@ -246,6 +250,7 @@ const FAMILY: Record<string, string> = {
   progression: "progression",
   escalation: "progression",
   closure: "progression",
+  directed_transition: "progression",
   alternation: "alternation",
   activation_cycle: "composite",
   latent_activation: "composite",
