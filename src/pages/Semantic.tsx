@@ -254,25 +254,30 @@ function Block({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function Decomposition({ obj, S }: { obj: SemanticObject; S: ReturnType<typeof useLocale>["t"]["semantic"] }) {
-  const patternLabel = obj.patterns.map((p) => S.patterns[p] ?? p).join(" · ");
+  const primaryName = S.patterns[obj.primary_pattern] ?? obj.primary_pattern;
+  const secondaryName = obj.secondary_pattern ? (S.patterns[obj.secondary_pattern] ?? obj.secondary_pattern) : null;
+  const patternLabel = secondaryName
+    ? `${primaryName} → ${secondaryName}`
+    : primaryName;
   const dominantPrinciple = S.principles[obj.dominant] ?? obj.dominant_principle;
   const dynamicsLabel = S.dynamics[obj.pattern] ?? obj.dynamics;
   const directionLabel = obj.digits
     .split("")
     .map((c) => S.principles_short[c] ?? c)
     .join(" → ");
+  const chainLabel = obj.digits.split("").join(" → ");
   const tensionLabel =
     obj.tension === "low" ? S.tension_low : obj.tension === "high" ? S.tension_high : S.tension_medium;
   return (
     <div className="space-y-2 text-[12px] text-foreground/80 font-mono">
       <Row k={S.row_value} v={obj.value} />
       <Row k={S.row_pattern} v={patternLabel} />
-      <Row k={S.row_dominant} v={`${obj.dominant} — ${dominantPrinciple}`} />
+      <Row k={S.row_dominant} v={`${obj.dominance_label} · ${obj.dominant} — ${dominantPrinciple}`} />
       <Row k={S.row_dynamics} v={dynamicsLabel} />
       <Row k={S.row_direction} v={directionLabel} />
       <Row k={S.row_tension} v={tensionLabel} />
-      {obj.interaction.length > 0 && (
-        <Row k={S.row_interaction} v={obj.interaction.map((s) => s.replace("→", " → ")).join("   ")} />
+      {obj.digits.length > 1 && (
+        <Row k={S.row_interaction} v={chainLabel} />
       )}
       <div className="pt-3 mt-3 border-t border-border text-[11px] text-foreground/70">
         {S.row_principles}:{" "}
