@@ -273,6 +273,10 @@ const DYNAMICS: Record<string, string> = {
   recursive_return: "circuit closing to its origin",
   layered_composition: "layered structure",
   composite: "layered structure",
+  symmetry: "mirrored topology / reflective return",
+  partial_return: "return to an intermediate prior node",
+  recurrence: "node reinforcement without explicit return geometry",
+  mediated_recurrence: "non-adjacent recurrence mediated by another node",
 };
 
 function trajectoryOf(d: string, patterns: string[]): string {
