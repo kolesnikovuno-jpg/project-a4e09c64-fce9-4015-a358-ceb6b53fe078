@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, Share2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +45,19 @@ export default function Semantic() {
   const [showStructural, setShowStructural] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const [shareToast, setShareToast] = useState<string | null>(null);
+  const shareAnchorRef = useRef<HTMLDivElement | null>(null);
+  const [showStickyShare, setShowStickyShare] = useState(false);
+
+  useEffect(() => {
+    const el = shareAnchorRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) => setShowStickyShare(!entry.isIntersecting),
+      { rootMargin: "0px 0px -100% 0px", threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   // Live clock for current-time mode (no auto-interpret).
   useEffect(() => {
@@ -163,6 +176,49 @@ export default function Semantic() {
     await copyText(appUrl, S.link_copied);
   }
 
+  function renderShareMenuItems() {
+    return (
+      <>
+        <DropdownMenuItem
+          onSelect={() => handleShareApp()}
+          className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+        >
+          {S.share_app}
+        </DropdownMenuItem>
+        {semantic && (
+          <DropdownMenuItem
+            onSelect={() => handleShareResult()}
+            className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+          >
+            {S.share_result}
+          </DropdownMenuItem>
+        )}
+        {semantic && (
+          <DropdownMenuItem
+            onSelect={() => handleCopyResult()}
+            className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+          >
+            {S.copy_result}
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem
+          onSelect={() => handleCopyLink()}
+          className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+        >
+          {S.copy_link}
+        </DropdownMenuItem>
+        {semantic && (
+          <DropdownMenuItem
+            onSelect={() => window.open("https://send.monobank.ua/jar/4a35bdyroD", "_blank", "noopener,noreferrer")}
+            className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+          >
+            {S.support_cta}
+          </DropdownMenuItem>
+        )}
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
       <header className="max-w-3xl mx-auto px-6 pt-10 pb-6 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -228,7 +284,7 @@ export default function Semantic() {
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-3 pb-2">
+            <div ref={shareAnchorRef} className="flex items-center gap-3 pb-2">
               {shareToast && (
                 <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/60 animate-in fade-in duration-200">
                   {shareToast}
@@ -246,34 +302,7 @@ export default function Semantic() {
                   align="end"
                   className="min-w-[220px] rounded-none border-border bg-background/95 backdrop-blur p-1"
                 >
-                  <DropdownMenuItem
-                    onSelect={() => handleShareApp()}
-                    className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
-                  >
-                    {S.share_app}
-                  </DropdownMenuItem>
-                  {semantic && (
-                    <DropdownMenuItem
-                      onSelect={() => handleShareResult()}
-                      className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
-                    >
-                      {S.share_result}
-                    </DropdownMenuItem>
-                  )}
-                  {semantic && (
-                    <DropdownMenuItem
-                      onSelect={() => handleCopyResult()}
-                      className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
-                    >
-                      {S.copy_result}
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem
-                    onSelect={() => handleCopyLink()}
-                    className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
-                  >
-                    {S.copy_link}
-                  </DropdownMenuItem>
+                  {renderShareMenuItems()}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -401,6 +430,31 @@ export default function Semantic() {
           </section>
         )}
       </main>
+
+      <div
+        className={`fixed top-0 right-0 z-50 pt-[max(1rem,env(safe-area-inset-top))] pr-[max(1.25rem,env(safe-area-inset-right))] transition-all duration-300 ${
+          showStickyShare ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-1 pointer-events-none"
+        }`}
+        aria-hidden={!showStickyShare}
+      >
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-label={S.share}
+            title={S.share}
+            tabIndex={showStickyShare ? 0 : -1}
+            className="text-foreground/45 hover:text-foreground transition-colors outline-none"
+          >
+            {shareCopied ? <Check className="w-3.5 h-3.5" strokeWidth={1.25} /> : <Share2 className="w-3.5 h-3.5" strokeWidth={1.25} />}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            sideOffset={8}
+            className="min-w-[220px] rounded-none border-border bg-background/95 backdrop-blur p-1"
+          >
+            {renderShareMenuItems()}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 }
