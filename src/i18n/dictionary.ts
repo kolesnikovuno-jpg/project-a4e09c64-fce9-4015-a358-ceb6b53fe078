@@ -314,6 +314,7 @@ export type SemanticDict = {
   tension_high: string;
   patterns: Record<string, string>;
   dynamics: Record<string, string>;
+  trajectories: Record<string, string>;
   principles: Record<string, string>;
   principles_short: Record<string, string>;
   about: {
