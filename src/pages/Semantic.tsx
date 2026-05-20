@@ -182,37 +182,37 @@ export default function Semantic() {
       <>
         <DropdownMenuItem
           onSelect={() => handleShareApp()}
-          className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+          className="text-[13px] tracking-normal text-foreground/85 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2.5 cursor-pointer"
         >
           {S.share_app}
         </DropdownMenuItem>
         {semantic && (
           <DropdownMenuItem
             onSelect={() => handleShareResult()}
-            className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+            className="text-[13px] tracking-normal text-foreground/85 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2.5 cursor-pointer"
           >
             {S.share_result}
           </DropdownMenuItem>
         )}
-        <DropdownMenuSeparator className="bg-border/60 my-1" />
+        <DropdownMenuSeparator className="bg-border/60 my-1.5" />
         {semantic && (
           <DropdownMenuItem
             onSelect={() => handleCopyResult()}
-            className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+            className="text-[13px] tracking-normal text-foreground/85 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2.5 cursor-pointer"
           >
             {S.copy_result}
           </DropdownMenuItem>
         )}
         <DropdownMenuItem
           onSelect={() => handleCopyLink()}
-          className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+          className="text-[13px] tracking-normal text-foreground/85 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2.5 cursor-pointer"
         >
           {S.copy_link}
         </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-border/60 my-1" />
+        <DropdownMenuSeparator className="bg-border/60 my-1.5" />
         <DropdownMenuItem
           onSelect={() => window.open("https://send.monobank.ua/jar/4a35bdyroD", "_blank", "noopener,noreferrer")}
-          className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+          className="text-[13px] tracking-normal text-foreground/85 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2.5 cursor-pointer"
         >
           {S.support_cta}
         </DropdownMenuItem>
