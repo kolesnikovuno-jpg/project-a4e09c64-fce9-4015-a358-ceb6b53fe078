@@ -207,25 +207,76 @@ export default function Semantic() {
         </section>
 
         <section className="pt-10">
-          <div className="flex gap-6 text-[11px] uppercase tracking-[0.18em]">
-            {(["current", "manual", "symbol"] as Mode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => {
-                  setMode(m);
-                  setInterp(null);
-                  setSemantic(null);
-                  setError(null);
-                }}
-                className={`pb-2 border-b transition-colors ${
-                  mode === m
-                    ? "text-primary border-primary"
-                    : "text-foreground/60 border-transparent hover:text-foreground"
-                }`}
-              >
-                {m === "current" ? S.mode_current : m === "manual" ? S.mode_manual : S.mode_symbol}
-              </button>
-            ))}
+          <div className="flex items-end justify-between gap-6">
+            <div className="flex gap-6 text-[11px] uppercase tracking-[0.18em]">
+              {(["current", "manual", "symbol"] as Mode[]).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => {
+                    setMode(m);
+                    setInterp(null);
+                    setSemantic(null);
+                    setError(null);
+                  }}
+                  className={`pb-2 border-b transition-colors ${
+                    mode === m
+                      ? "text-primary border-primary"
+                      : "text-foreground/60 border-transparent hover:text-foreground"
+                  }`}
+                >
+                  {m === "current" ? S.mode_current : m === "manual" ? S.mode_manual : S.mode_symbol}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 pb-2">
+              {shareToast && (
+                <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/60 animate-in fade-in duration-200">
+                  {shareToast}
+                </span>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  aria-label={S.share}
+                  title={S.share}
+                  className="text-foreground/40 hover:text-foreground transition-colors outline-none"
+                >
+                  {shareCopied ? <Check className="w-3.5 h-3.5" strokeWidth={1.25} /> : <Share2 className="w-3.5 h-3.5" strokeWidth={1.25} />}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="min-w-[220px] rounded-none border-border bg-background/95 backdrop-blur p-1"
+                >
+                  <DropdownMenuItem
+                    onSelect={() => handleShareApp()}
+                    className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+                  >
+                    {S.share_app}
+                  </DropdownMenuItem>
+                  {semantic && (
+                    <DropdownMenuItem
+                      onSelect={() => handleShareResult()}
+                      className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+                    >
+                      {S.share_result}
+                    </DropdownMenuItem>
+                  )}
+                  {semantic && (
+                    <DropdownMenuItem
+                      onSelect={() => handleCopyResult()}
+                      className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+                    >
+                      {S.copy_result}
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem
+                    onSelect={() => handleCopyLink()}
+                    className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+                  >
+                    {S.copy_link}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
 
           <div className="mt-10">
@@ -299,51 +350,6 @@ export default function Semantic() {
 
         {semantic && (
           <section className="mt-20 space-y-12 animate-in fade-in duration-700">
-            <div className="flex items-center justify-end gap-3 -mb-6">
-              {shareToast && (
-                <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/60 animate-in fade-in duration-200">
-                  {shareToast}
-                </span>
-              )}
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  aria-label={S.share}
-                  title={S.share}
-                  className="text-foreground/50 hover:text-foreground transition-colors p-2 -mr-2 outline-none"
-                >
-                  {shareCopied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="min-w-[220px] rounded-none border-border bg-background/95 backdrop-blur p-1"
-                >
-                  <DropdownMenuItem
-                    onSelect={() => handleShareApp()}
-                    className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
-                  >
-                    {S.share_app}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() => handleShareResult()}
-                    className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
-                  >
-                    {S.share_result}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() => handleCopyResult()}
-                    className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
-                  >
-                    {S.copy_result}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() => handleCopyLink()}
-                    className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
-                  >
-                    {S.copy_link}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
             {interp?.core && <Block label={S.label_core}><p>{interp.core}</p></Block>}
             {interp?.deep && <Block label={S.label_deep}><p>{interp.deep}</p></Block>}
             {interp?.architectural && <Block label={S.label_architectural}><p>{interp.architectural}</p></Block>}
