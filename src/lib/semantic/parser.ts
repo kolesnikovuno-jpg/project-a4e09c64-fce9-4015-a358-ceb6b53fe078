@@ -115,7 +115,14 @@ function isMediatedRecurrence(d: string) {
   if (!isRecurrence(d)) return false;
   for (let i = 0; i < d.length; i++) {
     for (let j = i + 2; j < d.length; j++) {
-      if (d[i] === d[j]) return true;
+      if (d[i] !== d[j]) continue;
+      // Mediation requires that the digits BETWEEN the two occurrences are
+      // all different from the recurring digit (true insertion of another node).
+      let mediated = true;
+      for (let k = i + 1; k < j; k++) {
+        if (d[k] === d[i]) { mediated = false; break; }
+      }
+      if (mediated) return true;
     }
   }
   return false;
@@ -403,8 +410,6 @@ export function parse(raw: string, type: InputType, displayValue: string): Seman
     else patterns.push("progression");
   }
   if (isAlternation(digits)) patterns.push("alternation");
-  // Loop only when it is NOT also a mirror (mirror is the stronger reading).
-  if (isLoop(digits) && !isMirror(digits)) patterns.push("loop");
   // Two-digit non-repeating pair = directed transition between two principles.
   if (isDirectedTransition(digits)) patterns.push("directed_transition");
   if (patterns.length === 0) patterns.push("composite");
