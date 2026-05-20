@@ -278,6 +278,7 @@ export type SemanticDict = {
   tagline: string;
   nav_interface: string;
   nav_about: string;
+  nav_garden: string;
   hero_title: string;
   hero_lead: string;
   mode_current: string;
