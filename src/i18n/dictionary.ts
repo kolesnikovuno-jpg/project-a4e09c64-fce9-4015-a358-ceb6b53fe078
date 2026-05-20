@@ -1174,6 +1174,7 @@ export const dictionary: Record<Locale, Dictionary> = {
         recursive_return: "рекурсивный возврат",
         layered_composition: "слоистая структура",
         composite: "слоистая структура",
+        directed_transition: "направленный переход",
       },
       dynamics: {
         repetition: "усиление / резонанс",
@@ -1193,6 +1194,7 @@ export const dictionary: Record<Locale, Dictionary> = {
         recursive_return: "возврат к исходной точке",
         layered_composition: "слоистая структура под общей нагрузкой",
         composite: "слоистая структура под общей нагрузкой",
+        directed_transition: "направленный переход / смена состояния",
       },
       trajectories: {
         repetition: "рекурсивное усиление",
@@ -1212,6 +1214,7 @@ export const dictionary: Record<Locale, Dictionary> = {
         recursive_return: "складывание обратно к началу",
         layered_composition: "распределённое структурное поведение",
         composite: "распределённое структурное поведение",
+        directed_transition: "направленный переход между принципами",
       },
       principles: {
         "0": "пауза / потенциал / разрыв",
