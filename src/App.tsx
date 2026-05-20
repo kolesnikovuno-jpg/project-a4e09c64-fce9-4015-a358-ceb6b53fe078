@@ -20,6 +20,8 @@ import Void from "./pages/Void";
 import Unsubscribe from "./pages/Unsubscribe";
 import Clarity from "./pages/Clarity";
 import ClarityIntake from "./pages/ClarityIntake";
+import Semantic from "./pages/Semantic";
+import SemanticAbout from "./pages/SemanticAbout";
 import OperatorLogin from "./pages/OperatorLogin";
 import OperatorCases from "./pages/OperatorCases";
 import OperatorCaseDetail from "./pages/OperatorCaseDetail";
@@ -98,6 +100,10 @@ const App = () => (
           <Route path="/unocalc" element={<UnoCalc />} />
           <Route path="/lyra-concept" element={<LyraConcept />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
+
+          {/* Semantic Time — cognitive semantic interpretation MVP */}
+          <Route path="/semantic" element={<Semantic />} />
+          <Route path="/semantic/about" element={<SemanticAbout />} />
 
           {/* Internal operator workspace */}
           <Route path="/operator/login" element={<OperatorLogin />} />
