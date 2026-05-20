@@ -290,6 +290,12 @@ export type SemanticDict = {
   show_structural: string;
   hide_structural: string;
   interpreting: string;
+  share: string;
+  share_title: string;
+  share_summary: string;
+  share_copied: string;
+  share_pattern: string;
+  share_leading: string;
   err_rate: string;
   err_credits: string;
   err_generic: string;
@@ -674,6 +680,12 @@ export const dictionary: Record<Locale, Dictionary> = {
       show_structural: "Show structural analysis",
       hide_structural: "Hide structural analysis",
       interpreting: "Interpreting…",
+      share: "Share",
+      share_title: "Semantic Time Interpretation",
+      share_summary: "Structural interpretation generated in Semantic Time",
+      share_copied: "Link copied",
+      share_pattern: "Pattern",
+      share_leading: "Leading principle",
       err_rate: "Rate limit reached — try again in a moment.",
       err_credits: "AI credits exhausted.",
       err_generic: "Interpretation unavailable.",
@@ -1146,6 +1158,12 @@ export const dictionary: Record<Locale, Dictionary> = {
       show_structural: "Показать структурный анализ",
       hide_structural: "Скрыть структурный анализ",
       interpreting: "Интерпретация…",
+      share: "Поделиться",
+      share_title: "Интерпретация Semantic Time",
+      share_summary: "Структурная интерпретация в Semantic Time",
+      share_copied: "Ссылка скопирована",
+      share_pattern: "Паттерн",
+      share_leading: "Ведущий принцип",
       err_rate: "Лимит запросов — попробуйте через мгновение.",
       err_credits: "Ресурс ИИ исчерпан.",
       err_generic: "Интерпретация недоступна.",
@@ -1618,6 +1636,12 @@ export const dictionary: Record<Locale, Dictionary> = {
       show_structural: "Показати структурний аналіз",
       hide_structural: "Сховати структурний аналіз",
       interpreting: "Інтерпретація…",
+      share: "Поділитися",
+      share_title: "Інтерпретація Semantic Time",
+      share_summary: "Структурна інтерпретація в Semantic Time",
+      share_copied: "Посилання скопійовано",
+      share_pattern: "Патерн",
+      share_leading: "Провідний принцип",
       err_rate: "Ліміт запитів — спробуйте за мить.",
       err_credits: "Ресурс ШІ вичерпано.",
       err_generic: "Інтерпретація недоступна.",
