@@ -35,11 +35,13 @@ export default function Semantic() {
   const [error, setError] = useState<string | null>(null);
   const [semantic, setSemantic] = useState<SemanticObject | null>(null);
   const [interp, setInterp] = useState<Interpretation | null>(null);
+  const [showStructural, setShowStructural] = useState(false);
 
   // Live clock for current-time mode (no auto-interpret).
   useEffect(() => {
     if (mode !== "current") return;
-    const id = window.setInterval(() => setCurrentTime(currentHHMM()), 1000 * 15);
+    setCurrentTime(currentHHMM());
+    const id = window.setInterval(() => setCurrentTime(currentHHMM()), 1000);
     return () => window.clearInterval(id);
   }, [mode]);
 
