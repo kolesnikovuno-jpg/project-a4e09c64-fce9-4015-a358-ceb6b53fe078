@@ -18,7 +18,6 @@ export interface SemanticObject {
   dynamics: string;
   direction: string;                 // principle short names joined " → "
   chain: string;                     // digits joined " → "
-  tension: "low" | "medium" | "high";
   interaction: string[];             // pairwise transitions (internal)
   structural_class: string;          // higher-order class: progressive | resonant | mirrored | interrupted | composite
 }
@@ -42,16 +41,41 @@ const PRINCIPLE_SHORT: Record<string, string> = {
   "7": "inquiry", "8": "force", "9": "completion",
 };
 
-function dominantDigit(digits: string): string {
+// Deterministic leading-principle rule (calibrated):
+//   A. If any digit appears >=2 times → leader = that digit
+//      (tie-broken by first to reach the maximum frequency in chain order).
+//   B. Else if "0" appears anywhere → leader = 0.
+//   C. Else → leader = first digit.
+function leadingDigit(digits: string): string {
+  if (!digits) return "";
+  const counts: Record<string, number> = {};
+  for (const d of digits) counts[d] = (counts[d] ?? 0) + 1;
+  let best = ""; let bestCount = 1;
+  for (const c of digits) {
+    if (counts[c] > bestCount) { best = c; bestCount = counts[c]; }
+  }
+  if (best) return best;
+  if (digits.includes("0")) return "0";
+  return digits[0];
+}
+// Most frequent digit (used internally only — for dominance counting, not for leader).
+function mostFrequent(digits: string): string {
   const counts: Record<string, number> = {};
   for (const d of digits) counts[d] = (counts[d] ?? 0) + 1;
   let best = digits[0]; let bestCount = 0;
-  for (const [d, c] of Object.entries(counts)) if (c > bestCount) { best = d; bestCount = c; }
+  for (const c of digits) if (counts[c] > bestCount) { best = c; bestCount = counts[c]; }
   return best;
 }
 
 function isRepetition(d: string) { return d.length >= 2 && d.split("").every((c) => c === d[0]); }
 function isResonance(d: string)  { return isRepetition(d) && d.length >= 4; }
+// Partial repetition: any digit appears >=2 times in a non-all-equal chain.
+function hasRepeatedDigit(d: string) {
+  if (d.length < 2 || isRepetition(d)) return false;
+  const counts: Record<string, number> = {};
+  for (const c of d) counts[c] = (counts[c] ?? 0) + 1;
+  return Object.values(counts).some((n) => n >= 2);
+}
 function isMirror(d: string)     {
   // Palindrome with at least TWO distinct digits — identity persistence (1111) is not mirror.
   if (d.length < 3) return false;
@@ -66,15 +90,8 @@ function isAmplification(d: string) {
   return prefix.length > 0 && !prefix.includes(tail[0]);
 }
 function hasGap(d: string)  { return /[1-9]0[1-9]?/.test(d) || /[1-9]0+[1-9]/.test(d); }
-function isSequence(d: string) {
-  if (d.length < 3) return false;
-  let asc = 0, desc = 0;
-  for (let i = 1; i < d.length; i++) {
-    const diff = Number(d[i]) - Number(d[i - 1]);
-    if (diff === 1) asc++; else if (diff === -1) desc++;
-  }
-  return asc >= 2 || desc >= 2;
-}
+// Calibrated progression: only strict full monotonic ascent or descent across the chain.
+// Partial returns (e.g. 2→3→4→2) are NOT progression.
 function sequenceAscending(d: string) {
   if (d.length < 3) return false;
   for (let i = 1; i < d.length; i++) if (Number(d[i]) <= Number(d[i - 1])) return false;
@@ -84,6 +101,9 @@ function sequenceDescending(d: string) {
   if (d.length < 3) return false;
   for (let i = 1; i < d.length; i++) if (Number(d[i]) >= Number(d[i - 1])) return false;
   return true;
+}
+function isStrictMonotonic(d: string) {
+  return sequenceAscending(d) || sequenceDescending(d);
 }
 function isAlternation(d: string) {
   if (d.length < 4) return false;
@@ -165,29 +185,23 @@ const STRUCTURAL_CLASS: Record<string, string> = {
   composite: "composite",
 };
 
-function tensionLevel(patterns: string[], digits: string): "low" | "medium" | "high" {
-  if (patterns.includes("interruption")) return "high";
-  if (patterns.includes("resonance") || patterns.includes("amplification")) return "high";
-  if (patterns.includes("escalation")) return "high";
-  if (patterns.includes("repetition")) return "high";
-  if (patterns.includes("mirror") || patterns.includes("loop")) return "medium";
-  if (digits.length <= 2) return "low";
-  return "medium";
-}
-
-// Hierarchy — most structurally dominant pattern wins.
-// interruption > mirror > resonance > loop > progression > escalation > alternation > amplification > repetition > composite.
+// Calibrated hierarchy:
+//   resonance > amplification > repetition  (dominant repetition override)
+// > mirror > loop
+// > interruption                            (0 present, no repetition override)
+// > escalation > progression > directed_transition > alternation
+// > activation_cycle > latent_activation > interrupted_movement > recursive_return > layered_composition > composite.
 const PRIMARY_ORDER = [
-  "interruption",
-  "mirror",
   "resonance",
-  "loop",
-  "progression",
-  "escalation",
-  "directed_transition",
-  "alternation",
   "amplification",
   "repetition",
+  "mirror",
+  "loop",
+  "interruption",
+  "escalation",
+  "progression",
+  "directed_transition",
+  "alternation",
   "activation_cycle",
   "latent_activation",
   "interrupted_movement",
@@ -296,23 +310,19 @@ export function parse(raw: string, type: InputType, displayValue: string): Seman
 
   if (isResonance(digits)) patterns.push("resonance");
   if (isRepetition(digits)) patterns.push("repetition");
+  // Non-all-equal partial repetition counts as repetition for hierarchy purposes
+  // (so it overrides interruption per calibrated rule).
+  if (!isRepetition(digits) && hasRepeatedDigit(digits)) patterns.push("repetition");
   if (isMirror(digits)) patterns.push("mirror");
   if (isAmplification(digits)) patterns.push("amplification");
   if (hasGap(digits)) patterns.push("interruption");
 
-  // Progression / escalation are mutually exclusive primaries:
-  // ascent toward inquiry/gap (7 or 0) → escalation, otherwise progression.
-  if (isSequence(digits)) {
+  // Strict monotonic-only progression / escalation. Partial returns never qualify.
+  if (isStrictMonotonic(digits)) {
     const asc = sequenceAscending(digits);
     const last = digits[digits.length - 1];
     if (asc && (last === "7" || last === "0")) patterns.push("escalation");
     else patterns.push("progression");
-  } else if (
-    digits.length >= 3 &&
-    Number(digits[digits.length - 1]) > Number(digits[0]) &&
-    (digits[digits.length - 1] === "7" || digits[digits.length - 1] === "0")
-  ) {
-    patterns.push("escalation");
   }
   if (isAlternation(digits)) patterns.push("alternation");
   // Loop only when it is NOT also a mirror (mirror is the stronger reading).
@@ -321,7 +331,7 @@ export function parse(raw: string, type: InputType, displayValue: string): Seman
   if (isDirectedTransition(digits)) patterns.push("directed_transition");
   if (patterns.length === 0) patterns.push("composite");
 
-  const dom = dominantDigit(digits);
+  const leader = leadingDigit(digits);
   let { primary, secondary } = rankPrimary(patterns);
   // Replace the generic "composite" classification with a diagnostic subtype.
   if (primary === "composite") {
@@ -337,14 +347,13 @@ export function parse(raw: string, type: InputType, displayValue: string): Seman
     patterns,
     primary_pattern: primary,
     secondary_pattern: secondary,
-    dominant: dom,
-    dominant_principle: PRINCIPLES[dom] ?? "—",
-    leading_digit: digits[0] ?? dom,
+    dominant: leader,
+    dominant_principle: PRINCIPLES[leader] ?? "—",
+    leading_digit: leader,
     trajectory: traj,
     dynamics: DYNAMICS[primary] ?? "layered composition",
     direction: direction(digits, primary),
     chain: chainOf(digits),
-    tension: tensionLevel(patterns, digits),
     interaction: buildInteractions(digits),
     structural_class: STRUCTURAL_CLASS[primary] ?? "composite",
   };
