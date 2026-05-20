@@ -86,8 +86,8 @@ export default function Semantic() {
     }
   }
 
-  const appUrl = "https://kolesnikov.uno/";
-  const rootUrl = "https://kolesnikov.uno/";
+  const appUrl = "https://kolesnikov.uno/semantic-time";
+  const rootUrl = "https://kolesnikov.uno/semantic-time";
 
   function buildResultText(): string {
     if (!semantic) return "";
