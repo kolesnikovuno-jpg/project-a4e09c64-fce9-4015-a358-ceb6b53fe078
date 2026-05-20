@@ -76,11 +76,49 @@ function hasRepeatedDigit(d: string) {
   for (const c of d) counts[c] = (counts[c] ?? 0) + 1;
   return Object.values(counts).some((n) => n >= 2);
 }
-function isMirror(d: string)     {
-  // Palindrome with at least TWO distinct digits — identity persistence (1111) is not mirror.
+function isMirror(d: string)     { return isSymmetry(d); }
+// Topology: palindrome with at least TWO distinct digits.
+// Identity persistence (1111) is not symmetry.
+function isSymmetry(d: string) {
   if (d.length < 3) return false;
   if (d !== d.split("").reverse().join("")) return false;
   return new Set(d.split("")).size >= 2;
+}
+// Topology: last node === first node, length >= 3, not pure repetition.
+function isLoopTopology(d: string) {
+  return d.length >= 3 && d[0] === d[d.length - 1] && !isRepetition(d);
+}
+// Topology: last node equals an earlier internal node, but NOT the first node,
+// and that earlier occurrence is non-adjacent to the last node.
+// 1232 → partial return (last=2 at idx 1, length-2=2, 1<2). 1122 → recurrence (only adjacent).
+function isPartialReturn(d: string) {
+  if (d.length < 3) return false;
+  const last = d[d.length - 1];
+  if (last === d[0]) return false; // that is loop, not partial return
+  for (let i = 0; i < d.length - 2; i++) {
+    if (d[i] === last) return true;
+  }
+  return false;
+}
+// Topology: any digit appears >=2 times AND chain is not symmetry / loop / partial return.
+// Pure identity (1111) still counts as resonance via repetition family, not recurrence.
+function isRecurrence(d: string) {
+  if (d.length < 2) return false;
+  if (isSymmetry(d) || isLoopTopology(d) || isPartialReturn(d)) return false;
+  if (isRepetition(d)) return false;
+  const counts: Record<string, number> = {};
+  for (const c of d) counts[c] = (counts[c] ?? 0) + 1;
+  return Object.values(counts).some((n) => n >= 2);
+}
+// Recurrence with a non-adjacent repeat mediated by another digit, e.g. 2→1→2→3.
+function isMediatedRecurrence(d: string) {
+  if (!isRecurrence(d)) return false;
+  for (let i = 0; i < d.length; i++) {
+    for (let j = i + 2; j < d.length; j++) {
+      if (d[i] === d[j]) return true;
+    }
+  }
+  return false;
 }
 function isAmplification(d: string) {
   if (d.length < 3) return false;
@@ -185,23 +223,30 @@ const STRUCTURAL_CLASS: Record<string, string> = {
   composite: "composite",
 };
 
-// Calibrated hierarchy:
-//   resonance > amplification > repetition  (dominant repetition override)
-// > mirror > loop
-// > interruption                            (0 present, no repetition override)
-// > escalation > progression > directed_transition > alternation
-// > activation_cycle > latent_activation > interrupted_movement > recursive_return > layered_composition > composite.
+// Calibrated topology hierarchy (V2):
+//   symmetry > loop > partial_return > mediated_recurrence > recurrence
+//   > resonance > amplification (resonance-family modifiers for identical-digit chains)
+//   > progression > escalation > directed_transition > alternation
+//   > interruption
+//   > composite-family subtypes.
+// Note: "repetition" and "mirror" are kept as legacy aliases mapped from the new
+// topology ids (mirror ← symmetry, recurrence replaces generic repetition for
+// mixed-digit chains). Identical-digit chains still read as resonance/repetition.
 const PRIMARY_ORDER = [
+  "symmetry",
+  "loop",
+  "partial_return",
+  "mediated_recurrence",
+  "recurrence",
   "resonance",
   "amplification",
   "repetition",
   "mirror",
-  "loop",
-  "interruption",
-  "escalation",
   "progression",
+  "escalation",
   "directed_transition",
   "alternation",
+  "interruption",
   "activation_cycle",
   "latent_activation",
   "interrupted_movement",
