@@ -86,7 +86,8 @@ export default function Semantic() {
     }
   }
 
-  const appUrl = "https://kolesnikov.uno/semantic-time";
+  const appUrl = `https://kolesnikov.uno/${locale}/semantic`;
+  const rootUrl = "https://kolesnikov.uno/";
 
   function buildResultText(): string {
     if (!semantic) return "";
@@ -95,14 +96,17 @@ export default function Semantic() {
     const chain = semantic.digits.split("").join(" → ");
     const lines = [
       S.share_app_title,
+      "",
       `${S.row_value}: ${semantic.value}`,
       `${S.share_pattern}: ${primaryName}`,
       `${S.share_leading}: ${leadingName}`,
       `${S.share_chain}: ${chain}`,
     ];
-    if (interp?.reflection) {
-      lines.push("", `${S.share_reflection}:`, interp.reflection);
-    }
+    if (interp?.core) lines.push("", `${S.label_core}:`, interp.core);
+    if (interp?.deep) lines.push("", `${S.label_deep}:`, interp.deep);
+    if (interp?.architectural) lines.push("", `${S.label_architectural}:`, interp.architectural);
+    if (interp?.reflection) lines.push("", `${S.label_reflection}:`, interp.reflection);
+    if (interp?.recommendation) lines.push("", `${S.label_recommendation}:`, interp.recommendation);
     lines.push("", appUrl);
     return lines.join("\n");
   }
@@ -161,7 +165,7 @@ export default function Semantic() {
   }
 
   async function handleCopyLink() {
-    await copyText(appUrl, S.link_copied);
+    await copyText(rootUrl, S.link_copied);
   }
 
   function renderShareMenuItems() {
