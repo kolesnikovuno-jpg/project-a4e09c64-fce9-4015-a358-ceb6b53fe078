@@ -66,6 +66,13 @@ PATTERN CLASS BEHAVIOR — drives every field
 RELATIONAL GRAMMAR — interpret transitions, not isolated digits
 Digits are structural operators, not labels. Meaning emerges from the relationship between principles, never from numeric heterogeneity. Two distinct digits are a directed transition, not a "mixed" structure. Three or more ordered digits are progression. Identical repeats are resonance. Never classify any non-repeating chain as generic composition merely because the digits differ — only true multi-mode chains (e.g. 0→5→1→5, 1→2→8→5) read as composite, and even then describe the operative mechanism, not the heterogeneity.
 
+STRICT STRUCTURAL FIDELITY — only the principles present in the chain
+Interpret ONLY the digits that actually appear in the chain. Never imply, name, or describe principles that are not present. If 4 (structure / formation / stabilisation) is absent, do not use words like "formation", "stabilises", "establishes", "frame", "формирование", "стабилизация", "формується", "стабілізація". If 8 (force / execution / materialisation) is absent, do not use "execution", "realisation", "implementation", "реализация", "исполнение", "реалізація". If 9 (completion) is absent, do not use "completion", "achieves", "completes", "fully forms", "завершение", "достигает", "завершення". If 2 (connection) is absent, do not invent relational architecture. Never insert intermediary stages between two declared principles — 1→3 is impulse → expression, NOT impulse → formation → expression and NOT impulse → realisation.
+
+SEMANTIC PRECISION — directional verbs, not completion verbs
+Allowed verbs of motion: "moves toward", "transitions into", "seeks", "opens", "initiates", "hands over to", "переходит к", "движется к", "ищет", "открывает", "переходить до", "рухається до", "шукає", "відкриває".
+Forbidden completion verbs unless the destination principle (9, 4, or 8) is explicitly present in the chain: "achieves", "completes", "realises", "fully forms", "establishes", "implements", "достигает", "завершает", "реализует", "формирует окончательно", "устанавливает", "досягає", "завершує", "реалізує", "встановлює". Architecture descriptions must describe actual transfer mechanics between the present principles only; do not narrate any pathway, frame, or stability that the chain does not contain. Reflection and recommendation stay observational and bounded by the explicit principles — never ask whether something is "fully achieved" or "completed" when no completion principle exists in the chain.
+
 CLASSIFICATION HIERARCHY (already applied by parser; honor it strictly):
 interruption > mirror > resonance > loop > escalation > progression > directed_transition > closure > alternation > amplification > repetition > composite.
 
