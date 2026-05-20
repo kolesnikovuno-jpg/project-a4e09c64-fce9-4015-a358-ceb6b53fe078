@@ -160,10 +160,30 @@ function trajectoryOf(d: string, patterns: string[]): string {
   return "mixed";
 }
 
+// Pattern families — secondary is only meaningful when it lives in a different family.
+const FAMILY: Record<string, string> = {
+  interruption: "interruption",
+  mirror: "mirror",
+  loop: "mirror",
+  resonance: "repetition",
+  repetition: "repetition",
+  amplification: "repetition",
+  progression: "progression",
+  escalation: "progression",
+  closure: "progression",
+  alternation: "alternation",
+  composite: "composite",
+};
+
 function rankPrimary(patterns: string[]): { primary: string; secondary: string | null } {
   const ranked = PRIMARY_ORDER.filter((p) => patterns.includes(p));
   const primary = ranked[0] ?? patterns[0] ?? "composite";
-  const secondary = ranked.find((p) => p !== primary) ?? null;
+  const primaryFamily = FAMILY[primary] ?? primary;
+  // Secondary must be from a different family and not a generic fallback.
+  const secondary =
+    ranked.find(
+      (p) => p !== primary && (FAMILY[p] ?? p) !== primaryFamily && p !== "composite"
+    ) ?? null;
   return { primary, secondary };
 }
 
@@ -177,23 +197,23 @@ export function parse(raw: string, type: InputType, displayValue: string): Seman
   if (isAmplification(digits)) patterns.push("amplification");
   if (hasGap(digits)) patterns.push("interruption");
 
-  // Trajectory-aware progression / escalation / closure
+  // Progression / escalation are mutually exclusive primaries:
+  // ascent toward inquiry/gap (7 or 0) → escalation, otherwise progression.
   if (isSequence(digits)) {
-    patterns.push("progression");
     const asc = sequenceAscending(digits);
     const last = digits[digits.length - 1];
     if (asc && (last === "7" || last === "0")) patterns.push("escalation");
-    if (asc && (last === "9" || last === "4")) patterns.push("closure");
-  } else {
-    // generic ascent toward depth/inquiry even when not strictly stepwise
-    const last = digits[digits.length - 1];
-    const first = digits[0];
-    if (digits.length >= 3 && Number(last) > Number(first) && (last === "7" || last === "0")) {
-      patterns.push("escalation");
-    }
+    else patterns.push("progression");
+  } else if (
+    digits.length >= 3 &&
+    Number(digits[digits.length - 1]) > Number(digits[0]) &&
+    (digits[digits.length - 1] === "7" || digits[digits.length - 1] === "0")
+  ) {
+    patterns.push("escalation");
   }
   if (isAlternation(digits)) patterns.push("alternation");
-  if (isLoop(digits)) patterns.push("loop");
+  // Loop only when it is NOT also a mirror (mirror is the stronger reading).
+  if (isLoop(digits) && !isMirror(digits)) patterns.push("loop");
   if (patterns.length === 0) patterns.push("composite");
 
   const dom = dominantDigit(digits);
