@@ -325,7 +325,17 @@ const FAMILY: Record<string, string> = {
   recursive_return: "composite",
   layered_composition: "composite",
   composite: "composite",
+  symmetry: "mirror",
+  // Loop is its own family so symmetry (mirror) + loop can coexist as primary+secondary.
+  // Override above:
+  // (re-declared below to take precedence)
+  // loop: "loop",
+  partial_return: "partial_return",
+  recurrence: "recurrence",
+  mediated_recurrence: "recurrence",
 };
+// Allow loop to coexist with symmetry as a secondary modifier.
+FAMILY.loop = "loop";
 
 function rankPrimary(patterns: string[]): { primary: string; secondary: string | null } {
   const ranked = PRIMARY_ORDER.filter((p) => patterns.includes(p));
