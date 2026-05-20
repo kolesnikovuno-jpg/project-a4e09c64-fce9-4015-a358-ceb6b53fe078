@@ -103,6 +103,10 @@ const App = () => (
           <Route path="/lyra-concept" element={<LyraConcept />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
 
+          {/* Public share URL alias for Semantic Time → canonical /semantic */}
+          <Route path="/semantic-time" element={<Semantic />} />
+          <Route path="/semantic-time/about" element={<SemanticAbout />} />
+
           {/* Internal operator workspace */}
           <Route path="/operator/login" element={<OperatorLogin />} />
           <Route path="/operator/cases" element={<OperatorCases />} />
