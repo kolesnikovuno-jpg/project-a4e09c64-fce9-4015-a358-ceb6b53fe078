@@ -81,6 +81,7 @@ export default function Semantic() {
       <header className="max-w-3xl mx-auto px-6 pt-10 pb-6 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
         <Link to={localePath("/semantic")} className="hover:text-foreground transition-colors">{S.brand}</Link>
         <nav className="flex items-center gap-6">
+          <Link to={localePath("/garden")} className="hover:text-foreground transition-colors">{S.nav_garden}</Link>
           <Link to={localePath("/semantic/about")} className="hover:text-foreground transition-colors">{S.nav_about}</Link>
           <div className="flex items-center gap-2" aria-label="Language">
             {(LOCALES as readonly Locale[]).map((l) => (
