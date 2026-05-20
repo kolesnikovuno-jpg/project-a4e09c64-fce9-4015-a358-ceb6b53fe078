@@ -1,5 +1,5 @@
-// Semantic parser v0.2 — pattern detection over numeric strings.
-// Hierarchical pattern classification, structural dominance typing.
+// Semantic parser v0.3 — trajectory-aware hierarchical classification.
+// Internal taxonomy ids are NEVER user-facing; the UI maps them via dictionary.
 
 export type InputType = "time" | "symbol";
 
@@ -7,71 +7,51 @@ export interface SemanticObject {
   input_type: InputType;
   value: string;
   digits: string;
-  pattern: string;            // alias of primary_pattern (legacy)
-  patterns: string[];          // all detected patterns
-  primary_pattern: string;     // top of hierarchy
-  secondary_pattern: string | null;
-  primary_label: string;
-  secondary_label: string | null;
-  dominant: string;            // most frequent digit
-  dominant_principle: string;
-  dominance_type: string;      // structural dominance class
-  dominance_label: string;
+  pattern: string;                  // legacy alias of primary_pattern
+  patterns: string[];                // all detected (internal ids)
+  primary_pattern: string;           // top of hierarchy (internal id)
+  secondary_pattern: string | null;  // (internal id)
+  dominant: string;                  // most frequent digit
+  dominant_principle: string;        // full principle string (en fallback)
+  leading_digit: string;             // initiating digit (digits[0])
+  trajectory: string;                // "ascent_to_inquiry" | "descent" | "toward_structure" | "toward_closure" | "flat" | "mixed"
   dynamics: string;
-  direction: string;           // principle short names joined " → "
-  chain: string;               // digits joined "d → d → d"
+  direction: string;                 // principle short names joined " → "
+  chain: string;                     // digits joined " → "
   tension: "low" | "medium" | "high";
-  interaction: string[];       // pairwise transitions (internal)
+  interaction: string[];             // pairwise transitions (internal)
 }
 
 export const PRINCIPLES: Record<string, string> = {
-  "0": "potential / semantic gap",
+  "0": "pause / potential / gap",
   "1": "impulse / initiation",
   "2": "connection / interaction",
-  "3": "manifestation / expression",
+  "3": "expression / manifestation",
   "4": "structure / stabilization",
-  "5": "change / movement",
-  "6": "harmonization",
+  "5": "movement / change",
+  "6": "balance / integration",
   "7": "inquiry / depth",
-  "8": "materialization / density",
-  "9": "completion / transition",
+  "8": "force / materialization",
+  "9": "completion / cycle integration",
 };
 
 const PRINCIPLE_SHORT: Record<string, string> = {
-  "0": "gap",
-  "1": "impulse",
-  "2": "connection",
-  "3": "expression",
-  "4": "structure",
-  "5": "movement",
-  "6": "harmony",
-  "7": "inquiry",
-  "8": "density",
-  "9": "completion",
+  "0": "pause", "1": "impulse", "2": "connection", "3": "expression",
+  "4": "structure", "5": "movement", "6": "balance",
+  "7": "inquiry", "8": "force", "9": "completion",
 };
 
 function dominantDigit(digits: string): string {
   const counts: Record<string, number> = {};
   for (const d of digits) counts[d] = (counts[d] ?? 0) + 1;
-  let best = digits[0];
-  let bestCount = 0;
-  for (const [d, c] of Object.entries(counts)) {
-    if (c > bestCount) { best = d; bestCount = c; }
-  }
+  let best = digits[0]; let bestCount = 0;
+  for (const [d, c] of Object.entries(counts)) if (c > bestCount) { best = d; bestCount = c; }
   return best;
 }
 
-function isRepetition(d: string) {
-  return d.length >= 2 && d.split("").every((c) => c === d[0]);
-}
-function isResonance(d: string) {
-  // repetition of length ≥ 4 reads as resonance field
-  return isRepetition(d) && d.length >= 4;
-}
-function isMirror(d: string) {
-  if (d.length < 3) return false;
-  return d === d.split("").reverse().join("");
-}
+function isRepetition(d: string) { return d.length >= 2 && d.split("").every((c) => c === d[0]); }
+function isResonance(d: string)  { return isRepetition(d) && d.length >= 4; }
+function isMirror(d: string)     { return d.length >= 3 && d === d.split("").reverse().join(""); }
 function isAmplification(d: string) {
   if (d.length < 3) return false;
   const tail = d.slice(-3);
@@ -79,18 +59,25 @@ function isAmplification(d: string) {
   const prefix = d.slice(0, -3);
   return prefix.length > 0 && !prefix.includes(tail[0]);
 }
-function hasGap(d: string) {
-  return /[1-9]0[1-9]?/.test(d) || /[1-9]0+[1-9]/.test(d);
-}
+function hasGap(d: string)  { return /[1-9]0[1-9]?/.test(d) || /[1-9]0+[1-9]/.test(d); }
 function isSequence(d: string) {
   if (d.length < 3) return false;
   let asc = 0, desc = 0;
   for (let i = 1; i < d.length; i++) {
     const diff = Number(d[i]) - Number(d[i - 1]);
-    if (diff === 1) asc++;
-    else if (diff === -1) desc++;
+    if (diff === 1) asc++; else if (diff === -1) desc++;
   }
   return asc >= 2 || desc >= 2;
+}
+function sequenceAscending(d: string) {
+  if (d.length < 3) return false;
+  for (let i = 1; i < d.length; i++) if (Number(d[i]) <= Number(d[i - 1])) return false;
+  return true;
+}
+function sequenceDescending(d: string) {
+  if (d.length < 3) return false;
+  for (let i = 1; i < d.length; i++) if (Number(d[i]) >= Number(d[i - 1])) return false;
+  return true;
 }
 function isAlternation(d: string) {
   if (d.length < 4) return false;
@@ -98,7 +85,7 @@ function isAlternation(d: string) {
   return d[0] !== d[1];
 }
 function isLoop(d: string) {
-  // X … X — same first and last digit, length ≥ 3, not pure repetition, not mirror
+  // X … X — same first and last, length ≥ 3, not pure repetition
   return d.length >= 3 && d[0] === d[d.length - 1] && !isRepetition(d);
 }
 
@@ -110,78 +97,68 @@ function buildInteractions(d: string): string[] {
 function direction(d: string): string {
   return d.split("").map((c) => PRINCIPLE_SHORT[c] ?? c).join(" → ");
 }
-function chainOf(d: string): string {
-  return d.split("").join(" → ");
-}
+function chainOf(d: string): string { return d.split("").join(" → "); }
 
 function tensionLevel(patterns: string[], digits: string): "low" | "medium" | "high" {
+  if (patterns.includes("interruption")) return "high";
   if (patterns.includes("resonance") || patterns.includes("amplification")) return "high";
+  if (patterns.includes("escalation")) return "high";
   if (patterns.includes("repetition")) return "high";
-  if (patterns.includes("interruption") || patterns.includes("mirror") || patterns.includes("loop")) return "medium";
+  if (patterns.includes("mirror") || patterns.includes("loop")) return "medium";
   if (digits.length <= 2) return "low";
   return "medium";
 }
 
-// Hierarchy: which detected pattern becomes the *primary* reading.
+// Hierarchy — most structurally dominant pattern wins.
 const PRIMARY_ORDER = [
-  "resonance",
-  "mirror",
   "interruption",
-  "sequence",
-  "alternation",
+  "mirror",
+  "resonance",
   "loop",
+  "escalation",
+  "progression",
+  "closure",
+  "alternation",
   "amplification",
   "repetition",
   "composite",
 ];
 
-const PRIMARY_LABELS: Record<string, string> = {
-  resonance: "resonance repetition",
-  repetition: "repetition dominance",
-  mirror: "reflective mirror loop",
-  interruption: "structural interruption",
-  sequence: "progressive sequence",
-  alternation: "alternating interaction loop",
-  loop: "return loop",
-  amplification: "amplification field",
-  composite: "layered composition",
-};
-
-const SECONDARY_LABELS: Record<string, string> = {
-  resonance: "amplified resonance field",
-  repetition: "reinforcement",
-  mirror: "symmetry",
-  interruption: "recalibration",
-  sequence: "directed development",
-  alternation: "rhythmic exchange",
-  loop: "closure / return",
-  amplification: "intensification",
-  composite: "multi-layer composition",
-};
-
-const DOMINANCE_LABELS: Record<string, string> = {
-  resonance: "resonance dominance",
-  repetition: "repetition dominance",
-  mirror: "mirror dominance",
-  interruption: "interruption dominance",
-  sequence: "progression dominance",
-  alternation: "loop dominance",
-  loop: "loop dominance",
-  amplification: "amplification dominance",
-  composite: "element dominance",
-};
-
 const DYNAMICS: Record<string, string> = {
-  resonance: "amplified resonance field",
-  repetition: "reinforcement / resonance",
-  mirror: "reflection / feedback loop",
-  amplification: "concentration / strengthening",
   interruption: "restructuring / semantic pause",
-  sequence: "progression / directional development",
-  alternation: "rhythmic exchange / oscillation",
+  mirror: "reflection / feedback loop",
+  resonance: "amplified resonance field",
   loop: "return / recursion",
+  escalation: "ascent toward depth / inquiry",
+  progression: "directional development",
+  closure: "approach to integration",
+  alternation: "rhythmic exchange / oscillation",
+  amplification: "concentration / strengthening",
+  repetition: "reinforcement / resonance",
   composite: "layered composition",
 };
+
+function trajectoryOf(d: string, patterns: string[]): string {
+  const last = d[d.length - 1];
+  if (patterns.includes("escalation")) {
+    if (last === "7") return "ascent_to_inquiry";
+    if (last === "0") return "ascent_to_gap";
+    if (last === "9") return "ascent_to_completion";
+  }
+  if (patterns.includes("progression")) {
+    if (sequenceAscending(d)) {
+      if (last === "4") return "toward_structure";
+      if (last === "9") return "toward_closure";
+      return "ascent";
+    }
+    if (sequenceDescending(d)) return "descent";
+  }
+  if (patterns.includes("interruption")) return "interrupted";
+  if (patterns.includes("mirror")) return "return";
+  if (patterns.includes("loop")) return "return";
+  if (patterns.includes("resonance") || patterns.includes("repetition")) return "flat";
+  return "mixed";
+}
 
 function rankPrimary(patterns: string[]): { primary: string; secondary: string | null } {
   const ranked = PRIMARY_ORDER.filter((p) => patterns.includes(p));
@@ -199,13 +176,29 @@ export function parse(raw: string, type: InputType, displayValue: string): Seman
   if (isMirror(digits)) patterns.push("mirror");
   if (isAmplification(digits)) patterns.push("amplification");
   if (hasGap(digits)) patterns.push("interruption");
-  if (isSequence(digits)) patterns.push("sequence");
+
+  // Trajectory-aware progression / escalation / closure
+  if (isSequence(digits)) {
+    patterns.push("progression");
+    const asc = sequenceAscending(digits);
+    const last = digits[digits.length - 1];
+    if (asc && (last === "7" || last === "0")) patterns.push("escalation");
+    if (asc && (last === "9" || last === "4")) patterns.push("closure");
+  } else {
+    // generic ascent toward depth/inquiry even when not strictly stepwise
+    const last = digits[digits.length - 1];
+    const first = digits[0];
+    if (digits.length >= 3 && Number(last) > Number(first) && (last === "7" || last === "0")) {
+      patterns.push("escalation");
+    }
+  }
   if (isAlternation(digits)) patterns.push("alternation");
   if (isLoop(digits)) patterns.push("loop");
   if (patterns.length === 0) patterns.push("composite");
 
   const dom = dominantDigit(digits);
   const { primary, secondary } = rankPrimary(patterns);
+  const traj = trajectoryOf(digits, patterns);
 
   return {
     input_type: type,
@@ -215,12 +208,10 @@ export function parse(raw: string, type: InputType, displayValue: string): Seman
     patterns,
     primary_pattern: primary,
     secondary_pattern: secondary,
-    primary_label: PRIMARY_LABELS[primary] ?? primary,
-    secondary_label: secondary ? (SECONDARY_LABELS[secondary] ?? secondary) : null,
     dominant: dom,
     dominant_principle: PRINCIPLES[dom] ?? "—",
-    dominance_type: primary,
-    dominance_label: DOMINANCE_LABELS[primary] ?? "element dominance",
+    leading_digit: digits[0] ?? dom,
+    trajectory: traj,
     dynamics: DYNAMICS[primary] ?? "layered composition",
     direction: direction(digits),
     chain: chainOf(digits),
