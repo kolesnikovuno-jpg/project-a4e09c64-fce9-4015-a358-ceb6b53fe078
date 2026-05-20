@@ -296,6 +296,16 @@ export type SemanticDict = {
   share_copied: string;
   share_pattern: string;
   share_leading: string;
+  share_app: string;
+  share_result: string;
+  copy_result: string;
+  copy_link: string;
+  share_app_title: string;
+  share_app_text: string;
+  share_chain: string;
+  share_reflection: string;
+  result_copied: string;
+  link_copied: string;
   err_rate: string;
   err_credits: string;
   err_generic: string;
