@@ -107,6 +107,14 @@ const App = () => (
           <Route path="/semantic-time" element={<Semantic />} />
           <Route path="/semantic-time/about" element={<SemanticAbout />} />
 
+          {/* Localized aliases so language switching from /semantic-time doesn't 404 */}
+          {LOCALES.map((loc) => (
+            <Route key={`st-${loc}`} path={`/${loc}/semantic-time`} element={<Semantic />} />
+          ))}
+          {LOCALES.map((loc) => (
+            <Route key={`sta-${loc}`} path={`/${loc}/semantic-time/about`} element={<SemanticAbout />} />
+          ))}
+
           {/* Internal operator workspace */}
           <Route path="/operator/login" element={<OperatorLogin />} />
           <Route path="/operator/cases" element={<OperatorCases />} />
