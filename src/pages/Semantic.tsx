@@ -91,13 +91,13 @@ export default function Semantic() {
           <h1 className="text-[24px] md:text-[30px] leading-tight tracking-tight text-foreground font-normal">
             {S.hero_title}
           </h1>
-          <p className="mt-4 text-[13px] leading-[1.75] text-foreground/75 max-w-xl">
+          <p className="mt-4 text-[14px] leading-[1.75] text-foreground/85 max-w-xl">
             {S.hero_lead}
           </p>
         </section>
 
         <section className="pt-10">
-          <div className="flex gap-6 text-[10px] uppercase tracking-[0.18em]">
+          <div className="flex gap-6 text-[11px] uppercase tracking-[0.18em]">
             {(["current", "manual", "symbol"] as Mode[]).map((m) => (
               <button
                 key={m}
@@ -110,7 +110,7 @@ export default function Semantic() {
                 className={`pb-2 border-b transition-colors ${
                   mode === m
                     ? "text-primary border-primary"
-                    : "text-muted-foreground border-transparent hover:text-foreground"
+                    : "text-foreground/60 border-transparent hover:text-foreground"
                 }`}
               >
                 {m === "current" ? S.mode_current : m === "manual" ? S.mode_manual : S.mode_symbol}
@@ -120,16 +120,8 @@ export default function Semantic() {
 
           <div className="mt-10">
             {mode === "current" && (
-              <div className="flex items-baseline gap-6">
-                <div className="text-[56px] md:text-[76px] font-light tracking-tight tabular-nums text-foreground leading-none">
-                  {currentTime}
-                </div>
-                <button
-                  onClick={() => setCurrentTime(currentHHMM())}
-                  className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {S.refresh}
-                </button>
+              <div className="text-[56px] md:text-[76px] font-light tracking-tight tabular-nums text-foreground leading-none">
+                {currentTime}
               </div>
             )}
 
