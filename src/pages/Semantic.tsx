@@ -105,7 +105,7 @@ export default function Semantic() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function buildResultText(): string {
+  function buildResultText(includeUrl: boolean = true): string {
     if (!semantic) return "";
     const primaryName = S.patterns[semantic.primary_pattern] ?? semantic.primary_pattern;
     const leadingName = S.principles[semantic.dominant] ?? semantic.dominant_principle;
@@ -123,7 +123,7 @@ export default function Semantic() {
     if (interp?.architectural) lines.push("", `${S.label_architectural}:`, interp.architectural);
     if (interp?.reflection) lines.push("", `${S.label_reflection}:`, interp.reflection);
     if (interp?.recommendation) lines.push("", `${S.label_recommendation}:`, interp.recommendation);
-    lines.push("", appUrl);
+    if (includeUrl) lines.push("", appUrl);
     return lines.join("\n");
   }
 
@@ -160,7 +160,9 @@ export default function Semantic() {
   }
 
   async function handleShareResult() {
-    const text = buildResultText();
+    // Native share gets the URL as a dedicated field — do not duplicate it
+    // inside the text body.
+    const text = buildResultText(false);
     try {
       if (typeof navigator !== "undefined" && (navigator as any).share) {
         await (navigator as any).share({
@@ -173,7 +175,8 @@ export default function Semantic() {
     } catch {
       // fall through
     }
-    await copyText(text, S.result_copied);
+    // Clipboard fallback: append the URL once so the recipient still has it.
+    await copyText(`${text}\n\n${appUrl}`, S.result_copied);
   }
 
   async function handleCopyResult() {
