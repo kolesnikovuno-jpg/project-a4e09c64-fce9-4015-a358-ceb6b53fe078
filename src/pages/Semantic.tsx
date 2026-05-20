@@ -188,6 +188,11 @@ export default function Semantic() {
     await copyText(rootUrl, S.link_copied);
   }
 
+  function handleFeedback() {
+    const url = "https://t.me/kolesnikov_uno?text=Feedback%20about%20Semantic%20Time";
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
   function renderShareMenuItems() {
     return (
       <>
