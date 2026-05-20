@@ -135,9 +135,34 @@ export default function Semantic() {
               <input
                 type="text"
                 inputMode="numeric"
+                pattern="[0-9]*"
                 placeholder={S.manual_placeholder}
                 value={manualTime}
-                onChange={(e) => setManualTime(e.target.value)}
+                onChange={(e) => {
+                  const prev = manualTime;
+                  const raw = e.target.value;
+                  // Detect backspace over the colon: "13:" -> "13" should drop the "3"
+                  if (raw.length < prev.length && prev.endsWith(":") && !raw.includes(":")) {
+                    setManualTime(raw.slice(0, -1));
+                    return;
+                  }
+                  const digits = raw.replace(/\D/g, "").slice(0, 4);
+                  let formatted = digits;
+                  if (digits.length >= 3) {
+                    formatted = `${digits.slice(0, 2)}:${digits.slice(2)}`;
+                  } else if (digits.length === 2 && raw.length > prev.length) {
+                    // auto-insert colon as user types the 3rd char-position
+                    formatted = `${digits}:`;
+                  }
+                  // Validate ranges progressively
+                  const h = parseInt(digits.slice(0, 2) || "0", 10);
+                  const m = parseInt(digits.slice(2, 4) || "0", 10);
+                  if (digits.length >= 1 && parseInt(digits[0], 10) > 2) return;
+                  if (digits.length >= 2 && h > 23) return;
+                  if (digits.length >= 3 && parseInt(digits[2], 10) > 5) return;
+                  if (digits.length >= 4 && m > 59) return;
+                  setManualTime(formatted);
+                }}
                 maxLength={5}
                 className="w-full bg-transparent border-b border-border focus:border-primary outline-none text-[44px] md:text-[60px] font-light tracking-tight tabular-nums text-foreground placeholder:text-muted-foreground/60 pb-2 transition-colors"
               />
