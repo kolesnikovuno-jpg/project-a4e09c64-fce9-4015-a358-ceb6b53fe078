@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { ChevronLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { parse, type SemanticObject } from "@/lib/semantic/parser";
 import { useLocale } from "@/i18n/useLocale";
