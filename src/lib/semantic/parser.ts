@@ -353,7 +353,34 @@ const FAMILY: Record<string, string> = {
 FAMILY.loop = "loop";
 
 function rankPrimary(patterns: string[]): { primary: string; secondary: string | null } {
-  const ranked = PRIMARY_ORDER.filter((p) => patterns.includes(p));
+  // Calibration: when a structural pause (0) is present, interruption is
+  // promoted above topology modifiers (partial_return, loop, recurrence,
+  // mediated_recurrence, alternation, directed_transition). It still yields
+  // to full-identity / palindromic structures (symmetry, resonance, repetition,
+  // amplification) which describe the chain shape independently of the pause.
+  const order = patterns.includes("interruption")
+    ? (() => {
+        const promoted = [
+          "symmetry",
+          "resonance",
+          "repetition",
+          "amplification",
+          "interruption",
+          ...PRIMARY_ORDER.filter(
+            (p) =>
+              ![
+                "symmetry",
+                "resonance",
+                "repetition",
+                "amplification",
+                "interruption",
+              ].includes(p),
+          ),
+        ];
+        return promoted;
+      })()
+    : PRIMARY_ORDER;
+  const ranked = order.filter((p) => patterns.includes(p));
   const primary = ranked[0] ?? patterns[0] ?? "composite";
   const primaryFamily = FAMILY[primary] ?? primary;
   // Secondary must be from a different family and not a generic fallback.
