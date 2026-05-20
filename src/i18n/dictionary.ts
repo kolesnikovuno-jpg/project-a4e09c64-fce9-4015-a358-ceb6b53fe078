@@ -715,6 +715,10 @@ export const dictionary: Record<Locale, Dictionary> = {
         layered_composition: "layered structure",
         composite: "layered structure",
         directed_transition: "directed transition",
+        symmetry: "symmetry",
+        partial_return: "partial return",
+        recurrence: "recurrence",
+        mediated_recurrence: "mediated recurrence",
       },
       dynamics: {
         repetition: "reinforcement / resonance",
@@ -735,6 +739,10 @@ export const dictionary: Record<Locale, Dictionary> = {
         layered_composition: "layered structure under shared load",
         composite: "layered structure under shared load",
         directed_transition: "directed transition / state change",
+        symmetry: "mirrored topology / reflective return",
+        partial_return: "return to an intermediate prior node",
+        recurrence: "node reinforcement without explicit return geometry",
+        mediated_recurrence: "non-adjacent recurrence mediated by another node",
       },
       trajectories: {
         repetition: "recursive reinforcement",
@@ -755,6 +763,10 @@ export const dictionary: Record<Locale, Dictionary> = {
         layered_composition: "distributed structural behavior",
         composite: "distributed structural behavior",
         directed_transition: "directed transition between principles",
+        symmetry: "mirrored topology",
+        partial_return: "return to an intermediate node",
+        recurrence: "reinforcement of a recurring node",
+        mediated_recurrence: "mediated recurrence / oscillation around a node",
       },
       principles: {
         "0": "pause / potential / gap",
