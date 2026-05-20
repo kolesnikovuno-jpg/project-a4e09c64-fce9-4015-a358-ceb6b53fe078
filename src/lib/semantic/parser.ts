@@ -20,6 +20,7 @@ export interface SemanticObject {
   chain: string;                     // digits joined " → "
   tension: "low" | "medium" | "high";
   interaction: string[];             // pairwise transitions (internal)
+  structural_class: string;          // higher-order class: progressive | resonant | mirrored | interrupted | composite
 }
 
 export const PRINCIPLES: Record<string, string> = {
@@ -99,31 +100,63 @@ function buildInteractions(d: string): string[] {
   for (let i = 1; i < d.length; i++) out.push(`${d[i - 1]}→${d[i]}`);
   return out;
 }
+// Trajectory describes emergent structural BEHAVIOR, not the literal digit chain.
+// The literal digit-by-digit reading is already exposed via `chain`.
 function direction(d: string, primary: string): string {
-  const short = d.split("").map((c) => PRINCIPLE_SHORT[c] ?? c);
-  // Resonance / pure repetition — express as structural state, not literal repeat.
-  if (primary === "resonance" || primary === "repetition") {
-    return `self-reinforcing ${short[0]}`;
+  switch (primary) {
+    case "resonance":
+      return "self-sustaining resonance";
+    case "repetition":
+      return "recursive reinforcement";
+    case "amplification":
+      return "tail-weighted intensification";
+    case "mirror":
+      return "mirrored return";
+    case "loop":
+      return "circuit returning to origin";
+    case "progression":
+      return "progressive structural assembly";
+    case "escalation":
+      return "ascent toward open state";
+    case "alternation":
+      return "two-state oscillation";
+    case "interruption":
+      return "broken continuity / recalibration";
+    case "activation_cycle":
+      return "pause-to-movement pulsation";
+    case "latent_activation":
+      return "deferred initiation";
+    case "interrupted_movement":
+      return "movement re-entering after gap";
+    case "recursive_return":
+      return "fold back to origin";
+    case "layered_composition":
+    case "composite":
+    default:
+      return "distributed structural behavior";
   }
-  // Mirror — half + return.
-  if (primary === "mirror") {
-    const half = short.slice(0, Math.ceil(short.length / 2));
-    return [...half, "return"].join(" → ");
-  }
-  // Loop — start … return.
-  if (primary === "loop") {
-    const inner = short.slice(0, -1);
-    return [...inner, "return"].join(" → ");
-  }
-  // Alternation — describe as oscillation between two principles.
-  if (primary === "alternation") {
-    return `oscillation: ${short[0]} ↔ ${short[1]}`;
-  }
-  // Default — collapse adjacent duplicates so it reads structurally, not literally.
-  const collapsed = short.filter((p, i) => p !== short[i - 1]);
-  return collapsed.join(" → ");
 }
 function chainOf(d: string): string { return d.split("").join(" → "); }
+
+// Higher-order structural class — narrative engine derives behavior from class + local pattern.
+const STRUCTURAL_CLASS: Record<string, string> = {
+  interruption: "interrupted",
+  mirror: "mirrored",
+  loop: "mirrored",
+  resonance: "resonant",
+  repetition: "resonant",
+  amplification: "resonant",
+  progression: "progressive",
+  escalation: "progressive",
+  closure: "progressive",
+  alternation: "progressive",
+  activation_cycle: "composite",
+  latent_activation: "composite",
+  interrupted_movement: "interrupted",
+  recursive_return: "mirrored",
+  layered_composition: "composite",
+  composite: "composite",
+};
 
 function tensionLevel(patterns: string[], digits: string): "low" | "medium" | "high" {
   if (patterns.includes("interruption")) return "high";
@@ -300,5 +333,6 @@ export function parse(raw: string, type: InputType, displayValue: string): Seman
     chain: chainOf(digits),
     tension: tensionLevel(patterns, digits),
     interaction: buildInteractions(digits),
+    structural_class: STRUCTURAL_CLASS[primary] ?? "composite",
   };
 }

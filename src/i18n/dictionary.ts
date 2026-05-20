@@ -314,6 +314,7 @@ export type SemanticDict = {
   tension_high: string;
   patterns: Record<string, string>;
   dynamics: Record<string, string>;
+  trajectories: Record<string, string>;
   principles: Record<string, string>;
   principles_short: Record<string, string>;
   about: {
@@ -732,6 +733,25 @@ export const dictionary: Record<Locale, Dictionary> = {
         recursive_return: "circuit closing to its origin",
         layered_composition: "layered structure under shared load",
         composite: "layered structure under shared load",
+      },
+      trajectories: {
+        repetition: "recursive reinforcement",
+        mirror: "mirrored return",
+        amplification: "tail-weighted intensification",
+        interruption: "broken continuity / recalibration",
+        sequence: "progressive assembly",
+        progression: "progressive structural assembly",
+        escalation: "ascent toward open state",
+        closure: "approach to integration",
+        resonance: "self-sustaining resonance",
+        alternation: "two-state oscillation",
+        loop: "circuit returning to origin",
+        activation_cycle: "pause-to-movement pulsation",
+        latent_activation: "deferred initiation",
+        interrupted_movement: "movement re-entering after gap",
+        recursive_return: "fold back to origin",
+        layered_composition: "distributed structural behavior",
+        composite: "distributed structural behavior",
       },
       principles: {
         "0": "pause / potential / gap",
@@ -1171,6 +1191,25 @@ export const dictionary: Record<Locale, Dictionary> = {
         layered_composition: "слоистая структура под общей нагрузкой",
         composite: "слоистая структура под общей нагрузкой",
       },
+      trajectories: {
+        repetition: "рекурсивное усиление",
+        mirror: "зеркальный возврат",
+        amplification: "нарастание к концу",
+        interruption: "разрыв непрерывности / рекалибровка",
+        sequence: "прогрессивная сборка",
+        progression: "прогрессивная структурная сборка",
+        escalation: "восхождение к открытому состоянию",
+        closure: "приближение к интеграции",
+        resonance: "самоподдерживающийся резонанс",
+        alternation: "двухсостоянная осцилляция",
+        loop: "контур, возвращающийся к началу",
+        activation_cycle: "пульсация пауза → движение",
+        latent_activation: "отложенная инициация",
+        interrupted_movement: "движение, возобновляющееся после паузы",
+        recursive_return: "складывание обратно к началу",
+        layered_composition: "распределённое структурное поведение",
+        composite: "распределённое структурное поведение",
+      },
       principles: {
         "0": "пауза / потенциал / разрыв",
         "1": "импульс / инициация",
@@ -1608,6 +1647,25 @@ export const dictionary: Record<Locale, Dictionary> = {
         recursive_return: "повернення до вихідної точки",
         layered_composition: "шарувата структура під спільним навантаженням",
         composite: "шарувата структура під спільним навантаженням",
+      },
+      trajectories: {
+        repetition: "рекурсивне посилення",
+        mirror: "дзеркальне повернення",
+        amplification: "наростання до кінця",
+        interruption: "розрив безперервності / рекалібрація",
+        sequence: "прогресивне складання",
+        progression: "прогресивна структурна збірка",
+        escalation: "сходження до відкритого стану",
+        closure: "наближення до інтеграції",
+        resonance: "самопідтримний резонанс",
+        alternation: "двостанна осциляція",
+        loop: "контур, що повертається до початку",
+        activation_cycle: "пульсація пауза → рух",
+        latent_activation: "відкладена ініціація",
+        interrupted_movement: "рух, що відновлюється після паузи",
+        recursive_return: "складання назад до початку",
+        layered_composition: "розподілена структурна поведінка",
+        composite: "розподілена структурна поведінка",
       },
       principles: {
         "0": "пауза / потенціал / розрив",

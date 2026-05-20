@@ -261,10 +261,10 @@ function Decomposition({ obj, S }: { obj: SemanticObject; S: ReturnType<typeof u
   const patternLabel = secondaryName ? `${primaryName} · ${secondaryName}` : primaryName;
   const leadingPrinciple = S.principles[obj.dominant] ?? obj.dominant_principle;
   const dynamicsLabel = S.dynamics[obj.primary_pattern] ?? obj.dynamics;
-  const directionLabel = obj.digits
-    .split("")
-    .map((c) => S.principles_short[c] ?? c)
-    .join(" → ");
+  // Trajectory describes emergent structural behavior, not the literal digit chain
+  // (the digit chain is rendered separately as `row_interaction`).
+  const directionLabel =
+    S.trajectories[obj.primary_pattern] ?? obj.direction;
   const chainLabel = obj.digits.split("").join(" → ");
   const tensionLabel =
     obj.tension === "low" ? S.tension_low : obj.tension === "high" ? S.tension_high : S.tension_medium;
