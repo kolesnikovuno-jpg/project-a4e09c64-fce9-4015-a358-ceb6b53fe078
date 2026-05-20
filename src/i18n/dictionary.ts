@@ -296,6 +296,16 @@ export type SemanticDict = {
   share_copied: string;
   share_pattern: string;
   share_leading: string;
+  share_app: string;
+  share_result: string;
+  copy_result: string;
+  copy_link: string;
+  share_app_title: string;
+  share_app_text: string;
+  share_chain: string;
+  share_reflection: string;
+  result_copied: string;
+  link_copied: string;
   err_rate: string;
   err_credits: string;
   err_generic: string;
@@ -686,6 +696,16 @@ export const dictionary: Record<Locale, Dictionary> = {
       share_copied: "Link copied",
       share_pattern: "Pattern",
       share_leading: "Leading principle",
+      share_app: "Share App",
+      share_result: "Share Result",
+      copy_result: "Copy Result",
+      copy_link: "Copy Link",
+      share_app_title: "Semantic Time",
+      share_app_text: "Structural interpretation through symbolic time patterns",
+      share_chain: "Chain",
+      share_reflection: "Reflection",
+      result_copied: "Result copied",
+      link_copied: "Link copied",
       err_rate: "Rate limit reached — try again in a moment.",
       err_credits: "AI credits exhausted.",
       err_generic: "Interpretation unavailable.",
@@ -1164,6 +1184,16 @@ export const dictionary: Record<Locale, Dictionary> = {
       share_copied: "Ссылка скопирована",
       share_pattern: "Паттерн",
       share_leading: "Ведущий принцип",
+      share_app: "Поделиться приложением",
+      share_result: "Поделиться результатом",
+      copy_result: "Скопировать результат",
+      copy_link: "Скопировать ссылку",
+      share_app_title: "Semantic Time",
+      share_app_text: "Структурная интерпретация через символические паттерны времени",
+      share_chain: "Цепочка",
+      share_reflection: "Отражение",
+      result_copied: "Результат скопирован",
+      link_copied: "Ссылка скопирована",
       err_rate: "Лимит запросов — попробуйте через мгновение.",
       err_credits: "Ресурс ИИ исчерпан.",
       err_generic: "Интерпретация недоступна.",
@@ -1642,6 +1672,16 @@ export const dictionary: Record<Locale, Dictionary> = {
       share_copied: "Посилання скопійовано",
       share_pattern: "Патерн",
       share_leading: "Провідний принцип",
+      share_app: "Поділитися застосунком",
+      share_result: "Поділитися результатом",
+      copy_result: "Копіювати результат",
+      copy_link: "Копіювати посилання",
+      share_app_title: "Semantic Time",
+      share_app_text: "Структурна інтерпретація через символічні патерни часу",
+      share_chain: "Ланцюг",
+      share_reflection: "Відображення",
+      result_copied: "Результат скопійовано",
+      link_copied: "Посилання скопійовано",
       err_rate: "Ліміт запитів — спробуйте за мить.",
       err_credits: "Ресурс ШІ вичерпано.",
       err_generic: "Інтерпретація недоступна.",

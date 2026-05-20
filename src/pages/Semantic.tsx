@@ -5,6 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { parse, type SemanticObject } from "@/lib/semantic/parser";
 import { useLocale } from "@/i18n/useLocale";
 import { LOCALES, LOCALE_LABEL, type Locale } from "@/i18n/config";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Mode = "current" | "manual" | "symbol";
 
@@ -38,6 +44,7 @@ export default function Semantic() {
   const [interp, setInterp] = useState<Interpretation | null>(null);
   const [showStructural, setShowStructural] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
+  const [shareToast, setShareToast] = useState<string | null>(null);
 
   // Live clock for current-time mode (no auto-interpret).
   useEffect(() => {
@@ -78,38 +85,86 @@ export default function Semantic() {
     }
   }
 
-  async function handleShare() {
-    const value = semantic?.value ?? "";
-    const primaryName = semantic
-      ? S.patterns[semantic.primary_pattern] ?? semantic.primary_pattern
-      : "";
-    const leadingName = semantic
-      ? S.principles[semantic.dominant] ?? semantic.dominant_principle
-      : "";
+  const appUrl = useMemo(() => {
+    if (typeof window === "undefined") return "";
+    return `${window.location.origin}${localePath("/semantic")}`;
+  }, [localePath]);
+
+  function buildResultText(): string {
+    if (!semantic) return "";
+    const primaryName = S.patterns[semantic.primary_pattern] ?? semantic.primary_pattern;
+    const leadingName = S.principles[semantic.dominant] ?? semantic.dominant_principle;
+    const chain = semantic.digits.split("").join(" → ");
     const url = typeof window !== "undefined" ? window.location.href : "";
-    const summaryLines = [
-      S.share_title,
-      value,
-      primaryName ? `${S.share_pattern}: ${primaryName}` : null,
-      leadingName ? `${S.share_leading}: ${leadingName}` : null,
-      S.share_summary,
-    ].filter(Boolean) as string[];
-    const text = summaryLines.join("\n");
-    try {
-      if (typeof navigator !== "undefined" && (navigator as any).share) {
-        await (navigator as any).share({ title: S.share_title, text, url });
-        return;
-      }
-    } catch {
-      // user cancelled or share failed — fall through to clipboard
+    const lines = [
+      S.share_app_title,
+      `${S.row_value}: ${semantic.value}`,
+      `${S.share_pattern}: ${primaryName}`,
+      `${S.share_leading}: ${leadingName}`,
+      `${S.share_chain}: ${chain}`,
+    ];
+    if (interp?.reflection) {
+      lines.push("", `${S.share_reflection}:`, interp.reflection);
     }
+    if (url) lines.push("", url);
+    return lines.join("\n");
+  }
+
+  function showToast(msg: string) {
+    setShareToast(msg);
+    window.setTimeout(() => setShareToast((cur) => (cur === msg ? null : cur)), 2000);
+  }
+
+  async function copyText(text: string, toast: string) {
     try {
-      await navigator.clipboard.writeText(`${text}\n${url}`);
+      await navigator.clipboard.writeText(text);
       setShareCopied(true);
       window.setTimeout(() => setShareCopied(false), 2000);
+      showToast(toast);
     } catch {
       // ignore
     }
+  }
+
+  async function handleShareApp() {
+    try {
+      if (typeof navigator !== "undefined" && (navigator as any).share) {
+        await (navigator as any).share({
+          title: S.share_app_title,
+          text: S.share_app_text,
+          url: appUrl,
+        });
+        return;
+      }
+    } catch {
+      // fall through
+    }
+    await copyText(`${S.share_app_title}\n${S.share_app_text}\n${appUrl}`, S.link_copied);
+  }
+
+  async function handleShareResult() {
+    const text = buildResultText();
+    try {
+      if (typeof navigator !== "undefined" && (navigator as any).share) {
+        await (navigator as any).share({
+          title: S.share_app_title,
+          text,
+          url: appUrl,
+        });
+        return;
+      }
+    } catch {
+      // fall through
+    }
+    await copyText(text, S.result_copied);
+  }
+
+  async function handleCopyResult() {
+    await copyText(buildResultText(), S.result_copied);
+  }
+
+  async function handleCopyLink() {
+    await copyText(appUrl, S.link_copied);
   }
 
   return (
@@ -249,20 +304,49 @@ export default function Semantic() {
         {semantic && (
           <section className="mt-20 space-y-12 animate-in fade-in duration-700">
             <div className="flex items-center justify-end gap-3 -mb-6">
-              {shareCopied && (
+              {shareToast && (
                 <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/60 animate-in fade-in duration-200">
-                  {S.share_copied}
+                  {shareToast}
                 </span>
               )}
-              <button
-                type="button"
-                onClick={handleShare}
-                aria-label={S.share}
-                title={S.share}
-                className="text-foreground/50 hover:text-foreground transition-colors p-2 -mr-2"
-              >
-                {shareCopied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  aria-label={S.share}
+                  title={S.share}
+                  className="text-foreground/50 hover:text-foreground transition-colors p-2 -mr-2 outline-none"
+                >
+                  {shareCopied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="min-w-[220px] rounded-none border-border bg-background/95 backdrop-blur p-1"
+                >
+                  <DropdownMenuItem
+                    onSelect={() => handleShareApp()}
+                    className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+                  >
+                    {S.share_app}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => handleShareResult()}
+                    className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+                  >
+                    {S.share_result}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => handleCopyResult()}
+                    className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+                  >
+                    {S.copy_result}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => handleCopyLink()}
+                    className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+                  >
+                    {S.copy_link}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             {interp?.core && <Block label={S.label_core}><p>{interp.core}</p></Block>}
             {interp?.deep && <Block label={S.label_deep}><p>{interp.deep}</p></Block>}
