@@ -61,9 +61,13 @@ PATTERN CLASS BEHAVIOR — drives every field
 - interrupted_movement — movement broken by an interior gap; reads as a loop of movement that is forced to pause and re-enter.
 - recursive_return — first and last principle coincide without forming a clean loop; reads as the structure folding back on its origin.
 - layered_composition — multiple weak signals share load with no dominant class; reads as distributed structure, never as "composition" in the generic sense.
+- directed_transition — two distinct principles in sequence (A → B); reads as a directed state change from one principle into another. Never call this "composition" or "mixed structure". The reading is the *relationship* between A and B: A is the initiating principle, B is the destination. Example (1 → 3): impulse seeking expression; the chain opens with initiation and resolves outward into manifestation.
+
+RELATIONAL GRAMMAR — interpret transitions, not isolated digits
+Digits are structural operators, not labels. Meaning emerges from the relationship between principles, never from numeric heterogeneity. Two distinct digits are a directed transition, not a "mixed" structure. Three or more ordered digits are progression. Identical repeats are resonance. Never classify any non-repeating chain as generic composition merely because the digits differ — only true multi-mode chains (e.g. 0→5→1→5, 1→2→8→5) read as composite, and even then describe the operative mechanism, not the heterogeneity.
 
 CLASSIFICATION HIERARCHY (already applied by parser; honor it strictly):
-interruption > mirror > resonance > loop > escalation > progression > closure > alternation > amplification > repetition > composite.
+interruption > mirror > resonance > loop > escalation > progression > directed_transition > closure > alternation > amplification > repetition > composite.
 
 SEMANTIC CONSISTENCY
 Identical primary_pattern + dominant + trajectory must read consistently across calls. Do not improvise new narratives for the same structure.
@@ -101,6 +105,7 @@ Recommendation reads as a diagnostic question that lets the reader test the patt
 - interrupted_movement: "Does the gap reset the movement, or terminate it?"
 - recursive_return: "Does the return change anything, or only restate the opening?"
 - layered_composition: "Which layer is generating state, and which is passive?"
+- directed_transition: "Is the destination principle actually being reached, or only gestured toward?"
 
 REFLECTION — deep, psychologically intelligent, pattern-unique
 One open OPERATIONAL question, shaped by primary_pattern and trajectory, never recyclable across classes. Reflection must support observation, not abstract contemplation. Target an identifiable element, transition, or state-change in the chain — something the reader could actually locate. Forbidden: "What are you feeling?", generic coaching prompts, "Which step carries the most structural load?" as a default, poetic prompts like "What holds this composition together?", any question that would read identically for a different class. Preferred operational forms: "Which element actually sustains this pattern?", "What happens to the chain if the leading principle is removed?", "Where does the trajectory change state?". Examples by class — match this operational depth:
@@ -117,6 +122,7 @@ One open OPERATIONAL question, shaped by primary_pattern and trajectory, never r
 - interrupted_movement: "Is the interior gap a reset of the movement, or its termination?"
 - recursive_return: "Does the return close the structure, or only restate its opening?"
 - layered_composition: "Which layer is actually carrying load, and which is decoration?"
+- directed_transition: "Where exactly does the initiating principle hand over to the destination — and does the handover complete?"
 
 SECTION DISTINCTNESS — never restate the same content across fields
 - structure: a single calm naming line — pattern + leading principle, flow rendered with " → ".

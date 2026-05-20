@@ -94,6 +94,10 @@ function isLoop(d: string) {
   // X … X — same first and last, length ≥ 3, not pure repetition
   return d.length >= 3 && d[0] === d[d.length - 1] && !isRepetition(d);
 }
+// Two distinct digits read as a directed structural transition: A → B.
+function isDirectedTransition(d: string) {
+  return d.length === 2 && d[0] !== d[1];
+}
 
 function buildInteractions(d: string): string[] {
   const out: string[] = [];
@@ -122,6 +126,8 @@ function direction(d: string, primary: string): string {
       return "two-state oscillation";
     case "interruption":
       return "broken continuity / recalibration";
+    case "directed_transition":
+      return "directed transition between principles";
     case "activation_cycle":
       return "pause-to-movement pulsation";
     case "latent_activation":
@@ -150,6 +156,7 @@ const STRUCTURAL_CLASS: Record<string, string> = {
   escalation: "progressive",
   closure: "progressive",
   alternation: "progressive",
+  directed_transition: "progressive",
   activation_cycle: "composite",
   latent_activation: "composite",
   interrupted_movement: "interrupted",
@@ -177,6 +184,7 @@ const PRIMARY_ORDER = [
   "loop",
   "progression",
   "escalation",
+  "directed_transition",
   "alternation",
   "amplification",
   "repetition",
@@ -195,6 +203,7 @@ const DYNAMICS: Record<string, string> = {
   loop: "return / recursion",
   escalation: "ascent toward depth / inquiry",
   progression: "directional development",
+  directed_transition: "directed transition / state change",
   closure: "approach to integration",
   alternation: "rhythmic exchange / oscillation",
   amplification: "concentration / strengthening",
@@ -226,6 +235,7 @@ function trajectoryOf(d: string, patterns: string[]): string {
   if (patterns.includes("mirror")) return "return";
   if (patterns.includes("loop")) return "return";
   if (patterns.includes("resonance") || patterns.includes("repetition")) return "flat";
+  if (patterns.includes("directed_transition")) return "transition";
   return "mixed";
 }
 
@@ -240,6 +250,7 @@ const FAMILY: Record<string, string> = {
   progression: "progression",
   escalation: "progression",
   closure: "progression",
+  directed_transition: "progression",
   alternation: "alternation",
   activation_cycle: "composite",
   latent_activation: "composite",
@@ -306,6 +317,8 @@ export function parse(raw: string, type: InputType, displayValue: string): Seman
   if (isAlternation(digits)) patterns.push("alternation");
   // Loop only when it is NOT also a mirror (mirror is the stronger reading).
   if (isLoop(digits) && !isMirror(digits)) patterns.push("loop");
+  // Two-digit non-repeating pair = directed transition between two principles.
+  if (isDirectedTransition(digits)) patterns.push("directed_transition");
   if (patterns.length === 0) patterns.push("composite");
 
   const dom = dominantDigit(digits);
