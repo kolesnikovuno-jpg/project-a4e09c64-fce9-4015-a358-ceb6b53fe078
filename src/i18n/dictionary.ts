@@ -303,6 +303,7 @@ export type SemanticDict = {
   row_value: string;
   row_pattern: string;
   row_dominant: string;
+  row_dominance: string;
   row_dynamics: string;
   row_direction: string;
   row_tension: string;
