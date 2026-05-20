@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { parse, type SemanticObject } from "@/lib/semantic/parser";
 import { useLocale } from "@/i18n/useLocale";
-import LanguageSwitcher from "@/i18n/LanguageSwitcher";
+import { LOCALES, LOCALE_LABEL, type Locale } from "@/i18n/config";
 
 type Mode = "current" | "manual" | "symbol";
 
@@ -25,7 +25,7 @@ function currentHHMM() {
 }
 
 export default function Semantic() {
-  const { t, locale, localePath } = useLocale();
+  const { t, locale, localePath, switchTo } = useLocale();
   const S = t.semantic;
   const [mode, setMode] = useState<Mode>("current");
   const [currentTime, setCurrentTime] = useState(currentHHMM());
@@ -78,11 +78,25 @@ export default function Semantic() {
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
-      <LanguageSwitcher />
       <header className="max-w-3xl mx-auto px-6 pt-10 pb-6 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
         <Link to={localePath("/semantic")} className="hover:text-foreground transition-colors">{S.brand}</Link>
-        <nav className="flex gap-6">
+        <nav className="flex items-center gap-6">
           <Link to={localePath("/semantic/about")} className="hover:text-foreground transition-colors">{S.nav_about}</Link>
+          <div className="flex items-center gap-2" aria-label="Language">
+            {(LOCALES as readonly Locale[]).map((l) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => switchTo(l)}
+                aria-current={locale === l}
+                className={`transition-colors ${
+                  locale === l ? "text-foreground" : "text-foreground/40 hover:text-foreground/80"
+                }`}
+              >
+                {LOCALE_LABEL[l]}
+              </button>
+            ))}
+          </div>
         </nav>
       </header>
 
