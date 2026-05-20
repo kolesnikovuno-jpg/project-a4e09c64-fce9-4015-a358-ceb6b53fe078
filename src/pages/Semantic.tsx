@@ -272,7 +272,6 @@ function Decomposition({ obj, S }: { obj: SemanticObject; S: ReturnType<typeof u
     <div className="space-y-2 text-[12px] text-foreground/80 font-mono">
       <Row k={S.row_value} v={obj.value} />
       <Row k={S.row_pattern} v={patternLabel} />
-      <Row k={S.row_dominance} v={primaryName} />
       <Row k={S.row_dominant} v={`${obj.dominant} — ${leadingPrinciple}`} />
       <Row k={S.row_dynamics} v={dynamicsLabel} />
       <Row k={S.row_direction} v={directionLabel} />
