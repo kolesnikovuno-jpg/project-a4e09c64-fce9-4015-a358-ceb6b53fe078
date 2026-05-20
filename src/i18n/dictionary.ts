@@ -270,6 +270,56 @@ export type Dictionary = {
   };
 };
 
+// Shared structural shape for the Semantic Time block (added to every locale).
+export type SemanticDict = {
+  brand: string;
+  tagline: string;
+  nav_interface: string;
+  nav_about: string;
+  hero_title: string;
+  hero_lead: string;
+  mode_current: string;
+  mode_manual: string;
+  mode_symbol: string;
+  manual_placeholder: string;
+  symbol_placeholder: string;
+  refresh: string;
+  interpret: string;
+  interpreting: string;
+  err_rate: string;
+  err_credits: string;
+  err_generic: string;
+  generating: string;
+  label_structure: string;
+  label_core: string;
+  label_deep: string;
+  label_architectural: string;
+  label_reflection: string;
+  label_recommendation: string;
+  row_value: string;
+  row_pattern: string;
+  row_dominant: string;
+  row_dynamics: string;
+  row_direction: string;
+  row_tension: string;
+  row_interaction: string;
+  row_principles: string;
+  tension_low: string;
+  tension_medium: string;
+  tension_high: string;
+  patterns: Record<string, string>;
+  dynamics: Record<string, string>;
+  principles: Record<string, string>;
+  principles_short: Record<string, string>;
+  about: {
+    title: string;
+    p1: string;
+    p2: string;
+    p3: string;
+    footnote: string;
+  };
+};
+
 // EN is the source of truth. RU and UA are adapted (not literal translation).
 // Add new keys to EN first, then mirror to RU and UK.
 export const dictionary: Record<Locale, Dictionary> = {
