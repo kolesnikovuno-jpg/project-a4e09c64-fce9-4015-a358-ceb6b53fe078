@@ -287,6 +287,8 @@ export type SemanticDict = {
   symbol_placeholder: string;
   refresh: string;
   interpret: string;
+  show_structural: string;
+  hide_structural: string;
   interpreting: string;
   err_rate: string;
   err_credits: string;
