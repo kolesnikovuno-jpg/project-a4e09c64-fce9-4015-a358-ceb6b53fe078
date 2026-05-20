@@ -9,6 +9,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -193,6 +194,7 @@ export default function Semantic() {
             {S.share_result}
           </DropdownMenuItem>
         )}
+        <DropdownMenuSeparator className="bg-border/60 my-1" />
         {semantic && (
           <DropdownMenuItem
             onSelect={() => handleCopyResult()}
@@ -207,14 +209,13 @@ export default function Semantic() {
         >
           {S.copy_link}
         </DropdownMenuItem>
-        {semantic && (
-          <DropdownMenuItem
-            onSelect={() => window.open("https://send.monobank.ua/jar/4a35bdyroD", "_blank", "noopener,noreferrer")}
-            className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
-          >
-            {S.support_cta}
-          </DropdownMenuItem>
-        )}
+        <DropdownMenuSeparator className="bg-border/60 my-1" />
+        <DropdownMenuItem
+          onSelect={() => window.open("https://send.monobank.ua/jar/4a35bdyroD", "_blank", "noopener,noreferrer")}
+          className="text-[12px] uppercase tracking-[0.18em] text-foreground/80 focus:bg-foreground/5 focus:text-foreground rounded-none px-3 py-2 cursor-pointer"
+        >
+          {S.support_cta}
+        </DropdownMenuItem>
       </>
     );
   }
@@ -412,20 +413,6 @@ export default function Semantic() {
                   )}
                 </div>
               )}
-            </div>
-
-            <div className="pt-10 mt-4 border-t border-border flex flex-col items-start gap-3">
-              <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/45">
-                {S.support_helper}
-              </span>
-              <a
-                href="https://send.monobank.ua/jar/4a35bdyroD"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] uppercase tracking-[0.22em] text-foreground/70 hover:text-foreground border border-border hover:border-foreground/40 px-5 py-2.5 rounded-none transition-colors"
-              >
-                {S.support_cta}
-              </a>
             </div>
           </section>
         )}
