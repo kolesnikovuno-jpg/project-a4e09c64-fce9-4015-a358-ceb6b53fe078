@@ -46,19 +46,6 @@ export default function Semantic() {
   const [showStructural, setShowStructural] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const [shareToast, setShareToast] = useState<string | null>(null);
-  const shareAnchorRef = useRef<HTMLDivElement | null>(null);
-  const [showStickyShare, setShowStickyShare] = useState(false);
-
-  useEffect(() => {
-    const el = shareAnchorRef.current;
-    if (!el || typeof IntersectionObserver === "undefined") return;
-    const io = new IntersectionObserver(
-      ([entry]) => setShowStickyShare(!entry.isIntersecting),
-      { rootMargin: "0px 0px -100% 0px", threshold: 0 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
 
   // Live clock for current-time mode (no auto-interpret).
   useEffect(() => {
@@ -264,7 +251,7 @@ export default function Semantic() {
         </section>
 
         <section className="pt-10">
-          <div className="flex items-end justify-between gap-6">
+          <div className="flex items-end gap-6">
             <div className="flex gap-6 text-[11px] uppercase tracking-[0.18em]">
               {(["current", "manual", "symbol"] as Mode[]).map((m) => (
                 <button
@@ -284,30 +271,6 @@ export default function Semantic() {
                   {m === "current" ? S.mode_current : m === "manual" ? S.mode_manual : S.mode_symbol}
                 </button>
               ))}
-            </div>
-            <div ref={shareAnchorRef} className="flex items-center gap-3 pb-2 min-h-[14px]">
-              {shareToast && !showStickyShare && (
-                <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/60 animate-in fade-in duration-200">
-                  {shareToast}
-                </span>
-              )}
-              {!showStickyShare && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    aria-label={S.share}
-                    title={S.share}
-                    className="text-foreground/40 hover:text-foreground transition-colors outline-none"
-                  >
-                    {shareCopied ? <Check className="w-3.5 h-3.5" strokeWidth={1.25} /> : <Share2 className="w-3.5 h-3.5" strokeWidth={1.25} />}
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="end"
-                    className="min-w-[240px] rounded-none border-border bg-background/95 backdrop-blur p-1"
-                  >
-                    {renderShareMenuItems()}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
             </div>
           </div>
 
@@ -421,24 +384,27 @@ export default function Semantic() {
       </main>
 
       <div
-        className={`fixed top-0 left-0 right-0 z-50 pt-[max(1rem,env(safe-area-inset-top))] pointer-events-none transition-all duration-300 ${
-          showStickyShare ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"
-        }`}
-        aria-hidden={!showStickyShare}
+        className="fixed left-0 right-0 z-50 pointer-events-none bottom-[max(1.25rem,env(safe-area-inset-bottom))] md:bottom-auto md:top-24"
+        aria-label={S.share}
       >
         <div className="max-w-3xl mx-auto px-6 flex justify-end">
-          <div className={showStickyShare ? "pointer-events-auto" : "pointer-events-none"}>
+          <div className="pointer-events-auto">
+            {shareToast && (
+              <span className="mr-3 align-middle text-[10px] uppercase tracking-[0.18em] text-foreground/60 animate-in fade-in duration-200">
+                {shareToast}
+              </span>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger
                 aria-label={S.share}
                 title={S.share}
-                tabIndex={showStickyShare ? 0 : -1}
-                className="text-foreground/45 hover:text-foreground transition-colors outline-none"
+                className="text-foreground/35 hover:text-foreground/80 transition-colors outline-none p-1 -m-1"
               >
-                {shareCopied ? <Check className="w-3.5 h-3.5" strokeWidth={1.25} /> : <Share2 className="w-3.5 h-3.5" strokeWidth={1.25} />}
+                {shareCopied ? <Check className="w-3 h-3" strokeWidth={1.25} /> : <Share2 className="w-3 h-3" strokeWidth={1.25} />}
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
+                side="top"
                 sideOffset={8}
                 className="min-w-[240px] rounded-none border-border bg-background/95 backdrop-blur p-1"
               >
