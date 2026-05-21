@@ -27,6 +27,11 @@ interface Interpretation {
 const TIME_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
 const SYMBOL_RE = /^\d{1,6}$/;
 
+// Shared primary numeric display style — used identically across all modes
+// (Сейчас / Время / Символ) to preserve layout stability when switching.
+const SEMANTIC_DISPLAY_CLASS =
+  "font-light tabular-nums text-foreground text-left [font-size:clamp(88px,22vw,120px)] [line-height:0.98] [letter-spacing:-0.04em] transition-none";
+
 function currentHHMM() {
   const d = new Date();
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
