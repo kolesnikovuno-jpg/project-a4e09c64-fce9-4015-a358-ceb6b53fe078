@@ -242,6 +242,9 @@ export default function Semantic() {
     );
   }
 
+  const digitFieldClass =
+    "block h-full w-full bg-transparent text-[56px] md:text-[76px] font-light tracking-tight tabular-nums leading-[72px] md:leading-[96px] text-foreground";
+
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
       <header className="max-w-3xl mx-auto px-6 pt-10 pb-6 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -309,9 +312,13 @@ export default function Semantic() {
             </div>
           </div>
 
-          <div className="mt-10">
+          <div
+            className={`mt-10 h-[72px] md:h-[96px] border-b transition-colors ${
+              mode === "current" ? "border-transparent" : "border-border focus-within:border-primary"
+            }`}
+          >
             {mode === "current" && (
-              <div className="block w-full bg-transparent border-b border-transparent text-[56px] md:text-[76px] font-light tracking-tight tabular-nums leading-none text-foreground pb-0 m-0">
+              <div className={digitFieldClass}>
                 {currentTime}
               </div>
             )}
@@ -349,7 +356,7 @@ export default function Semantic() {
                   setManualTime(formatted);
                 }}
                 maxLength={5}
-                className="block w-full bg-transparent border-b border-border focus:border-primary outline-none text-[56px] md:text-[76px] font-light tracking-tight tabular-nums leading-none text-foreground placeholder:text-muted-foreground/60 pb-0 m-0 p-0 h-auto transition-colors"
+                className={`${digitFieldClass} border-0 outline-none placeholder:text-muted-foreground/60 p-0 m-0 rounded-none appearance-none`}
               />
             )}
 
@@ -361,7 +368,7 @@ export default function Semantic() {
                 value={symbol}
                 onChange={(e) => setSymbol(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 maxLength={6}
-                className="block w-full bg-transparent border-b border-border focus:border-primary outline-none text-[56px] md:text-[76px] font-light tracking-tight tabular-nums leading-none text-foreground placeholder:text-muted-foreground/60 pb-0 m-0 p-0 h-auto transition-colors"
+                className={`${digitFieldClass} border-0 outline-none placeholder:text-muted-foreground/60 p-0 m-0 rounded-none appearance-none`}
               />
             )}
           </div>
