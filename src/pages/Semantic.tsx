@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft, Share2, Check } from "lucide-react";
+import { ChevronLeft, Share2, Check, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { parse, type SemanticObject } from "@/lib/semantic/parser";
 import { useLocale } from "@/i18n/useLocale";
-import { LOCALES, LOCALE_LABEL, type Locale } from "@/i18n/config";
+import { LOCALES, type Locale } from "@/i18n/config";
+import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -247,6 +248,7 @@ export default function Semantic() {
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
+      <LanguageSwitcher background="hsl(var(--background))" />
       <header className="max-w-3xl mx-auto px-6 pt-10 pb-6 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
         <div className="flex items-center gap-3">
           <Link
@@ -256,25 +258,15 @@ export default function Semantic() {
           >
             <ChevronLeft className="w-4 h-4" />
           </Link>
-          <Link to={localePath("/semantic")} className="hover:text-foreground transition-colors">{S.brand}</Link>
         </div>
         <nav className="flex items-center gap-6">
-          <Link to={localePath("/semantic/about")} className="hover:text-foreground transition-colors">{S.nav_about}</Link>
-          <div className="flex items-center gap-2" aria-label="Language">
-            {(LOCALES as readonly Locale[]).map((l) => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => switchTo(l)}
-                aria-current={locale === l}
-                className={`transition-colors ${
-                  locale === l ? "text-foreground" : "text-foreground/40 hover:text-foreground/80"
-                }`}
-              >
-                {LOCALE_LABEL[l]}
-              </button>
-            ))}
-          </div>
+          <Link
+            to={localePath("/semantic/about")}
+            aria-label={S.nav_about}
+            className="hover:text-foreground transition-colors"
+          >
+            <Info className="w-4 h-4" />
+          </Link>
         </nav>
       </header>
 
