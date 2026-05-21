@@ -30,7 +30,7 @@ const SYMBOL_RE = /^\d{1,6}$/;
 // Shared primary numeric display style — used identically across all modes
 // (Сейчас / Время / Символ) to preserve layout stability when switching.
 const SEMANTIC_DISPLAY_CLASS =
-  "font-light tabular-nums text-foreground text-left [font-size:clamp(88px,22vw,120px)] [line-height:0.98] [letter-spacing:-0.04em] transition-none";
+  "font-light tabular-nums text-foreground text-left [font-size:clamp(72px,18vw,88px)] [line-height:0.95] [letter-spacing:-0.03em] transition-none max-w-full";
 
 function currentHHMM() {
   const d = new Date();
