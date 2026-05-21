@@ -27,11 +27,6 @@ interface Interpretation {
 const TIME_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
 const SYMBOL_RE = /^\d{1,6}$/;
 
-// Shared primary numeric display style — used identically across all modes
-// (Сейчас / Время / Символ) to preserve layout stability when switching.
-const SEMANTIC_DISPLAY_CLASS =
-  "font-light tabular-nums text-foreground text-left [font-size:clamp(72px,18vw,88px)] [line-height:0.95] [letter-spacing:-0.03em] transition-none max-w-full";
-
 function currentHHMM() {
   const d = new Date();
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
@@ -316,62 +311,58 @@ export default function Semantic() {
 
           <div className="mt-10">
             {mode === "current" && (
-              <div className={`${SEMANTIC_DISPLAY_CLASS} w-full`}>
+              <div className="text-[56px] md:text-[76px] font-light tracking-tight tabular-nums text-foreground leading-none">
                 {currentTime}
               </div>
             )}
 
             {mode === "manual" && (
-              <div className={SEMANTIC_DISPLAY_CLASS}>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  placeholder={S.manual_placeholder}
-                  value={manualTime}
-                  onChange={(e) => {
-                    const prev = manualTime;
-                    const raw = e.target.value;
-                    // Detect backspace over the colon: "13:" -> "13" should drop the "3"
-                    if (raw.length < prev.length && prev.endsWith(":") && !raw.includes(":")) {
-                      setManualTime(raw.slice(0, -1));
-                      return;
-                    }
-                    const digits = raw.replace(/\D/g, "").slice(0, 4);
-                    let formatted = digits;
-                    if (digits.length >= 3) {
-                      formatted = `${digits.slice(0, 2)}:${digits.slice(2)}`;
-                    } else if (digits.length === 2 && raw.length > prev.length) {
-                      // auto-insert colon as user types the 3rd char-position
-                      formatted = `${digits}:`;
-                    }
-                    // Validate ranges progressively
-                    const h = parseInt(digits.slice(0, 2) || "0", 10);
-                    const m = parseInt(digits.slice(2, 4) || "0", 10);
-                    if (digits.length >= 1 && parseInt(digits[0], 10) > 2) return;
-                    if (digits.length >= 2 && h > 23) return;
-                    if (digits.length >= 3 && parseInt(digits[2], 10) > 5) return;
-                    if (digits.length >= 4 && m > 59) return;
-                    setManualTime(formatted);
-                  }}
-                  maxLength={5}
-                  className="w-full bg-transparent border-0 outline-none p-0 placeholder:text-muted-foreground/40"
-                />
-              </div>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder={S.manual_placeholder}
+                value={manualTime}
+                onChange={(e) => {
+                  const prev = manualTime;
+                  const raw = e.target.value;
+                  // Detect backspace over the colon: "13:" -> "13" should drop the "3"
+                  if (raw.length < prev.length && prev.endsWith(":") && !raw.includes(":")) {
+                    setManualTime(raw.slice(0, -1));
+                    return;
+                  }
+                  const digits = raw.replace(/\D/g, "").slice(0, 4);
+                  let formatted = digits;
+                  if (digits.length >= 3) {
+                    formatted = `${digits.slice(0, 2)}:${digits.slice(2)}`;
+                  } else if (digits.length === 2 && raw.length > prev.length) {
+                    // auto-insert colon as user types the 3rd char-position
+                    formatted = `${digits}:`;
+                  }
+                  // Validate ranges progressively
+                  const h = parseInt(digits.slice(0, 2) || "0", 10);
+                  const m = parseInt(digits.slice(2, 4) || "0", 10);
+                  if (digits.length >= 1 && parseInt(digits[0], 10) > 2) return;
+                  if (digits.length >= 2 && h > 23) return;
+                  if (digits.length >= 3 && parseInt(digits[2], 10) > 5) return;
+                  if (digits.length >= 4 && m > 59) return;
+                  setManualTime(formatted);
+                }}
+                maxLength={5}
+                className="w-full bg-transparent border-b border-border focus:border-primary outline-none text-[44px] md:text-[60px] font-light tracking-tight tabular-nums text-foreground placeholder:text-muted-foreground/60 pb-2 transition-colors"
+              />
             )}
 
             {mode === "symbol" && (
-              <div className={SEMANTIC_DISPLAY_CLASS}>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder={S.symbol_placeholder}
-                  value={symbol}
-                  onChange={(e) => setSymbol(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  maxLength={6}
-                  className="w-full bg-transparent border-0 outline-none p-0 placeholder:text-muted-foreground/40"
-                />
-              </div>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder={S.symbol_placeholder}
+                value={symbol}
+                onChange={(e) => setSymbol(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                maxLength={6}
+                className="w-full bg-transparent border-b border-border focus:border-primary outline-none text-[44px] md:text-[60px] font-light tracking-tight tabular-nums text-foreground placeholder:text-muted-foreground/60 pb-2 transition-colors"
+              />
             )}
           </div>
 
