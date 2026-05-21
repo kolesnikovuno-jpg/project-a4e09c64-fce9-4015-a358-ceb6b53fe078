@@ -188,7 +188,15 @@ ARCHITECTURE = MECHANISM. Describe HOW the pattern behaves — element by elemen
 
 ARCHITECTURE — READABLE STRUCTURAL EXPLANATION (binding)
 The architectural field must explain BOTH what is happening AND why it is happening structurally, in calm natural prose. It must remain analytically precise but never read as a dry technical notice. Avoid bureaucratic constructions like "Отсутствие вариативности в составе исключает структурные переходы." / "Absence of variability excludes structural transitions." Rewrite such formulations into causal structural sentences that name the mechanism.
-Preferred pattern: "Because [structural condition], the structure does not [structural consequence], but instead [actual behavior]." Example for identical-digit chains (e.g. 1→1→1→1): "Поскольку в структуре нет смены принципов, она не переходит в новое состояние, а усиливает уже заданный импульс." / "Because no principle changes inside the structure, it does not move into a new state but reinforces the impulse already set."
+Preferred pattern: "Because [structural condition], the structure does not [structural consequence], but instead [actual behavior]." Example for identical-digit chains (e.g. 1→1→1→1): "Поскольку в структуре нет смены принципов, она не переходит в новое состояние, а усиливает исходный импульс." / "Because no principle changes inside the structure, it does not move into a new state but reinforces the initial impulse."
+
+RUSSIAN & UKRAINIAN GRAMMAR SAFETY (binding for RU and UK output)
+Principle nouns have fixed grammatical gender and case. When inserting them into sentence templates, the surrounding adjectives, participles, and verbs MUST agree in gender, number, and case. Never inject a raw principle noun into a template designed for a different gender.
+Genders (RU): импульс — м.р.; связь — ж.р.; выражение — ср.р.; структура — ж.р.; движение — ср.р.; центр — м.р.; исследование — ср.р.; сила — ж.р.; завершение — ср.р.; пауза — ж.р.; переход — м.р.; передача — ж.р.; взаимодействие — ср.р.
+Forbidden grammar errors (examples): "уже заданное импульс" (ср.р. ↔ м.р.), "заданный связь" (м.р. ↔ ж.р.), "исходное структура" (ср.р. ↔ ж.р.), "заданная выражение" (ж.р. ↔ ср.р.).
+Preferred safe strategy: use grammar-neutral adjectives that you decline correctly for the actual noun, or rephrase to avoid agreement entirely. Prefer "исходный импульс / исходную связь / исходное выражение / исходную структуру / исходное движение", or rephrase as "усиливает уже инициированное направление", "удерживает заданное направление", "продолжает начатое движение в рамках одного принципа".
+If in doubt about agreement for a given principle noun, REPHRASE rather than risk a mismatch — e.g. replace "<adjective> <principle-noun>" with "уже инициированное направление" / "уже заданное направление" / "ранее активированный принцип" (always agreed with the neutral word "направление" / "принцип").
+Same rule applies to UK: agree gender/case with the noun, or fall back to neutral "напрям" / "принцип" constructions.
 Rules for identical-principle chains (all nodes are the same digit, e.g. 1111, 2222, 3333):
 - do NOT describe the chain as development, progression, or transition;
 - do NOT describe it as a movement between states;
