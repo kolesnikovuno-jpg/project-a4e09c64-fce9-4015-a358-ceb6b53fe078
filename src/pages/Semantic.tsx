@@ -244,7 +244,7 @@ export default function Semantic() {
   }
 
   const digitFieldClass =
-    "block h-full w-full bg-transparent text-[56px] md:text-[76px] font-light tracking-tight tabular-nums leading-[72px] md:leading-[96px] text-foreground";
+    "block h-full w-full bg-transparent text-[56px] md:text-[76px] font-extralight tracking-tight tabular-nums leading-[72px] md:leading-[96px] text-foreground";
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
@@ -265,7 +265,7 @@ export default function Semantic() {
             aria-label={S.nav_about}
             className="hover:text-foreground transition-colors"
           >
-            <Info className="w-4 h-4" />
+            <Info className="w-4 h-4" strokeWidth={1.5} />
           </Link>
         </nav>
       </header>
