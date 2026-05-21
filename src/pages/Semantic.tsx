@@ -311,7 +311,7 @@ export default function Semantic() {
 
           <div className="mt-10">
             {mode === "current" && (
-              <div className="text-[56px] md:text-[76px] font-light tracking-tight tabular-nums text-foreground leading-none">
+              <div className={SEMANTIC_DISPLAY_CLASS}>
                 {currentTime}
               </div>
             )}
@@ -349,7 +349,7 @@ export default function Semantic() {
                   setManualTime(formatted);
                 }}
                 maxLength={5}
-                className="w-full bg-transparent border-b border-border focus:border-primary outline-none text-[44px] md:text-[60px] font-light tracking-tight tabular-nums text-foreground placeholder:text-muted-foreground/60 pb-2 transition-colors"
+                className={`${SEMANTIC_DISPLAY_CLASS} w-full bg-transparent border-0 outline-none placeholder:text-muted-foreground/40`}
               />
             )}
 
@@ -361,7 +361,7 @@ export default function Semantic() {
                 value={symbol}
                 onChange={(e) => setSymbol(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 maxLength={6}
-                className="w-full bg-transparent border-b border-border focus:border-primary outline-none text-[44px] md:text-[60px] font-light tracking-tight tabular-nums text-foreground placeholder:text-muted-foreground/60 pb-2 transition-colors"
+                className={`${SEMANTIC_DISPLAY_CLASS} w-full bg-transparent border-0 outline-none placeholder:text-muted-foreground/40`}
               />
             )}
           </div>
