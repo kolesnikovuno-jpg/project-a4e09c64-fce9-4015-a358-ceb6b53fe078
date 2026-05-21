@@ -309,9 +309,9 @@ export default function Semantic() {
             </div>
           </div>
 
-          <div className="mt-10 min-h-[76px] md:min-h-[96px]">
+          <div className="mt-10">
             {mode === "current" && (
-              <div className="text-[56px] md:text-[76px] font-light tracking-tight tabular-nums text-foreground leading-none">
+              <div className="block w-full bg-transparent border-b border-transparent text-[56px] md:text-[76px] font-light tracking-tight tabular-nums leading-none text-foreground pb-0 m-0">
                 {currentTime}
               </div>
             )}
@@ -349,7 +349,7 @@ export default function Semantic() {
                   setManualTime(formatted);
                 }}
                 maxLength={5}
-                className="w-full bg-transparent border-b border-border focus:border-primary outline-none text-[56px] md:text-[76px] font-light tracking-tight tabular-nums leading-none text-foreground placeholder:text-muted-foreground/60 pb-0 transition-colors"
+                className="block w-full bg-transparent border-b border-border focus:border-primary outline-none text-[56px] md:text-[76px] font-light tracking-tight tabular-nums leading-none text-foreground placeholder:text-muted-foreground/60 pb-0 m-0 p-0 h-auto transition-colors"
               />
             )}
 
@@ -361,7 +361,7 @@ export default function Semantic() {
                 value={symbol}
                 onChange={(e) => setSymbol(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 maxLength={6}
-                className="w-full bg-transparent border-b border-border focus:border-primary outline-none text-[56px] md:text-[76px] font-light tracking-tight tabular-nums leading-none text-foreground placeholder:text-muted-foreground/60 pb-0 transition-colors"
+                className="block w-full bg-transparent border-b border-border focus:border-primary outline-none text-[56px] md:text-[76px] font-light tracking-tight tabular-nums leading-none text-foreground placeholder:text-muted-foreground/60 pb-0 m-0 p-0 h-auto transition-colors"
               />
             )}
           </div>
