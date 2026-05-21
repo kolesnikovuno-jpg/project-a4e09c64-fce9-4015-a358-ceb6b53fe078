@@ -27,6 +27,11 @@ interface Interpretation {
 const TIME_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
 const SYMBOL_RE = /^\d{1,6}$/;
 
+// Shared primary numeric display style — used identically across all modes
+// (Сейчас / Время / Символ) to preserve layout stability when switching.
+const SEMANTIC_DISPLAY_CLASS =
+  "font-light tabular-nums text-foreground text-left [font-size:clamp(88px,22vw,120px)] [line-height:0.98] [letter-spacing:-0.04em] transition-none";
+
 function currentHHMM() {
   const d = new Date();
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
@@ -311,7 +316,7 @@ export default function Semantic() {
 
           <div className="mt-10">
             {mode === "current" && (
-              <div className="text-[56px] md:text-[76px] font-light tracking-tight tabular-nums text-foreground leading-none">
+              <div className={SEMANTIC_DISPLAY_CLASS}>
                 {currentTime}
               </div>
             )}
@@ -349,7 +354,7 @@ export default function Semantic() {
                   setManualTime(formatted);
                 }}
                 maxLength={5}
-                className="w-full bg-transparent border-b border-border focus:border-primary outline-none text-[44px] md:text-[60px] font-light tracking-tight tabular-nums text-foreground placeholder:text-muted-foreground/60 pb-2 transition-colors"
+                className={`${SEMANTIC_DISPLAY_CLASS} w-full bg-transparent border-0 outline-none placeholder:text-muted-foreground/40`}
               />
             )}
 
@@ -361,7 +366,7 @@ export default function Semantic() {
                 value={symbol}
                 onChange={(e) => setSymbol(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 maxLength={6}
-                className="w-full bg-transparent border-b border-border focus:border-primary outline-none text-[44px] md:text-[60px] font-light tracking-tight tabular-nums text-foreground placeholder:text-muted-foreground/60 pb-2 transition-colors"
+                className={`${SEMANTIC_DISPLAY_CLASS} w-full bg-transparent border-0 outline-none placeholder:text-muted-foreground/40`}
               />
             )}
           </div>
