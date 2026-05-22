@@ -338,9 +338,12 @@ export type SemanticDict = {
   principles_short: Record<string, string>;
   about: {
     title: string;
-    p1: string;
-    p2: string;
-    p3: string;
+    intro: string;
+    modes_title: string;
+    modes: readonly { name: string; desc: string }[];
+    read_title: string;
+    read: readonly string[];
+    principles_title: string;
     footnote: string;
   };
 };
@@ -679,7 +682,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       brand: "Semantic Time",
       tagline: "cognitive interface",
       nav_interface: "Interface",
-      nav_about: "About",
+      nav_about: "How it works",
       hero_title: "Semantic Time",
       hero_lead:
         "Numeric patterns as triggers of structural observation.",
