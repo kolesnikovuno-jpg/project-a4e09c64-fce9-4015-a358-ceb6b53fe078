@@ -338,9 +338,12 @@ export type SemanticDict = {
   principles_short: Record<string, string>;
   about: {
     title: string;
-    p1: string;
-    p2: string;
-    p3: string;
+    intro: string;
+    modes_title: string;
+    modes: readonly { name: string; desc: string }[];
+    read_title: string;
+    read: readonly string[];
+    principles_title: string;
     footnote: string;
   };
 };
@@ -679,7 +682,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       brand: "Semantic Time",
       tagline: "cognitive interface",
       nav_interface: "Interface",
-      nav_about: "About",
+      nav_about: "How it works",
       hero_title: "Semantic Time",
       hero_lead:
         "Numeric patterns as triggers of structural observation.",
@@ -831,11 +834,27 @@ export const dictionary: Record<Locale, Dictionary> = {
         "9": "completion",
       },
       about: {
-        title: "About",
-        p1: "Semantic Time is a cognitive semantic interpretation system for reflective observation and structural thinking.",
-        p2: "It treats numeric patterns — times, sequences, repetitions — as structural triggers for attention. Each interpretation is a hypothesis about process dynamics, not a claim about reality.",
-        p3: "The system does not predict, divine, or instruct. It does not produce mystical, esoteric, or fortune-telling output. Its only function is to help you observe pattern, structure attention, and frame reflection.",
-        footnote: "These are semantic principles. They are not deterministic meanings.",
+        title: "How it works",
+        intro: "Semantic Time is a cognitive tool for structural observation through numeric patterns.\n\nNumbers, time sequences and repeating structures are used as semantic attention triggers — observation points through which process dynamics, internal tension or potential trajectory can be seen.\n\nInterpretations are not predictions, claims about reality or objective facts.\nThey are structural hypotheses for observation, reflection and understanding.",
+        modes_title: "Modes",
+        modes: [
+          { name: "Current", desc: "Interpretation of the current time pattern." },
+          { name: "Time", desc: "Interpretation of a specific time sequence." },
+          { name: "Symbol", desc: "Interpretation of an arbitrary numeric signal or sequence." },
+        ],
+        read_title: "How to read the result",
+        read: [
+          "Each interpretation offers a structural view of the pattern.",
+          "The result can be used as a tool for:",
+          "— observation",
+          "— reflection",
+          "— tension detection",
+          "— attention structuring",
+          "— finding new angles of understanding",
+          "Not as a ready-made answer, but as a point of meaningful observation.",
+        ],
+        principles_title: "Semantic principles",
+        footnote: "These are semantic interpretation principles, not fixed deterministic values.",
       },
     },
   },
@@ -1170,7 +1189,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       brand: "Semantic Time",
       tagline: "когнитивный интерфейс",
       nav_interface: "Интерфейс",
-      nav_about: "О проекте",
+      nav_about: "Как это работает",
       hero_title: "Semantic Time",
       hero_lead:
         "Числовые паттерны как триггеры структурного наблюдения.",
@@ -1322,11 +1341,27 @@ export const dictionary: Record<Locale, Dictionary> = {
         "9": "завершение",
       },
       about: {
-        title: "О проекте",
-        p1: "Semantic Time — когнитивная система семантической интерпретации для рефлексивного наблюдения и структурного мышления.",
-        p2: "Числовые паттерны — время, последовательности, повторения — рассматриваются как структурные триггеры внимания. Каждая интерпретация — гипотеза о динамике процесса, а не утверждение о реальности.",
-        p3: "Система не предсказывает, не гадает, не указывает. Не порождает мистический, эзотерический или предсказательный контент. Её единственная функция — помочь увидеть паттерн, структурировать внимание и оформить рефлексию.",
-        footnote: "Это семантические принципы, а не детерминированные значения.",
+        title: "Как это работает",
+        intro: "Semantic Time — когнитивный инструмент структурного наблюдения через числовые паттерны.\n\nЧисла, временные последовательности и повторяющиеся структуры используются как семантические триггеры внимания — точки наблюдения, через которые можно увидеть динамику процесса, внутреннее напряжение или потенциальную траекторию.\n\nИнтерпретации не являются предсказаниями, утверждениями о реальности или объективными фактами.\nЭто структурные гипотезы для наблюдения, рефлексии и осмысления.",
+        modes_title: "Режимы",
+        modes: [
+          { name: "Сейчас", desc: "Интерпретация текущего временного паттерна." },
+          { name: "Время", desc: "Интерпретация конкретной временной последовательности." },
+          { name: "Символ", desc: "Интерпретация произвольного числового сигнала или последовательности." },
+        ],
+        read_title: "Как читать результат",
+        read: [
+          "Каждая интерпретация предлагает структурный взгляд на паттерн.",
+          "Результат можно использовать как инструмент:",
+          "— наблюдения",
+          "— рефлексии",
+          "— выявления напряжений",
+          "— структурирования внимания",
+          "— поиска новых ракурсов понимания",
+          "Не как готовый ответ, а как точку осмысленного наблюдения.",
+        ],
+        principles_title: "Семантические принципы",
+        footnote: "Это семантические принципы интерпретации, а не фиксированные детерминированные значения.",
       },
     },
   },
@@ -1661,7 +1696,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       brand: "Semantic Time",
       tagline: "когнітивний інтерфейс",
       nav_interface: "Інтерфейс",
-      nav_about: "Про проєкт",
+      nav_about: "Як це працює",
       hero_title: "Semantic Time",
       hero_lead:
         "Числові патерни як тригери структурного спостереження.",
@@ -1813,11 +1848,27 @@ export const dictionary: Record<Locale, Dictionary> = {
         "9": "завершення",
       },
       about: {
-        title: "Про проєкт",
-        p1: "Semantic Time — когнітивна система семантичної інтерпретації для рефлексивного спостереження та структурного мислення.",
-        p2: "Числові патерни — час, послідовності, повторення — розглядаються як структурні тригери уваги. Кожна інтерпретація — гіпотеза про динаміку процесу, а не твердження про реальність.",
-        p3: "Система не передбачає, не ворожить, не вказує. Не створює містичного, езотеричного чи віщувального змісту. Її єдина функція — допомогти побачити патерн, структурувати увагу та оформити рефлексію.",
-        footnote: "Це семантичні принципи, а не детерміновані значення.",
+        title: "Як це працює",
+        intro: "Semantic Time — когнітивний інструмент структурного спостереження через числові патерни.\n\nЧисла, часові послідовності та повторювані структури використовуються як семантичні тригери уваги — точки спостереження, через які можна побачити динаміку процесу, внутрішнє напруження або потенційну траєкторію.\n\nІнтерпретації не є передбаченнями, твердженнями про реальність чи об'єктивними фактами.\nЦе структурні гіпотези для спостереження, рефлексії та осмислення.",
+        modes_title: "Режими",
+        modes: [
+          { name: "Зараз", desc: "Інтерпретація поточного часового патерну." },
+          { name: "Час", desc: "Інтерпретація конкретної часової послідовності." },
+          { name: "Символ", desc: "Інтерпретація довільного числового сигналу або послідовності." },
+        ],
+        read_title: "Як читати результат",
+        read: [
+          "Кожна інтерпретація пропонує структурний погляд на патерн.",
+          "Результат можна використати як інструмент:",
+          "— спостереження",
+          "— рефлексії",
+          "— виявлення напружень",
+          "— структурування уваги",
+          "— пошуку нових ракурсів розуміння",
+          "Не як готову відповідь, а як точку осмисленого спостереження.",
+        ],
+        principles_title: "Семантичні принципи",
+        footnote: "Це семантичні принципи інтерпретації, а не фіксовані детерміновані значення.",
       },
     },
   },
