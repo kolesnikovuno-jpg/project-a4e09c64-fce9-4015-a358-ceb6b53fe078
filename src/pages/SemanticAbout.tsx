@@ -5,6 +5,12 @@ import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 export default function SemanticAbout() {
   const { t, localePath } = useLocale();
   const S = t.semantic;
+  const A = (S?.about ?? {}) as Partial<NonNullable<typeof S.about>>;
+  const introParagraphs =
+    typeof A.intro === "string" && A.intro.length > 0 ? A.intro.split("\n\n") : [];
+  const modes = Array.isArray(A.modes) ? A.modes : [];
+  const readLines = Array.isArray(A.read) ? A.read : [];
+  const principles = (S?.principles ?? {}) as Record<string, string>;
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
       <LanguageSwitcher />
@@ -17,11 +23,11 @@ export default function SemanticAbout() {
 
       <main className="max-w-2xl mx-auto px-6 pt-16 pb-24 space-y-10">
         <h1 className="text-[24px] md:text-[30px] tracking-tight text-foreground font-normal leading-tight">
-          {S.about.title}
+          {A.title}
         </h1>
 
         <div className="text-[14px] leading-[1.85] text-foreground/85 space-y-4">
-          {S.about.intro.split("\n\n").map((p, i) => (
+          {introParagraphs.map((p, i) => (
             <p key={i}>{p}</p>
           ))}
         </div>
@@ -30,10 +36,10 @@ export default function SemanticAbout() {
 
         <section className="space-y-5">
           <h2 className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-normal">
-            {S.about.modes_title}
+            {A.modes_title}
           </h2>
           <div className="space-y-4">
-            {S.about.modes.map((m) => (
+            {modes.map((m) => (
               <div key={m.name} className="space-y-1">
                 <p className="text-[13px] font-medium text-foreground/90">{m.name}</p>
                 <p className="text-[13px] text-foreground/70">{m.desc}</p>
@@ -46,10 +52,10 @@ export default function SemanticAbout() {
 
         <section className="space-y-5">
           <h2 className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-normal">
-            {S.about.read_title}
+            {A.read_title}
           </h2>
           <div className="text-[13px] leading-[1.85] text-foreground/80 space-y-2">
-            {S.about.read.map((line, i) => (
+            {readLines.map((line, i) => (
               <p key={i} className={line.startsWith("—") ? "pl-4 text-foreground/70" : ""}>{line}</p>
             ))}
           </div>
@@ -59,17 +65,17 @@ export default function SemanticAbout() {
 
         <section className="space-y-5">
           <h2 className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-normal">
-            {S.about.principles_title}
+            {A.principles_title}
           </h2>
           <div className="space-y-3 text-[12px] text-foreground/70 font-mono">
-            {Object.entries(S.principles).map(([d, label]) => (
+            {Object.entries(principles).map(([d, label]) => (
               <Principle key={d} d={d} t={label} />
             ))}
           </div>
         </section>
 
         <p className="text-[11px] text-muted-foreground leading-relaxed pt-6">
-          {S.about.footnote}
+          {A.footnote}
         </p>
       </main>
     </div>
