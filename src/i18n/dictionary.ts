@@ -1661,7 +1661,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       brand: "Semantic Time",
       tagline: "когнітивний інтерфейс",
       nav_interface: "Інтерфейс",
-      nav_about: "Про проєкт",
+      nav_about: "Як це працює",
       hero_title: "Semantic Time",
       hero_lead:
         "Числові патерни як тригери структурного спостереження.",
