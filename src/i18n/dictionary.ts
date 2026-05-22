@@ -682,7 +682,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       nav_about: "About",
       hero_title: "Semantic Time",
       hero_lead:
-        "A cognitive interface for structured observation. Numeric patterns become semantic triggers — not predictions, not signs. A tool for reflection.",
+        "Numeric patterns as triggers of structural observation.",
       mode_current: "Current",
       mode_manual: "Manual",
       mode_symbol: "Symbol",
@@ -1173,7 +1173,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       nav_about: "О проекте",
       hero_title: "Semantic Time",
       hero_lead:
-        "Когнитивный интерфейс для структурного наблюдения. Числовые паттерны становятся семантическими триггерами — не предсказаниями, не знаками. Инструмент рефлексии.",
+        "Числовые паттерны как триггеры структурного наблюдения.",
       mode_current: "Сейчас",
       mode_manual: "Время",
       mode_symbol: "Символ",
@@ -1664,7 +1664,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       nav_about: "Про проєкт",
       hero_title: "Semantic Time",
       hero_lead:
-        "Когнітивний інтерфейс для структурного спостереження. Числові патерни стають семантичними тригерами — не передбаченнями, не знаками. Інструмент рефлексії.",
+        "Числові патерни як тригери структурного спостереження.",
       mode_current: "Зараз",
       mode_manual: "Час",
       mode_symbol: "Символ",
