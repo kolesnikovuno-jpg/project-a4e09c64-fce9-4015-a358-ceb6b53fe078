@@ -42,25 +42,25 @@ const UnoCalc = () => {
       <div className="w-full max-w-[440px]">
         {/* Header — quiet, aligned with site navigation */}
         <header className="flex items-center justify-between mb-16">
-          <h1 className="text-[12px] font-normal tracking-[0.22em] lowercase text-foreground/80">
+          <h1 className="text-[12px] font-normal tracking-[0.22em] lowercase text-foreground">
             unocalc
           </h1>
           <Link
             to="/"
-            className="text-[12px] tracking-[0.18em] lowercase text-primary/80 hover:text-primary transition-colors"
+            className="text-[12px] tracking-[0.18em] lowercase text-primary hover:text-primary transition-colors"
           >
             .uno
           </Link>
         </header>
 
         {/* Title — thin, spaced, architectural */}
-        <p className="text-center text-[11px] tracking-[0.28em] uppercase font-light text-muted-foreground/70 mb-20 leading-relaxed">
+        <p className="text-center text-[11px] tracking-[0.28em] uppercase font-light text-muted-foreground mb-20 leading-relaxed">
           расчет энергетической плотности пространства
         </p>
 
         {/* Section: dimensions */}
         <section className="mb-20">
-          <p className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/60 font-light mb-8">
+          <p className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/80 font-light mb-8">
             габариты элемента
           </p>
 
@@ -72,10 +72,10 @@ const UnoCalc = () => {
             ].map((f) => (
               <div key={f.label} className="group">
                 <div className="flex items-baseline justify-between mb-1.5">
-                  <label className="text-[11px] tracking-[0.16em] lowercase text-muted-foreground/70 font-light">
+                  <label className="text-[11px] tracking-[0.16em] lowercase text-muted-foreground/80 font-light">
                     {f.label}
                   </label>
-                  <span className="text-[10px] tracking-[0.12em] lowercase text-muted-foreground/40">
+                  <span className="text-[10px] tracking-[0.12em] lowercase text-muted-foreground/60">
                     {f.unit}
                   </span>
                 </div>
@@ -92,18 +92,18 @@ const UnoCalc = () => {
 
           {/* Volume — quiet computed line */}
           <div className="mt-10 flex items-baseline justify-between border-b border-border/30 pb-2">
-            <span className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/60 font-light">
+            <span className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/80 font-light">
               объем
             </span>
-            <span className="text-[14px] tracking-[0.04em] text-foreground/80 font-light tabular-nums">
-              {volume.toFixed(2)} <span className="text-muted-foreground/50 text-[11px] ml-1">м³</span>
+            <span className="text-[14px] tracking-[0.04em] text-foreground font-light tabular-nums">
+              {volume.toFixed(2)} <span className="text-muted-foreground/60 text-[11px] ml-1">м³</span>
             </span>
           </div>
         </section>
 
         {/* Section: tuning level */}
         <section className="mb-20">
-          <p className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/60 font-light mb-6">
+          <p className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/80 font-light mb-6">
             уровень настройки
           </p>
 
@@ -135,10 +135,10 @@ const UnoCalc = () => {
                     )}
                   </span>
                   <div className="flex flex-col gap-1">
-                    <span className="text-[13px] tracking-[0.04em] lowercase text-foreground/85 font-light">
+                    <span className="text-[13px] tracking-[0.04em] lowercase text-foreground font-light">
                       {lvl.label}
                     </span>
-                    <span className="text-[11px] tracking-[0.02em] text-muted-foreground/60 font-light leading-relaxed">
+                    <span className="text-[11px] tracking-[0.02em] text-muted-foreground/75 font-light leading-relaxed">
                       {lvl.hint}
                     </span>
                   </div>
@@ -150,29 +150,29 @@ const UnoCalc = () => {
 
         {/* Result — primary computational output */}
         <section className="mb-12">
-          <p className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/60 font-light mb-4">
+          <p className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/80 font-light mb-4">
             результат
           </p>
           <div className="flex items-baseline justify-between border-t border-foreground/20 pt-5">
-            <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 font-light">
+            <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/70 font-light">
               U.E.R.
             </span>
-            <span className="text-[34px] md:text-[38px] tracking-[-0.01em] text-foreground/90 font-extralight tabular-nums leading-none">
+            <span className="text-[34px] md:text-[38px] tracking-[-0.01em] text-foreground font-extralight tabular-nums leading-none">
               {energy ?? "—"}
             </span>
           </div>
 
-          <p className="mt-8 text-[12px] tracking-[0.04em] lowercase text-muted-foreground/75 font-light leading-relaxed">
+          <p className="mt-8 text-[12px] tracking-[0.04em] lowercase text-foreground/80 font-light leading-relaxed">
             {valid ? interpret(q) : "введи параметры для расчета"}
           </p>
         </section>
 
         {/* Footnote */}
         <div className="mt-16 pt-8 border-t border-border/30">
-          <p className="text-center text-[11px] tracking-[0.04em] lowercase text-foreground/70 font-light leading-relaxed">
+          <p className="text-center text-[11px] tracking-[0.04em] lowercase text-foreground/80 font-light leading-relaxed">
             для точной настройки требуется анализ структуры
           </p>
-          <p className="mt-6 text-center text-[10px] tracking-[0.14em] lowercase text-muted-foreground/45 font-light leading-relaxed">
+          <p className="mt-6 text-center text-[10px] tracking-[0.14em] lowercase text-muted-foreground/60 font-light leading-relaxed">
             U.E.R. — unit of energy resonance
             <br />
             единица энергетического резонанса
