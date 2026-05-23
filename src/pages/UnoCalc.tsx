@@ -42,7 +42,7 @@ const UnoCalc = () => {
       <div className="w-full max-w-[440px]">
         {/* Header — quiet, aligned with site navigation */}
         <header className="flex items-center justify-between mb-16">
-          <h1 className="text-[12px] font-normal tracking-[0.22em] lowercase text-foreground/80">
+          <h1 className="text-[12px] font-normal tracking-[0.22em] lowercase text-foreground">
             unocalc
           </h1>
           <Link
@@ -54,13 +54,13 @@ const UnoCalc = () => {
         </header>
 
         {/* Title — thin, spaced, architectural */}
-        <p className="text-center text-[11px] tracking-[0.28em] uppercase font-light text-muted-foreground/70 mb-20 leading-relaxed">
+        <p className="text-center text-[11px] tracking-[0.28em] uppercase font-light text-muted-foreground mb-20 leading-relaxed">
           расчет энергетической плотности пространства
         </p>
 
         {/* Section: dimensions */}
         <section className="mb-20">
-          <p className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/60 font-light mb-8">
+          <p className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/80 font-light mb-8">
             габариты элемента
           </p>
 
@@ -72,10 +72,10 @@ const UnoCalc = () => {
             ].map((f) => (
               <div key={f.label} className="group">
                 <div className="flex items-baseline justify-between mb-1.5">
-                  <label className="text-[11px] tracking-[0.16em] lowercase text-muted-foreground/70 font-light">
+                  <label className="text-[11px] tracking-[0.16em] lowercase text-muted-foreground/80 font-light">
                     {f.label}
                   </label>
-                  <span className="text-[10px] tracking-[0.12em] lowercase text-muted-foreground/40">
+                  <span className="text-[10px] tracking-[0.12em] lowercase text-muted-foreground/60">
                     {f.unit}
                   </span>
                 </div>
@@ -92,11 +92,11 @@ const UnoCalc = () => {
 
           {/* Volume — quiet computed line */}
           <div className="mt-10 flex items-baseline justify-between border-b border-border/30 pb-2">
-            <span className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/60 font-light">
+            <span className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/80 font-light">
               объем
             </span>
-            <span className="text-[14px] tracking-[0.04em] text-foreground/80 font-light tabular-nums">
-              {volume.toFixed(2)} <span className="text-muted-foreground/50 text-[11px] ml-1">м³</span>
+            <span className="text-[14px] tracking-[0.04em] text-foreground font-light tabular-nums">
+              {volume.toFixed(2)} <span className="text-muted-foreground/60 text-[11px] ml-1">м³</span>
             </span>
           </div>
         </section>
