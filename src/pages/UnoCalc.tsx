@@ -47,7 +47,7 @@ const UnoCalc = () => {
           </h1>
           <Link
             to="/"
-            className="text-[12px] tracking-[0.18em] lowercase text-primary/80 hover:text-primary transition-colors"
+            className="text-[12px] tracking-[0.18em] lowercase text-primary hover:text-primary transition-colors"
           >
             .uno
           </Link>
