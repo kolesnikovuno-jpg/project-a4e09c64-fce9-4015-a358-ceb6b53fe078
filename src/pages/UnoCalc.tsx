@@ -33,15 +33,15 @@ const UnoCalc = () => {
     <div
       className="min-h-screen flex items-start justify-center bg-background"
       style={{
-        paddingTop: "max(3.5rem, env(safe-area-inset-top))",
-        paddingBottom: "max(4rem, calc(env(safe-area-inset-bottom) + 2rem))",
+        paddingTop: "max(2rem, env(safe-area-inset-top))",
+        paddingBottom: "max(2rem, calc(env(safe-area-inset-bottom) + 1rem))",
         paddingLeft: "max(1.75rem, env(safe-area-inset-left))",
         paddingRight: "max(1.75rem, env(safe-area-inset-right))",
       }}
     >
       <div className="w-full max-w-[440px]">
         {/* Header — quiet, aligned with site navigation */}
-        <header className="flex items-center justify-between mb-16">
+        <header className="flex items-center justify-between mb-8">
           <h1 className="text-[12px] font-normal tracking-[0.22em] lowercase text-foreground">
             unocalc
           </h1>
@@ -54,7 +54,7 @@ const UnoCalc = () => {
         </header>
 
         {/* Title — thin, spaced, architectural */}
-        <p className="text-center text-[11px] tracking-[0.28em] uppercase font-light text-muted-foreground mb-20 leading-relaxed">
+        <p className="text-center text-[11px] tracking-[0.28em] uppercase font-light text-muted-foreground mb-10 leading-relaxed">
           расчет энергетической плотности пространства
         </p>
 
