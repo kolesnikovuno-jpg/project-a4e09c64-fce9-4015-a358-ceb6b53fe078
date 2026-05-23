@@ -102,8 +102,8 @@ const UnoCalc = () => {
         </section>
 
         {/* Section: tuning level */}
-        <section className="mb-20">
-          <p className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/80 font-light mb-6">
+        <section className="mb-10">
+          <p className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/80 font-light mb-4">
             уровень настройки
           </p>
 
@@ -113,7 +113,7 @@ const UnoCalc = () => {
               return (
                 <label
                   key={lvl.value}
-                  className={`flex items-start cursor-pointer px-1 py-4 transition-colors duration-300 ${
+                  className={`flex items-start cursor-pointer px-1 py-3 transition-colors duration-300 ${
                     active ? "bg-foreground/[0.025]" : "hover:bg-foreground/[0.015]"
                   }`}
                 >
@@ -126,7 +126,7 @@ const UnoCalc = () => {
                     className="hidden"
                   />
                   <span
-                    className={`mt-[5px] mr-4 flex-shrink-0 w-[10px] h-[10px] rounded-full border transition-colors duration-300 relative ${
+                    className={`mt-[4px] mr-3 flex-shrink-0 w-[10px] h-[10px] rounded-full border transition-colors duration-300 relative ${
                       active ? "border-foreground/60" : "border-border"
                     }`}
                   >
@@ -134,7 +134,7 @@ const UnoCalc = () => {
                       <span className="absolute inset-[2px] rounded-full bg-foreground/70" />
                     )}
                   </span>
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-0.5">
                     <span className="text-[13px] tracking-[0.04em] lowercase text-foreground font-light">
                       {lvl.label}
                     </span>
