@@ -59,19 +59,19 @@ const UnoCalc = () => {
         </p>
 
         {/* Section: dimensions */}
-        <section className="mb-20">
-          <p className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/80 font-light mb-8">
+        <section className="mb-10">
+          <p className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/80 font-light mb-4">
             габариты элемента
           </p>
 
-          <div className="space-y-7">
+          <div className="space-y-5">
             {[
               { label: "длина", unit: "мм", value: a, set: setA },
               { label: "ширина", unit: "мм", value: b, set: setB },
               { label: "высота", unit: "мм", value: c, set: setC },
             ].map((f) => (
               <div key={f.label} className="group">
-                <div className="flex items-baseline justify-between mb-1.5">
+                <div className="flex items-baseline justify-between mb-1">
                   <label className="text-[11px] tracking-[0.16em] lowercase text-muted-foreground/80 font-light">
                     {f.label}
                   </label>
@@ -84,14 +84,14 @@ const UnoCalc = () => {
                   inputMode="decimal"
                   value={f.value}
                   onChange={(e) => f.set(e.target.value)}
-                  className="w-full border-0 border-b border-border/60 bg-transparent py-1.5 text-[15px] tracking-[0.02em] text-foreground/90 placeholder:text-muted-foreground/30 outline-none transition-colors duration-500 focus:border-foreground/30"
+                  className="w-full border-0 border-b border-border/60 bg-transparent py-1 text-[15px] tracking-[0.02em] text-foreground/90 placeholder:text-muted-foreground/30 outline-none transition-colors duration-500 focus:border-foreground/30"
                 />
               </div>
             ))}
           </div>
 
           {/* Volume — quiet computed line */}
-          <div className="mt-10 flex items-baseline justify-between border-b border-border/30 pb-2">
+          <div className="mt-6 flex items-baseline justify-between border-b border-border/30 pb-2">
             <span className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/80 font-light">
               объем
             </span>
