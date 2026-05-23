@@ -562,9 +562,9 @@ const Index = () => {
                         }}
                         className="text-base tracking-[0.15em] font-normal text-foreground hover:text-primary transition-colors"
                       >
-                        .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">{t.index.studio_suffix}</span>
+                        .uno<span className="text-[10px] tracking-[0.08em] text-foreground/60">{t.index.studio_suffix}</span>
                       </a>
-                      <p className="text-muted-foreground tracking-[0.08em] text-[9px] font-light">
+                      <p className="text-foreground/60 tracking-[0.08em] text-[10px] font-light">
                         {t.index.architect_design_art}
                       </p>
                     </div>
@@ -580,9 +580,9 @@ const Index = () => {
                       }}
                       className="text-base tracking-[0.15em] font-normal whitespace-nowrap hover:text-primary transition-colors"
                     >
-                      .uno<span className="text-[9px] tracking-[0.08em] text-muted-foreground">{t.index.studio_suffix}</span>
+                      .uno<span className="text-[10px] tracking-[0.08em] text-foreground/60">{t.index.studio_suffix}</span>
                     </a>
-                    <p className="text-muted-foreground tracking-[0.08em] text-[9px] font-light">
+                    <p className="text-foreground/60 tracking-[0.08em] text-[10px] font-light">
                       {t.index.architect_design_art}
                     </p>
                   </div>
