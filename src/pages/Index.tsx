@@ -592,7 +592,7 @@ const Index = () => {
                 <div className="text-foreground leading-relaxed mt-7 flex flex-col">
                   <div className="text-left text-foreground">
                     <motion.p
-                      className="text-[12px] md:text-[13px] font-light text-foreground/80 tracking-[0.1em] mt-6 mb-1"
+                      className="text-[12px] md:text-[13px] font-light text-foreground tracking-[0.1em] mt-6 mb-1"
                       initial="hidden"
                       animate={controls}
                       exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
@@ -629,7 +629,7 @@ const Index = () => {
                       handleClose();
                       navigate(localePath("/clarity"));
                     }}
-                    className="block text-left text-[13px] text-primary/75 hover:text-primary/90 transition-colors mt-2"
+                    className="block text-left text-[13px] text-primary hover:text-primary/90 transition-colors mt-2"
                     initial="hidden"
                     animate={controls}
                     exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
@@ -664,7 +664,7 @@ const Index = () => {
                       },
                     }}
                   >
-                    <span className="text-[9px] tracking-[0.08em] text-muted-foreground">© 2026</span>
+                    <span className="text-[10px] tracking-[0.08em] text-foreground/60">© 2026</span>
                     <a
                       href="/about"
                       onClick={(e) => {
@@ -699,7 +699,7 @@ const Index = () => {
                       href="https://t.me/+-QJlOeTl9fZkNzIy"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[10px] tracking-[0.1em] text-muted-foreground/70 hover:text-muted-foreground transition-colors"
+                      className="text-[10px] tracking-[0.1em] text-foreground/60 hover:text-foreground/80 transition-colors"
                     >
                       Telegram Journal ⟶
                     </a>
