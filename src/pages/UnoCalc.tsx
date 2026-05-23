@@ -149,11 +149,11 @@ const UnoCalc = () => {
         </section>
 
         {/* Result — primary computational output */}
-        <section className="mb-12">
-          <p className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/80 font-light mb-4">
+        <section className="mb-8">
+          <p className="text-[10px] tracking-[0.24em] uppercase text-muted-foreground/80 font-light mb-3">
             результат
           </p>
-          <div className="flex items-baseline justify-between border-t border-foreground/20 pt-5">
+          <div className="flex items-baseline justify-between border-t border-foreground/20 pt-4">
             <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/70 font-light">
               U.E.R.
             </span>
@@ -162,17 +162,17 @@ const UnoCalc = () => {
             </span>
           </div>
 
-          <p className="mt-8 text-[12px] tracking-[0.04em] lowercase text-foreground/80 font-light leading-relaxed">
+          <p className="mt-5 text-[12px] tracking-[0.04em] lowercase text-foreground/80 font-light leading-relaxed">
             {valid ? interpret(q) : "введи параметры для расчета"}
           </p>
         </section>
 
         {/* Footnote */}
-        <div className="mt-16 pt-8 border-t border-border/30">
+        <div className="mt-10 pt-6 border-t border-border/30">
           <p className="text-center text-[11px] tracking-[0.04em] lowercase text-foreground/80 font-light leading-relaxed">
             для точной настройки требуется анализ структуры
           </p>
-          <p className="mt-6 text-center text-[10px] tracking-[0.14em] lowercase text-muted-foreground/60 font-light leading-relaxed">
+          <p className="mt-4 text-center text-[10px] tracking-[0.14em] lowercase text-muted-foreground/60 font-light leading-relaxed">
             U.E.R. — unit of energy resonance
             <br />
             единица энергетического резонанса
