@@ -77,8 +77,11 @@ export default function Semantic() {
       });
       if (fnErr) throw fnErr;
       if (data?.error === "rate_limited") setError(S.err_rate);
-      else if (data?.error === "credits_exhausted") setError(S.err_credits);
-      else if (data?.error) setError(S.err_generic);
+      else if (data?.error === "credits_exhausted") {
+        // eslint-disable-next-line no-console
+        console.warn("[semantic-interpret] credits_exhausted — operator diagnostic");
+        setError(S.err_credits);
+      } else if (data?.error) setError(S.err_generic);
       else setInterp(data?.interpretation ?? null);
     } catch (e) {
       setError(S.err_generic);
