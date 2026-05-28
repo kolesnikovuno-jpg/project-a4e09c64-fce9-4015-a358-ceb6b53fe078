@@ -297,7 +297,7 @@ Return JSON with the six required fields. Stay strictly grounded in the parser f
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Lovable-API-Key": apiKey,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
@@ -311,12 +311,16 @@ Return JSON with the six required fields. Stay strictly grounded in the parser f
     });
 
     if (res.status === 429) {
+      const detail = await res.text();
+      console.warn("[semantic-interpret] AI Gateway rate_limited", detail);
       return new Response(JSON.stringify({ error: "rate_limited" }), {
         status: 429,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
     if (res.status === 402) {
+      const detail = await res.text();
+      console.warn("[semantic-interpret] AI Gateway credits_exhausted", detail);
       return new Response(JSON.stringify({ error: "credits_exhausted" }), {
         status: 402,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -324,6 +328,7 @@ Return JSON with the six required fields. Stay strictly grounded in the parser f
     }
     if (!res.ok) {
       const t = await res.text();
+      console.error("[semantic-interpret] AI Gateway response error", res.status, t);
       return new Response(JSON.stringify({ error: "ai_error", detail: t }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
