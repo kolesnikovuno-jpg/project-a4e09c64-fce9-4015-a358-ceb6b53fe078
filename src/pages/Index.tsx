@@ -4,7 +4,7 @@ import { motion, LayoutGroup, useAnimation } from "motion/react";
 import { useIsNative } from "@/hooks/use-native";
 import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
-import heroFieldAsset from "@/assets/hero-field.png.asset.json";
+import heroFieldAsset from "@/assets/hero-field-v2.png.asset.json";
 
 const Index = () => {
   const [open, setOpen] = useState(false);
@@ -107,51 +107,71 @@ const Index = () => {
         className="relative min-h-screen flex items-center justify-center bg-background cursor-pointer"
         onClick={handleBackgroundClick}
       >
-        {/* Latent resonance field — barely visible background trace.
-            Crops the palette strip via background-size/position and a strong
-            bottom fade so only the abstract field reads. */}
+        {/* Latent resonance field — desktop. Cover-fit, scaled up, with a
+            strong bottom mask so the source palette strip never reads. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 z-0 hidden md:block"
-          style={{
-            backgroundImage: `url(${heroFieldAsset.url})`,
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "100vw auto",
-            backgroundPosition: "62% 30%",
-            opacity: 0.55,
-            mixBlendMode: "multiply",
-            filter: "saturate(0.55) contrast(0.85) brightness(1.05)",
-            WebkitMaskImage:
-              "radial-gradient(ellipse 65% 50% at 62% 38%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0.15) 72%, transparent 90%)",
-            maskImage:
-              "radial-gradient(ellipse 65% 50% at 62% 38%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0.15) 72%, transparent 90%)",
-          }}
-        />
+          className="pointer-events-none absolute inset-0 z-0 overflow-hidden hidden md:block"
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url(${heroFieldAsset.url})`,
+              backgroundRepeat: "no-repeat",
+              backgroundSize: "cover",
+              backgroundPosition: "48% 42%",
+              opacity: 0.075,
+              filter: "saturate(0.70) contrast(0.84) brightness(1.10)",
+              transform: "scale(1.24)",
+              transformOrigin: "center center",
+              WebkitMaskImage:
+                "linear-gradient(to bottom, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.88) 40%, rgba(0,0,0,0.78) 62%, rgba(0,0,0,0.18) 82%, transparent 100%)",
+              maskImage:
+                "linear-gradient(to bottom, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.88) 40%, rgba(0,0,0,0.78) 62%, rgba(0,0,0,0.18) 82%, transparent 100%)",
+            }}
+          />
+        </div>
+        {/* Latent resonance field — mobile. Quieter, more cropped, stronger
+            protection of the text/logo zone. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 z-0 md:hidden"
-          style={{
-            backgroundImage: `url(${heroFieldAsset.url})`,
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "190vw auto",
-            backgroundPosition: "50% 28%",
-            opacity: 0.45,
-            mixBlendMode: "multiply",
-            filter: "saturate(0.5) contrast(0.8) brightness(1.08)",
-            WebkitMaskImage:
-              "radial-gradient(ellipse 70% 40% at 50% 32%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 45%, rgba(0,0,0,0.12) 72%, transparent 90%)",
-            maskImage:
-              "radial-gradient(ellipse 70% 40% at 50% 32%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 45%, rgba(0,0,0,0.12) 72%, transparent 90%)",
-          }}
-        />
-        {/* Soft light overlay — dissolves the field into the page background
-            and guarantees the bottom palette strip never reads. */}
+          className="pointer-events-none absolute inset-0 z-0 overflow-hidden md:hidden"
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url(${heroFieldAsset.url})`,
+              backgroundRepeat: "no-repeat",
+              backgroundSize: "cover",
+              backgroundPosition: "44% 34%",
+              opacity: 0.055,
+              filter: "saturate(0.60) contrast(0.76) brightness(1.14)",
+              transform: "scale(1.42)",
+              transformOrigin: "center center",
+              WebkitMaskImage:
+                "linear-gradient(to bottom, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.88) 40%, rgba(0,0,0,0.78) 62%, rgba(0,0,0,0.18) 82%, transparent 100%)",
+              maskImage:
+                "linear-gradient(to bottom, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.88) 40%, rgba(0,0,0,0.78) 62%, rgba(0,0,0,0.18) 82%, transparent 100%)",
+            }}
+          />
+        </div>
+        {/* Soft overlay — radial cleaner near slogan/.uno, vertical fade
+            into the page background. Desktop tuning. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 z-0"
+          className="pointer-events-none absolute inset-0 z-[1] hidden md:block"
           style={{
             background:
-              "linear-gradient(to bottom, hsl(var(--background) / 0.25) 0%, hsl(var(--background) / 0.55) 55%, hsl(var(--background) / 0.95) 100%)",
+              "radial-gradient(circle at 72% 48%, hsl(var(--background) / 0.72) 0%, hsl(var(--background) / 0.48) 18%, hsl(var(--background) / 0.18) 34%, hsl(var(--background) / 0) 54%), linear-gradient(to bottom, hsl(var(--background) / 0.16) 0%, hsl(var(--background) / 0.10) 38%, hsl(var(--background) / 0.22) 78%, hsl(var(--background) / 0.40) 100%)",
+          }}
+        />
+        {/* Soft overlay — mobile. Strong protection band behind text/logo. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-[1] md:hidden"
+          style={{
+            background:
+              "linear-gradient(to bottom, hsl(var(--background) / 0.14) 0%, hsl(var(--background) / 0.22) 30%, hsl(var(--background) / 0.78) 48%, hsl(var(--background) / 0.88) 60%, hsl(var(--background) / 0.30) 76%, hsl(var(--background) / 0.16) 100%)",
           }}
         />
 
