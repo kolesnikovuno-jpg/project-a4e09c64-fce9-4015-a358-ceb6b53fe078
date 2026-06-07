@@ -4,6 +4,7 @@ import { motion, LayoutGroup, useAnimation } from "motion/react";
 import { useIsNative } from "@/hooks/use-native";
 import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
+import heroFieldAsset from "@/assets/hero-field.png.asset.json";
 
 const Index = () => {
   const [open, setOpen] = useState(false);
@@ -106,8 +107,54 @@ const Index = () => {
         className="relative min-h-screen flex items-center justify-center bg-background cursor-pointer"
         onClick={handleBackgroundClick}
       >
+        {/* Latent resonance field — barely visible background trace.
+            Crops the palette strip via background-size/position and a strong
+            bottom fade so only the abstract field reads. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-0 hidden md:block"
+          style={{
+            backgroundImage: `url(${heroFieldAsset.url})`,
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "95vw auto",
+            backgroundPosition: "62% 38%",
+            opacity: 0.09,
+            filter: "saturate(0.6) contrast(0.85) brightness(1.12)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 70% 55% at 62% 40%, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.12) 70%, transparent 88%)",
+            maskImage:
+              "radial-gradient(ellipse 70% 55% at 62% 40%, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.12) 70%, transparent 88%)",
+          }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-0 md:hidden"
+          style={{
+            backgroundImage: `url(${heroFieldAsset.url})`,
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "210vw auto",
+            backgroundPosition: "54% 30%",
+            opacity: 0.065,
+            filter: "saturate(0.55) contrast(0.8) brightness(1.15)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 60% 45% at 54% 32%, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 45%, rgba(0,0,0,0.08) 72%, transparent 88%)",
+            maskImage:
+              "radial-gradient(ellipse 60% 45% at 54% 32%, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 45%, rgba(0,0,0,0.08) 72%, transparent 88%)",
+          }}
+        />
+        {/* Soft light overlay — dissolves the field into the page background
+            and guarantees the bottom palette strip never reads. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, hsl(var(--background) / 0.25) 0%, hsl(var(--background) / 0.55) 55%, hsl(var(--background) / 0.95) 100%)",
+          }}
+        />
+
         {/* Toggle button — asymmetric placement, shifted right */}
-        <div className="flex items-center justify-center mt-[72px] md:mt-0 translate-x-[30vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
+        <div className="relative z-10 flex items-center justify-center mt-[72px] md:mt-0 translate-x-[30vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
           <motion.div
             className="group/uno relative flex items-center justify-center"
             initial={{ opacity: 0 }}
