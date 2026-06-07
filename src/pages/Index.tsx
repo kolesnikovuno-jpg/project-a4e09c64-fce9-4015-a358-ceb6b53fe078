@@ -116,14 +116,15 @@ const Index = () => {
           style={{
             backgroundImage: `url(${heroFieldAsset.url})`,
             backgroundRepeat: "no-repeat",
-            backgroundSize: "95vw auto",
-            backgroundPosition: "62% 38%",
-            opacity: 0.09,
-            filter: "saturate(0.6) contrast(0.85) brightness(1.12)",
+            backgroundSize: "100vw auto",
+            backgroundPosition: "62% 30%",
+            opacity: 0.55,
+            mixBlendMode: "multiply",
+            filter: "saturate(0.55) contrast(0.85) brightness(1.05)",
             WebkitMaskImage:
-              "radial-gradient(ellipse 70% 55% at 62% 40%, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.12) 70%, transparent 88%)",
+              "radial-gradient(ellipse 65% 50% at 62% 38%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0.15) 72%, transparent 90%)",
             maskImage:
-              "radial-gradient(ellipse 70% 55% at 62% 40%, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.12) 70%, transparent 88%)",
+              "radial-gradient(ellipse 65% 50% at 62% 38%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0.15) 72%, transparent 90%)",
           }}
         />
         <div
@@ -132,14 +133,15 @@ const Index = () => {
           style={{
             backgroundImage: `url(${heroFieldAsset.url})`,
             backgroundRepeat: "no-repeat",
-            backgroundSize: "210vw auto",
-            backgroundPosition: "54% 30%",
-            opacity: 0.065,
-            filter: "saturate(0.55) contrast(0.8) brightness(1.15)",
+            backgroundSize: "190vw auto",
+            backgroundPosition: "50% 28%",
+            opacity: 0.45,
+            mixBlendMode: "multiply",
+            filter: "saturate(0.5) contrast(0.8) brightness(1.08)",
             WebkitMaskImage:
-              "radial-gradient(ellipse 60% 45% at 54% 32%, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 45%, rgba(0,0,0,0.08) 72%, transparent 88%)",
+              "radial-gradient(ellipse 70% 40% at 50% 32%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 45%, rgba(0,0,0,0.12) 72%, transparent 90%)",
             maskImage:
-              "radial-gradient(ellipse 60% 45% at 54% 32%, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 45%, rgba(0,0,0,0.08) 72%, transparent 88%)",
+              "radial-gradient(ellipse 70% 40% at 50% 32%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 45%, rgba(0,0,0,0.12) 72%, transparent 90%)",
           }}
         />
         {/* Soft light overlay — dissolves the field into the page background
