@@ -120,9 +120,9 @@ const Index = () => {
               backgroundRepeat: "no-repeat",
               backgroundSize: "cover",
               backgroundPosition: "48% 42%",
-              opacity: 0.075,
-              filter: "saturate(0.70) contrast(0.84) brightness(1.10)",
-              transform: "scale(1.24)",
+              opacity: 0.145,
+              filter: "saturate(0.72) contrast(0.92) brightness(1.04)",
+              transform: "scale(1.22)",
               transformOrigin: "center center",
               WebkitMaskImage:
                 "linear-gradient(to bottom, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.88) 40%, rgba(0,0,0,0.78) 62%, rgba(0,0,0,0.18) 82%, transparent 100%)",
@@ -144,9 +144,9 @@ const Index = () => {
               backgroundRepeat: "no-repeat",
               backgroundSize: "cover",
               backgroundPosition: "44% 34%",
-              opacity: 0.055,
-              filter: "saturate(0.60) contrast(0.76) brightness(1.14)",
-              transform: "scale(1.42)",
+              opacity: 0.085,
+              filter: "saturate(0.66) contrast(0.86) brightness(1.08)",
+              transform: "scale(1.38)",
               transformOrigin: "center center",
               WebkitMaskImage:
                 "linear-gradient(to bottom, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.88) 40%, rgba(0,0,0,0.78) 62%, rgba(0,0,0,0.18) 82%, transparent 100%)",
@@ -162,7 +162,7 @@ const Index = () => {
           className="pointer-events-none absolute inset-0 z-[1] hidden md:block"
           style={{
             background:
-              "radial-gradient(circle at 72% 48%, hsl(var(--background) / 0.72) 0%, hsl(var(--background) / 0.48) 18%, hsl(var(--background) / 0.18) 34%, hsl(var(--background) / 0) 54%), linear-gradient(to bottom, hsl(var(--background) / 0.16) 0%, hsl(var(--background) / 0.10) 38%, hsl(var(--background) / 0.22) 78%, hsl(var(--background) / 0.40) 100%)",
+              "radial-gradient(circle at 72% 48%, hsl(var(--background) / 0.58) 0%, hsl(var(--background) / 0.36) 18%, hsl(var(--background) / 0.12) 34%, hsl(var(--background) / 0) 55%), linear-gradient(to bottom, hsl(var(--background) / 0.08) 0%, hsl(var(--background) / 0.04) 42%, hsl(var(--background) / 0.14) 78%, hsl(var(--background) / 0.28) 100%)",
           }}
         />
         {/* Soft overlay — mobile. Strong protection band behind text/logo. */}
@@ -171,7 +171,7 @@ const Index = () => {
           className="pointer-events-none absolute inset-0 z-[1] md:hidden"
           style={{
             background:
-              "linear-gradient(to bottom, hsl(var(--background) / 0.14) 0%, hsl(var(--background) / 0.22) 30%, hsl(var(--background) / 0.78) 48%, hsl(var(--background) / 0.88) 60%, hsl(var(--background) / 0.30) 76%, hsl(var(--background) / 0.16) 100%)",
+              "linear-gradient(to bottom, hsl(var(--background) / 0.10) 0%, hsl(var(--background) / 0.16) 30%, hsl(var(--background) / 0.64) 48%, hsl(var(--background) / 0.74) 60%, hsl(var(--background) / 0.24) 76%, hsl(var(--background) / 0.12) 100%)",
           }}
         />
 
