@@ -13,6 +13,9 @@ export type Dictionary = {
     author_link: string;
     aria_open: string;
     aria_close: string;
+    hero_title: string;
+    hero_subtitle: string;
+    cta_start: string;
   };
   about: {
     seo_title: string;
