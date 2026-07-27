@@ -175,8 +175,24 @@ const Index = () => {
           }}
         />
 
-        {/* Toggle button — asymmetric placement, shifted right */}
-        <div className="relative z-10 flex items-center justify-center mt-[72px] md:mt-0 translate-x-[30vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
+        {/* Hero stack — headline + subtitle above, .uno node preserved in its
+            asymmetric position, primary CTA below. All aesthetics untouched. */}
+        <div className="relative z-10 flex flex-col items-center justify-center w-full px-6 md:px-10 gap-10 md:gap-14">
+          <motion.div
+            className="max-w-2xl text-center flex flex-col gap-4 md:gap-5"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <h1 className="text-[28px] md:text-[40px] leading-[1.15] tracking-[-0.01em] font-extralight text-foreground">
+              {t.index.hero_title}
+            </h1>
+            <p className="text-[13px] md:text-[15px] leading-[1.6] tracking-[0.02em] text-foreground/70 font-light max-w-xl mx-auto">
+              {t.index.hero_subtitle}
+            </p>
+          </motion.div>
+
+          <div className="relative flex items-center justify-center mt-[8px] md:mt-0 translate-x-[30vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
           <motion.div
             className="group/uno relative flex items-center justify-center"
             initial={{ opacity: 0 }}
@@ -331,6 +347,17 @@ const Index = () => {
             </span>
           </button>
           </motion.div>
+          </div>
+
+          <motion.button
+            onClick={handleToggle}
+            className="group relative inline-flex items-center justify-center px-8 md:px-10 py-3 md:py-3.5 border border-foreground/40 rounded-full text-[12px] md:text-[13px] tracking-[0.14em] text-foreground/80 hover:text-foreground hover:border-foreground/70 transition-colors cursor-pointer bg-background/40 backdrop-blur-[2px]"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.1, duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {t.index.cta_start}
+          </motion.button>
         </div>
 
         {/* Custom overlay popup */}
