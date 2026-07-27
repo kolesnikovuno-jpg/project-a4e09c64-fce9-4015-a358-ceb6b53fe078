@@ -1,7 +1,8 @@
 # Project Memory
 
 ## Core
-Conceptual minimalist approach. Landing = only the .uno button, no explanations.
+Conceptual minimalist approach — quiet architectural tone.
+Landing = hero headline "Architecture of Complex Situations" + short subtitle + primary CTA "Start research" (opens popup). The .uno node stays asymmetric as brand anchor; popup content unchanged.
 Popup = brief clear info. Non-template, not for everyone — intentional filter.
 Site language: Russian (default site). Lyra page is multilingual: EN/RU/UA at /en/lyra, /ru/lyra, /uk/lyra. EN is source of truth.
 Brand: .uno studio / Колесников.
