@@ -365,6 +365,10 @@ export const dictionary: Record<Locale, Dictionary> = {
       author_link: "R.Yury Kolesnikov ⟶",
       aria_open: "Open",
       aria_close: "Close",
+      hero_title: "Architecture of Complex Situations",
+      hero_subtitle:
+        "I reveal the hidden structure of situations where the usual approach no longer works.",
+      cta_start: "Start research",
     },
     about: {
       seo_title: "About — .uno studio",
@@ -872,6 +876,10 @@ export const dictionary: Record<Locale, Dictionary> = {
       author_link: "R.Yury Kolesnikov ⟶",
       aria_open: "Открыть",
       aria_close: "Закрыть",
+      hero_title: "Архитектура сложных ситуаций",
+      hero_subtitle:
+        "Раскрываю скрытую структуру ситуаций, где привычный подход больше не работает.",
+      cta_start: "Начать исследование",
     },
     about: {
       seo_title: "О себе — .uno studio",
@@ -1379,6 +1387,10 @@ export const dictionary: Record<Locale, Dictionary> = {
       author_link: "R.Yury Kolesnikov ⟶",
       aria_open: "Відкрити",
       aria_close: "Закрити",
+      hero_title: "Архітектура складних ситуацій",
+      hero_subtitle:
+        "Розкриваю приховану структуру ситуацій, де звичний підхід більше не працює.",
+      cta_start: "Почати дослідження",
     },
     about: {
       seo_title: "Про себе — .uno studio",
