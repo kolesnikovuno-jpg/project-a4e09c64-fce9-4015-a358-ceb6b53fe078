@@ -16,6 +16,21 @@ export type Dictionary = {
     hero_title: string;
     hero_subtitle: string;
     cta_start: string;
+    dossier: {
+      s1_title: string;
+      s1_body: readonly string[];
+      s2_title: string;
+      s2_intro: readonly string[];
+      s2_list: readonly string[];
+      s3_title: string;
+      s3_intro: string;
+      s3_list: readonly string[];
+      s4_title: string;
+      s4_studio: string;
+      s4_meta: string;
+      s4_body: string;
+      telegram: string;
+    };
   };
   about: {
     seo_title: string;
