@@ -382,8 +382,42 @@ export const dictionary: Record<Locale, Dictionary> = {
       aria_close: "Close",
       hero_title: "Architecture of Complex Situations",
       hero_subtitle:
-        "I reveal the hidden structure of situations where the usual approach no longer works.",
-      cta_start: "Start research",
+        "Reveal the hidden structure of situations where conventional approaches no longer work.",
+      cta_start: "Explore your situation",
+      dossier: {
+        s1_title: "Architecture of Complex Situations",
+        s1_body: [
+          "There is no solution without structure.",
+          "Most difficult situations cannot be solved because their hidden structure remains unseen.",
+          "Architectural Research reveals relationships, constraints and patterns before decisions are made.",
+        ],
+        s2_title: "What is Architectural Research?",
+        s2_intro: [
+          "Architectural Research is a structured investigation of a complex situation.",
+          "Its purpose is not to provide instant answers. Its purpose is to understand the architecture behind the problem.",
+        ],
+        s2_list: [
+          "hidden relationships",
+          "structural constraints",
+          "system dynamics",
+          "possible directions",
+          "decision architecture",
+        ],
+        s3_title: "What you receive",
+        s3_intro: "After the research you receive:",
+        s3_list: [
+          "structural understanding of the situation",
+          "identified constraints",
+          "possible development scenarios",
+          "recommendations for the next step",
+        ],
+        s4_title: "About",
+        s4_studio: ".uno studio",
+        s4_meta: "Architect · Design · Systems",
+        s4_body:
+          "The studio exists to explore structures, create concepts and develop original methodologies.",
+        telegram: "Telegram Journal ⟶",
+      },
     },
     about: {
       seo_title: "About — .uno studio",
