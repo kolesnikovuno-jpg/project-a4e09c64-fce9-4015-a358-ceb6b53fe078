@@ -16,6 +16,21 @@ export type Dictionary = {
     hero_title: string;
     hero_subtitle: string;
     cta_start: string;
+    dossier: {
+      s1_title: string;
+      s1_body: readonly string[];
+      s2_title: string;
+      s2_intro: readonly string[];
+      s2_list: readonly string[];
+      s3_title: string;
+      s3_intro: string;
+      s3_list: readonly string[];
+      s4_title: string;
+      s4_studio: string;
+      s4_meta: string;
+      s4_body: string;
+      telegram: string;
+    };
   };
   about: {
     seo_title: string;
@@ -367,8 +382,42 @@ export const dictionary: Record<Locale, Dictionary> = {
       aria_close: "Close",
       hero_title: "Architecture of Complex Situations",
       hero_subtitle:
-        "I reveal the hidden structure of situations where the usual approach no longer works.",
-      cta_start: "Start research",
+        "Reveal the hidden structure of situations where conventional approaches no longer work.",
+      cta_start: "Explore your situation",
+      dossier: {
+        s1_title: "Architecture of Complex Situations",
+        s1_body: [
+          "There is no solution without structure.",
+          "Most difficult situations cannot be solved because their hidden structure remains unseen.",
+          "Architectural Research reveals relationships, constraints and patterns before decisions are made.",
+        ],
+        s2_title: "What is Architectural Research?",
+        s2_intro: [
+          "Architectural Research is a structured investigation of a complex situation.",
+          "Its purpose is not to provide instant answers. Its purpose is to understand the architecture behind the problem.",
+        ],
+        s2_list: [
+          "hidden relationships",
+          "structural constraints",
+          "system dynamics",
+          "possible directions",
+          "decision architecture",
+        ],
+        s3_title: "What you receive",
+        s3_intro: "After the research you receive:",
+        s3_list: [
+          "structural understanding of the situation",
+          "identified constraints",
+          "possible development scenarios",
+          "recommendations for the next step",
+        ],
+        s4_title: "About",
+        s4_studio: ".uno studio",
+        s4_meta: "Architect · Design · Systems",
+        s4_body:
+          "The studio exists to explore structures, create concepts and develop original methodologies.",
+        telegram: "Telegram Journal ⟶",
+      },
     },
     about: {
       seo_title: "About — .uno studio",
@@ -878,8 +927,42 @@ export const dictionary: Record<Locale, Dictionary> = {
       aria_close: "Закрыть",
       hero_title: "Архитектура сложных ситуаций",
       hero_subtitle:
-        "Раскрываю скрытую структуру ситуаций, где привычный подход больше не работает.",
-      cta_start: "Начать исследование",
+        "Раскрываю скрытую структуру ситуаций, где привычные подходы больше не работают.",
+      cta_start: "Исследовать вашу ситуацию",
+      dossier: {
+        s1_title: "Архитектура сложных ситуаций",
+        s1_body: [
+          "Нет решения без структуры.",
+          "Большинство сложных ситуаций не поддаются решению, потому что их скрытая структура остаётся невидимой.",
+          "Архитектурное исследование раскрывает связи, ограничения и закономерности до того, как принимаются решения.",
+        ],
+        s2_title: "Что такое архитектурное исследование?",
+        s2_intro: [
+          "Архитектурное исследование — это структурное изучение сложной ситуации.",
+          "Его цель — не быстрый ответ, а понимание архитектуры, стоящей за задачей.",
+        ],
+        s2_list: [
+          "скрытые связи",
+          "структурные ограничения",
+          "динамика системы",
+          "возможные направления",
+          "архитектура решения",
+        ],
+        s3_title: "Что вы получаете",
+        s3_intro: "По итогам исследования:",
+        s3_list: [
+          "структурное понимание ситуации",
+          "выявленные ограничения",
+          "возможные сценарии развития",
+          "рекомендации к следующему шагу",
+        ],
+        s4_title: "О студии",
+        s4_studio: ".uno studio",
+        s4_meta: "Архитектура · Дизайн · Системы",
+        s4_body:
+          "Студия существует, чтобы исследовать структуры, создавать концепции и разрабатывать собственные методологии.",
+        telegram: "Telegram Journal ⟶",
+      },
     },
     about: {
       seo_title: "О себе — .uno studio",
@@ -1389,8 +1472,42 @@ export const dictionary: Record<Locale, Dictionary> = {
       aria_close: "Закрити",
       hero_title: "Архітектура складних ситуацій",
       hero_subtitle:
-        "Розкриваю приховану структуру ситуацій, де звичний підхід більше не працює.",
-      cta_start: "Почати дослідження",
+        "Розкриваю приховану структуру ситуацій, де звичні підходи більше не працюють.",
+      cta_start: "Дослідити вашу ситуацію",
+      dossier: {
+        s1_title: "Архітектура складних ситуацій",
+        s1_body: [
+          "Немає рішення без структури.",
+          "Більшість складних ситуацій не піддаються розв'язанню, бо їхня прихована структура залишається невидимою.",
+          "Архітектурне дослідження розкриває зв'язки, обмеження й закономірності до того, як ухвалюються рішення.",
+        ],
+        s2_title: "Що таке архітектурне дослідження?",
+        s2_intro: [
+          "Архітектурне дослідження — це структурне вивчення складної ситуації.",
+          "Його мета — не швидка відповідь, а розуміння архітектури, що стоїть за задачею.",
+        ],
+        s2_list: [
+          "приховані зв'язки",
+          "структурні обмеження",
+          "динаміка системи",
+          "можливі напрямки",
+          "архітектура рішення",
+        ],
+        s3_title: "Що ви отримуєте",
+        s3_intro: "За підсумками дослідження:",
+        s3_list: [
+          "структурне розуміння ситуації",
+          "виявлені обмеження",
+          "можливі сценарії розвитку",
+          "рекомендації щодо наступного кроку",
+        ],
+        s4_title: "Про студію",
+        s4_studio: ".uno studio",
+        s4_meta: "Архітектура · Дизайн · Системи",
+        s4_body:
+          "Студія існує, щоб досліджувати структури, створювати концепції та розробляти власні методології.",
+        telegram: "Telegram Journal ⟶",
+      },
     },
     about: {
       seo_title: "Про себе — .uno studio",

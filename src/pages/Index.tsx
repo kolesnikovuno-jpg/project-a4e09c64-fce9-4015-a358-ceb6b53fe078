@@ -686,46 +686,8 @@ const Index = () => {
 
                 {/* Content */}
                 <div className="text-foreground leading-relaxed mt-7 flex flex-col">
-                  <div className="text-left text-foreground">
-                    <motion.p
-                      className="text-[12px] md:text-[13px] font-light text-foreground tracking-[0.1em] mt-6 mb-1"
-                      initial="hidden"
-                      animate={controls}
-                      exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
-                      variants={{
-                        hidden: { opacity: 0 },
-                        visible: {
-                          opacity: 1,
-                          transition: { delay: 3.17, duration: 1.8, ease: [0.4, 0, 0.2, 1] },
-                        },
-                      }}
-                    >
-                      {t.index.structure_label}
-                    </motion.p>
-                    <motion.p
-                      className="text-[14px] md:text-[15px] leading-[1.65]"
-                      initial="hidden"
-                      animate={controls}
-                      exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
-                      variants={{
-                        hidden: { opacity: 0 },
-                        visible: {
-                          opacity: 1,
-                          transition: { delay: 3.47, duration: 1.6, ease: [0.4, 0, 0.2, 1] },
-                        },
-                      }}
-                    >
-                      {t.index.tagline}
-                    </motion.p>
-                  </div>
-                  <motion.a
-                    href="/clarity"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleClose();
-                      navigate(localePath("/clarity"));
-                    }}
-                    className="block text-left text-[13px] text-primary hover:text-primary/90 transition-colors mt-2"
+                  <motion.div
+                    className="flex flex-col gap-10 md:gap-14 mt-6 text-left"
                     initial="hidden"
                     animate={controls}
                     exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
@@ -733,16 +695,83 @@ const Index = () => {
                       hidden: { opacity: 0 },
                       visible: {
                         opacity: 1,
-                        transition: {
-                          delay: 4.17,
-                          duration: 1.4,
-                          ease: "linear",
-                        },
+                        transition: { delay: 3.17, duration: 1.8, ease: [0.4, 0, 0.2, 1] },
                       },
                     }}
                   >
-                    {t.clarity.teaser_link}
-                  </motion.a>
+                    {/* Section 1 */}
+                    <section className="flex flex-col gap-3">
+                      <h2 className="text-[11px] md:text-[12px] tracking-[0.14em] uppercase text-foreground/60 font-light">
+                        01 — {t.index.dossier.s1_title}
+                      </h2>
+                      <div className="flex flex-col gap-2 text-[14px] md:text-[15px] leading-[1.7] font-light text-foreground/85">
+                        {t.index.dossier.s1_body.map((line, i) => (
+                          <p key={i}>{line}</p>
+                        ))}
+                      </div>
+                    </section>
+
+                    {/* Section 2 */}
+                    <section className="flex flex-col gap-3">
+                      <h2 className="text-[11px] md:text-[12px] tracking-[0.14em] uppercase text-foreground/60 font-light">
+                        02 — {t.index.dossier.s2_title}
+                      </h2>
+                      <div className="flex flex-col gap-2 text-[14px] md:text-[15px] leading-[1.7] font-light text-foreground/85">
+                        {t.index.dossier.s2_intro.map((line, i) => (
+                          <p key={i}>{line}</p>
+                        ))}
+                      </div>
+                      <ul className="mt-1 flex flex-col gap-1.5 text-[13px] md:text-[14px] leading-[1.6] font-light text-foreground/75">
+                        {t.index.dossier.s2_list.map((item, i) => (
+                          <li key={i} className="pl-4 relative before:content-['·'] before:absolute before:left-0 before:text-foreground/50">
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+
+                    {/* Section 3 */}
+                    <section className="flex flex-col gap-3">
+                      <h2 className="text-[11px] md:text-[12px] tracking-[0.14em] uppercase text-foreground/60 font-light">
+                        03 — {t.index.dossier.s3_title}
+                      </h2>
+                      <p className="text-[14px] md:text-[15px] leading-[1.7] font-light text-foreground/85">
+                        {t.index.dossier.s3_intro}
+                      </p>
+                      <ul className="mt-1 flex flex-col gap-1.5 text-[13px] md:text-[14px] leading-[1.6] font-light text-foreground/75">
+                        {t.index.dossier.s3_list.map((item, i) => (
+                          <li key={i} className="pl-4 relative before:content-['·'] before:absolute before:left-0 before:text-foreground/50">
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+
+                    {/* Section 4 — About */}
+                    <section className="flex flex-col gap-2">
+                      <h2 className="text-[11px] md:text-[12px] tracking-[0.14em] uppercase text-foreground/60 font-light">
+                        04 — {t.index.dossier.s4_title}
+                      </h2>
+                      <a
+                        href="/about"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleClose();
+                          navigate(localePath("/about"));
+                        }}
+                        className="text-base tracking-[0.15em] font-normal text-foreground hover:text-primary transition-colors mt-1"
+                      >
+                        {t.index.dossier.s4_studio}
+                      </a>
+                      <p className="text-[11px] tracking-[0.1em] text-foreground/60 font-light">
+                        {t.index.dossier.s4_meta}
+                      </p>
+                      <p className="text-[14px] md:text-[15px] leading-[1.7] font-light text-foreground/85 mt-2">
+                        {t.index.dossier.s4_body}
+                      </p>
+                    </section>
+                  </motion.div>
+
                   <motion.div
                     className="mt-10 pt-4 border-t border-border/20 flex items-baseline gap-2"
                     initial="hidden"
@@ -760,7 +789,7 @@ const Index = () => {
                       },
                     }}
                   >
-                    <span className="text-[10px] tracking-[0.08em] text-foreground/60">© 2026</span>
+                    <span className="text-[10px] tracking-[0.08em] text-foreground/60">© R. Yury Kolesnikov</span>
                     <a
                       href="/about"
                       onClick={(e) => {
@@ -768,7 +797,7 @@ const Index = () => {
                         handleClose();
                         navigate(localePath("/about"));
                       }}
-                      className="text-[11px] tracking-[0.12em] font-normal text-primary hover:text-primary/80 transition-colors"
+                      className="text-[11px] tracking-[0.12em] font-normal text-primary hover:text-primary/80 transition-colors sr-only"
                     >
                       {t.index.author_link}
                     </a>
@@ -790,14 +819,14 @@ const Index = () => {
                       },
                     }}
                   >
-                    <span aria-hidden className="text-[9px] tracking-[0.08em] invisible pl-[17px]">© 2026</span>
+                    <span aria-hidden className="text-[9px] tracking-[0.08em] invisible pl-[17px]">© R. Yury Kolesnikov</span>
                     <a
                       href="https://t.me/+-QJlOeTl9fZkNzIy"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[10px] tracking-[0.1em] text-foreground/60 hover:text-foreground/80 transition-colors"
                     >
-                      Telegram Journal ⟶
+                      {t.index.dossier.telegram}
                     </a>
                   </motion.div>
                 </div>
