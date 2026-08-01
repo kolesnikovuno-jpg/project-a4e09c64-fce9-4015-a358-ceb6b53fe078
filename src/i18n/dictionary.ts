@@ -18,6 +18,7 @@ export type Dictionary = {
     cta_start: string;
     dossier: {
       s1_title: string;
+      s1_anchor: string;
       s1_body: readonly string[];
       s2_title: string;
       s2_intro: readonly string[];
@@ -29,6 +30,8 @@ export type Dictionary = {
       s4_studio: string;
       s4_meta: string;
       s4_body: string;
+      s4_role: readonly string[];
+      closing: readonly string[];
       telegram: string;
     };
   };
@@ -386,15 +389,17 @@ export const dictionary: Record<Locale, Dictionary> = {
       cta_start: "Explore your situation",
       dossier: {
         s1_title: "Architecture of Complex Situations",
+        s1_anchor: "There is no solution without structure.",
         s1_body: [
-          "There is no solution without structure.",
-          "Most difficult situations cannot be solved because their hidden structure remains unseen.",
-          "Architectural Research reveals relationships, constraints and patterns before decisions are made.",
+          "Most complex situations are difficult to solve not because there is no solution, but because their hidden structure remains invisible.",
+          "Only after the structure becomes visible can informed decisions emerge.",
+          "Architectural Research exists to reveal that hidden structure before decisions are made.",
         ],
         s2_title: "What is Architectural Research?",
         s2_intro: [
           "Architectural Research is a structured investigation of a complex situation.",
-          "Its purpose is not to provide instant answers. Its purpose is to understand the architecture behind the problem.",
+          "Its purpose is not to produce immediate answers.",
+          "Its purpose is to understand the architecture behind the situation before choosing a direction.",
         ],
         s2_list: [
           "hidden relationships",
@@ -403,7 +408,7 @@ export const dictionary: Record<Locale, Dictionary> = {
           "possible directions",
           "decision architecture",
         ],
-        s3_title: "What you receive",
+        s3_title: "Research Outcome",
         s3_intro: "After the research you receive:",
         s3_list: [
           "structural understanding of the situation",
@@ -411,11 +416,16 @@ export const dictionary: Record<Locale, Dictionary> = {
           "possible development scenarios",
           "recommendations for the next step",
         ],
-        s4_title: "About",
-        s4_studio: ".uno studio",
-        s4_meta: "Architect · Design · Systems",
+        s4_title: "Method Author",
+        s4_studio: "R. Yury Kolesnikov",
+        s4_meta: "Architecture · Research · Systems",
+        s4_role: ["Architect", "Researcher", "Creator of the Architecture of Complex Situations methodology"],
         s4_body:
-          "The studio exists to explore structures, create concepts and develop original methodologies.",
+          "I explore hidden structures behind complex systems and transform them into conceptual models that help people understand situations before making decisions.",
+        closing: [
+          "Every research is unique. There are no universal answers.",
+          "Every situation has its own structure. The purpose of Architectural Research is not to apply a template, but to understand the unique architecture of a specific situation.",
+        ],
         telegram: "Telegram Journal ⟶",
       },
     },
@@ -931,15 +941,17 @@ export const dictionary: Record<Locale, Dictionary> = {
       cta_start: "Исследовать вашу ситуацию",
       dossier: {
         s1_title: "Архитектура сложных ситуаций",
+        s1_anchor: "Нет решения без структуры.",
         s1_body: [
-          "Нет решения без структуры.",
-          "Большинство сложных ситуаций не поддаются решению, потому что их скрытая структура остаётся невидимой.",
-          "Архитектурное исследование раскрывает связи, ограничения и закономерности до того, как принимаются решения.",
+          "Большинство сложных ситуаций трудно разрешить не потому, что решения нет, а потому что их скрытая структура остаётся невидимой.",
+          "Осознанные решения возможны только после того, как эта структура становится видимой.",
+          "Архитектурное исследование существует, чтобы раскрыть скрытую структуру до того, как принимаются решения.",
         ],
         s2_title: "Что такое архитектурное исследование?",
         s2_intro: [
           "Архитектурное исследование — это структурное изучение сложной ситуации.",
-          "Его цель — не быстрый ответ, а понимание архитектуры, стоящей за задачей.",
+          "Его цель — не немедленный ответ.",
+          "Его цель — понять архитектуру, стоящую за ситуацией, прежде чем выбирать направление.",
         ],
         s2_list: [
           "скрытые связи",
@@ -948,7 +960,7 @@ export const dictionary: Record<Locale, Dictionary> = {
           "возможные направления",
           "архитектура решения",
         ],
-        s3_title: "Что вы получаете",
+        s3_title: "Результат исследования",
         s3_intro: "По итогам исследования:",
         s3_list: [
           "структурное понимание ситуации",
@@ -956,11 +968,16 @@ export const dictionary: Record<Locale, Dictionary> = {
           "возможные сценарии развития",
           "рекомендации к следующему шагу",
         ],
-        s4_title: "О студии",
-        s4_studio: ".uno studio",
-        s4_meta: "Архитектура · Дизайн · Системы",
+        s4_title: "Автор метода",
+        s4_studio: "R. Yury Kolesnikov",
+        s4_meta: "Архитектура · Исследование · Системы",
+        s4_role: ["Архитектор", "Исследователь", "Автор методологии «Архитектура сложных ситуаций»"],
         s4_body:
-          "Студия существует, чтобы исследовать структуры, создавать концепции и разрабатывать собственные методологии.",
+          "Я исследую скрытые структуры сложных систем и превращаю их в концептуальные модели, которые помогают понять ситуацию до принятия решений.",
+        closing: [
+          "Каждое исследование уникально. Универсальных ответов не существует.",
+          "У каждой ситуации своя структура. Задача архитектурного исследования — не применить шаблон, а понять уникальную архитектуру конкретной ситуации.",
+        ],
         telegram: "Telegram Journal ⟶",
       },
     },
@@ -1476,15 +1493,17 @@ export const dictionary: Record<Locale, Dictionary> = {
       cta_start: "Дослідити вашу ситуацію",
       dossier: {
         s1_title: "Архітектура складних ситуацій",
+        s1_anchor: "Немає рішення без структури.",
         s1_body: [
-          "Немає рішення без структури.",
-          "Більшість складних ситуацій не піддаються розв'язанню, бо їхня прихована структура залишається невидимою.",
-          "Архітектурне дослідження розкриває зв'язки, обмеження й закономірності до того, як ухвалюються рішення.",
+          "Більшість складних ситуацій важко розв'язати не тому, що рішення немає, а тому, що їхня прихована структура залишається невидимою.",
+          "Усвідомлені рішення можливі лише після того, як ця структура стає видимою.",
+          "Архітектурне дослідження існує, щоб розкрити приховану структуру до того, як ухвалюються рішення.",
         ],
         s2_title: "Що таке архітектурне дослідження?",
         s2_intro: [
           "Архітектурне дослідження — це структурне вивчення складної ситуації.",
-          "Його мета — не швидка відповідь, а розуміння архітектури, що стоїть за задачею.",
+          "Його мета — не негайна відповідь.",
+          "Його мета — зрозуміти архітектуру, що стоїть за ситуацією, перш ніж обирати напрям.",
         ],
         s2_list: [
           "приховані зв'язки",
@@ -1493,7 +1512,7 @@ export const dictionary: Record<Locale, Dictionary> = {
           "можливі напрямки",
           "архітектура рішення",
         ],
-        s3_title: "Що ви отримуєте",
+        s3_title: "Результат дослідження",
         s3_intro: "За підсумками дослідження:",
         s3_list: [
           "структурне розуміння ситуації",
@@ -1501,11 +1520,16 @@ export const dictionary: Record<Locale, Dictionary> = {
           "можливі сценарії розвитку",
           "рекомендації щодо наступного кроку",
         ],
-        s4_title: "Про студію",
-        s4_studio: ".uno studio",
-        s4_meta: "Архітектура · Дизайн · Системи",
+        s4_title: "Автор методу",
+        s4_studio: "R. Yury Kolesnikov",
+        s4_meta: "Архітектура · Дослідження · Системи",
+        s4_role: ["Архітектор", "Дослідник", "Автор методології «Архітектура складних ситуацій»"],
         s4_body:
-          "Студія існує, щоб досліджувати структури, створювати концепції та розробляти власні методології.",
+          "Я досліджую приховані структури складних систем і перетворюю їх на концептуальні моделі, що допомагають зрозуміти ситуацію до ухвалення рішень.",
+        closing: [
+          "Кожне дослідження унікальне. Універсальних відповідей не існує.",
+          "Кожна ситуація має власну структуру. Завдання архітектурного дослідження — не застосувати шаблон, а зрозуміти унікальну архітектуру конкретної ситуації.",
+        ],
         telegram: "Telegram Journal ⟶",
       },
     },
