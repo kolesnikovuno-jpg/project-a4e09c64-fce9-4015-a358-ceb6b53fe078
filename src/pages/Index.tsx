@@ -687,7 +687,7 @@ const Index = () => {
                 {/* Content */}
                 <div className="text-foreground leading-relaxed mt-7 flex flex-col">
                   <motion.div
-                    className="flex flex-col gap-10 md:gap-14 mt-6 text-left"
+                    className="flex flex-col gap-16 md:gap-24 mt-8 text-left"
                     initial="hidden"
                     animate={controls}
                     exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
@@ -700,10 +700,13 @@ const Index = () => {
                     }}
                   >
                     {/* Section 1 */}
-                    <section className="flex flex-col gap-3">
+                    <section className="flex flex-col gap-4">
                       <h2 className="text-[11px] md:text-[12px] tracking-[0.14em] uppercase text-foreground/60 font-light">
                         01 — {t.index.dossier.s1_title}
                       </h2>
+                      <p className="text-[20px] md:text-[26px] leading-[1.35] font-light tracking-[-0.01em] text-foreground">
+                        {t.index.dossier.s1_anchor}
+                      </p>
                       <div className="flex flex-col gap-2 text-[14px] md:text-[15px] leading-[1.7] font-light text-foreground/85">
                         {t.index.dossier.s1_body.map((line, i) => (
                           <p key={i}>{line}</p>
@@ -763,12 +766,26 @@ const Index = () => {
                       >
                         {t.index.dossier.s4_studio}
                       </a>
-                      <p className="text-[11px] tracking-[0.1em] text-foreground/60 font-light">
+                      <div className="flex flex-col gap-0.5 text-[12px] leading-[1.6] text-foreground/70 font-light mt-1">
+                        {t.index.dossier.s4_role.map((line, i) => (
+                          <span key={i}>{line}</span>
+                        ))}
+                      </div>
+                      <p className="text-[11px] tracking-[0.1em] text-foreground/55 font-light mt-1">
                         {t.index.dossier.s4_meta}
                       </p>
                       <p className="text-[14px] md:text-[15px] leading-[1.7] font-light text-foreground/85 mt-2">
                         {t.index.dossier.s4_body}
                       </p>
+                    </section>
+
+                    {/* Closing */}
+                    <section className="flex flex-col gap-2 pt-2 border-t border-border/15">
+                      <div className="flex flex-col gap-2 text-[14px] md:text-[15px] leading-[1.8] font-light text-foreground/75 pt-8">
+                        {t.index.dossier.closing.map((line, i) => (
+                          <p key={i}>{line}</p>
+                        ))}
+                      </div>
                     </section>
                   </motion.div>
 
