@@ -385,7 +385,7 @@ export const dictionary: Record<Locale, Dictionary> = {
       hero_title: "Architectural Research",
       hero_subtitle:
         "Understanding begins with structure.",
-      cta_start: "Explore your situation",
+      cta_start: "Explore Your Situation",
       dossier: {
         s1_title: "Understanding comes before solutions",
         s1_anchor: "Understanding comes before solutions.",
