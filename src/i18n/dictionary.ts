@@ -21,17 +21,16 @@ export type Dictionary = {
       s1_anchor: string;
       s1_body: readonly string[];
       s2_title: string;
-      s2_intro: readonly string[];
-      s2_list: readonly string[];
+      s2_body: readonly string[];
       s3_title: string;
-      s3_intro: string;
-      s3_list: readonly string[];
+      s3_body: readonly string[];
       s4_title: string;
-      s4_studio: string;
-      s4_meta: string;
-      s4_body: string;
-      s4_role: readonly string[];
-      closing: readonly string[];
+      s4_intro: readonly string[];
+      s4_list: readonly string[];
+      s5_title: string;
+      s5_studio: string;
+      s5_meta: string;
+      s5_body: readonly string[];
       telegram: string;
     };
   };
@@ -383,48 +382,49 @@ export const dictionary: Record<Locale, Dictionary> = {
       author_link: "R.Yury Kolesnikov ⟶",
       aria_open: "Open",
       aria_close: "Close",
-      hero_title: "Architecture of Complex Situations",
+      hero_title: "Architectural Research",
       hero_subtitle:
-        "Reveal the hidden structure of situations where conventional approaches no longer work.",
+        "Understanding begins with structure.",
       cta_start: "Explore your situation",
       dossier: {
-        s1_title: "Architecture of Complex Situations",
-        s1_anchor: "There is no solution without structure.",
+        s1_title: "Understanding comes before solutions",
+        s1_anchor: "Understanding comes before solutions.",
         s1_body: [
-          "Most complex situations are difficult to solve not because there is no solution, but because their hidden structure remains invisible.",
-          "Only after the structure becomes visible can informed decisions emerge.",
-          "Architectural Research exists to reveal that hidden structure before decisions are made.",
+          "Research does not begin with searching for answers. It begins with understanding structure.",
+          "Many solutions already exist. The real challenge is recognizing which one belongs to the situation.",
+          "Without understanding structure, every decision becomes an assumption.",
         ],
-        s2_title: "What is Architectural Research?",
-        s2_intro: [
-          "Architectural Research is a structured investigation of a complex situation.",
-          "Its purpose is not to produce immediate answers.",
-          "Its purpose is to understand the architecture behind the situation before choosing a direction.",
+        s2_title: "Architectural Research",
+        s2_body: [
+          "Architectural Research reveals hidden structures, relationships and constraints before decisions are made.",
+          "It is not a search for immediate answers. It is a process of understanding how a situation is organized.",
+          "Only then can meaningful concepts and decisions emerge.",
         ],
-        s2_list: [
-          "hidden relationships",
-          "structural constraints",
-          "system dynamics",
-          "possible directions",
-          "decision architecture",
+        s3_title: "Interpretation",
+        s3_body: [
+          "Structures often remain while interpretations evolve.",
+          "Technologies change. Contexts change. Solutions change.",
+          "Research reveals what remains essential. Interpretation transforms that understanding into concepts appropriate for the present moment.",
         ],
-        s3_title: "Research Outcome",
-        s3_intro: "After the research you receive:",
-        s3_list: [
-          "structural understanding of the situation",
+        s4_title: "Research Outcome",
+        s4_intro: [
+          "The result is not certainty. The result is structural clarity.",
+          "The research provides:",
+        ],
+        s4_list: [
+          "understanding of the situation",
           "identified constraints",
-          "possible development scenarios",
-          "recommendations for the next step",
+          "possible directions",
+          "conceptual models",
+          "a foundation for informed decisions",
         ],
-        s4_title: "Method Author",
-        s4_studio: "R. Yury Kolesnikov",
-        s4_meta: "Architecture · Research · Systems",
-        s4_role: ["Architect", "Researcher", "Creator of the Architecture of Complex Situations methodology"],
-        s4_body:
-          "I explore hidden structures behind complex systems and transform them into conceptual models that help people understand situations before making decisions.",
-        closing: [
-          "Every research is unique. There are no universal answers.",
-          "Every situation has its own structure. The purpose of Architectural Research is not to apply a template, but to understand the unique architecture of a specific situation.",
+        s5_title: "About the Method",
+        s5_studio: "R. Yury Kolesnikov",
+        s5_meta: "Architecture · Systems · Interpretation",
+        s5_body: [
+          "Architecture of Situations is an original methodology created by R. Yury Kolesnikov.",
+          "It combines architectural thinking, systems thinking and conceptual interpretation into a single research process.",
+          "Its purpose is not to predict. Its purpose is to understand.",
         ],
         telegram: "Telegram Journal ⟶",
       },
@@ -935,48 +935,49 @@ export const dictionary: Record<Locale, Dictionary> = {
       author_link: "R.Yury Kolesnikov ⟶",
       aria_open: "Открыть",
       aria_close: "Закрыть",
-      hero_title: "Архитектура сложных ситуаций",
+      hero_title: "Архитектурное исследование",
       hero_subtitle:
-        "Раскрываю скрытую структуру ситуаций, где привычные подходы больше не работают.",
+        "Понимание начинается со структуры.",
       cta_start: "Исследовать вашу ситуацию",
       dossier: {
-        s1_title: "Архитектура сложных ситуаций",
-        s1_anchor: "Нет решения без структуры.",
+        s1_title: "Понимание предшествует решениям",
+        s1_anchor: "Понимание предшествует решениям.",
         s1_body: [
-          "Большинство сложных ситуаций трудно разрешить не потому, что решения нет, а потому что их скрытая структура остаётся невидимой.",
-          "Осознанные решения возможны только после того, как эта структура становится видимой.",
-          "Архитектурное исследование существует, чтобы раскрыть скрытую структуру до того, как принимаются решения.",
+          "Исследование начинается не с поиска ответов. Оно начинается с понимания структуры.",
+          "Множество решений уже существует. Сложность в том, чтобы распознать, какое из них принадлежит именно этой ситуации.",
+          "Без понимания структуры любое решение остаётся допущением.",
         ],
-        s2_title: "Что такое архитектурное исследование?",
-        s2_intro: [
-          "Архитектурное исследование — это структурное изучение сложной ситуации.",
-          "Его цель — не немедленный ответ.",
-          "Его цель — понять архитектуру, стоящую за ситуацией, прежде чем выбирать направление.",
+        s2_title: "Архитектурное исследование",
+        s2_body: [
+          "Архитектурное исследование раскрывает скрытые структуры, связи и ограничения до того, как принимаются решения.",
+          "Это не поиск немедленных ответов. Это процесс понимания того, как ситуация устроена.",
+          "Только после этого возможны осмысленные концепции и решения.",
         ],
-        s2_list: [
-          "скрытые связи",
-          "структурные ограничения",
-          "динамика системы",
-          "возможные направления",
-          "архитектура решения",
+        s3_title: "Интерпретация",
+        s3_body: [
+          "Структуры чаще всего остаются, тогда как интерпретации меняются.",
+          "Меняются технологии. Меняются контексты. Меняются решения.",
+          "Исследование выявляет то, что остаётся существенным. Интерпретация переводит это понимание в концепции, уместные в настоящем моменте.",
         ],
-        s3_title: "Результат исследования",
-        s3_intro: "По итогам исследования:",
-        s3_list: [
-          "структурное понимание ситуации",
+        s4_title: "Результат исследования",
+        s4_intro: [
+          "Результат — это не определённость. Результат — это структурная ясность.",
+          "Исследование даёт:",
+        ],
+        s4_list: [
+          "понимание ситуации",
           "выявленные ограничения",
-          "возможные сценарии развития",
-          "рекомендации к следующему шагу",
+          "возможные направления",
+          "концептуальные модели",
+          "основание для осознанных решений",
         ],
-        s4_title: "Автор метода",
-        s4_studio: "R. Yury Kolesnikov",
-        s4_meta: "Архитектура · Исследование · Системы",
-        s4_role: ["Архитектор", "Исследователь", "Автор методологии «Архитектура сложных ситуаций»"],
-        s4_body:
-          "Я исследую скрытые структуры сложных систем и превращаю их в концептуальные модели, которые помогают понять ситуацию до принятия решений.",
-        closing: [
-          "Каждое исследование уникально. Универсальных ответов не существует.",
-          "У каждой ситуации своя структура. Задача архитектурного исследования — не применить шаблон, а понять уникальную архитектуру конкретной ситуации.",
+        s5_title: "О методе",
+        s5_studio: "R. Yury Kolesnikov",
+        s5_meta: "Архитектура · Системы · Интерпретация",
+        s5_body: [
+          "«Архитектура ситуаций» — оригинальная методология, созданная R. Yury Kolesnikov.",
+          "Она соединяет архитектурное мышление, системное мышление и концептуальную интерпретацию в единый исследовательский процесс.",
+          "Её задача — не предсказывать. Её задача — понимать.",
         ],
         telegram: "Telegram Journal ⟶",
       },
@@ -1487,48 +1488,49 @@ export const dictionary: Record<Locale, Dictionary> = {
       author_link: "R.Yury Kolesnikov ⟶",
       aria_open: "Відкрити",
       aria_close: "Закрити",
-      hero_title: "Архітектура складних ситуацій",
+      hero_title: "Архітектурне дослідження",
       hero_subtitle:
-        "Розкриваю приховану структуру ситуацій, де звичні підходи більше не працюють.",
+        "Розуміння починається зі структури.",
       cta_start: "Дослідити вашу ситуацію",
       dossier: {
-        s1_title: "Архітектура складних ситуацій",
-        s1_anchor: "Немає рішення без структури.",
+        s1_title: "Розуміння передує рішенням",
+        s1_anchor: "Розуміння передує рішенням.",
         s1_body: [
-          "Більшість складних ситуацій важко розв'язати не тому, що рішення немає, а тому, що їхня прихована структура залишається невидимою.",
-          "Усвідомлені рішення можливі лише після того, як ця структура стає видимою.",
-          "Архітектурне дослідження існує, щоб розкрити приховану структуру до того, як ухвалюються рішення.",
+          "Дослідження починається не з пошуку відповідей. Воно починається з розуміння структури.",
+          "Багато рішень уже існує. Складність у тому, щоб розпізнати, яке з них належить саме цій ситуації.",
+          "Без розуміння структури будь-яке рішення залишається припущенням.",
         ],
-        s2_title: "Що таке архітектурне дослідження?",
-        s2_intro: [
-          "Архітектурне дослідження — це структурне вивчення складної ситуації.",
-          "Його мета — не негайна відповідь.",
-          "Його мета — зрозуміти архітектуру, що стоїть за ситуацією, перш ніж обирати напрям.",
+        s2_title: "Архітектурне дослідження",
+        s2_body: [
+          "Архітектурне дослідження розкриває приховані структури, зв’язки та обмеження до того, як ухвалюються рішення.",
+          "Це не пошук негайних відповідей. Це процес розуміння того, як ситуація влаштована.",
+          "Лише після цього можливі осмислені концепції та рішення.",
         ],
-        s2_list: [
-          "приховані зв'язки",
-          "структурні обмеження",
-          "динаміка системи",
-          "можливі напрямки",
-          "архітектура рішення",
+        s3_title: "Інтерпретація",
+        s3_body: [
+          "Структури здебільшого залишаються, тоді як інтерпретації змінюються.",
+          "Змінюються технології. Змінюються контексти. Змінюються рішення.",
+          "Дослідження виявляє те, що залишається суттєвим. Інтерпретація переводить це розуміння в концепції, доречні в теперішньому моменті.",
         ],
-        s3_title: "Результат дослідження",
-        s3_intro: "За підсумками дослідження:",
-        s3_list: [
-          "структурне розуміння ситуації",
+        s4_title: "Результат дослідження",
+        s4_intro: [
+          "Результат — це не визначеність. Результат — це структурна ясність.",
+          "Дослідження дає:",
+        ],
+        s4_list: [
+          "розуміння ситуації",
           "виявлені обмеження",
-          "можливі сценарії розвитку",
-          "рекомендації щодо наступного кроку",
+          "можливі напрями",
+          "концептуальні моделі",
+          "підґрунтя для усвідомлених рішень",
         ],
-        s4_title: "Автор методу",
-        s4_studio: "R. Yury Kolesnikov",
-        s4_meta: "Архітектура · Дослідження · Системи",
-        s4_role: ["Архітектор", "Дослідник", "Автор методології «Архітектура складних ситуацій»"],
-        s4_body:
-          "Я досліджую приховані структури складних систем і перетворюю їх на концептуальні моделі, що допомагають зрозуміти ситуацію до ухвалення рішень.",
-        closing: [
-          "Кожне дослідження унікальне. Універсальних відповідей не існує.",
-          "Кожна ситуація має власну структуру. Завдання архітектурного дослідження — не застосувати шаблон, а зрозуміти унікальну архітектуру конкретної ситуації.",
+        s5_title: "Про метод",
+        s5_studio: "R. Yury Kolesnikov",
+        s5_meta: "Архітектура · Системи · Інтерпретація",
+        s5_body: [
+          "«Архітектура ситуацій» — оригінальна методологія, створена R. Yury Kolesnikov.",
+          "Вона поєднує архітектурне мислення, системне мислення та концептуальну інтерпретацію в єдиний дослідницький процес.",
+          "Її мета — не передбачати. Її мета — розуміти.",
         ],
         telegram: "Telegram Journal ⟶",
       },
