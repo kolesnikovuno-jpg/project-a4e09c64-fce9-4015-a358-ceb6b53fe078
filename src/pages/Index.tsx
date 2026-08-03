@@ -179,15 +179,15 @@ const Index = () => {
             asymmetric position, primary CTA below. All aesthetics untouched. */}
         <div className="relative z-10 flex flex-col items-center justify-center w-full px-6 md:px-10 gap-10 md:gap-14">
           <motion.div
-            className="max-w-2xl text-center flex flex-col gap-4 md:gap-5"
+            className="max-w-2xl text-center flex flex-col gap-6 md:gap-8"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <h1 className="text-[28px] md:text-[40px] leading-[1.15] tracking-[-0.01em] font-extralight text-foreground">
+            <h1 className="text-[20px] md:text-[24px] leading-[1.2] tracking-[0.02em] font-extralight text-foreground/70">
               {t.index.hero_title}
             </h1>
-            <p className="text-[13px] md:text-[15px] leading-[1.6] tracking-[0.02em] text-foreground/70 font-light max-w-xl mx-auto">
+            <p className="text-[26px] md:text-[38px] leading-[1.2] tracking-[-0.01em] text-foreground font-extralight max-w-xl mx-auto">
               {t.index.hero_subtitle}
             </p>
           </motion.div>
@@ -687,7 +687,7 @@ const Index = () => {
                 {/* Content */}
                 <div className="text-foreground leading-relaxed mt-7 flex flex-col">
                   <motion.div
-                    className="flex flex-col gap-24 md:gap-36 mt-10 text-left"
+                    className="flex flex-col gap-32 md:gap-48 mt-14 text-left"
                     initial="hidden"
                     animate={controls}
                     exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
