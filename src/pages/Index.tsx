@@ -687,7 +687,7 @@ const Index = () => {
                 {/* Content */}
                 <div className="text-foreground leading-relaxed mt-7 flex flex-col">
                   <motion.div
-                    className="flex flex-col gap-16 md:gap-24 mt-8 text-left"
+                    className="flex flex-col gap-24 md:gap-36 mt-10 text-left"
                     initial="hidden"
                     animate={controls}
                     exit={{ opacity: 0, transition: { duration: 0.35, ease: [0.4, 0, 1, 1] } }}
@@ -700,14 +700,14 @@ const Index = () => {
                     }}
                   >
                     {/* Section 1 */}
-                    <section className="flex flex-col gap-4">
+                    <section className="flex flex-col gap-6">
                       <h2 className="text-[11px] md:text-[12px] tracking-[0.14em] uppercase text-foreground/60 font-light">
                         01 — {t.index.dossier.s1_title}
                       </h2>
-                      <p className="text-[20px] md:text-[26px] leading-[1.35] font-light tracking-[-0.01em] text-foreground">
+                      <p className="text-[22px] md:text-[30px] leading-[1.3] font-light tracking-[-0.01em] text-foreground py-2">
                         {t.index.dossier.s1_anchor}
                       </p>
-                      <div className="flex flex-col gap-2 text-[14px] md:text-[15px] leading-[1.7] font-light text-foreground/85">
+                      <div className="flex flex-col gap-4 text-[14px] md:text-[15px] leading-[1.9] font-light text-foreground/85">
                         {t.index.dossier.s1_body.map((line, i) => (
                           <p key={i}>{line}</p>
                         ))}
@@ -715,34 +715,41 @@ const Index = () => {
                     </section>
 
                     {/* Section 2 */}
-                    <section className="flex flex-col gap-3">
+                    <section className="flex flex-col gap-5">
                       <h2 className="text-[11px] md:text-[12px] tracking-[0.14em] uppercase text-foreground/60 font-light">
                         02 — {t.index.dossier.s2_title}
                       </h2>
-                      <div className="flex flex-col gap-2 text-[14px] md:text-[15px] leading-[1.7] font-light text-foreground/85">
-                        {t.index.dossier.s2_intro.map((line, i) => (
+                      <div className="flex flex-col gap-4 text-[14px] md:text-[15px] leading-[1.9] font-light text-foreground/85">
+                        {t.index.dossier.s2_body.map((line, i) => (
                           <p key={i}>{line}</p>
                         ))}
                       </div>
-                      <ul className="mt-1 flex flex-col gap-1.5 text-[13px] md:text-[14px] leading-[1.6] font-light text-foreground/75">
-                        {t.index.dossier.s2_list.map((item, i) => (
-                          <li key={i} className="pl-4 relative before:content-['·'] before:absolute before:left-0 before:text-foreground/50">
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
                     </section>
 
                     {/* Section 3 */}
-                    <section className="flex flex-col gap-3">
+                    <section className="flex flex-col gap-5">
                       <h2 className="text-[11px] md:text-[12px] tracking-[0.14em] uppercase text-foreground/60 font-light">
                         03 — {t.index.dossier.s3_title}
                       </h2>
-                      <p className="text-[14px] md:text-[15px] leading-[1.7] font-light text-foreground/85">
-                        {t.index.dossier.s3_intro}
-                      </p>
-                      <ul className="mt-1 flex flex-col gap-1.5 text-[13px] md:text-[14px] leading-[1.6] font-light text-foreground/75">
-                        {t.index.dossier.s3_list.map((item, i) => (
+                      <div className="flex flex-col gap-4 text-[14px] md:text-[15px] leading-[1.9] font-light text-foreground/85">
+                        {t.index.dossier.s3_body.map((line, i) => (
+                          <p key={i}>{line}</p>
+                        ))}
+                      </div>
+                    </section>
+
+                    {/* Section 4 */}
+                    <section className="flex flex-col gap-5">
+                      <h2 className="text-[11px] md:text-[12px] tracking-[0.14em] uppercase text-foreground/60 font-light">
+                        04 — {t.index.dossier.s4_title}
+                      </h2>
+                      <div className="flex flex-col gap-4 text-[14px] md:text-[15px] leading-[1.9] font-light text-foreground/85">
+                        {t.index.dossier.s4_intro.map((line, i) => (
+                          <p key={i}>{line}</p>
+                        ))}
+                      </div>
+                      <ul className="mt-1 flex flex-col gap-2.5 text-[13px] md:text-[14px] leading-[1.7] font-light text-foreground/75">
+                        {t.index.dossier.s4_list.map((item, i) => (
                           <li key={i} className="pl-4 relative before:content-['·'] before:absolute before:left-0 before:text-foreground/50">
                             {item}
                           </li>
@@ -750,11 +757,16 @@ const Index = () => {
                       </ul>
                     </section>
 
-                    {/* Section 4 — About */}
-                    <section className="flex flex-col gap-2">
+                    {/* Section 5 — About the method */}
+                    <section className="flex flex-col gap-5">
                       <h2 className="text-[11px] md:text-[12px] tracking-[0.14em] uppercase text-foreground/60 font-light">
-                        04 — {t.index.dossier.s4_title}
+                        05 — {t.index.dossier.s5_title}
                       </h2>
+                      <div className="flex flex-col gap-4 text-[14px] md:text-[15px] leading-[1.9] font-light text-foreground/85">
+                        {t.index.dossier.s5_body.map((line, i) => (
+                          <p key={i}>{line}</p>
+                        ))}
+                      </div>
                       <a
                         href="/about"
                         onClick={(e) => {
@@ -762,31 +774,15 @@ const Index = () => {
                           handleClose();
                           navigate(localePath("/about"));
                         }}
-                        className="text-base tracking-[0.15em] font-normal text-foreground hover:text-primary transition-colors mt-1"
+                        className="text-base tracking-[0.15em] font-normal text-foreground hover:text-primary transition-colors mt-2"
                       >
-                        {t.index.dossier.s4_studio}
+                        {t.index.dossier.s5_studio}
                       </a>
-                      <div className="flex flex-col gap-0.5 text-[12px] leading-[1.6] text-foreground/70 font-light mt-1">
-                        {t.index.dossier.s4_role.map((line, i) => (
-                          <span key={i}>{line}</span>
-                        ))}
-                      </div>
-                      <p className="text-[11px] tracking-[0.1em] text-foreground/55 font-light mt-1">
-                        {t.index.dossier.s4_meta}
-                      </p>
-                      <p className="text-[14px] md:text-[15px] leading-[1.7] font-light text-foreground/85 mt-2">
-                        {t.index.dossier.s4_body}
+                      <p className="text-[11px] tracking-[0.1em] text-foreground/55 font-light">
+                        {t.index.dossier.s5_meta}
                       </p>
                     </section>
 
-                    {/* Closing */}
-                    <section className="flex flex-col gap-2 pt-2 border-t border-border/15">
-                      <div className="flex flex-col gap-2 text-[14px] md:text-[15px] leading-[1.8] font-light text-foreground/75 pt-8">
-                        {t.index.dossier.closing.map((line, i) => (
-                          <p key={i}>{line}</p>
-                        ))}
-                      </div>
-                    </section>
                   </motion.div>
 
                   <motion.div
