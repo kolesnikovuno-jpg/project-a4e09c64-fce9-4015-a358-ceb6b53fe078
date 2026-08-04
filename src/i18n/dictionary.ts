@@ -15,6 +15,7 @@ export type Dictionary = {
     aria_close: string;
     hero_title: string;
     hero_subtitle: string;
+    hero_support: readonly string[];
     cta_start: string;
     dossier: {
       s1_title: string;
@@ -385,31 +386,36 @@ export const dictionary: Record<Locale, Dictionary> = {
       hero_title: "Architectural Research",
       hero_subtitle:
         "Understanding begins with structure.",
-      cta_start: "Explore Your Situation",
+      hero_support: [
+        "Research reveals the structure of a situation.",
+        "Concepts and solutions emerge as a consequence of understanding, not before it.",
+      ],
+      cta_start: "Explore the situation",
       dossier: {
         s1_title: "Understanding comes before solutions",
         s1_anchor: "Understanding comes before solutions.",
         s1_body: [
           "Research does not begin with searching for answers. It begins with understanding structure.",
-          "Many solutions already exist. The real challenge is recognizing which one belongs to the situation.",
-          "Without understanding structure, every decision becomes an assumption.",
+          "Most solutions already exist. The difficulty lies in seeing which one corresponds to this particular situation.",
+          "Without understanding structure, any solution remains an assumption.",
         ],
         s2_title: "Architectural Research",
         s2_body: [
-          "Architectural Research reveals hidden structures, relationships and constraints before decisions are made.",
-          "It is not a search for immediate answers. It is a process of understanding how a situation is organized.",
-          "Only then can meaningful concepts and decisions emerge.",
+          "Architectural Research reveals the hidden structures, relationships and constraints that define a situation.",
+          "Its task is not to search for quick answers, but to understand how the system itself is organized.",
+          "Only then do precise concepts and meaningful solutions become possible.",
         ],
         s3_title: "Interpretation",
         s3_body: [
-          "Structures often remain while interpretations evolve.",
-          "Technologies change. Contexts change. Solutions change.",
-          "Research reveals what remains essential. Interpretation transforms that understanding into concepts appropriate for the present moment.",
+          "Structures remain considerably more stable than their interpretations.",
+          "Technologies change. Contexts change. Modes of realization change.",
+          "Yet the fundamental regularities persist.",
+          "Research identifies these regularities, and interpretation translates them into concepts appropriate to the present moment.",
         ],
         s4_title: "Research Outcome",
         s4_intro: [
-          "The result is not certainty. The result is structural clarity.",
-          "The research provides:",
+          "The outcome of research is not a ready answer.",
+          "The outcome is structural clarity.",
         ],
         s4_list: [
           "understanding of the situation",
@@ -422,9 +428,10 @@ export const dictionary: Record<Locale, Dictionary> = {
         s5_studio: "R. Yury Kolesnikov",
         s5_meta: "Architecture · Systems · Interpretation",
         s5_body: [
-          "Architecture of Situations is an original methodology created by R. Yury Kolesnikov.",
-          "It combines architectural thinking, systems thinking and conceptual interpretation into a single research process.",
-          "Its purpose is not to predict. Its purpose is to understand.",
+          "Architecture of Situations is an original research methodology developed by R. Yury Kolesnikov.",
+          "It combines architectural thinking, systems analysis and conceptual interpretation within a single research process.",
+          "Its task is not to predict the future or to offer universal recipes.",
+          "Its task is to understand the structure of what is happening.",
         ],
         telegram: "Telegram Journal ⟶",
       },
@@ -937,32 +944,37 @@ export const dictionary: Record<Locale, Dictionary> = {
       aria_close: "Закрыть",
       hero_title: "Архитектурное исследование",
       hero_subtitle:
-        "Понимание начинается со структуры.",
-      cta_start: "Исследовать вашу ситуацию",
+        "Понимание предшествует решениям.",
+      hero_support: [
+        "Исследование раскрывает структуру ситуации.",
+        "Концепции и решения рождаются как следствие понимания, а не наоборот.",
+      ],
+      cta_start: "Исследовать ситуацию",
       dossier: {
         s1_title: "Понимание предшествует решениям",
         s1_anchor: "Понимание предшествует решениям.",
         s1_body: [
           "Исследование начинается не с поиска ответов. Оно начинается с понимания структуры.",
-          "Множество решений уже существует. Сложность в том, чтобы распознать, какое из них принадлежит именно этой ситуации.",
-          "Без понимания структуры любое решение остаётся допущением.",
+          "Большинство решений уже существуют. Сложность заключается в том, чтобы увидеть, какое из них соответствует именно этой ситуации.",
+          "Без понимания структуры любое решение остаётся предположением.",
         ],
         s2_title: "Архитектурное исследование",
         s2_body: [
-          "Архитектурное исследование раскрывает скрытые структуры, связи и ограничения до того, как принимаются решения.",
-          "Это не поиск немедленных ответов. Это процесс понимания того, как ситуация устроена.",
-          "Только после этого возможны осмысленные концепции и решения.",
+          "Архитектурное исследование раскрывает скрытые структуры, связи и ограничения, определяющие ситуацию.",
+          "Его задача — не искать быстрые ответы, а понять устройство самой системы.",
+          "Лишь после этого становятся возможны точные концепции и осмысленные решения.",
         ],
         s3_title: "Интерпретация",
         s3_body: [
-          "Структуры чаще всего остаются, тогда как интерпретации меняются.",
-          "Меняются технологии. Меняются контексты. Меняются решения.",
-          "Исследование выявляет то, что остаётся существенным. Интерпретация переводит это понимание в концепции, уместные в настоящем моменте.",
+          "Структуры остаются значительно стабильнее, чем их интерпретации.",
+          "Меняются технологии. Меняются контексты. Меняются способы реализации.",
+          "Но фундаментальные закономерности сохраняются.",
+          "Исследование выявляет эти закономерности, а интерпретация переводит их в концепции, соответствующие настоящему времени.",
         ],
         s4_title: "Результат исследования",
         s4_intro: [
-          "Результат — это не определённость. Результат — это структурная ясность.",
-          "Исследование даёт:",
+          "Результат исследования — не готовый ответ.",
+          "Результат — структурная ясность.",
         ],
         s4_list: [
           "понимание ситуации",
@@ -975,9 +987,10 @@ export const dictionary: Record<Locale, Dictionary> = {
         s5_studio: "R. Yury Kolesnikov",
         s5_meta: "Архитектура · Системы · Интерпретация",
         s5_body: [
-          "«Архитектура ситуаций» — оригинальная методология, созданная R. Yury Kolesnikov.",
-          "Она соединяет архитектурное мышление, системное мышление и концептуальную интерпретацию в единый исследовательский процесс.",
-          "Её задача — не предсказывать. Её задача — понимать.",
+          "«Архитектура ситуаций» — авторская исследовательская методология, разработанная R. Yury Kolesnikov.",
+          "Она объединяет архитектурное мышление, системный анализ и концептуальную интерпретацию в единый исследовательский процесс.",
+          "Её задача — не предсказывать будущее и не давать универсальные рецепты.",
+          "Её задача — понимать структуру происходящего.",
         ],
         telegram: "Telegram Journal ⟶",
       },
@@ -1490,32 +1503,37 @@ export const dictionary: Record<Locale, Dictionary> = {
       aria_close: "Закрити",
       hero_title: "Архітектурне дослідження",
       hero_subtitle:
-        "Розуміння починається зі структури.",
-      cta_start: "Дослідити вашу ситуацію",
+        "Розуміння передує рішенням.",
+      hero_support: [
+        "Дослідження розкриває структуру ситуації.",
+        "Концепції та рішення народжуються як наслідок розуміння, а не навпаки.",
+      ],
+      cta_start: "Дослідити ситуацію",
       dossier: {
         s1_title: "Розуміння передує рішенням",
         s1_anchor: "Розуміння передує рішенням.",
         s1_body: [
           "Дослідження починається не з пошуку відповідей. Воно починається з розуміння структури.",
-          "Багато рішень уже існує. Складність у тому, щоб розпізнати, яке з них належить саме цій ситуації.",
+          "Більшість рішень уже існують. Складність полягає в тому, щоб побачити, яке з них відповідає саме цій ситуації.",
           "Без розуміння структури будь-яке рішення залишається припущенням.",
         ],
         s2_title: "Архітектурне дослідження",
         s2_body: [
-          "Архітектурне дослідження розкриває приховані структури, зв’язки та обмеження до того, як ухвалюються рішення.",
-          "Це не пошук негайних відповідей. Це процес розуміння того, як ситуація влаштована.",
-          "Лише після цього можливі осмислені концепції та рішення.",
+          "Архітектурне дослідження розкриває приховані структури, зв’язки та обмеження, що визначають ситуацію.",
+          "Його завдання — не шукати швидкі відповіді, а зрозуміти будову самої системи.",
+          "Лише після цього стають можливими точні концепції та осмислені рішення.",
         ],
         s3_title: "Інтерпретація",
         s3_body: [
-          "Структури здебільшого залишаються, тоді як інтерпретації змінюються.",
-          "Змінюються технології. Змінюються контексти. Змінюються рішення.",
-          "Дослідження виявляє те, що залишається суттєвим. Інтерпретація переводить це розуміння в концепції, доречні в теперішньому моменті.",
+          "Структури залишаються значно стабільнішими, ніж їхні інтерпретації.",
+          "Змінюються технології. Змінюються контексти. Змінюються способи реалізації.",
+          "Але фундаментальні закономірності зберігаються.",
+          "Дослідження виявляє ці закономірності, а інтерпретація переводить їх у концепції, що відповідають теперішньому часу.",
         ],
         s4_title: "Результат дослідження",
         s4_intro: [
-          "Результат — це не визначеність. Результат — це структурна ясність.",
-          "Дослідження дає:",
+          "Результат дослідження — не готова відповідь.",
+          "Результат — структурна ясність.",
         ],
         s4_list: [
           "розуміння ситуації",
@@ -1528,9 +1546,10 @@ export const dictionary: Record<Locale, Dictionary> = {
         s5_studio: "R. Yury Kolesnikov",
         s5_meta: "Архітектура · Системи · Інтерпретація",
         s5_body: [
-          "«Архітектура ситуацій» — оригінальна методологія, створена R. Yury Kolesnikov.",
-          "Вона поєднує архітектурне мислення, системне мислення та концептуальну інтерпретацію в єдиний дослідницький процес.",
-          "Її мета — не передбачати. Її мета — розуміти.",
+          "«Архітектура ситуацій» — авторська дослідницька методологія, розроблена R. Yury Kolesnikov.",
+          "Вона поєднує архітектурне мислення, системний аналіз та концептуальну інтерпретацію в єдиний дослідницький процес.",
+          "Її завдання — не передбачати майбутнє і не давати універсальні рецепти.",
+          "Її завдання — розуміти структуру того, що відбувається.",
         ],
         telegram: "Telegram Journal ⟶",
       },
