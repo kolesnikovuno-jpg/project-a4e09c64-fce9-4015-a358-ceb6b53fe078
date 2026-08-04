@@ -175,22 +175,23 @@ const Index = () => {
           }}
         />
 
-        {/* Hero stack — headline + subtitle above, .uno node preserved in its
-            asymmetric position, primary CTA below. All aesthetics untouched. */}
-        <div className="relative z-10 flex flex-col items-center justify-center w-full px-6 md:px-10 gap-10 md:gap-14">
+        {/* Hero stack — refined composition: calmer, more premium, more
+            architectural. Sizes, spacing and weight adjusted; motion,
+            background and interactions preserved. */}
+        <div className="relative z-10 flex flex-col items-center justify-center w-full px-6 md:px-10 gap-12 md:gap-20">
           <motion.div
-            className="max-w-2xl text-center flex flex-col gap-6 md:gap-8"
+            className="max-w-2xl text-center flex flex-col gap-7 md:gap-10"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <h1 className="text-[20px] md:text-[24px] leading-[1.2] tracking-[0.02em] font-extralight text-foreground/70">
+            <h1 className="text-[13px] md:text-[15px] leading-[1.4] tracking-[0.18em] font-extralight text-foreground/40 uppercase">
               {t.index.hero_title}
             </h1>
-            <p className="text-[26px] md:text-[38px] leading-[1.2] tracking-[-0.01em] text-foreground font-extralight max-w-xl mx-auto">
+            <p className="text-[23px] md:text-[34px] leading-[1.35] tracking-[0.02em] text-foreground/90 font-light max-w-xl mx-auto">
               {t.index.hero_subtitle}
             </p>
-            <p className="text-[13px] md:text-[15px] leading-[1.7] tracking-[0.01em] font-extralight text-foreground/55 max-w-md mx-auto">
+            <p className="text-[13px] md:text-[15px] leading-[1.85] tracking-[0.02em] font-extralight text-foreground/50 max-w-sm mx-auto">
               {t.index.hero_support.map((line, i) => (
                 <span key={i} className="block">
                   {line}
@@ -199,7 +200,7 @@ const Index = () => {
             </p>
           </motion.div>
 
-          <div className="relative flex items-center justify-center mt-[8px] md:mt-0 translate-x-[30vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
+          <div className="relative flex items-center justify-center -mt-10 md:-mt-14 translate-x-[30vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
           <motion.div
             className="group/uno relative flex items-center justify-center"
             initial={{ opacity: 0 }}
@@ -358,7 +359,7 @@ const Index = () => {
 
           <motion.button
             onClick={handleToggle}
-            className="group relative inline-flex items-center justify-center px-8 md:px-10 py-3 md:py-3.5 border border-foreground/40 rounded-full text-[12px] md:text-[13px] tracking-[0.14em] text-foreground/80 hover:text-foreground hover:border-foreground/70 transition-colors cursor-pointer bg-background/40 backdrop-blur-[2px]"
+            className="group relative inline-flex items-center justify-center min-w-[180px] md:min-w-[220px] px-10 md:px-12 py-4 md:py-4.5 border border-foreground/40 rounded-full text-[13px] md:text-[14px] tracking-[0.12em] text-foreground/80 hover:text-foreground hover:border-foreground/70 transition-colors cursor-pointer bg-background/40 backdrop-blur-[2px]"
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.1, duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
