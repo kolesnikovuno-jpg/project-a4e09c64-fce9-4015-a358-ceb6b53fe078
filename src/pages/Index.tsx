@@ -185,7 +185,7 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <h1 className="text-[13px] md:text-[15px] leading-[1.4] tracking-[0.18em] font-extralight text-foreground/40 uppercase">
+            <h1 className="text-[13px] md:text-[15px] leading-[1.4] tracking-[0.16em] font-extralight text-foreground/40">
               {t.index.hero_title}
             </h1>
             <p className="text-[23px] md:text-[34px] leading-[1.35] tracking-[0.02em] text-foreground/90 font-light max-w-xl mx-auto">
