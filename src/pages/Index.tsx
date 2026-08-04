@@ -190,6 +190,13 @@ const Index = () => {
             <p className="text-[26px] md:text-[38px] leading-[1.2] tracking-[-0.01em] text-foreground font-extralight max-w-xl mx-auto">
               {t.index.hero_subtitle}
             </p>
+            <p className="text-[13px] md:text-[15px] leading-[1.7] tracking-[0.01em] font-extralight text-foreground/55 max-w-md mx-auto">
+              {t.index.hero_support.map((line, i) => (
+                <span key={i} className="block">
+                  {line}
+                </span>
+              ))}
+            </p>
           </motion.div>
 
           <div className="relative flex items-center justify-center mt-[8px] md:mt-0 translate-x-[30vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
