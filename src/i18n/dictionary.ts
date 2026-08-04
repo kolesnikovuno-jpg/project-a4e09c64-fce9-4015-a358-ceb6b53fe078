@@ -15,6 +15,7 @@ export type Dictionary = {
     aria_close: string;
     hero_title: string;
     hero_subtitle: string;
+    hero_support: readonly string[];
     cta_start: string;
     dossier: {
       s1_title: string;
@@ -385,31 +386,36 @@ export const dictionary: Record<Locale, Dictionary> = {
       hero_title: "Architectural Research",
       hero_subtitle:
         "Understanding begins with structure.",
-      cta_start: "Explore Your Situation",
+      hero_support: [
+        "Research reveals the structure of a situation.",
+        "Concepts and solutions emerge as a consequence of understanding, not before it.",
+      ],
+      cta_start: "Explore the situation",
       dossier: {
         s1_title: "Understanding comes before solutions",
         s1_anchor: "Understanding comes before solutions.",
         s1_body: [
           "Research does not begin with searching for answers. It begins with understanding structure.",
-          "Many solutions already exist. The real challenge is recognizing which one belongs to the situation.",
-          "Without understanding structure, every decision becomes an assumption.",
+          "Most solutions already exist. The difficulty lies in seeing which one corresponds to this particular situation.",
+          "Without understanding structure, any solution remains an assumption.",
         ],
         s2_title: "Architectural Research",
         s2_body: [
-          "Architectural Research reveals hidden structures, relationships and constraints before decisions are made.",
-          "It is not a search for immediate answers. It is a process of understanding how a situation is organized.",
-          "Only then can meaningful concepts and decisions emerge.",
+          "Architectural Research reveals the hidden structures, relationships and constraints that define a situation.",
+          "Its task is not to search for quick answers, but to understand how the system itself is organized.",
+          "Only then do precise concepts and meaningful solutions become possible.",
         ],
         s3_title: "Interpretation",
         s3_body: [
-          "Structures often remain while interpretations evolve.",
-          "Technologies change. Contexts change. Solutions change.",
-          "Research reveals what remains essential. Interpretation transforms that understanding into concepts appropriate for the present moment.",
+          "Structures remain considerably more stable than their interpretations.",
+          "Technologies change. Contexts change. Modes of realization change.",
+          "Yet the fundamental regularities persist.",
+          "Research identifies these regularities, and interpretation translates them into concepts appropriate to the present moment.",
         ],
         s4_title: "Research Outcome",
         s4_intro: [
-          "The result is not certainty. The result is structural clarity.",
-          "The research provides:",
+          "The outcome of research is not a ready answer.",
+          "The outcome is structural clarity.",
         ],
         s4_list: [
           "understanding of the situation",
@@ -422,9 +428,10 @@ export const dictionary: Record<Locale, Dictionary> = {
         s5_studio: "R. Yury Kolesnikov",
         s5_meta: "Architecture · Systems · Interpretation",
         s5_body: [
-          "Architecture of Situations is an original methodology created by R. Yury Kolesnikov.",
-          "It combines architectural thinking, systems thinking and conceptual interpretation into a single research process.",
-          "Its purpose is not to predict. Its purpose is to understand.",
+          "Architecture of Situations is an original research methodology developed by R. Yury Kolesnikov.",
+          "It combines architectural thinking, systems analysis and conceptual interpretation within a single research process.",
+          "Its task is not to predict the future or to offer universal recipes.",
+          "Its task is to understand the structure of what is happening.",
         ],
         telegram: "Telegram Journal ⟶",
       },
