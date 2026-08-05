@@ -178,20 +178,20 @@ const Index = () => {
         {/* Hero stack — refined composition: calmer, more premium, more
             architectural. Sizes, spacing and weight adjusted; motion,
             background and interactions preserved. */}
-        <div className="relative z-10 flex flex-col items-center justify-center w-full px-6 md:px-10 gap-12 md:gap-20">
+        <div className="relative z-10 flex flex-col items-center justify-center w-full px-6 md:px-10 gap-9 md:gap-14 -translate-y-[5vh] md:-translate-y-[6vh]">
           <motion.div
-            className="max-w-2xl text-center flex flex-col gap-7 md:gap-10"
+            className="max-w-2xl text-center flex flex-col gap-4 md:gap-6"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <h1 className="text-[13px] md:text-[15px] leading-[1.4] tracking-[0.16em] font-extralight text-foreground/40">
+            <h1 className="text-[11px] md:text-[12px] leading-[1.4] tracking-[0.22em] font-extralight text-foreground/35">
               {t.index.hero_title}
             </h1>
-            <p className="text-[23px] md:text-[34px] leading-[1.35] tracking-[0.02em] text-foreground/90 font-light max-w-xl mx-auto">
+            <p className="font-body text-[21px] md:text-[31px] leading-[1.5] tracking-[0.005em] text-foreground/90 font-normal max-w-xl mx-auto">
               {t.index.hero_subtitle}
             </p>
-            <p className="text-[13px] md:text-[15px] leading-[1.85] tracking-[0.02em] font-extralight text-foreground/50 max-w-sm mx-auto">
+            <p className="text-[13px] md:text-[15px] leading-[1.8] tracking-[0.015em] font-light text-foreground/65 max-w-[520px] md:max-w-[560px] mx-auto">
               {t.index.hero_support.map((line, i) => (
                 <span key={i} className="block">
                   {line}
@@ -200,7 +200,7 @@ const Index = () => {
             </p>
           </motion.div>
 
-          <div className="relative flex items-center justify-center -mt-10 md:-mt-14 translate-x-[30vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
+          <div className="relative flex items-center justify-center -mt-8 md:-mt-11 translate-x-[30vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
           <motion.div
             className="group/uno relative flex items-center justify-center"
             initial={{ opacity: 0 }}
