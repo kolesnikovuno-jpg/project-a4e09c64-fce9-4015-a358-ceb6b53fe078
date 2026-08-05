@@ -359,7 +359,7 @@ const Index = () => {
 
           <motion.button
             onClick={handleToggle}
-            className="group relative inline-flex items-center justify-center min-w-[160px] md:min-w-[188px] px-8 md:px-10 py-3 md:py-3.5 border-[0.5px] border-foreground/35 rounded-[14px] text-[12.5px] md:text-[13px] font-light tracking-[0.1em] text-foreground/75 hover:text-foreground hover:border-foreground/60 transition-colors cursor-pointer bg-background/40 backdrop-blur-[2px]"
+            className="group relative inline-flex items-center justify-center min-w-[160px] md:min-w-[188px] px-7 md:px-8 py-2.5 md:py-3 border-[0.5px] border-foreground/25 rounded-[14px] text-[12.5px] md:text-[13px] font-light tracking-[0.1em] text-foreground/85 hover:text-foreground hover:border-foreground/50 transition-colors cursor-pointer bg-background/40 backdrop-blur-[2px]"
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.1, duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
