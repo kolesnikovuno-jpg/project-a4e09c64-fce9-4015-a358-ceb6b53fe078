@@ -178,9 +178,9 @@ const Index = () => {
         {/* Hero stack — refined composition: calmer, more premium, more
             architectural. Sizes, spacing and weight adjusted; motion,
             background and interactions preserved. */}
-        <div className="relative z-10 flex flex-col items-center justify-center w-full px-6 md:px-10 gap-9 md:gap-14 -translate-y-[5vh] md:-translate-y-[6vh]">
+        <div className="relative z-10 flex flex-col items-center justify-center w-full px-6 md:px-10 gap-11 md:gap-16 -translate-y-[5vh] md:-translate-y-[6vh]">
           <motion.div
-            className="max-w-2xl text-center flex flex-col gap-4 md:gap-6"
+            className="max-w-2xl text-center flex flex-col gap-6 md:gap-8"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
@@ -188,10 +188,10 @@ const Index = () => {
             <h1 className="text-[11px] md:text-[12px] leading-[1.4] tracking-[0.22em] font-extralight text-foreground/35">
               {t.index.hero_title}
             </h1>
-            <p className="font-body text-[21px] md:text-[31px] leading-[1.5] tracking-[0.005em] text-foreground/90 font-normal max-w-xl mx-auto">
+            <p className="font-body text-[20px] md:text-[29px] leading-[1.55] tracking-[0.012em] text-foreground/90 font-normal max-w-xl mx-auto">
               {t.index.hero_subtitle}
             </p>
-            <p className="text-[13px] md:text-[15px] leading-[1.8] tracking-[0.015em] font-light text-foreground/65 max-w-[520px] md:max-w-[560px] mx-auto">
+            <p className="text-[13px] md:text-[15px] leading-[1.9] tracking-[0.015em] font-light text-foreground/80 max-w-[520px] md:max-w-[560px] mx-auto space-y-1.5 md:space-y-2">
               {t.index.hero_support.map((line, i) => (
                 <span key={i} className="block">
                   {line}
@@ -200,7 +200,7 @@ const Index = () => {
             </p>
           </motion.div>
 
-          <div className="relative flex items-center justify-center -mt-8 md:-mt-11 translate-y-[4px] translate-x-[30vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
+          <div className="relative flex items-center justify-center -mt-7 md:-mt-10 translate-y-[4px] translate-x-[31vw] sm:translate-x-[25vw] md:translate-x-[29vw]">
           <motion.div
             className="group/uno relative flex items-center justify-center"
             initial={{ opacity: 0 }}
@@ -225,7 +225,7 @@ const Index = () => {
               return (
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-1 md:mr-1.5 whitespace-nowrap text-[12.5px] md:text-[13.5px] lowercase text-primary select-none flex"
+                  className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-0.5 md:mr-1 whitespace-nowrap text-[12.5px] md:text-[13.5px] lowercase text-primary select-none flex"
                   style={{ willChange: "opacity" }}
                 >
                   {chars.map((ch, i) => {
@@ -239,7 +239,7 @@ const Index = () => {
                     const contrastShape = nearness * nearness * (3 - 2 * nearness);
                     // Slightly raised floor, lowered ceiling — right edge no longer
                     // reads as a textual endpoint; mid-transition feels more continuous.
-                    const targetOpacity = 0.3 + 0.68 * contrastShape;
+                    const targetOpacity = 0.42 + 0.58 * contrastShape;
                     // Microscopic residual softness even at the right edge.
                     const focusShape = Math.pow(nearness, 0.7);
                     const targetBlur = 0.05 + (1 - focusShape) * 0.22;
@@ -277,13 +277,13 @@ const Index = () => {
             {/* Surrounding circle — same fill as button, mirrors hover/toggled state */}
             <span
               aria-hidden
-              className={`pointer-events-none absolute rounded-full w-[68px] h-[68px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/40 ${
+              className={`pointer-events-none absolute rounded-full w-[64px] h-[64px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/40 ${
                 buttonActive ? "bg-primary/55" : "bg-primary/30"
               }`}
             />
           <button
             onClick={handleToggle}
-            className="group/uno relative flex items-center justify-center bg-primary/30 rounded-full w-[68px] h-[68px] hover:bg-primary/40 transition-colors duration-300 cursor-pointer active:scale-[1.06]"
+            className="group/uno relative flex items-center justify-center bg-primary/30 rounded-full w-[64px] h-[64px] hover:bg-primary/40 transition-colors duration-300 cursor-pointer active:scale-[1.06]"
           >
             {!open && (
               <motion.div
@@ -349,7 +349,7 @@ const Index = () => {
               </motion.div>
             )}
             <span
-              className="text-xs font-semibold text-background ml-[32px]"
+              className="text-[11px] font-semibold text-background ml-[32px]"
             >
               .uno
             </span>
@@ -359,7 +359,7 @@ const Index = () => {
 
           <motion.button
             onClick={handleToggle}
-            className="group relative inline-flex items-center justify-center min-w-[160px] md:min-w-[188px] px-8 md:px-10 py-3 md:py-3.5 border-[0.5px] border-foreground/35 rounded-[14px] text-[12.5px] md:text-[13px] font-light tracking-[0.1em] text-foreground/75 hover:text-foreground hover:border-foreground/60 transition-colors cursor-pointer bg-background/40 backdrop-blur-[2px]"
+            className="group relative inline-flex items-center justify-center min-w-[160px] md:min-w-[188px] px-7 md:px-8 py-2.5 md:py-3 border-[0.5px] border-foreground/25 rounded-[14px] text-[12.5px] md:text-[13px] font-light tracking-[0.1em] text-foreground/85 hover:text-foreground hover:border-foreground/50 transition-colors cursor-pointer bg-background/40 backdrop-blur-[2px]"
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.1, duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
