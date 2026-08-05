@@ -225,7 +225,7 @@ const Index = () => {
               return (
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-1.5 md:mr-2.5 whitespace-nowrap text-[12.5px] md:text-[13.5px] lowercase text-primary select-none flex"
+                  className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-1 md:mr-1.5 whitespace-nowrap text-[12.5px] md:text-[13.5px] lowercase text-primary select-none flex"
                   style={{ willChange: "opacity" }}
                 >
                   {chars.map((ch, i) => {
@@ -239,7 +239,7 @@ const Index = () => {
                     const contrastShape = nearness * nearness * (3 - 2 * nearness);
                     // Slightly raised floor, lowered ceiling — right edge no longer
                     // reads as a textual endpoint; mid-transition feels more continuous.
-                    const targetOpacity = 0.18 + 0.64 * contrastShape;
+                    const targetOpacity = 0.3 + 0.68 * contrastShape;
                     // Microscopic residual softness even at the right edge.
                     const focusShape = Math.pow(nearness, 0.7);
                     const targetBlur = 0.05 + (1 - focusShape) * 0.22;
@@ -277,18 +277,18 @@ const Index = () => {
             {/* Surrounding circle — same fill as button, mirrors hover/toggled state */}
             <span
               aria-hidden
-              className={`pointer-events-none absolute rounded-full w-[76px] h-[76px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/40 ${
+              className={`pointer-events-none absolute rounded-full w-[68px] h-[68px] transition-colors duration-300 ease-in-out group-hover/uno:bg-primary/40 ${
                 buttonActive ? "bg-primary/55" : "bg-primary/30"
               }`}
             />
           <button
             onClick={handleToggle}
-            className="group/uno relative flex items-center justify-center bg-primary/30 rounded-full w-[76px] h-[76px] hover:bg-primary/40 transition-colors duration-300 cursor-pointer active:scale-[1.06]"
+            className="group/uno relative flex items-center justify-center bg-primary/30 rounded-full w-[68px] h-[68px] hover:bg-primary/40 transition-colors duration-300 cursor-pointer active:scale-[1.06]"
           >
             {!open && (
               <motion.div
                 layoutId="morph-circle"
-                className="absolute w-7 h-7"
+                className="absolute w-6 h-6"
                 initial={false}
                 transition={{
                   duration: 0.58,
@@ -310,7 +310,7 @@ const Index = () => {
                 }}
                 style={{ willChange: "transform, opacity" }}
                 animate={{
-                  left: toggled ? 42 : 4,
+                  left: toggled ? 38 : 4,
                   scale: toggled
                     ? 0.42
                     : returnPhase === "center"
@@ -349,7 +349,7 @@ const Index = () => {
               </motion.div>
             )}
             <span
-              className="text-xs font-semibold text-background ml-[36px]"
+              className="text-xs font-semibold text-background ml-[32px]"
             >
               .uno
             </span>
@@ -359,7 +359,7 @@ const Index = () => {
 
           <motion.button
             onClick={handleToggle}
-            className="group relative inline-flex items-center justify-center min-w-[180px] md:min-w-[220px] px-10 md:px-12 py-4 md:py-4.5 border border-foreground/40 rounded-full text-[13px] md:text-[14px] tracking-[0.12em] text-foreground/80 hover:text-foreground hover:border-foreground/70 transition-colors cursor-pointer bg-background/40 backdrop-blur-[2px]"
+            className="group relative inline-flex items-center justify-center min-w-[160px] md:min-w-[188px] px-8 md:px-10 py-3 md:py-3.5 border-[0.5px] border-foreground/35 rounded-[14px] text-[12.5px] md:text-[13px] font-light tracking-[0.1em] text-foreground/75 hover:text-foreground hover:border-foreground/60 transition-colors cursor-pointer bg-background/40 backdrop-blur-[2px]"
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.1, duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
