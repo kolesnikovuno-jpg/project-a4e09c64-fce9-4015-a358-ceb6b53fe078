@@ -200,7 +200,7 @@ const Index = () => {
             </p>
           </motion.div>
 
-          <div className="relative flex items-center justify-center -mt-8 md:-mt-11 translate-x-[30vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
+          <div className="relative flex items-center justify-center -mt-8 md:-mt-11 translate-y-[4px] translate-x-[30vw] sm:translate-x-[24vw] md:translate-x-[28vw]">
           <motion.div
             className="group/uno relative flex items-center justify-center"
             initial={{ opacity: 0 }}
