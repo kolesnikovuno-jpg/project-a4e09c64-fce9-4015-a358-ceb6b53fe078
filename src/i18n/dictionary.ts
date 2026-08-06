@@ -29,9 +29,11 @@ export type Dictionary = {
       s4_intro: readonly string[];
       s4_list: readonly string[];
       s5_title: string;
-      s5_studio: string;
-      s5_meta: string;
       s5_body: readonly string[];
+      s6_title: string;
+      s6_studio: string;
+      s6_meta: string;
+      s6_body: readonly string[];
       telegram: string;
     };
   };
