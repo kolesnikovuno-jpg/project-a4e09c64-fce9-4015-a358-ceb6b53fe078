@@ -104,7 +104,7 @@ const Index = () => {
   return (
     <LayoutGroup>
       <div
-        className="relative min-h-screen flex items-center justify-center bg-background cursor-pointer"
+        className="relative min-h-screen min-h-[100dvh] flex items-center justify-center bg-background cursor-pointer"
         onClick={handleBackgroundClick}
       >
         {/* Latent resonance field — desktop. Cover-fit, scaled up, with a
@@ -120,14 +120,14 @@ const Index = () => {
               backgroundRepeat: "no-repeat",
               backgroundSize: "cover",
               backgroundPosition: "48% 42%",
-              opacity: 0.145,
+              opacity: 0.26,
               filter: "saturate(0.72) contrast(0.92) brightness(1.04)",
               transform: "scale(1.22)",
               transformOrigin: "center center",
               WebkitMaskImage:
-                "linear-gradient(to bottom, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.88) 40%, rgba(0,0,0,0.78) 62%, rgba(0,0,0,0.18) 82%, transparent 100%)",
+                "linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.92) 45%, rgba(0,0,0,0.85) 70%, rgba(0,0,0,0.5) 88%, rgba(0,0,0,0.18) 100%)",
               maskImage:
-                "linear-gradient(to bottom, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.88) 40%, rgba(0,0,0,0.78) 62%, rgba(0,0,0,0.18) 82%, transparent 100%)",
+                "linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.92) 45%, rgba(0,0,0,0.85) 70%, rgba(0,0,0,0.5) 88%, rgba(0,0,0,0.18) 100%)",
             }}
           />
         </div>
@@ -144,14 +144,14 @@ const Index = () => {
               backgroundRepeat: "no-repeat",
               backgroundSize: "cover",
               backgroundPosition: "44% 34%",
-              opacity: 0.085,
+              opacity: 0.2,
               filter: "saturate(0.66) contrast(0.86) brightness(1.08)",
-              transform: "scale(1.38)",
+              transform: "scale(1.22)",
               transformOrigin: "center center",
               WebkitMaskImage:
-                "linear-gradient(to bottom, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.88) 40%, rgba(0,0,0,0.78) 62%, rgba(0,0,0,0.18) 82%, transparent 100%)",
+                "linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.9) 45%, rgba(0,0,0,0.82) 70%, rgba(0,0,0,0.5) 88%, rgba(0,0,0,0.2) 100%)",
               maskImage:
-                "linear-gradient(to bottom, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.88) 40%, rgba(0,0,0,0.78) 62%, rgba(0,0,0,0.18) 82%, transparent 100%)",
+                "linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.9) 45%, rgba(0,0,0,0.82) 70%, rgba(0,0,0,0.5) 88%, rgba(0,0,0,0.2) 100%)",
             }}
           />
         </div>
@@ -162,7 +162,7 @@ const Index = () => {
           className="pointer-events-none absolute inset-0 z-[1] hidden md:block"
           style={{
             background:
-              "radial-gradient(circle at 72% 48%, hsl(var(--background) / 0.58) 0%, hsl(var(--background) / 0.36) 18%, hsl(var(--background) / 0.12) 34%, hsl(var(--background) / 0) 55%), linear-gradient(to bottom, hsl(var(--background) / 0.08) 0%, hsl(var(--background) / 0.04) 42%, hsl(var(--background) / 0.14) 78%, hsl(var(--background) / 0.28) 100%)",
+              "radial-gradient(circle at 72% 48%, hsl(var(--background) / 0.5) 0%, hsl(var(--background) / 0.3) 18%, hsl(var(--background) / 0.1) 34%, hsl(var(--background) / 0) 55%), linear-gradient(to bottom, hsl(var(--background) / 0.06) 0%, hsl(var(--background) / 0.02) 42%, hsl(var(--background) / 0.1) 78%, hsl(var(--background) / 0.2) 100%)",
           }}
         />
         {/* Soft overlay — mobile. Strong protection band behind text/logo. */}
@@ -171,7 +171,7 @@ const Index = () => {
           className="pointer-events-none absolute inset-0 z-[1] md:hidden"
           style={{
             background:
-              "linear-gradient(to bottom, hsl(var(--background) / 0.10) 0%, hsl(var(--background) / 0.16) 30%, hsl(var(--background) / 0.64) 48%, hsl(var(--background) / 0.74) 60%, hsl(var(--background) / 0.24) 76%, hsl(var(--background) / 0.12) 100%)",
+              "linear-gradient(to bottom, hsl(var(--background) / 0.08) 0%, hsl(var(--background) / 0.12) 30%, hsl(var(--background) / 0.46) 48%, hsl(var(--background) / 0.54) 60%, hsl(var(--background) / 0.18) 76%, hsl(var(--background) / 0.08) 100%)",
           }}
         />
 
@@ -372,7 +372,7 @@ const Index = () => {
         {popupMounted && (
             <motion.div
               data-overlay
-              className={`fixed inset-0 z-50 flex items-center justify-center overflow-y-auto ${open ? "pointer-events-auto" : "pointer-events-none"}`}
+              className={`fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain py-4 md:py-8 ${open ? "pointer-events-auto" : "pointer-events-none"}`}
               initial={false}
               animate={{ opacity: open ? 1 : 0 }}
               transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
@@ -393,7 +393,7 @@ const Index = () => {
               {/* Content card */}
               <motion.div
                 data-popup
-                className="relative z-10 w-full max-w-2xl mx-2 md:mx-4 my-4 border border-border/30 bg-background/80 backdrop-blur-sm p-4 md:p-8 overflow-visible max-h-[calc(100vh-2rem)] overflow-y-auto"
+                className="relative z-10 my-auto w-full max-w-2xl mx-2 md:mx-4 border border-border/30 bg-background/80 backdrop-blur-sm p-4 pt-10 md:p-8 md:pt-12"
                 initial={false}
                 animate={open ? { opacity: 1 } : { opacity: 0 }}
                 transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
