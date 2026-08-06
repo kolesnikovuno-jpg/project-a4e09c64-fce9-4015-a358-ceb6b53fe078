@@ -381,14 +381,7 @@ const Index = () => {
               }}
               onClick={handleOverlayClick}
             >
-              {/* Backdrop */}
-              <motion.div
-                data-overlay
-                className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-                initial={false}
-                animate={{ opacity: open ? 1 : 0 }}
-                transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
-              />
+              {/* Removed background under popup — content floats over the page. */}
 
               {/* Content card */}
               <motion.div
