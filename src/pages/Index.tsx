@@ -758,13 +758,25 @@ const Index = () => {
                       </ul>
                     </section>
 
-                    {/* Section 5 — About the method */}
+                    {/* Section 5 — Hidden value */}
                     <section className="flex flex-col gap-5">
                       <h2 className="text-[11px] md:text-[12px] tracking-[0.14em] uppercase text-foreground/60 font-light">
                         05 — {t.index.dossier.s5_title}
                       </h2>
                       <div className="flex flex-col gap-4 text-[14px] md:text-[15px] leading-[1.9] font-light text-foreground/85">
                         {t.index.dossier.s5_body.map((line, i) => (
+                          <p key={i}>{line}</p>
+                        ))}
+                      </div>
+                    </section>
+
+                    {/* Section 6 — About the method */}
+                    <section className="flex flex-col gap-5">
+                      <h2 className="text-[11px] md:text-[12px] tracking-[0.14em] uppercase text-foreground/60 font-light">
+                        06 — {t.index.dossier.s6_title}
+                      </h2>
+                      <div className="flex flex-col gap-4 text-[14px] md:text-[15px] leading-[1.9] font-light text-foreground/85">
+                        {t.index.dossier.s6_body.map((line, i) => (
                           <p key={i}>{line}</p>
                         ))}
                       </div>
@@ -777,10 +789,10 @@ const Index = () => {
                         }}
                         className="text-base tracking-[0.15em] font-normal text-foreground hover:text-primary transition-colors mt-2"
                       >
-                        {t.index.dossier.s5_studio}
+                        {t.index.dossier.s6_studio}
                       </a>
                       <p className="text-[11px] tracking-[0.1em] text-foreground/55 font-light">
-                        {t.index.dossier.s5_meta}
+                        {t.index.dossier.s6_meta}
                       </p>
                     </section>
 
