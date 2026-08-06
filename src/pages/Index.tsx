@@ -4,7 +4,7 @@ import { motion, LayoutGroup, useAnimation } from "motion/react";
 import { useIsNative } from "@/hooks/use-native";
 import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
-import heroFieldAsset from "@/assets/hero-field-v2.png.asset.json";
+import heroField from "@/assets/hero-field-v2.jpg";
 
 const Index = () => {
   const [open, setOpen] = useState(false);
@@ -116,7 +116,7 @@ const Index = () => {
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: `url(${heroFieldAsset.url})`,
+              backgroundImage: `url(${heroField})`,
               backgroundRepeat: "no-repeat",
               backgroundSize: "cover",
               backgroundPosition: "48% 42%",
@@ -140,7 +140,7 @@ const Index = () => {
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: `url(${heroFieldAsset.url})`,
+              backgroundImage: `url(${heroField})`,
               backgroundRepeat: "no-repeat",
               backgroundSize: "cover",
               backgroundPosition: "44% 34%",
