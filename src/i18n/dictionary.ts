@@ -29,9 +29,11 @@ export type Dictionary = {
       s4_intro: readonly string[];
       s4_list: readonly string[];
       s5_title: string;
-      s5_studio: string;
-      s5_meta: string;
       s5_body: readonly string[];
+      s6_title: string;
+      s6_studio: string;
+      s6_meta: string;
+      s6_body: readonly string[];
       telegram: string;
     };
   };
@@ -422,16 +424,22 @@ export const dictionary: Record<Locale, Dictionary> = {
           "identified constraints",
           "possible directions",
           "conceptual models",
-          "a foundation for informed decisions",
+          "revealed value of the space",
         ],
-        s5_title: "About the Method",
-        s5_studio: "R. Yury Kolesnikov",
-        s5_meta: "Architecture · Systems · Interpretation",
+        s5_title: "Hidden Value",
         s5_body: [
+          "Research does not create value. It helps reveal the value that is already present in the space but remains unnoticed.",
+          "The structure of the space defines its potential, constraints, and possible directions of development.",
+          "The revealed value can be realized through architecture, design, strategy, or development.",
+        ],
+        s6_title: "About the Method",
+        s6_studio: "R. Yury Kolesnikov",
+        s6_meta: "Architecture · Systems · Interpretation",
+        s6_body: [
           "Architecture of Situations is an original research methodology developed by R. Yury Kolesnikov.",
-          "It combines architectural thinking, systems analysis and conceptual interpretation within a single research process.",
-          "Its task is not to predict the future or to offer universal recipes.",
-          "Its task is to understand the structure of what is happening.",
+          "It combines architectural thinking, systems analysis, and conceptual interpretation within a single research process.",
+          "Its task is to understand the structure of a situation, reveal hidden value, and identify possible directions of realization.",
+          "It does not offer universal recipes. It creates a foundation for precise decisions.",
         ],
         telegram: "Telegram Journal ⟶",
       },
@@ -981,16 +989,22 @@ export const dictionary: Record<Locale, Dictionary> = {
           "выявленные ограничения",
           "возможные направления",
           "концептуальные модели",
-          "основание для осознанных решений",
+          "выявленная ценность пространства",
         ],
-        s5_title: "О методе",
-        s5_studio: "R. Yury Kolesnikov",
-        s5_meta: "Архитектура · Системы · Интерпретация",
+        s5_title: "Скрытая ценность",
         s5_body: [
+          "Исследование не создаёт ценность. Оно помогает увидеть ту ценность, которая уже присутствует в пространстве, но остаётся незамеченной.",
+          "Структура пространства определяет его потенциал, ограничения и возможные направления развития.",
+          "Выявленная ценность может быть реализована через архитектуру, дизайн, стратегию или девелопмент.",
+        ],
+        s6_title: "О методе",
+        s6_studio: "R. Yury Kolesnikov",
+        s6_meta: "Архитектура · Системы · Интерпретация",
+        s6_body: [
           "«Архитектура ситуаций» — авторская исследовательская методология, разработанная R. Yury Kolesnikov.",
           "Она объединяет архитектурное мышление, системный анализ и концептуальную интерпретацию в единый исследовательский процесс.",
-          "Её задача — не предсказывать будущее и не давать универсальные рецепты.",
-          "Её задача — понимать структуру происходящего.",
+          "Её задача — понять структуру ситуации, выявить скрытую ценность и определить возможные направления реализации.",
+          "Она не предлагает универсальных рецептов. Она создаёт основание для точных решений.",
         ],
         telegram: "Telegram Journal ⟶",
       },
@@ -1540,16 +1554,22 @@ export const dictionary: Record<Locale, Dictionary> = {
           "виявлені обмеження",
           "можливі напрями",
           "концептуальні моделі",
-          "підґрунтя для усвідомлених рішень",
+          "виявлена цінність простору",
         ],
-        s5_title: "Про метод",
-        s5_studio: "R. Yury Kolesnikov",
-        s5_meta: "Архітектура · Системи · Інтерпретація",
+        s5_title: "Прихована цінність",
         s5_body: [
+          "Дослідження не створює цінність. Воно допомагає побачити ту цінність, яка вже присутня в просторі, але залишається непоміченою.",
+          "Структура простору визначає його потенціал, обмеження та можливі напрями розвитку.",
+          "Виявлена цінність може бути реалізована через архітектуру, дизайн, стратегію чи девелопмент.",
+        ],
+        s6_title: "Про метод",
+        s6_studio: "R. Yury Kolesnikov",
+        s6_meta: "Архітектура · Системи · Інтерпретація",
+        s6_body: [
           "«Архітектура ситуацій» — авторська дослідницька методологія, розроблена R. Yury Kolesnikov.",
           "Вона поєднує архітектурне мислення, системний аналіз та концептуальну інтерпретацію в єдиний дослідницький процес.",
-          "Її завдання — не передбачати майбутнє і не давати універсальні рецепти.",
-          "Її завдання — розуміти структуру того, що відбувається.",
+          "Її завдання — зрозуміти структуру ситуації, виявити приховану цінність та визначити можливі напрями реалізації.",
+          "Вона не пропонує універсальних рецептів. Вона створює підґрунтя для точних рішень.",
         ],
         telegram: "Telegram Journal ⟶",
       },
