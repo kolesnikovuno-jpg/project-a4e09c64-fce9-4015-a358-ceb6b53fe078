@@ -58,7 +58,15 @@ const RedirectToDefaultLocale = () => {
 
 // Pages that exist under each locale prefix.
 const localizedPages: Array<{ path: string; element: JSX.Element }> = [
-  { path: "", element: <Index /> },
+  // Kolesnikov.studio — new information architecture
+  { path: "", element: <StudioHome /> },
+  { path: "method", element: <StudioMethod /> },
+  { path: "cases", element: <StudioCases /> },
+  { path: "exchange", element: <StudioExchange /> },
+  { path: "studio", element: <StudioPage /> },
+  { path: "start", element: <StudioStart /> },
+  // Previous landing (architectural research) kept for backward compatibility
+  { path: "research", element: <Index /> },
   { path: "lyra", element: <Lyra /> },
   { path: "nava", element: <Nava /> },
   { path: "about", element: <About /> },
