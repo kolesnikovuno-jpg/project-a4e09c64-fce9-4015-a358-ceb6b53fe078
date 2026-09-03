@@ -27,6 +27,12 @@ import OperatorCases from "./pages/OperatorCases";
 import OperatorCaseDetail from "./pages/OperatorCaseDetail";
 import OperatorSubmissions from "./pages/OperatorSubmissions";
 import OperatorSubmissionDetail from "./pages/OperatorSubmissionDetail";
+import StudioHome from "./pages/studio/Home";
+import StudioMethod from "./pages/studio/Method";
+import StudioCases from "./pages/studio/Cases";
+import StudioExchange from "./pages/studio/Exchange";
+import StudioPage from "./pages/studio/StudioPage";
+import StudioStart from "./pages/studio/Start";
 import { DEFAULT_LOCALE, LOCALES, isLocale } from "./i18n/config";
 import { initialLocale } from "./i18n/storage";
 import LocalePersistenceGuard from "./i18n/LocalePersistenceGuard";
@@ -52,7 +58,15 @@ const RedirectToDefaultLocale = () => {
 
 // Pages that exist under each locale prefix.
 const localizedPages: Array<{ path: string; element: JSX.Element }> = [
-  { path: "", element: <Index /> },
+  // Kolesnikov.studio — new information architecture
+  { path: "", element: <StudioHome /> },
+  { path: "method", element: <StudioMethod /> },
+  { path: "cases", element: <StudioCases /> },
+  { path: "exchange", element: <StudioExchange /> },
+  { path: "studio", element: <StudioPage /> },
+  { path: "start", element: <StudioStart /> },
+  // Previous landing (architectural research) kept for backward compatibility
+  { path: "research", element: <Index /> },
   { path: "lyra", element: <Lyra /> },
   { path: "nava", element: <Nava /> },
   { path: "about", element: <About /> },
