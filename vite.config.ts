@@ -136,7 +136,7 @@ const staticOgPages = Object.entries(STATIC_META).flatMap(([p, byLocale]) => {
 const allOgPages = [...ogPagesList, ...staticOgPages];
 
 // Static (non-model) pages mirrored across locales.
-const STATIC_PAGES = ["", "about", "pricing", "garden", "gateway", "unostudio", "clarity"];
+const STATIC_PAGES = ["", "method", "cases", "exchange", "studio", "start", "about", "pricing", "garden", "gateway", "unostudio", "clarity"];
 const sitemapEntries = [
   ...STATIC_PAGES.flatMap((p) => {
     const alternates: Record<string, string> = { "x-default": `/en/${p}` };
