@@ -22,7 +22,7 @@ const Home = () => {
         className="pointer-events-none fixed inset-0 -z-10 h-full w-full object-cover opacity-[0.16] md:opacity-[0.2]"
       />
 
-      <section className="min-h-[calc(100dvh-14rem)] flex flex-col justify-center">
+      <section className="min-h-[min(72vh,720px)] flex flex-col justify-center">
         <motion.div {...fade(0)} className="flex items-baseline gap-4">
           <span className={label}>{h.number}</span>
           <span className={label}>{h.label}</span>

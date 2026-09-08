@@ -59,9 +59,34 @@ const STATIC_META: Record<
   Record<Locale, { title: string; description: string }>
 > = {
   "": {
-    en: { title: ".uno studio — Kolesnikov", description: "Architecture, design, art by Kolesnikov." },
-    ru: { title: ".uno studio — Колесников", description: "Архитектура, дизайн, искусство — Колесников." },
-    uk: { title: ".uno studio — Колесников", description: "Архітектура, дизайн, мистецтво — Колесніков." },
+    en: { title: "Kolesnikov.studio — Architecture · Design · Research · Product", description: "I discover economically interesting opportunities and turn them into product constructions." },
+    ru: { title: "Kolesnikov.studio — Архитектура · Дизайн · Исследование · Продукт", description: "Я обнаруживаю экономически интересные возможности и превращаю их в продуктовые конструкции." },
+    uk: { title: "Kolesnikov.studio — Архітектура · Дизайн · Дослідження · Продукт", description: "Я виявляю економічно цікаві можливості та перетворюю їх на продуктові конструкції." },
+  },
+  method: {
+    en: { title: "Method — Kolesnikov.studio", description: "Observe, analyze, concept, construct, realize — how an opportunity becomes a workable form." },
+    ru: { title: "Метод — Kolesnikov.studio", description: "Наблюдение, анализ, концепт, конструкция, реализация — как возможность становится рабочей формой." },
+    uk: { title: "Метод — Kolesnikov.studio", description: "Спостереження, аналіз, концепт, конструкція, реалізація — як можливість стає робочою формою." },
+  },
+  cases: {
+    en: { title: "Cases — Kolesnikov.studio", description: "Projects organised around what was observed and what it became." },
+    ru: { title: "Кейсы — Kolesnikov.studio", description: "Проекты, выстроенные вокруг наблюдения и того, чем оно стало." },
+    uk: { title: "Кейси — Kolesnikov.studio", description: "Проєкти, вибудувані навколо спостереження і того, чим воно стало." },
+  },
+  exchange: {
+    en: { title: "Exchange — Kolesnikov.studio", description: "Collaboration models: research, concept, prototype, partnership." },
+    ru: { title: "Обмен — Kolesnikov.studio", description: "Модели сотрудничества: исследование, концепт, прототип, партнёрство." },
+    uk: { title: "Обмін — Kolesnikov.studio", description: "Моделі співпраці: дослідження, концепт, прототип, партнерство." },
+  },
+  studio: {
+    en: { title: "Studio — Kolesnikov.studio", description: "An author-led practice between architecture, design, research and product development." },
+    ru: { title: "Студия — Kolesnikov.studio", description: "Авторская практика между архитектурой, дизайном, исследованием и разработкой продукта." },
+    uk: { title: "Студія — Kolesnikov.studio", description: "Авторська практика між архітектурою, дизайном, дослідженням і розробкою продукту." },
+  },
+  start: {
+    en: { title: "Start — Kolesnikov.studio", description: "Start with what you have: a problem, an idea, a material, a space or an observation." },
+    ru: { title: "Начать — Kolesnikov.studio", description: "Начните с того, что у вас есть: проблема, идея, материал, пространство или наблюдение." },
+    uk: { title: "Почати — Kolesnikov.studio", description: "Почніть з того, що у вас є: проблема, ідея, матеріал, простір або спостереження." },
   },
   about: {
     en: { title: "About — Kolesnikov", description: "About .uno studio: practice, principles and the people behind the work." },
@@ -111,7 +136,7 @@ const staticOgPages = Object.entries(STATIC_META).flatMap(([p, byLocale]) => {
 const allOgPages = [...ogPagesList, ...staticOgPages];
 
 // Static (non-model) pages mirrored across locales.
-const STATIC_PAGES = ["", "about", "pricing", "garden", "gateway", "unostudio", "clarity"];
+const STATIC_PAGES = ["", "method", "cases", "exchange", "studio", "start", "about", "pricing", "garden", "gateway", "unostudio", "clarity"];
 const sitemapEntries = [
   ...STATIC_PAGES.flatMap((p) => {
     const alternates: Record<string, string> = { "x-default": `/en/${p}` };
