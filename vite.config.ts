@@ -59,9 +59,9 @@ const STATIC_META: Record<
   Record<Locale, { title: string; description: string }>
 > = {
   "": {
-    en: { title: "Kolesnikov.studio — Architecture · Design · Research · Product", description: "I discover economically interesting opportunities and turn them into product constructions." },
-    ru: { title: "Kolesnikov.studio — Архитектура · Дизайн · Исследование · Продукт", description: "Я обнаруживаю экономически интересные возможности и превращаю их в продуктовые конструкции." },
-    uk: { title: "Kolesnikov.studio — Архітектура · Дизайн · Дослідження · Продукт", description: "Я виявляю економічно цікаві можливості та перетворюю їх на продуктові конструкції." },
+    en: { title: "Kolesnikov — Architecture · Design · Art", description: "Independent architecture, design and art practice: understanding the potential of spaces and turning ideas into clear concepts and tangible forms." },
+    ru: { title: "Колесников — Архитектура · Дизайн · Искусство", description: "Независимая практика архитектуры, дизайна и искусства: понять потенциал пространства и превратить идею в ясную концепцию и осязаемую форму." },
+    uk: { title: "Колесников — Архітектура · Дизайн · Мистецтво", description: "Незалежна практика архітектури, дизайну та мистецтва: зрозуміти потенціал простору й перетворити ідею на ясну концепцію та відчутну форму." },
   },
   method: {
     en: { title: "Method — Kolesnikov.studio", description: "Observe, analyze, concept, construct, realize — how an opportunity becomes a workable form." },
