@@ -27,7 +27,7 @@ import OperatorCases from "./pages/OperatorCases";
 import OperatorCaseDetail from "./pages/OperatorCaseDetail";
 import OperatorSubmissions from "./pages/OperatorSubmissions";
 import OperatorSubmissionDetail from "./pages/OperatorSubmissionDetail";
-import StudioHome from "./pages/studio/Home";
+
 import StudioMethod from "./pages/studio/Method";
 import StudioCases from "./pages/studio/Cases";
 import StudioExchange from "./pages/studio/Exchange";
