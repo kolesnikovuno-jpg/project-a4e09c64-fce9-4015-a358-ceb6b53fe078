@@ -8,7 +8,7 @@ import "./Landing.css";
 
 const landingCopy = {
   en: {
-    sequence: ["space", "form", "meaning"],
+    sequence: ["s", "sparse   :    form   :   meaning", "meaning"],
     disciplines: ["architecture", "design", "art"],
   },
   ru: {
