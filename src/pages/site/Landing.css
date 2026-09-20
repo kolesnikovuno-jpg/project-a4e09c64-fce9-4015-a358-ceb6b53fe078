@@ -40,13 +40,13 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
   align-items: baseline;
-  /* Quieter than the wordmark: reduced scale + wide tracking read as
-     architectural annotations rather than headings */
+  /* Quieter than the wordmark: half-height glyphs + wide vw-tracked
+     spacing so the row length tracks the wordmark width */
   color: hsl(var(--foreground) / 0.78);
-  font-size: clamp(0.82rem, 1.34vw, 1.34rem);
+  font-size: clamp(0.41rem, 0.67vw, 0.67rem);
   font-weight: 200;
   line-height: 1;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.78vw;
   white-space: nowrap;
   will-change: transform;
 }
@@ -128,8 +128,8 @@
 
   .landing-axis {
     inset-inline: 1.5rem;
-    font-size: clamp(0.64rem, 2.85vw, 0.8rem);
-    letter-spacing: 0.055em;
+    font-size: clamp(0.32rem, 1.43vw, 0.4rem);
+    letter-spacing: 1.2vw;
   }
 
   .landing-axis--upper {
@@ -151,8 +151,8 @@
 @media (max-width: 390px) {
   .landing-axis {
     inset-inline: 1.125rem;
-    font-size: clamp(0.56rem, 2.75vw, 0.7rem);
-    letter-spacing: 0.045em;
+    font-size: clamp(0.28rem, 1.38vw, 0.35rem);
+    letter-spacing: 1.6vw;
   }
 
   .landing-wordmark {
