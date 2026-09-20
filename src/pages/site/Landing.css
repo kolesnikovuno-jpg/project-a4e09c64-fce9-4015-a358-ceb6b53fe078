@@ -89,10 +89,14 @@
     0
   );
   text-align: center;
-  font-size: clamp(2rem, 3.7vw, 3.85rem);
-  font-weight: 200;
-  line-height: 0.96;
-  letter-spacing: 0.008em;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: clamp(2.02rem, 3.66vw, 3.8rem);
+  font-weight: 300;
+  font-stretch: condensed;
+  font-kerning: normal;
+  font-feature-settings: "kern" 1, "liga" 1;
+  line-height: 0.94;
+  letter-spacing: 0.026em;
   white-space: nowrap;
   will-change: transform;
 }
@@ -132,8 +136,8 @@
   .landing-wordmark {
     inset-inline: 1.25rem;
     top: 48%;
-    font-size: clamp(1.82rem, 8.1vw, 2.3rem);
-    letter-spacing: 0;
+    font-size: clamp(1.84rem, 8.05vw, 2.28rem);
+    letter-spacing: 0.018em;
   }
 }
 
@@ -145,7 +149,7 @@
 
   .landing-wordmark {
     inset-inline: 0.75rem;
-    font-size: clamp(1.64rem, 8vw, 1.92rem);
+    font-size: clamp(1.66rem, 7.9vw, 1.9rem);
   }
 }
 
