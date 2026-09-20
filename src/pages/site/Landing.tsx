@@ -1,8 +1,10 @@
+import { useCallback, useRef } from "react";
 import SEO from "@/components/SEO";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import { LOCALES } from "@/i18n/config";
 import { useLocale } from "@/i18n/useLocale";
 import { getSiteContent } from "@/content/site";
+import "./Landing.css";
 
 const landingCopy = {
   en: {
@@ -23,6 +25,28 @@ const Landing = () => {
   const { locale } = useLocale();
   const page = getSiteContent(locale);
   const copy = landingCopy[locale];
+  const fieldRef = useRef<HTMLDivElement>(null);
+  const animationFrameRef = useRef<number>();
+
+  const setPointerPosition = useCallback((x: number, y: number) => {
+    if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+
+    animationFrameRef.current = requestAnimationFrame(() => {
+      fieldRef.current?.style.setProperty("--landing-pointer-x", x.toFixed(2));
+      fieldRef.current?.style.setProperty("--landing-pointer-y", y.toFixed(2));
+    });
+  }, []);
+
+  const handlePointerMove = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      const x = (event.clientX / window.innerWidth - 0.5) * 2;
+      const y = (event.clientY / window.innerHeight - 0.5) * 2;
+      setPointerPosition(x, y);
+    },
+    [setPointerPosition],
+  );
 
   const alternates = LOCALES.reduce<Record<string, string>>((acc, item) => {
     acc[item] = `/${item}`;
@@ -30,7 +54,12 @@ const Landing = () => {
   }, {});
 
   return (
-    <div className="min-h-[100dvh] overflow-hidden bg-background text-foreground font-[Manrope,system-ui,sans-serif] antialiased">
+    <div
+      ref={fieldRef}
+      className="landing-field font-[Manrope,system-ui,sans-serif] antialiased"
+      onPointerMove={handlePointerMove}
+      onPointerLeave={() => setPointerPosition(0, 0)}
+    >
       <SEO
         title={page.meta.title}
         description={page.meta.description}
@@ -39,18 +68,18 @@ const Landing = () => {
       />
       <LanguageSwitcher background="hsl(24 26% 94%)" topOffset={0} />
 
-      <main className="relative mx-auto min-h-[100dvh] w-full max-w-[1440px] px-7 sm:px-12 md:px-20 lg:px-28">
-        <p className="absolute left-7 right-7 top-[25%] flex -translate-y-1/2 items-baseline justify-between text-[17px] font-extralight leading-none sm:left-12 sm:right-12 sm:text-[23px] md:left-20 md:right-20 md:text-[30px] lg:left-28 lg:right-28 lg:text-[36px]">
+      <main className="landing-composition">
+        <p className="landing-axis landing-axis--upper">
           {copy.sequence.map((word) => (
             <span key={word}>{word}</span>
           ))}
         </p>
 
-        <h1 className="absolute inset-x-7 top-[47%] -translate-y-1/2 text-center text-[30px] font-extralight leading-none sm:inset-x-12 sm:text-[42px] md:text-[52px] lg:text-[58px]">
+        <h1 className="landing-wordmark">
           kolesnikov.studio
         </h1>
 
-        <p className="absolute left-7 right-7 top-[69%] flex -translate-y-1/2 items-baseline justify-between text-[17px] font-extralight leading-none sm:left-12 sm:right-12 sm:text-[23px] md:left-20 md:right-20 md:text-[30px] lg:left-28 lg:right-28 lg:text-[36px]">
+        <p className="landing-axis landing-axis--lower">
           {copy.disciplines.map((word) => (
             <span key={word}>{word}</span>
           ))}
