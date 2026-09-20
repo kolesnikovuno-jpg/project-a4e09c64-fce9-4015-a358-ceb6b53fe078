@@ -186,7 +186,7 @@
 
   .landing-wordmark {
     inset-inline: 0.75rem;
-    font-size: clamp(1.33rem, 6.35vw, 1.54rem);
+    font-size: clamp(1.08rem, 5.14vw, 1.25rem);
   }
 }
 
