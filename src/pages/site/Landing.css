@@ -46,7 +46,7 @@
   font-size: clamp(0.41rem, 0.67vw, 0.67rem);
   font-weight: 200;
   line-height: 1;
-  letter-spacing: 0.78vw;
+  letter-spacing: 0.64vw;
   white-space: nowrap;
   will-change: transform;
 }
@@ -129,7 +129,7 @@
   .landing-axis {
     inset-inline: 1.5rem;
     font-size: clamp(0.32rem, 1.43vw, 0.4rem);
-    letter-spacing: 1.2vw;
+    letter-spacing: 1vw;
   }
 
   .landing-axis--upper {
@@ -152,7 +152,7 @@
   .landing-axis {
     inset-inline: 1.125rem;
     font-size: clamp(0.28rem, 1.38vw, 0.35rem);
-    letter-spacing: 1.6vw;
+    letter-spacing: 1.39vw;
   }
 
   .landing-wordmark {
