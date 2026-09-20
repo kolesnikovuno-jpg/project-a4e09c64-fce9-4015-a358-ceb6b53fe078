@@ -173,6 +173,14 @@
     letter-spacing: 1.39vw;
   }
 
+  :lang(uk) .landing-axis--upper {
+    letter-spacing: 2.14vw;
+  }
+
+  :lang(uk) .landing-axis--lower {
+    letter-spacing: 1.27vw;
+  }
+
   .landing-wordmark {
     inset-inline: 0.75rem;
     font-size: clamp(1.58rem, 7.5vw, 1.82rem);
