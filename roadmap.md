@@ -1,4 +1,4 @@
 # Roadmap
 
-- [ ] Refine the localized landing page visual style only.
-- [ ] Verify desktop and mobile rendering, motion preferences, and console health.
+- [x] Refine the localized landing page visual style only.
+- [x] Verify desktop and mobile rendering, motion preferences, and console health.
