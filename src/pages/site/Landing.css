@@ -116,7 +116,7 @@
   line-height: 0.94;
   /* ~19% smaller glyphs; tracking widened so the overall width
      stays unchanged (visual parity with the axis rows) */
-  letter-spacing: 0.29em;
+  letter-spacing: 0.279em;
   white-space: nowrap;
   will-change: transform;
 }
@@ -165,7 +165,7 @@
     inset-inline: 1.25rem;
     top: 48%;
     font-size: clamp(1.2rem, 5.22vw, 1.48rem);
-    letter-spacing: 0.29em;
+    letter-spacing: 0.258em;
   }
 }
 
