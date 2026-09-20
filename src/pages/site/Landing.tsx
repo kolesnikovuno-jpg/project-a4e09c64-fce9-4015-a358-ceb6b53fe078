@@ -31,7 +31,12 @@ const Landing = () => {
 
   return (
     <div className="min-h-[100dvh] overflow-hidden bg-background text-foreground font-[Manrope,system-ui,sans-serif] antialiased">
-      <SEO title={page.meta.title} description={page.meta.description} alternates={alternates} />
+      <SEO
+        title={page.meta.title}
+        description={page.meta.description}
+        image="/og-semantic-time-v3.jpg"
+        alternates={alternates}
+      />
       <LanguageSwitcher background="hsl(24 26% 94%)" topOffset={0} />
 
       <main className="relative mx-auto min-h-[100dvh] w-full max-w-[1440px] px-7 sm:px-12 md:px-20 lg:px-28">
