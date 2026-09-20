@@ -9,7 +9,7 @@ import "./Landing.css";
 const landingCopy = {
   en: {
     sequence: ["\n", "sparse   :    form   :   meaning", "\n"],
-    disciplines: ["\n", "architect.   :   design.   :   art", "\n"],
+    disciplines: ["\n", "architect   :   design   :   art", "\n"],
   },
   ru: {
     sequence: ["пространство", "форма", "смысл"],
