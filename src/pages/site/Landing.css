@@ -108,13 +108,13 @@
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   /* ~8% lower glyphs; tracking widened so the horizontal footprint
      (glyphs + spacing) stays visually unchanged */
-  font-size: clamp(1.77rem, 3.2vw, 3.33rem);
+  font-size: clamp(1.63rem, 2.94vw, 3.06rem);
   font-weight: 300;
   font-stretch: condensed;
   font-kerning: normal;
   font-feature-settings: "kern" 1, "liga" 1;
   line-height: 0.94;
-  letter-spacing: 0.093em;
+  letter-spacing: 0.142em;
   white-space: nowrap;
   will-change: transform;
 }
@@ -162,8 +162,8 @@
   .landing-wordmark {
     inset-inline: 1.25rem;
     top: 48%;
-    font-size: clamp(1.61rem, 7.01vw, 1.99rem);
-    letter-spacing: 0.079em;
+    font-size: clamp(1.48rem, 6.45vw, 1.83rem);
+    letter-spacing: 0.127em;
   }
 }
 
@@ -184,7 +184,7 @@
 
   .landing-wordmark {
     inset-inline: 0.75rem;
-    font-size: clamp(1.45rem, 6.9vw, 1.67rem);
+    font-size: clamp(1.33rem, 6.35vw, 1.54rem);
   }
 }
 
