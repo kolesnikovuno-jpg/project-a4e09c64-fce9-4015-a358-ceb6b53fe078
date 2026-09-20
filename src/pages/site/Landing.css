@@ -89,18 +89,18 @@
       calc(-50% + var(--landing-pointer-y) * 0.75px),
       0
     )
-    scaleY(0.87);
+    scaleY(0.83);
   text-align: center;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  /* ~3.5% narrower type size offsets the added tracking so the
+  /* ~1.5% narrower type size offsets the added tracking so the
      horizontal footprint stays visually unchanged */
-  font-size: clamp(1.95rem, 3.53vw, 3.67rem);
+  font-size: clamp(1.92rem, 3.48vw, 3.62rem);
   font-weight: 300;
   font-stretch: condensed;
   font-kerning: normal;
   font-feature-settings: "kern" 1, "liga" 1;
   line-height: 0.94;
-  letter-spacing: 0.044em;
+  letter-spacing: 0.05em;
   white-space: nowrap;
   will-change: transform;
 }
@@ -140,8 +140,8 @@
   .landing-wordmark {
     inset-inline: 1.25rem;
     top: 48%;
-    font-size: clamp(1.78rem, 7.76vw, 2.2rem);
-    letter-spacing: 0.032em;
+    font-size: clamp(1.75rem, 7.62vw, 2.16rem);
+    letter-spacing: 0.037em;
   }
 }
 
@@ -153,7 +153,7 @@
 
   .landing-wordmark {
     inset-inline: 0.75rem;
-    font-size: clamp(1.6rem, 7.62vw, 1.84rem);
+    font-size: clamp(1.58rem, 7.5vw, 1.82rem);
   }
 }
 
@@ -170,6 +170,6 @@
   }
 
   .landing-wordmark {
-    transform: translateY(-50%) scaleY(0.87);
+    transform: translateY(-50%) scaleY(0.83);
   }
 }
