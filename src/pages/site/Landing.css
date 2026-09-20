@@ -51,6 +51,16 @@
   will-change: transform;
 }
 
+/* Ukrainian upper row is shorter: widen its tracking so its length
+   still matches the wordmark; lower row gets a compensating reduction */
+:lang(uk) .landing-axis--upper {
+  letter-spacing: 1vw;
+}
+
+:lang(uk) .landing-axis--lower {
+  letter-spacing: 0.59vw;
+}
+
 .landing-axis span:nth-child(1) {
   justify-self: start;
 }
@@ -130,6 +140,14 @@
     inset-inline: 1.5rem;
     font-size: clamp(0.32rem, 1.43vw, 0.4rem);
     letter-spacing: 1vw;
+  }
+
+  :lang(uk) .landing-axis--upper {
+    letter-spacing: 1.56vw;
+  }
+
+  :lang(uk) .landing-axis--lower {
+    letter-spacing: 0.925vw;
   }
 
   .landing-axis--upper {
