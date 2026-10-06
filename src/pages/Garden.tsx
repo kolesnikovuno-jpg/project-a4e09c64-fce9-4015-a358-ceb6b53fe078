@@ -73,7 +73,6 @@ const Bud = ({ cx, cy, r, filled, hatched, id, label, onClick, onHover, delay, v
   );
 };
 
-const GARDEN_PASSWORD = "1111";
 
 const TypewriterLabel = ({ text }: { text: string | null }) => {
   if (!text) {
@@ -93,13 +92,6 @@ const Garden = () => {
   const [animated, setAnimated] = useState(false);
   const [activeBud, setActiveBud] = useState<string | null>(null);
   const [hoveredBud, setHoveredBud] = useState<string | null>(null);
-  // Password disabled until 2026-04-29 — then restore: sessionStorage.getItem("garden_unlocked") === "true"
-  const [unlocked, setUnlocked] = useState(() => {
-    const disableUntil = new Date("2026-05-29T00:00:00");
-    return new Date() < disableUntil ? true : sessionStorage.getItem("garden_unlocked") === "true";
-  });
-  const [passInput, setPassInput] = useState("");
-  const [error, setError] = useState(false);
 
   const budLabels: Record<string, string> = {
     "01": ".",
