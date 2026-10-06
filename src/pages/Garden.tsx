@@ -268,17 +268,6 @@ const Garden = () => {
     return () => cancelAnimationFrame(t);
   }, []);
 
-  const handlePassSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (passInput === GARDEN_PASSWORD) {
-      sessionStorage.setItem("garden_unlocked", "true");
-      setUnlocked(true);
-    } else {
-      setError(true);
-      setPassInput("");
-    }
-  };
-
   const handleClick = (id: string) => {
     if (isMobile) {
       if (activeBud === id) {
