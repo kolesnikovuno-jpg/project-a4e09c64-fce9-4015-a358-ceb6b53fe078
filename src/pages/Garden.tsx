@@ -284,29 +284,6 @@ const Garden = () => {
   const displayedLabelId = isMobile ? activeBud : hoveredBud;
   const displayedLabel = displayedLabelId ? budLabels[displayedLabelId] : null;
 
-  if (!unlocked) {
-    return (
-      <PageTransition>
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <form onSubmit={handlePassSubmit} className="flex flex-col items-center gap-6">
-            <input
-              type="password"
-              value={passInput}
-              onChange={(e) => {
-                setPassInput(e.target.value);
-                setError(false);
-              }}
-              placeholder={t.garden.password_placeholder}
-              autoFocus
-              className="bg-transparent border-b border-primary/40 text-center text-lg tracking-[0.3em] text-foreground outline-none py-2 w-32 placeholder:text-muted-foreground/40"
-            />
-            {error && <span className="text-xs text-destructive tracking-wider">{t.garden.password_error}</span>}
-          </form>
-        </div>
-      </PageTransition>
-    );
-  }
-
   return (
     <PageTransition>
       <div className="min-h-screen bg-background flex items-center justify-center pt-[18vh] md:pt-[6vh] overflow-hidden relative">
