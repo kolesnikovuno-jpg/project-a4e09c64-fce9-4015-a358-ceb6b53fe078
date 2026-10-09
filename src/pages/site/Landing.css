@@ -40,25 +40,41 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
   align-items: baseline;
-  /* Quieter than the wordmark: half-height glyphs + wide vw-tracked
+  /* Quieter than the wordmark: smaller glyphs + wide vw-tracked
      spacing so the row length tracks the wordmark width */
   color: hsl(var(--foreground) / 0.78);
-  font-size: clamp(0.41rem, 0.67vw, 0.67rem);
+  font-size: clamp(0.5rem, 0.817vw, 0.817rem);
   font-weight: 200;
   line-height: 1;
-  letter-spacing: 0.64vw;
+  letter-spacing: 0.6vw;
   white-space: nowrap;
   will-change: transform;
 }
 
-/* Ukrainian upper row is shorter: widen its tracking so its length
-   still matches the wordmark; lower row gets a compensating reduction */
+/* Each row is calibrated per language: tracking is tuned so the row
+   length ends at the wordmark edges (measured in the browser) */
+:lang(en) .landing-axis--upper {
+  letter-spacing: 0.586vw;
+}
+
+:lang(en) .landing-axis--lower {
+  letter-spacing: 0.607vw;
+}
+
+:lang(ru) .landing-axis--upper {
+  letter-spacing: 0.623vw;
+}
+
+:lang(ru) .landing-axis--lower {
+  letter-spacing: 0.512vw;
+}
+
 :lang(uk) .landing-axis--upper {
-  letter-spacing: 1vw;
+  letter-spacing: 0.925vw;
 }
 
 :lang(uk) .landing-axis--lower {
-  letter-spacing: 0.59vw;
+  letter-spacing: 0.517vw;
 }
 
 .landing-axis span:nth-child(1) {
@@ -141,16 +157,32 @@
 
   .landing-axis {
     inset-inline: 1.5rem;
-    font-size: clamp(0.32rem, 1.43vw, 0.4rem);
-    letter-spacing: 1vw;
+    font-size: clamp(0.39rem, 1.745vw, 0.488rem);
+    letter-spacing: 0.97vw;
+  }
+
+  :lang(en) .landing-axis--upper {
+    letter-spacing: 0.929vw;
+  }
+
+  :lang(en) .landing-axis--lower {
+    letter-spacing: 0.972vw;
+  }
+
+  :lang(ru) .landing-axis--upper {
+    letter-spacing: 0.982vw;
+  }
+
+  :lang(ru) .landing-axis--lower {
+    letter-spacing: 0.818vw;
   }
 
   :lang(uk) .landing-axis--upper {
-    letter-spacing: 1.56vw;
+    letter-spacing: 1.438vw;
   }
 
   :lang(uk) .landing-axis--lower {
-    letter-spacing: 0.925vw;
+    letter-spacing: 0.815vw;
   }
 
   .landing-axis--upper {
@@ -172,16 +204,32 @@
 @media (max-width: 390px) {
   .landing-axis {
     inset-inline: 1.125rem;
-    font-size: clamp(0.28rem, 1.38vw, 0.35rem);
-    letter-spacing: 1.39vw;
+    font-size: clamp(0.342rem, 1.684vw, 0.427rem);
+    letter-spacing: 1.32vw;
+  }
+
+  :lang(en) .landing-axis--upper {
+    letter-spacing: 1.283vw;
+  }
+
+  :lang(en) .landing-axis--lower {
+    letter-spacing: 1.323vw;
+  }
+
+  :lang(ru) .landing-axis--upper {
+    letter-spacing: 1.334vw;
+  }
+
+  :lang(ru) .landing-axis--lower {
+    letter-spacing: 1.071vw;
   }
 
   :lang(uk) .landing-axis--upper {
-    letter-spacing: 2.14vw;
+    letter-spacing: 1.984vw;
   }
 
   :lang(uk) .landing-axis--lower {
-    letter-spacing: 1.27vw;
+    letter-spacing: 1.086vw;
   }
 
   .landing-wordmark {
