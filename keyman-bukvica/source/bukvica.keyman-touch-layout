@@ -245,19 +245,270 @@
                 "text": "🌐"
               },
               {
+                "id": "K_NUMERALS",
+                "text": "*123*",
+                "nextlayer": "numeric"
+              },
+              {
                 "id": "K_BKSP",
                 "text": "⌫"
               },
               {
-                "id": "T_SPACE",
-                "text": "SPACE",
-                "width": 400,
-                "font": "Arial",
-                "fontsize": "0.65em"
+                "id": "K_SPACE",
+                "text": "*Sp*",
+                "width": 300
               },
               {
                 "id": "K_ENTER",
                 "text": "↵"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "numeric",
+        "row": [
+          {
+            "id": 1,
+            "key": [
+              {
+                "id": "U_0031",
+                "text": "1"
+              },
+              {
+                "id": "U_0032",
+                "text": "2"
+              },
+              {
+                "id": "U_0033",
+                "text": "3"
+              },
+              {
+                "id": "U_002B",
+                "text": "+"
+              },
+              {
+                "id": "U_002D",
+                "text": "−"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "key": [
+              {
+                "id": "U_0034",
+                "text": "4"
+              },
+              {
+                "id": "U_0035",
+                "text": "5"
+              },
+              {
+                "id": "U_0036",
+                "text": "6"
+              },
+              {
+                "id": "U_002A",
+                "text": "×"
+              },
+              {
+                "id": "U_002F",
+                "text": "÷"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "key": [
+              {
+                "id": "U_0037",
+                "text": "7"
+              },
+              {
+                "id": "U_0038",
+                "text": "8"
+              },
+              {
+                "id": "U_0039",
+                "text": "9"
+              },
+              {
+                "id": "U_003D",
+                "text": "="
+              },
+              {
+                "id": "U_002E",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "key": [
+              {
+                "id": "K_SHIFTED",
+                "text": "*ABC*",
+                "nextlayer": "default"
+              },
+              {
+                "id": "U_0030",
+                "text": "0"
+              },
+              {
+                "id": "U_002C",
+                "text": ","
+              },
+              {
+                "id": "K_BKSP",
+                "text": "*BkSp*"
+              },
+              {
+                "id": "K_SYMBOLS",
+                "text": "*Symbol*",
+                "nextlayer": "symbols"
+              },
+              {
+                "id": "K_SPACE",
+                "text": "*Sp*",
+                "width": 260
+              },
+              {
+                "id": "K_ENTER",
+                "text": "*Enter*"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "symbols",
+        "row": [
+          {
+            "id": 1,
+            "key": [
+              {
+                "id": "U_0021",
+                "text": "!"
+              },
+              {
+                "id": "U_003F",
+                "text": "?"
+              },
+              {
+                "id": "U_0027",
+                "text": "'"
+              },
+              {
+                "id": "U_0022",
+                "text": "\""
+              },
+              {
+                "id": "U_0023",
+                "text": "#"
+              },
+              {
+                "id": "U_0024",
+                "text": "$"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "key": [
+              {
+                "id": "U_0028",
+                "text": "("
+              },
+              {
+                "id": "U_0029",
+                "text": ")"
+              },
+              {
+                "id": "U_005B",
+                "text": "["
+              },
+              {
+                "id": "U_005D",
+                "text": "]"
+              },
+              {
+                "id": "U_007B",
+                "text": "{"
+              },
+              {
+                "id": "U_007D",
+                "text": "}"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "key": [
+              {
+                "id": "U_003B",
+                "text": ";"
+              },
+              {
+                "id": "U_003A",
+                "text": ":"
+              },
+              {
+                "id": "U_2026",
+                "text": "…"
+              },
+              {
+                "id": "U_2014",
+                "text": "—"
+              },
+              {
+                "id": "U_2013",
+                "text": "–"
+              },
+              {
+                "id": "U_005C",
+                "text": "\\"
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "key": [
+              {
+                "id": "K_SHIFTED",
+                "text": "*ABC*",
+                "nextlayer": "default"
+              },
+              {
+                "id": "K_NUMERALS",
+                "text": "*123*",
+                "nextlayer": "numeric"
+              },
+              {
+                "id": "U_0040",
+                "text": "@"
+              },
+              {
+                "id": "U_0025",
+                "text": "%"
+              },
+              {
+                "id": "U_0026",
+                "text": "&"
+              },
+              {
+                "id": "K_BKSP",
+                "text": "*BkSp*"
+              },
+              {
+                "id": "K_SPACE",
+                "text": "*Sp*",
+                "width": 260
+              },
+              {
+                "id": "K_ENTER",
+                "text": "*Enter*"
               }
             ]
           }
@@ -512,19 +763,270 @@
                 "text": "🌐"
               },
               {
+                "id": "K_NUMERALS",
+                "text": "*123*",
+                "nextlayer": "numeric"
+              },
+              {
                 "id": "K_BKSP",
                 "text": "⌫"
               },
               {
-                "id": "T_SPACE",
-                "text": "SPACE",
-                "width": 400,
-                "font": "Arial",
-                "fontsize": "0.65em"
+                "id": "K_SPACE",
+                "text": "*Sp*",
+                "width": 300
               },
               {
                 "id": "K_ENTER",
                 "text": "↵"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "numeric",
+        "row": [
+          {
+            "id": 1,
+            "key": [
+              {
+                "id": "U_0031",
+                "text": "1"
+              },
+              {
+                "id": "U_0032",
+                "text": "2"
+              },
+              {
+                "id": "U_0033",
+                "text": "3"
+              },
+              {
+                "id": "U_002B",
+                "text": "+"
+              },
+              {
+                "id": "U_002D",
+                "text": "−"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "key": [
+              {
+                "id": "U_0034",
+                "text": "4"
+              },
+              {
+                "id": "U_0035",
+                "text": "5"
+              },
+              {
+                "id": "U_0036",
+                "text": "6"
+              },
+              {
+                "id": "U_002A",
+                "text": "×"
+              },
+              {
+                "id": "U_002F",
+                "text": "÷"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "key": [
+              {
+                "id": "U_0037",
+                "text": "7"
+              },
+              {
+                "id": "U_0038",
+                "text": "8"
+              },
+              {
+                "id": "U_0039",
+                "text": "9"
+              },
+              {
+                "id": "U_003D",
+                "text": "="
+              },
+              {
+                "id": "U_002E",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "key": [
+              {
+                "id": "K_SHIFTED",
+                "text": "*ABC*",
+                "nextlayer": "default"
+              },
+              {
+                "id": "U_0030",
+                "text": "0"
+              },
+              {
+                "id": "U_002C",
+                "text": ","
+              },
+              {
+                "id": "K_BKSP",
+                "text": "*BkSp*"
+              },
+              {
+                "id": "K_SYMBOLS",
+                "text": "*Symbol*",
+                "nextlayer": "symbols"
+              },
+              {
+                "id": "K_SPACE",
+                "text": "*Sp*",
+                "width": 260
+              },
+              {
+                "id": "K_ENTER",
+                "text": "*Enter*"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "symbols",
+        "row": [
+          {
+            "id": 1,
+            "key": [
+              {
+                "id": "U_0021",
+                "text": "!"
+              },
+              {
+                "id": "U_003F",
+                "text": "?"
+              },
+              {
+                "id": "U_0027",
+                "text": "'"
+              },
+              {
+                "id": "U_0022",
+                "text": "\""
+              },
+              {
+                "id": "U_0023",
+                "text": "#"
+              },
+              {
+                "id": "U_0024",
+                "text": "$"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "key": [
+              {
+                "id": "U_0028",
+                "text": "("
+              },
+              {
+                "id": "U_0029",
+                "text": ")"
+              },
+              {
+                "id": "U_005B",
+                "text": "["
+              },
+              {
+                "id": "U_005D",
+                "text": "]"
+              },
+              {
+                "id": "U_007B",
+                "text": "{"
+              },
+              {
+                "id": "U_007D",
+                "text": "}"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "key": [
+              {
+                "id": "U_003B",
+                "text": ";"
+              },
+              {
+                "id": "U_003A",
+                "text": ":"
+              },
+              {
+                "id": "U_2026",
+                "text": "…"
+              },
+              {
+                "id": "U_2014",
+                "text": "—"
+              },
+              {
+                "id": "U_2013",
+                "text": "–"
+              },
+              {
+                "id": "U_005C",
+                "text": "\\"
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "key": [
+              {
+                "id": "K_SHIFTED",
+                "text": "*ABC*",
+                "nextlayer": "default"
+              },
+              {
+                "id": "K_NUMERALS",
+                "text": "*123*",
+                "nextlayer": "numeric"
+              },
+              {
+                "id": "U_0040",
+                "text": "@"
+              },
+              {
+                "id": "U_0025",
+                "text": "%"
+              },
+              {
+                "id": "U_0026",
+                "text": "&"
+              },
+              {
+                "id": "K_BKSP",
+                "text": "*BkSp*"
+              },
+              {
+                "id": "K_SPACE",
+                "text": "*Sp*",
+                "width": 260
+              },
+              {
+                "id": "K_ENTER",
+                "text": "*Enter*"
               }
             ]
           }
