@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<KeymanPackage version="7.0">
+  <Info>
+    <Name>Буквица 49</Name><ID>bukvica</ID><Version>1.0</Version>
+    <Author>Personal keyboard project</Author>
+    <Copyright>Keyboard project for personal use</Copyright>
+    <Description>Буквенная раскладка с включённым шрифтом 300.ttf.</Description>
+  </Info>
+  <Files>
+    <File><Name>build/bukvica.js</Name><Description>Mobile keyboard</Description></File>
+    <File><Name>source/300.ttf</Name><Description>Keyboard font</Description></File>
+    <File><Name>source/readme.htm</Name><Description>Help</Description></File>
+    <File><Name>source/welcome.htm</Name><Description>Welcome</Description></File>
+  </Files>
+  <Keyboards>
+    <Keyboard><Name>Буквица 49</Name><ID>bukvica</ID><Version>1.0</Version>
+      <Languages><Language ID="ru">Russian</Language></Languages><OSKFont>300</OSKFont>
+    </Keyboard>
+  </Keyboards>
+</KeymanPackage>
