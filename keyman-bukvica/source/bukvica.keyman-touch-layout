@@ -249,9 +249,11 @@
                 "text": "⌫"
               },
               {
-                "id": "K_SPACE",
-                "text": "пробел",
-                "width": 2
+                "id": "T_SPACE",
+                "text": "SPACE",
+                "width": 2,
+                "font": "Arial",
+                "fontsize": "0.65em"
               },
               {
                 "id": "K_ENTER",
@@ -514,9 +516,11 @@
                 "text": "⌫"
               },
               {
-                "id": "K_SPACE",
-                "text": "пробел",
-                "width": 2
+                "id": "T_SPACE",
+                "text": "SPACE",
+                "width": 2,
+                "font": "Arial",
+                "fontsize": "0.65em"
               },
               {
                 "id": "K_ENTER",
