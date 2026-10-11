@@ -1,0 +1,9 @@
+{
+  "language":{"name":"Буквица 49","version":"0.1.0","status":"semantic-core"},
+  "alphabet":{"count":49,"layout":"7x7","source":"bukvica.keyman-touch-layout"},
+  "lexicon":{"status":"to_be_defined","entries":[]},
+  "grammar":{"status":"draft","default_order":["subject","action","object","state","circumstance"],"relations":["subject","action","object","attribute","state","place","time","cause","purpose"]},
+  "interpreter":{"directions":["ru->semantic->bukvica","uk->semantic->bukvica","bukvica->semantic->ru","bukvica->semantic->uk"],"confidence_required":true,"unknown_words":"mark_for_dictionary"},
+  "examples":[],
+  "next_steps":["define_semantics_for_49_signs","define_first_100_core_concepts","define_word_formation_rules","define_sentence_rules","add_bidirectional_translation"]
+}
