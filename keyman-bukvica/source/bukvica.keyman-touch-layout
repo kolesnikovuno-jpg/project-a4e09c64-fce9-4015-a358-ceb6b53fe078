@@ -251,7 +251,7 @@
               {
                 "id": "T_SPACE",
                 "text": "SPACE",
-                "width": 2,
+                "width": 400,
                 "font": "Arial",
                 "fontsize": "0.65em"
               },
@@ -518,7 +518,7 @@
               {
                 "id": "T_SPACE",
                 "text": "SPACE",
-                "width": 2,
+                "width": 400,
                 "font": "Arial",
                 "fontsize": "0.65em"
               },
