@@ -8,6 +8,7 @@ store(&LAYOUTFILE) 'bukvica.keyman-touch-layout'
 begin Unicode > use(main)
 
 group(main) using keys
++ [T_SPACE] > ' '
 + [U_0410] > U+0410
 + [U_0411] > U+0411
 + [U_0412] > U+0412
