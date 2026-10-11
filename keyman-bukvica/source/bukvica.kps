@@ -1,20 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<KeymanPackage version="7.0">
+<Package>
+  <System><FileVersion>7.0</FileVersion></System>
+  <Options>
+    <ExecuteProgram></ExecuteProgram>
+    <ReadMeFile>readme.htm</ReadMeFile>
+    <GraphicFile></GraphicFile>
+    <MSIFileName></MSIFileName>
+    <MSIOptions></MSIOptions>
+    <FollowKeyboardVersion/>
+    <LicenseFile></LicenseFile>
+  </Options>
+  <StartMenu><Folder></Folder><Items/></StartMenu>
   <Info>
-    <Name>Буквица 49</Name><ID>bukvica</ID><Version>1.0</Version>
-    <Author>Personal keyboard project</Author>
-    <Copyright>Keyboard project for personal use</Copyright>
-    <Description>Буквенная раскладка с включённым шрифтом 300.ttf.</Description>
+    <Name URL="">Буквица 49</Name>
+    <Copyright URL="">Personal keyboard project</Copyright>
+    <Author URL="">Rostislav Kolesnikov</Author>
+    <Version URL="">1.0</Version>
+    <WebSite URL=""></WebSite>
+    <Description>Клавиатура Буквица для iPhone и iPad со шрифтом 300.ttf.</Description>
   </Info>
   <Files>
-    <File><Name>build/bukvica.js</Name><Description>Mobile keyboard</Description></File>
-    <File><Name>source/300.ttf</Name><Description>Keyboard font</Description></File>
-    <File><Name>source/readme.htm</Name><Description>Help</Description></File>
-    <File><Name>source/welcome.htm</Name><Description>Welcome</Description></File>
+    <File><Name>..\build\bukvica.js</Name><Description>Клавиатура Буквица</Description><CopyLocation>0</CopyLocation><FileType>.js</FileType></File>
+    <File><Name>300.ttf</Name><Description>Шрифт клавиатуры</Description><CopyLocation>0</CopyLocation><FileType>.ttf</FileType></File>
+    <File><Name>readme.htm</Name><Description>Справка</Description><CopyLocation>0</CopyLocation><FileType>.htm</FileType></File>
+    <File><Name>welcome.htm</Name><Description>Приветствие</Description><CopyLocation>0</CopyLocation><FileType>.htm</FileType></File>
   </Files>
   <Keyboards>
-    <Keyboard><Name>Буквица 49</Name><ID>bukvica</ID><Version>1.0</Version>
-      <Languages><Language ID="ru">Russian</Language></Languages><OSKFont>300</OSKFont>
+    <Keyboard>
+      <Name>Буквица 49</Name><ID>bukvica</ID><Version>1.0</Version>
+      <OSKFont>300.ttf</OSKFont>
+      <Languages><Language ID="ru">Russian</Language></Languages>
     </Keyboard>
   </Keyboards>
-</KeymanPackage>
+</Package>
