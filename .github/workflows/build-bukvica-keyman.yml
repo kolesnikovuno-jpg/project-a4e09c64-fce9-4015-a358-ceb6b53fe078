@@ -1,0 +1,65 @@
+name: Build Bukvica Keyman package
+
+on:
+  push:
+    branches: [build-bukvica-keyman]
+    paths:
+      - "keyman-bukvica/**"
+      - ".github/workflows/build-bukvica-keyman.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Keyman compiler
+        run: npm install --global @keymanapp/kmc
+
+      - name: Obtain font from the public archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          PUBLIC_KEY="https://disk.yandex.com/d/e1IqXCHFjMtPt"
+          DEST="keyman-bukvica/source/300.ttf"
+          for PATH_IN_DISK in "/Шрифты/300.ttf" "/Шрифты/300.TTF" "/300.ttf"; do
+            echo "Checking public archive path: $PATH_IN_DISK"
+            if META=$(curl -fsSL --get "https://cloud-api.yandex.net/v1/disk/public/resources/download" \
+              --data-urlencode "public_key=$PUBLIC_KEY" \
+              --data-urlencode "path=$PATH_IN_DISK"); then
+              HREF=$(node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).href||''))" <<< "$META")
+              if [ -n "$HREF" ] && curl -fsSL "$HREF" -o "$DEST"; then
+                if file "$DEST" | grep -qi 'TrueType\|font'; then
+                  echo "Font downloaded."
+                  exit 0
+                fi
+              fi
+            fi
+          done
+          echo "Could not find 300.ttf in the configured public archive paths." >&2
+          exit 1
+
+      - name: Compile keyboard and package
+        run: |
+          cd keyman-bukvica
+          kmc build bukvica.kpj
+
+      - name: Verify package exists
+        run: test -s keyman-bukvica/build/bukvica.kmp
+
+      - name: Upload installable KMP
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bukvica-Keyman-KMP
+          path: keyman-bukvica/build/bukvica.kmp
+          if-no-files-found: error
