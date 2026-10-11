@@ -1,8 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<KeymanProject version="1.0">
-  <Options><Name>Буквица 49</Name><ID>bukvica</ID><Version>1.0</Version></Options>
+<KeymanDeveloperProject>
+  <Options>
+    <BuildPath>$PROJECTPATH\build</BuildPath>
+    <CompilerWarningsAsErrors>False</CompilerWarningsAsErrors>
+    <WarnDeprecatedCode>True</WarnDeprecatedCode>
+    <CheckFilenameConventions>False</CheckFilenameConventions>
+    <ProjectType>keyboard</ProjectType>
+  </Options>
   <Files>
-    <File><Name>source/bukvica.kmn</Name><ID>keyboard</ID></File>
-    <File><Name>source/bukvica.kps</Name><ID>package</ID></File>
+    <File>
+      <ID>id_bukvica_keyboard</ID>
+      <Filename>bukvica.kmn</Filename>
+      <Filepath>source\bukvica.kmn</Filepath>
+      <FileVersion>1.0</FileVersion>
+      <FileType>.kmn</FileType>
+      <Details><Name>Буквица 49</Name><Copyright>Personal keyboard project</Copyright></Details>
+    </File>
+    <File>
+      <ID>id_bukvica_package</ID>
+      <Filename>bukvica.kps</Filename>
+      <Filepath>source\bukvica.kps</Filepath>
+      <FileVersion>1.0</FileVersion>
+      <FileType>.kps</FileType>
+      <Details><Name>Буквица 49</Name><Copyright>Personal keyboard project</Copyright></Details>
+    </File>
   </Files>
-</KeymanProject>
+</KeymanDeveloperProject>
