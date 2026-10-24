@@ -206,3 +206,53 @@
     transform: translateY(-50%) scaleY(0.73);
   }
 }
+
+/* Understated exit to the Architectural Object Lab prototype:
+   a quiet annotation below the composition, not a button */
+.landing-lab {
+  position: absolute;
+  inset-inline: clamp(2rem, 7.4vw, 8.75rem);
+  bottom: clamp(2.5rem, 8vh, 5.5rem);
+  color: hsl(var(--foreground) / 0.52);
+  font-size: clamp(0.44rem, 0.62vw, 0.62rem);
+  font-weight: 200;
+  letter-spacing: 0.22em;
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  text-underline-offset: 0.5em;
+  transition: color 500ms ease, text-decoration-color 500ms ease;
+}
+
+.landing-lab:hover,
+.landing-lab:focus-visible {
+  color: hsl(var(--foreground) / 0.8);
+  text-decoration: underline;
+  text-decoration-thickness: 0.5px;
+}
+
+.landing-lab:focus-visible {
+  outline: 1px solid hsl(var(--foreground) / 0.3);
+  outline-offset: 0.75em;
+}
+
+@media (max-width: 640px) {
+  .landing-lab {
+    inset-inline: 1.5rem;
+    bottom: 2.25rem;
+    letter-spacing: 0.16em;
+  }
+}
+
+@media (max-width: 390px) {
+  .landing-lab {
+    inset-inline: 1.125rem;
+    bottom: 2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-lab {
+    transition: none;
+  }
+}
