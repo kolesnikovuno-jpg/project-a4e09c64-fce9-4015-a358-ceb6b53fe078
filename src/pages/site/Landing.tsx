@@ -10,14 +10,17 @@ const landingCopy = {
   en: {
     sequence: ["\n", "sparse   :    form   :   meaning", "\n"],
     disciplines: ["\n", "architect   :   design   :   art", "\n"],
+    lab: "Architectural Object Lab ↗",
   },
   ru: {
     sequence: ["\n", "пространство : форма : смысл", "\n"],
     disciplines: ["\n", "архитектура : дизайн : искусство", "\n"],
+    lab: "Архитектурная лаборатория ↗",
   },
   uk: {
     sequence: ["\n", "простір : форма : сенс", "\n"],
     disciplines: ["\n", "архітектура : дизайн : мистецтво", "\n"],
+    lab: "Архітектурна лабораторія ↗",
   },
 } as const;
 
@@ -84,6 +87,10 @@ const Landing = () => {
             <span key={word}>{word}</span>
           ))}
         </p>
+
+        <a className="landing-lab" href="https://architectural-object-lab.lovable.app">
+          {copy.lab}
+        </a>
       </main>
     </div>
   );
