@@ -190,7 +190,7 @@ const LyraConcept = () => {
       <p
         className="absolute bottom-12 left-0 right-0 text-center pointer-events-none select-none"
         style={{
-          fontFamily: "'Manrope', system-ui, sans-serif",
+          fontFamily: "var(--font-body)",
           fontSize: "clamp(11px, 1.4vw, 14px)",
           fontWeight: 300,
           letterSpacing: "0.12em",

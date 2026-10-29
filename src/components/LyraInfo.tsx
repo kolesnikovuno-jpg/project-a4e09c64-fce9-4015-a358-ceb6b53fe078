@@ -98,7 +98,7 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
           position:fixed; right:22px; bottom:22px; z-index:60;
           background:transparent; border:none; padding:6px 4px;
           cursor:pointer;
-          font-family:'Manrope',system-ui,sans-serif;
+          font-family:var(--font-body);
           font-size:12px; font-weight:300;
           letter-spacing:0.18em; text-transform:lowercase;
           color:hsl(203 24% 40%);

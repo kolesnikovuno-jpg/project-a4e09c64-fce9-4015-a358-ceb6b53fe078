@@ -455,7 +455,7 @@ const Nava = () => {
                 style={{
                   top: "calc(33% + 70px)",
                   color: "#F5EFEB",
-                  fontFamily: "'Manrope', sans-serif",
+                  fontFamily: "var(--font-body)",
                   fontWeight: 300,
                   letterSpacing: "var(--caption-tracking, 0.42em)",
                   fontSize: "clamp(9px, 1.445vw, 15.3px)",
@@ -551,7 +551,7 @@ const Nava = () => {
         }
         .uno-overlay-below h1,
         .uno-overlay-below p{
-          font-family:'Manrope',system-ui,sans-serif;
+          font-family:var(--font-body);
           margin:0;
           overflow:hidden;
           white-space:nowrap;
@@ -591,7 +591,7 @@ const Nava = () => {
         }
         .uno-actions button{
           background:transparent; border:none; padding:0; cursor:pointer;
-          font-family:'Manrope',system-ui,sans-serif;
+          font-family:var(--font-body);
           font-size:12px; font-weight:300;
           letter-spacing:0.18em; text-transform:lowercase;
           color:hsl(203 24% 40%);
@@ -761,7 +761,7 @@ const Nava = () => {
                 style={{
                   maxWidth: "460px",
                   margin: "0 0 36px",
-                  fontFamily: "'Manrope', system-ui, sans-serif",
+                  fontFamily: "var(--font-body)",
                   fontSize: "13px",
                   fontWeight: 300,
                   lineHeight: 1.9,
@@ -781,7 +781,7 @@ const Nava = () => {
                   padding: 0,
                   margin: 0,
                   cursor: "pointer",
-                  fontFamily: "'Manrope', system-ui, sans-serif",
+                  fontFamily: "var(--font-body)",
                   fontSize: "13px",
                   fontWeight: 300,
                   letterSpacing: "0.04em",
@@ -804,7 +804,7 @@ const Nava = () => {
       >
         <span
           style={{
-            fontFamily: "'Manrope', system-ui, sans-serif",
+            fontFamily: "var(--font-body)",
             fontSize: "12px",
             fontWeight: 300,
             letterSpacing: "0.18em",

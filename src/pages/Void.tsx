@@ -306,7 +306,7 @@ const Void = () => {
         }
         .void-actions button{
           background:transparent; border:none; padding:0; cursor:pointer;
-          font-family:'Manrope',system-ui,sans-serif;
+          font-family:var(--font-body);
           font-size:12px; font-weight:300;
           letter-spacing:0.18em; text-transform:lowercase;
           color:hsl(203 24% 40%);
@@ -389,7 +389,7 @@ const Void = () => {
               <p
                 className="max-w-2xl text-center"
                 style={{
-                  fontFamily: "'Manrope', system-ui, sans-serif",
+                  fontFamily: "var(--font-body)",
                   fontSize: "13px",
                   fontWeight: 300,
                   lineHeight: 1.7,
@@ -426,7 +426,7 @@ const Void = () => {
                   style={{
                     maxWidth: "460px",
                     margin: "0 0 36px",
-                    fontFamily: "'Manrope', system-ui, sans-serif",
+                    fontFamily: "var(--font-body)",
                     fontSize: "13px",
                     fontWeight: 300,
                     lineHeight: 1.9,
@@ -446,7 +446,7 @@ const Void = () => {
                     padding: 0,
                     margin: 0,
                     cursor: "pointer",
-                    fontFamily: "'Manrope', system-ui, sans-serif",
+                    fontFamily: "var(--font-body)",
                     fontSize: "13px",
                     fontWeight: 300,
                     letterSpacing: "0.04em",
@@ -468,7 +468,7 @@ const Void = () => {
         className="fixed top-4 left-4 md:top-5 md:left-5 px-2 py-1 hover:text-[#C97A63] transition-colors duration-300 z-[60]"
         aria-label={t.nav.back}
         style={{
-          fontFamily: "'Manrope', system-ui, sans-serif",
+          fontFamily: "var(--font-body)",
           color: "hsl(203 24% 40%)",
           fontSize: "12px",
           fontWeight: 300,

@@ -64,7 +64,7 @@ const LanguageSwitcher = ({
         width: 26,
         borderBottomLeftRadius: 2,
         borderBottomRightRadius: 2,
-        fontFamily: "'Manrope', system-ui, sans-serif",
+        fontFamily: "var(--font-body)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
