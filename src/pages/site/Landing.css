@@ -32,6 +32,67 @@
   min-height: 100dvh;
   margin-inline: auto;
   padding-inline: clamp(2rem, 7.4vw, 8.75rem);
+  padding-bottom: 3rem;
+}
+
+.landing-identity {
+  position: relative;
+  height: clamp(20rem, 52svh, 48rem);
+  margin-inline: calc(-1 * clamp(2rem, 7.4vw, 8.75rem));
+}
+
+.landing-introduction {
+  max-width: 35rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.landing-positioning {
+  margin: 0;
+  color: hsl(var(--foreground));
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+.landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 2rem;
+  row-gap: 0.25rem;
+  margin-top: 1.5rem;
+}
+
+.landing-actions .landing-action {
+  min-height: 44px;
+  height: auto;
+  padding: 0.5rem 0;
+  border-radius: 0;
+  color: hsl(var(--foreground));
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-underline-offset: 0.4em;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: hsl(var(--foreground) / 0.3);
+}
+
+.landing-actions .landing-action--secondary {
+  font-weight: 300;
+  text-decoration-color: transparent;
+}
+
+.landing-actions .landing-action:hover {
+  text-decoration-color: currentColor;
+}
+
+.landing-actions .landing-action:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 4px;
+  box-shadow: none;
 }
 
 .landing-axis {
@@ -139,6 +200,21 @@
     padding-inline: 1.5rem;
   }
 
+  .landing-identity {
+    height: clamp(17rem, 43svh, 25rem);
+    margin-inline: -1.5rem;
+  }
+
+  .landing-positioning {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+  }
+
+  .landing-actions {
+    column-gap: 1.5rem;
+    margin-top: 1.25rem;
+  }
+
   .landing-axis {
     inset-inline: 1.5rem;
     font-size: clamp(0.32rem, 1.43vw, 0.4rem);
@@ -210,14 +286,16 @@
 /* Understated exit to the Architectural Object Lab prototype:
    a quiet annotation below the composition, not a button */
 .landing-lab {
-  position: absolute;
-  inset-inline: clamp(2rem, 7.4vw, 8.75rem);
-  bottom: clamp(2.5rem, 8vh, 5.5rem);
-  color: hsl(var(--foreground) / 0.52);
-  font-size: clamp(0.44rem, 0.62vw, 0.62rem);
-  font-weight: 200;
-  letter-spacing: 0.22em;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin-top: 2rem;
+  color: hsl(var(--foreground) / 0.78);
+  font-size: 0.75rem;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  line-height: 1.5;
   text-align: center;
   text-decoration: none;
   text-underline-offset: 0.5em;
@@ -238,21 +316,14 @@
 
 @media (max-width: 640px) {
   .landing-lab {
-    inset-inline: 1.5rem;
-    bottom: 2.25rem;
-    letter-spacing: 0.16em;
-  }
-}
-
-@media (max-width: 390px) {
-  .landing-lab {
-    inset-inline: 1.125rem;
-    bottom: 2rem;
+    margin-top: 1.5rem;
+    letter-spacing: 0.06em;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-lab {
+  .landing-lab,
+  .landing-actions .landing-action {
     transition: none;
   }
 }
