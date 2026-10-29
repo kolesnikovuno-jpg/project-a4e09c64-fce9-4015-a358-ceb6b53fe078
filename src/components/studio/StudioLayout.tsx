@@ -55,7 +55,7 @@ const StudioLayout = ({ children, page, title, description }: Props) => {
   const isActive = (p: string) => (p === "" ? pathname.split("/").filter(Boolean).length === 1 : pathname.endsWith(p));
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground font-[Manrope,system-ui,sans-serif] antialiased">
+    <div className="min-h-[100dvh] bg-background text-foreground font-body antialiased">
       <SEO
         title={title ?? c.meta.title}
         description={description ?? c.meta.description}

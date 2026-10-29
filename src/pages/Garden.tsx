@@ -441,7 +441,7 @@ const Garden = () => {
         <style>{`
         .garden-typewriter{
           display:inline-block;
-          font-family:'Manrope',system-ui,sans-serif;
+          font-family:var(--font-body);
           font-size:11px;
           font-weight:300;
           letter-spacing:0.28em;
