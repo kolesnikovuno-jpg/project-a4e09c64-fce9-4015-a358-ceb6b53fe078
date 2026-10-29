@@ -59,7 +59,7 @@ const Landing = () => {
   return (
     <div
       ref={fieldRef}
-      className="landing-field font-[Manrope,system-ui,sans-serif] antialiased"
+      className="landing-field font-body antialiased"
       onPointerMove={handlePointerMove}
       onPointerLeave={() => setPointerPosition(0, 0)}
     >

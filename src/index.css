@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Original DNFDEVS/medeo-font WOFF2; license: /fonts/Medeo-OFL.txt. */
+@font-face {
+  font-family: 'Medeo Sans';
+  src: url('/__l5e/assets-v1/d1b9c1a2-665a-4099-a3fc-c000ef90d8eb/MedeoSansVariable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Medeo Sans';
+  src: url('/__l5e/assets-v1/c08ae092-5530-44a5-9d05-56f297c47dce/MedeoSansVariable-Italic.woff2') format('woff2');
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     --background: 24 26% 94%;
@@ -43,7 +60,7 @@
     --sidebar-border: 0 0% 90%;
     --sidebar-ring: 203 24% 45%;
 
-    --font-body: 'Manrope', sans-serif;
+    --font-body: 'Medeo Sans', system-ui, sans-serif;
   }
 
   .dark {
@@ -84,7 +101,7 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Manrope', sans-serif;
+    font-family: var(--font-body);
     font-size: 13px;
     letter-spacing: 0.04em;
   }
