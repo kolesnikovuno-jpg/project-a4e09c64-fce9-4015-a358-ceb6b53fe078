@@ -112,16 +112,6 @@
   will-change: transform;
 }
 
-/* Ukrainian upper row is shorter: widen its tracking so its length
-   still matches the wordmark; lower row gets a compensating reduction */
-:lang(uk) .landing-axis--upper {
-  letter-spacing: 1vw;
-}
-
-:lang(uk) .landing-axis--lower {
-  letter-spacing: 0.59vw;
-}
-
 .landing-axis span:nth-child(1) {
   justify-self: start;
 }
@@ -384,56 +374,55 @@
 }
 
 
-/* Stable language-independent frame for both three-part axis lines. */
+
+
+/* Shared three-term frame: identical anchors and responsive type
+   across English, Russian and Ukrainian. */
 .landing-axis {
   inset-inline: 0;
   width: min(72vw, 46rem);
   margin-inline: auto;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  letter-spacing: 0.42vw;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: baseline;
+  font-size: clamp(0.38rem, 0.62vw, 0.62rem);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
 }
 
-.landing-axis span:nth-child(1),
+.landing-axis span:nth-child(1) {
+  justify-self: start;
+  text-align: left;
+}
+
 .landing-axis span:nth-child(2),
+.landing-axis span:nth-child(4) {
+  justify-self: center;
+  text-align: center;
+}
+
 .landing-axis span:nth-child(3) {
   justify-self: center;
   text-align: center;
 }
 
+.landing-axis span:nth-child(5) {
+  justify-self: end;
+  text-align: right;
+}
+
 @media (max-width: 640px) {
   .landing-axis {
-    inset-inline: 0;
     width: calc(100% - 3rem);
-    letter-spacing: 0.72vw;
+    font-size: clamp(0.3rem, 1.3vw, 0.38rem);
+    letter-spacing: 0.035em;
   }
 }
 
 @media (max-width: 390px) {
   .landing-axis {
     width: calc(100% - 2.25rem);
-    letter-spacing: 0.86vw;
+    font-size: clamp(0.28rem, 1.2vw, 0.33rem);
+    letter-spacing: 0.02em;
   }
-}
-
-
-/* The two language rows share the same five-column typographic grid. */
-.landing-axis {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
-  width: min(72vw, 46rem);
-  inset-inline: 0;
-  margin-inline: auto;
-  letter-spacing: 0.12em;
-}
-.landing-axis span:nth-child(1) { justify-self: start; text-align: left; }
-.landing-axis span:nth-child(2),
-.landing-axis span:nth-child(4) { justify-self: center; }
-.landing-axis span:nth-child(3) { justify-self: center; text-align: center; }
-.landing-axis span:nth-child(5) { justify-self: end; text-align: right; }
-
-@media (max-width: 640px) {
-  .landing-axis { width: calc(100% - 3rem); letter-spacing: 0.04em; }
-}
-@media (max-width: 390px) {
-  .landing-axis { width: calc(100% - 2.25rem); letter-spacing: 0.02em; }
 }
