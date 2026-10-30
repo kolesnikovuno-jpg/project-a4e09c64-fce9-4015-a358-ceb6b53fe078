@@ -382,3 +382,35 @@
     line-height: 1.76;
   }
 }
+
+
+/* Stable language-independent frame for both three-part axis lines. */
+.landing-axis {
+  inset-inline: 0;
+  width: min(72vw, 46rem);
+  margin-inline: auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  letter-spacing: 0.42vw;
+}
+
+.landing-axis span:nth-child(1),
+.landing-axis span:nth-child(2),
+.landing-axis span:nth-child(3) {
+  justify-self: center;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .landing-axis {
+    inset-inline: 0;
+    width: calc(100% - 3rem);
+    letter-spacing: 0.72vw;
+  }
+}
+
+@media (max-width: 390px) {
+  .landing-axis {
+    width: calc(100% - 2.25rem);
+    letter-spacing: 0.86vw;
+  }
+}
