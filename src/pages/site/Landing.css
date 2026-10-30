@@ -100,7 +100,7 @@
   /* one shared width for both rows: first/last word edges coincide */
   left: 0;
   right: 0;
-  width: clamp(14.5rem, 29vw, 30rem);
+  width: clamp(12.75rem, 29vw, 30rem);
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
