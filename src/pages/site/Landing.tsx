@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useLayoutEffect, useRef } from "react";
 import SEO from "@/components/SEO";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import { LOCALES } from "@/i18n/config";
@@ -33,6 +33,56 @@ const Landing = () => {
   const copy = landingCopy[locale];
   const fieldRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number>();
+  const upperAxisRef = useRef<HTMLParagraphElement>(null);
+  const lowerAxisRef = useRef<HTMLParagraphElement>(null);
+
+  // A shared visual width is not sufficient when long Cyrillic words overflow.
+  // Fit both axes together, preserving equal typography and exact edge anchors.
+  useLayoutEffect(() => {
+    let frame = 0;
+    let mounted = true;
+
+    const fitAxes = () => {
+      const upper = upperAxisRef.current;
+      const lower = lowerAxisRef.current;
+      if (!upper || !lower) return;
+      const axes = [upper, lower];
+
+      // Read the natural responsive CSS size before measuring.
+      axes.forEach((axis) => axis.style.removeProperty("font-size"));
+      const baseSize = parseFloat(getComputedStyle(upper).fontSize);
+      const availableWidth = Math.min(...axes.map((axis) => axis.clientWidth));
+      const widestContent = Math.max(
+        ...axes.map((axis) =>
+          Array.from(axis.children).reduce(
+            (width, child) => width + child.getBoundingClientRect().width,
+            0,
+          ),
+        ),
+      );
+
+      if (!baseSize || !availableWidth || !widestContent) return;
+      const scale = Math.min(1, (availableWidth - 2) / widestContent);
+      const fittedSize = `${(baseSize * scale).toFixed(3)}px`;
+      axes.forEach((axis) => { axis.style.fontSize = fittedSize; });
+    };
+
+    const scheduleFit = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(fitAxes);
+    };
+
+    scheduleFit();
+    const observer = new ResizeObserver(scheduleFit);
+    if (fieldRef.current) observer.observe(fieldRef.current);
+    document.fonts?.ready.then(() => { if (mounted) scheduleFit(); });
+
+    return () => {
+      mounted = false;
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [locale]);
 
   const setPointerPosition = useCallback((x: number, y: number) => {
     if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
@@ -76,7 +126,7 @@ const Landing = () => {
 
       <main className="landing-composition">
         <div className="landing-identity">
-        <p className="landing-axis landing-axis--upper">
+        <p ref={upperAxisRef} className="landing-axis landing-axis--upper">
           {splitAxis(copy.sequence).map((part, index) => (
             <span
               key={index}
@@ -92,7 +142,7 @@ const Landing = () => {
           kolesnikov.studio
         </h1>
 
-        <p className="landing-axis landing-axis--lower">
+        <p ref={lowerAxisRef} className="landing-axis landing-axis--lower">
           {splitAxis(copy.disciplines).map((part, index) => (
             <span
               key={index}
