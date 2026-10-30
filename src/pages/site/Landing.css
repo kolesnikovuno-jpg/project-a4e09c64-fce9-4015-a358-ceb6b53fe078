@@ -358,8 +358,8 @@
 
 
 
-/* Shared language-independent frame: the five text tokens occupy
-   the same five tracks in both rows and in every locale. */
+/* Shared language-independent frame: both rows share identical
+   left/right anchors; disable opposing horizontal parallax drift. */
 .landing-axis {
   inset-inline: 0;
   box-sizing: border-box;
@@ -368,10 +368,18 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: baseline;
-  column-gap: clamp(0.12rem, 0.55vw, 0.5rem);
+  column-gap: clamp(0.28rem, 1.1vw, 0.85rem);
   font-size: clamp(0.38rem, 0.62vw, 0.62rem);
   letter-spacing: 0.04em;
   white-space: nowrap;
+}
+
+.landing-axis--upper {
+  transform: translate3d(0, calc(-50% + var(--landing-pointer-y) * -0.45px), 0);
+}
+
+.landing-axis--lower {
+  transform: translate3d(0, calc(-50% + var(--landing-pointer-y) * 0.45px), 0);
 }
 
 .landing-axis span {
@@ -388,7 +396,7 @@
   .landing-axis {
     width: calc(100% - 3rem);
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
-    column-gap: clamp(0.08rem, 0.4vw, 0.2rem);
+    column-gap: clamp(0.16rem, 0.75vw, 0.32rem);
     font-size: clamp(0.3rem, 1.3vw, 0.38rem);
     letter-spacing: 0.015em;
   }
@@ -397,6 +405,7 @@
 @media (max-width: 390px) {
   .landing-axis {
     width: calc(100% - 2.25rem);
+    column-gap: 0.13rem;
     font-size: clamp(0.28rem, 1.2vw, 0.33rem);
     letter-spacing: 0;
   }
