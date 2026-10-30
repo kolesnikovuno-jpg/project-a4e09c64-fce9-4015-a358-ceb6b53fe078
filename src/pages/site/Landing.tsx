@@ -48,9 +48,15 @@ const Landing = () => {
       if (!upper || !lower) return;
       const axes = [upper, lower];
 
-      // Read the natural responsive CSS size before measuring.
-      axes.forEach((axis) => axis.style.removeProperty("font-size"));
-      const baseSize = parseFloat(getComputedStyle(upper).fontSize);
+      // Measure at the original CSS font size AND tracking; both contribute
+      // to Cyrillic text width. Scale both together to avoid overflow.
+      axes.forEach((axis) => {
+        axis.style.removeProperty("font-size");
+        axis.style.removeProperty("--axis-track");
+      });
+      const computed = getComputedStyle(upper);
+      const baseSize = parseFloat(computed.fontSize);
+      const baseTracking = parseFloat(computed.letterSpacing) || 0;
       const availableWidth = Math.min(...axes.map((axis) => axis.clientWidth));
       const widestContent = Math.max(
         ...axes.map((axis) =>
@@ -62,9 +68,13 @@ const Landing = () => {
       );
 
       if (!baseSize || !availableWidth || !widestContent) return;
-      const scale = Math.min(1, (availableWidth - 2) / widestContent);
+      const scale = Math.min(1, (availableWidth - 3) / widestContent);
       const fittedSize = `${(baseSize * scale).toFixed(3)}px`;
-      axes.forEach((axis) => { axis.style.fontSize = fittedSize; });
+      const fittedTracking = `${(baseTracking * scale).toFixed(3)}px`;
+      axes.forEach((axis) => {
+        axis.style.fontSize = fittedSize;
+        axis.style.setProperty("--axis-track", fittedTracking);
+      });
     };
 
     const scheduleFit = () => {
