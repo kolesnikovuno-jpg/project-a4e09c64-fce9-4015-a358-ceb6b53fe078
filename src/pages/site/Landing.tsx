@@ -8,20 +8,20 @@ import "./Landing.css";
 
 const landingCopy = {
   en: {
-    sequence: ["\n", "sparse   :    form   :   meaning", "\n"],
-    disciplines: ["\n", "architect   :   design   :   art", "\n"],
+    sequence: ["sparse", ":", "form", ":", "meaning"],
+    disciplines: ["architect", ":", "design", ":", "art"],
     lab: "Architectural Object Lab ↗",
     positioning: "I help shape spaces around the way you live. I work with the context and the conditions of the place, developing a practical solution from the first idea through to realization.",
   },
   ru: {
-    sequence: ["\n", "пространство : форма : смысл", "\n"],
-    disciplines: ["\n", "архитектура : дизайн : искусство", "\n"],
+    sequence: ["пространство", ":", "форма", ":", "смысл"],
+    disciplines: ["архитектура", ":", "дизайн", ":", "искусство"],
     lab: "Архитектурная лаборатория ↗",
     positioning: "Я помогаю настроить пространство так, чтобы оно поддерживало твой ритм жизни. Работаю с контекстом, параметрами места и довожу решение до рабочей формы: от идеи до реализации",
   },
   uk: {
-    sequence: ["\n", "простір : форма : сенс", "\n"],
-    disciplines: ["\n", "архітектура : дизайн : мистецтво", "\n"],
+    sequence: ["простір", ":", "форма", ":", "сенс"],
+    disciplines: ["архітектура", ":", "дизайн", ":", "мистецтво"],
     lab: "Архітектурна лабораторія ↗",
     positioning: "Я допомагаю налаштувати простір так, щоб він відповідав твоєму ритму життя. Враховую контекст і особливості місця та доводжу рішення до втілення: від задуму до реалізації.",
   },
