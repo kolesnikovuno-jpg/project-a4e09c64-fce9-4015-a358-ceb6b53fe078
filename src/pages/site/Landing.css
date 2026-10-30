@@ -111,14 +111,15 @@
   font-size: clamp(0.41rem, 0.67vw, 0.67rem);
   font-weight: 200;
   line-height: 1;
-  letter-spacing: 0.14em;
+  --axis-track: 0.55vw;
+  letter-spacing: var(--axis-track);
   white-space: nowrap;
   will-change: transform;
 }
 
 .landing-axis span:last-child {
   /* trailing tracking would push the visible right edge inward */
-  margin-right: -0.14em;
+  margin-right: calc(-1 * var(--axis-track));
 }
 
 .landing-axis--upper {
@@ -205,6 +206,7 @@
   .landing-axis {
     width: clamp(14.5rem, 62vw, 18rem);
     font-size: clamp(0.4rem, 1.6vw, 0.5rem);
+    --axis-track: 1vw;
   }
 
   .landing-axis--upper {
