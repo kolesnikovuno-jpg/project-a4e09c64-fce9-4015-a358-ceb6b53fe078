@@ -414,3 +414,26 @@
     letter-spacing: 0.86vw;
   }
 }
+
+
+/* The two language rows share the same five-column typographic grid. */
+.landing-axis {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  width: min(72vw, 46rem);
+  inset-inline: 0;
+  margin-inline: auto;
+  letter-spacing: 0.12em;
+}
+.landing-axis span:nth-child(1) { justify-self: start; text-align: left; }
+.landing-axis span:nth-child(2),
+.landing-axis span:nth-child(4) { justify-self: center; }
+.landing-axis span:nth-child(3) { justify-self: center; text-align: center; }
+.landing-axis span:nth-child(5) { justify-self: end; text-align: right; }
+
+@media (max-width: 640px) {
+  .landing-axis { width: calc(100% - 3rem); letter-spacing: 0.04em; }
+}
+@media (max-width: 390px) {
+  .landing-axis { width: calc(100% - 2.25rem); letter-spacing: 0.02em; }
+}
