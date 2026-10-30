@@ -293,3 +293,11 @@
     transition: none;
   }
 }
+
+/* Tablet: the minimum glyph size dominates the narrow shared row width,
+   so tracking eases slightly to keep separators clear of the words */
+@media (min-width: 641px) and (max-width: 900px) {
+  .landing-axis {
+    --axis-track: 0.45vw;
+  }
+}
