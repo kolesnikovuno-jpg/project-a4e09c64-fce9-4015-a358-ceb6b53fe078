@@ -327,3 +327,58 @@
     transition: none;
   }
 }
+
+
+/* Preview refinement: preserve the manifesto while giving its elements
+   a little more breathing room and a steadier vertical rhythm. */
+.landing-identity {
+  height: clamp(21rem, 54svh, 49rem);
+}
+
+.landing-axis--upper {
+  top: 25.5%;
+}
+
+.landing-wordmark {
+  top: 49%;
+}
+
+.landing-axis--lower {
+  top: 72%;
+}
+
+.landing-introduction {
+  max-width: 34rem;
+}
+
+.landing-positioning {
+  font-size: 0.975rem;
+  line-height: 1.82;
+}
+
+.landing-lab {
+  margin-top: 1.75rem;
+}
+
+@media (max-width: 640px) {
+  .landing-identity {
+    height: clamp(18rem, 46svh, 26rem);
+  }
+
+  .landing-axis--upper {
+    top: 23.5%;
+  }
+
+  .landing-wordmark {
+    top: 49%;
+  }
+
+  .landing-axis--lower {
+    top: 74%;
+  }
+
+  .landing-positioning {
+    font-size: 0.9375rem;
+    line-height: 1.76;
+  }
+}
