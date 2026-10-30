@@ -376,39 +376,45 @@
 
 
 
-/* Shared three-term frame: identical anchors and responsive type
-   across English, Russian and Ukrainian. */
+/* Shared language-independent frame: both rows use the same measured
+   width, with their first and last labels pinned to identical x-anchors. */
 .landing-axis {
   inset-inline: 0;
+  box-sizing: border-box;
   width: min(72vw, 46rem);
   margin-inline: auto;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  display: flex;
   align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35em;
   font-size: clamp(0.38rem, 0.62vw, 0.62rem);
   letter-spacing: 0.08em;
   white-space: nowrap;
 }
 
+.landing-axis span {
+  flex: 0 0 auto;
+}
+
 .landing-axis span:nth-child(1) {
-  justify-self: start;
   text-align: left;
 }
 
 .landing-axis span:nth-child(2),
+.landing-axis span:nth-child(3),
 .landing-axis span:nth-child(4) {
-  justify-self: center;
-  text-align: center;
-}
-
-.landing-axis span:nth-child(3) {
-  justify-self: center;
   text-align: center;
 }
 
 .landing-axis span:nth-child(5) {
-  justify-self: end;
   text-align: right;
+}
+
+/* Keep identical tracking in every locale; Cyrillic must not receive
+   language-specific spacing that shifts the visible endpoints. */
+:lang(ru) .landing-axis,
+:lang(uk) .landing-axis {
+  letter-spacing: 0.08em;
 }
 
 @media (max-width: 640px) {
@@ -417,12 +423,22 @@
     font-size: clamp(0.3rem, 1.3vw, 0.38rem);
     letter-spacing: 0.035em;
   }
+
+  :lang(ru) .landing-axis,
+  :lang(uk) .landing-axis {
+    letter-spacing: 0.035em;
+  }
 }
 
 @media (max-width: 390px) {
   .landing-axis {
     width: calc(100% - 2.25rem);
     font-size: clamp(0.28rem, 1.2vw, 0.33rem);
+    letter-spacing: 0.02em;
+  }
+
+  :lang(ru) .landing-axis,
+  :lang(uk) .landing-axis {
     letter-spacing: 0.02em;
   }
 }
