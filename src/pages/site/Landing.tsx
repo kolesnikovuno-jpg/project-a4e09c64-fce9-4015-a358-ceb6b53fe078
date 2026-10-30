@@ -1,6 +1,4 @@
 import { useCallback, useRef } from "react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import SEO from "@/components/SEO";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import { LOCALES } from "@/i18n/config";
@@ -14,24 +12,18 @@ const landingCopy = {
     disciplines: ["\n", "architect   :   design   :   art", "\n"],
     lab: "Architectural Object Lab ↗",
     positioning: "I help shape spaces around the way you live. I work with the context and the conditions of the place, developing a practical solution from the first idea through to realization.",
-    start: "Describe your situation",
-    cases: "View works",
   },
   ru: {
     sequence: ["\n", "пространство : форма : смысл", "\n"],
     disciplines: ["\n", "архитектура : дизайн : искусство", "\n"],
     lab: "Архитектурная лаборатория ↗",
     positioning: "Я помогаю настроить пространство так, чтобы оно поддерживало твой ритм жизни. Работаю с контекстом, параметрами места и довожу решение до рабочей формы: от идеи до реализации",
-    start: "Описать ситуацию",
-    cases: "Смотреть работы",
   },
   uk: {
     sequence: ["\n", "простір : форма : сенс", "\n"],
     disciplines: ["\n", "архітектура : дизайн : мистецтво", "\n"],
     lab: "Архітектурна лабораторія ↗",
     positioning: "Я допомагаю налаштувати простір так, щоб він відповідав твоєму ритму життя. Враховую контекст і особливості місця та доводжу рішення до втілення: від задуму до реалізації.",
-    start: "Описати ситуацію",
-    cases: "Переглянути роботи",
   },
 } as const;
 
@@ -103,15 +95,6 @@ const Landing = () => {
 
         <div className="landing-introduction">
           <p className="landing-positioning">{copy.positioning}</p>
-          <nav className="landing-actions" aria-label={copy.start}>
-            <Button asChild variant="link" className="landing-action">
-              <Link to={localePath("/start")}>{copy.start}</Link>
-            </Button>
-            <Button asChild variant="link" className="landing-action landing-action--secondary">
-              <Link to={localePath("/cases")}>{copy.cases}</Link>
-            </Button>
-          </nav>
-
         <a className="landing-lab" href="https://architectural-object-lab.lovable.app">
           {copy.lab}
         </a>
