@@ -97,9 +97,13 @@
 
 .landing-axis {
   position: absolute;
-  inset-inline: clamp(2rem, 7.4vw, 8.75rem);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  /* one shared width for both rows: first/last word edges coincide */
+  left: 0;
+  right: 0;
+  width: clamp(14.5rem, 29vw, 30rem);
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
   align-items: baseline;
   /* Quieter than the wordmark: half-height glyphs + wide vw-tracked
      spacing so the row length tracks the wordmark width */
@@ -107,31 +111,14 @@
   font-size: clamp(0.41rem, 0.67vw, 0.67rem);
   font-weight: 200;
   line-height: 1;
-  letter-spacing: 0.64vw;
+  letter-spacing: 0.14em;
   white-space: nowrap;
   will-change: transform;
 }
 
-/* Ukrainian upper row is shorter: widen its tracking so its length
-   still matches the wordmark; lower row gets a compensating reduction */
-:lang(uk) .landing-axis--upper {
-  letter-spacing: 1vw;
-}
-
-:lang(uk) .landing-axis--lower {
-  letter-spacing: 0.59vw;
-}
-
-.landing-axis span:nth-child(1) {
-  justify-self: start;
-}
-
-.landing-axis span:nth-child(2) {
-  justify-self: center;
-}
-
-.landing-axis span:nth-child(3) {
-  justify-self: end;
+.landing-axis span:last-child {
+  /* trailing tracking would push the visible right edge inward */
+  margin-right: -0.14em;
 }
 
 .landing-axis--upper {
@@ -216,17 +203,8 @@
   }
 
   .landing-axis {
-    inset-inline: 1.5rem;
-    font-size: clamp(0.32rem, 1.43vw, 0.4rem);
-    letter-spacing: 1vw;
-  }
-
-  :lang(uk) .landing-axis--upper {
-    letter-spacing: 1.56vw;
-  }
-
-  :lang(uk) .landing-axis--lower {
-    letter-spacing: 0.925vw;
+    width: clamp(14.5rem, 62vw, 18rem);
+    font-size: clamp(0.4rem, 1.6vw, 0.5rem);
   }
 
   .landing-axis--upper {
@@ -246,20 +224,6 @@
 }
 
 @media (max-width: 390px) {
-  .landing-axis {
-    inset-inline: 1.125rem;
-    font-size: clamp(0.28rem, 1.38vw, 0.35rem);
-    letter-spacing: 1.39vw;
-  }
-
-  :lang(uk) .landing-axis--upper {
-    letter-spacing: 2.14vw;
-  }
-
-  :lang(uk) .landing-axis--lower {
-    letter-spacing: 1.27vw;
-  }
-
   .landing-wordmark {
     inset-inline: 0.75rem;
     font-size: clamp(1.08rem, 5.14vw, 1.25rem);

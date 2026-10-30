@@ -77,8 +77,14 @@ const Landing = () => {
       <main className="landing-composition">
         <div className="landing-identity">
         <p className="landing-axis landing-axis--upper">
-          {copy.sequence.map((word, index) => (
-            <span key={index}>{word}</span>
+          {splitAxis(copy.sequence).map((part, index) => (
+            <span
+              key={index}
+              className={part === ":" ? "landing-axis__sep" : "landing-axis__word"}
+              aria-hidden={part === ":" ? true : undefined}
+            >
+              {part}
+            </span>
           ))}
         </p>
 
@@ -87,8 +93,14 @@ const Landing = () => {
         </h1>
 
         <p className="landing-axis landing-axis--lower">
-          {copy.disciplines.map((word, index) => (
-            <span key={index}>{word}</span>
+          {splitAxis(copy.disciplines).map((part, index) => (
+            <span
+              key={index}
+              className={part === ":" ? "landing-axis__sep" : "landing-axis__word"}
+              aria-hidden={part === ":" ? true : undefined}
+            >
+              {part}
+            </span>
           ))}
         </p>
         </div>
@@ -103,5 +115,15 @@ const Landing = () => {
     </div>
   );
 };
+
+/** Splits a row phrase into meaningful words and ":" separators. */
+const splitAxis = (parts: readonly string[]) =>
+  parts
+    .join(" ")
+    .replace(/\u00a0/g, " ")
+    .split(":")
+    .map((word) => word.trim())
+    .filter(Boolean)
+    .flatMap((word, index) => (index === 0 ? [word] : [":", word]));
 
 export default Landing;
