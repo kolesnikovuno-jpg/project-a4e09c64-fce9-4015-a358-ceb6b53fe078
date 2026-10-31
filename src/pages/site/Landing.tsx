@@ -107,9 +107,14 @@ const Landing = () => {
 
         <div className="landing-introduction">
           <p className="landing-positioning">{copy.positioning}</p>
-        <a className="landing-lab" href="https://architectural-object-lab.lovable.app">
-          {copy.lab}
-        </a>
+        <nav className="landing-links" aria-label="Project tools">
+          <a className="landing-lab" href="https://architectural-object-lab.lovable.app">
+            {copy.lab}
+          </a>
+          <a className="landing-lab" href="/unocalc">
+            UNOcalc ↗
+          </a>
+        </nav>
         </div>
       </main>
     </div>
