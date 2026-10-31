@@ -268,7 +268,7 @@ const UnoCalc = () => {
                 <span className="text-[12px] text-foreground/75">{t.volume}</span>
                 <span className="text-[20px] font-light tabular-nums tracking-[-0.02em]">
                   {ready ? formatVolume(calculation.volume) : "—"}
-                  <span className="ml-1 text-[12px] text-foreground/72">{t.cubic}</span>
+                  <span className="ml-1 text-[12px] text-foreground/75">{t.cubic}</span>
                 </span>
               </div>
             </section>
@@ -354,7 +354,7 @@ const UnoCalc = () => {
           </section>
         </div>
 
-        <footer className="mt-10 flex flex-col justify-between gap-2 border-t border-border/70 pt-4 text-[12px] font-light leading-[1.7] text-foreground/72 md:mt-12 md:flex-row md:gap-10">
+        <footer className="mt-10 flex flex-col justify-between gap-2 border-t border-border/70 pt-4 text-[12px] font-light leading-[1.7] text-foreground/75 md:mt-12 md:flex-row md:gap-10">
           <p>U.E.R. — unit of energy resonance / {t.definition}</p>
           <p className="max-w-[490px]">{t.disclaimer}</p>
         </footer>
