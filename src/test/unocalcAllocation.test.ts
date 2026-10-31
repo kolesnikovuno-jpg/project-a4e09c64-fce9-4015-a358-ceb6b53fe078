@@ -3,6 +3,7 @@ import {
   allocateResource, RESOURCE_SHARES, BASE_RESOURCE_PERCENTAGES, FLEXIBILITY_PP,
   adaptResourcePercentages, isValidResourcePercentages, type ResourcePercentages,
   INITIAL_RESOURCE_COUNTERPARTS, linkResourceCounterparts, resourceShareRange,
+  resourcePaidMask, resourceCashSummary, DEFAULT_RESOURCE_COST_MODES,
 } from "@/lib/unocalcAllocation";
 
 describe("UNOcalc resource distribution", () => {
@@ -131,6 +132,54 @@ describe("UNOcalc resource distribution", () => {
   it("rejects invalid totals or unauthorized shares", () => {
     expect(allocateResource(10000, [20, 20, 20, 41])).toBeNull();
     expect(allocateResource(10000, [12, 28, 20, 40])).toBeNull();
+  });
+
+
+  it("separates direct payments from reference resource: personal project without retail and outsourced design", () => {
+    const allocation = allocateResource(40000);
+    const modes = ["not-needed", "self", "paid", "paid"] as const;
+    const cash = resourceCashSummary(allocation, modes);
+    expect(cash?.lines.map((line) => line.directPayment)).toEqual([0, 0, 8000, 16000]);
+    expect(cash?.paid).toBe(24000);
+    expect(cash?.noDirectPayment).toBe(16000);
+    expect(cash?.paidPercentOfReference).toBe(60);
+    expect(allocation?.displayedTotal).toBe(40000);
+  });
+
+  it("retail can be absent while design still carries value but no separate payment", () => {
+    const cash = resourceCashSummary(allocateResource(15625),
+      ["not-needed", "self", "paid", "paid"]);
+    expect(cash?.lines[0].referenceAmount).toBe(3125);
+    expect(cash?.lines[0].mode).toBe("not-needed");
+    expect(cash?.lines[1].referenceAmount).toBe(3125);
+    expect(cash?.lines[1].mode).toBe("self");
+    expect(cash?.lines[0].directPayment).toBe(0);
+    expect(cash?.lines[1].directPayment).toBe(0);
+  });
+
+  it("only paid directions rebalance: without retail and self-design, montage and components exchange only", () => {
+    const allowed = resourcePaidMask(["not-needed", "self", "paid", "paid"]);
+    expect(allowed).toEqual([false, false, true, true]);
+    const change = adaptResourcePercentages(BASE_RESOURCE_PERCENTAGES, 2, 22.5, null, allowed);
+    expect(change).toEqual([20, 20, 22.5, 37.5]);
+    expect(adaptResourcePercentages(change, 2, 20, null, allowed)).toEqual(BASE_RESOURCE_PERCENTAGES);
+    expect(resourceShareRange(BASE_RESOURCE_PERCENTAGES, 0, null, allowed)).toEqual({ min: 20, max: 20 });
+    expect(adaptResourcePercentages(BASE_RESOURCE_PERCENTAGES, 1, 22.5, null, allowed))
+      .toEqual(BASE_RESOURCE_PERCENTAGES);
+  });
+
+  it("cannot change the paid allocation when only one paid category remains", () => {
+    const allowed = resourcePaidMask(["not-needed", "self", "not-needed", "paid"]);
+    expect(resourceShareRange(BASE_RESOURCE_PERCENTAGES, 3, null, allowed))
+      .toEqual({ min: 40, max: 40 });
+    expect(adaptResourcePercentages(BASE_RESOURCE_PERCENTAGES, 3, 42.5, null, allowed))
+      .toEqual(BASE_RESOURCE_PERCENTAGES);
+  });
+
+  it("default payment mode leaves the original four-part monetary allocation intact", () => {
+    const allocation = allocateResource(10000);
+    expect(resourceCashSummary(allocation, DEFAULT_RESOURCE_COST_MODES)?.paid).toBe(10000);
+    expect(resourceCashSummary(allocation, DEFAULT_RESOURCE_COST_MODES)?.noDirectPayment).toBe(0);
   });
 
   it("allocates the original $15,625 reference exactly", () => {
