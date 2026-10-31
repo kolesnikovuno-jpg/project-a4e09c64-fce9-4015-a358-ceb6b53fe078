@@ -31,7 +31,10 @@ const copy = {
     result: "03 / Your reference",
     reference: "calculated index",
     selection: "selected quality",
-    wireframe: "conceptual diagram of the bounding volume",
+    wireframe: "schematic proportions of the bounding volume",
+    wireframeNote: "Proportions only; not a scale drawing.",
+    costReference: "Indicative resource in USD",
+    costBasis: "Working assumption: 1 U.E.R. ≈ 1 USD. This is an indicative comparison, not a verified quote.",
     prompt: "Enter dimensions to see the reference.",
     invalid: "Each dimension must be a positive number greater than zero.",
     outOfRange: "Dimensions are outside the supported calculation range.",
@@ -62,7 +65,10 @@ const copy = {
     result: "03 / Твой ориентир",
     reference: "расчётный индекс",
     selection: "выбранный уровень",
-    wireframe: "условная схема габаритного объёма",
+    wireframe: "схема пропорций габаритного объёма",
+    wireframeNote: "Условные пропорции, не масштабный чертёж.",
+    costReference: "Ресурсный ориентир в USD",
+    costBasis: "Рабочее сопоставление: 1 U.E.R. ≈ 1 USD. Это ориентир, а не подтверждённая смета.",
     prompt: "Введи размеры, чтобы получить ориентир.",
     invalid: "Каждый размер должен быть положительным числом больше нуля.",
     outOfRange: "Размеры выходят за пределы допустимого расчёта.",
@@ -93,7 +99,10 @@ const copy = {
     result: "03 / Твій орієнтир",
     reference: "розрахунковий індекс",
     selection: "обраний рівень",
-    wireframe: "умовна схема габаритного об'єму",
+    wireframe: "схема пропорцій габаритного об'єму",
+    wireframeNote: "Умовні пропорції, не масштабне креслення.",
+    costReference: "Ресурсний орієнтир у USD",
+    costBasis: "Робоче зіставлення: 1 U.E.R. ≈ 1 USD. Це орієнтир, а не підтверджений кошторис.",
     prompt: "Введи розміри, щоб отримати орієнтир.",
     invalid: "Кожен розмір має бути додатним числом, більшим за нуль.",
     outOfRange: "Розміри виходять за межі допустимого розрахунку.",
@@ -123,12 +132,12 @@ const VolumeDiagram = ({
     entered.every((value) => Number.isFinite(value) && value > 0);
   const values = valid ? entered : [5200, 3600, 2800];
   const largest = Math.max(...values);
-  const x = 78 + (60 * values[0]) / largest;
-  const y = 28 + (39 * values[1]) / largest;
-  const z = 62 + (49 * values[2]) / largest;
-  const ox = 55;
-  const oy = 182;
-  const point = (...coords: number[]) => coords[0].toFixed(1) + "," + coords[1].toFixed(1);
+  const x = 72 + (66 * values[0]) / largest;
+  const y = 27 + (41 * values[1]) / largest;
+  const z = 58 + (54 * values[2]) / largest;
+  const ox = 42;
+  const oy = 181;
+  const point = (coords: number[]) => coords[0].toFixed(1) + "," + coords[1].toFixed(1);
   const base = [
     [ox, oy],
     [ox + x, oy],
@@ -136,24 +145,36 @@ const VolumeDiagram = ({
     [ox + y, oy - y * 0.45],
   ];
   const top = base.map(([px, py]) => [px, py - z]);
-  const polygon = (points: number[][]) => points.map(([px, py]) => point(px, py)).join(" ");
+  const polygon = (points: number[][]) => points.map(point).join(" ");
   const fill = level === 432 ? 0.13 : level === 270 ? 0.075 : 0.035;
+  const display = (index: number) => valid ? entered[index].toLocaleString("en-US") : "—";
 
   return (
-    <div className="relative overflow-hidden border border-border/55 bg-foreground/[0.018]">
-      <svg viewBox="0 0 310 220" role="img" aria-label={label} className="mx-auto block h-auto w-full max-w-[330px] text-foreground">
-        <line x1="20" y1="192" x2="290" y2="192" stroke="currentColor" strokeOpacity="0.09" />
-        <line x1="32" y1="28" x2="32" y2="192" stroke="currentColor" strokeOpacity="0.09" />
-        <polygon points={polygon([top[0], top[1], top[2], top[3]])} fill="currentColor" fillOpacity={fill} stroke="currentColor" strokeOpacity="0.35" strokeWidth="1" />
-        <polygon points={polygon([base[0], base[1], top[1], top[0]])} fill="currentColor" fillOpacity={fill / 2} stroke="currentColor" strokeOpacity="0.4" strokeWidth="1" />
-        <polygon points={polygon([base[1], base[2], top[2], top[1]])} fill="currentColor" fillOpacity={fill * 1.4} stroke="currentColor" strokeOpacity="0.4" strokeWidth="1" />
-        <path d={"M " + point(...base[0]) + " L " + point(...base[3]) + " L " + point(...base[2])} stroke="currentColor" strokeOpacity="0.22" strokeDasharray="4 5" fill="none" />
-        <path d={"M " + point(...base[3]) + " L " + point(...top[3])} stroke="currentColor" strokeOpacity="0.22" strokeDasharray="4 5" fill="none" />
-        <circle cx={base[0][0]} cy={base[0][1]} r="2.5" fill="currentColor" fillOpacity="0.55" />
-        <circle cx={top[2][0]} cy={top[2][1]} r="2.5" fill="currentColor" fillOpacity="0.55" />
+    <figure className="overflow-hidden border border-border/65 bg-foreground/[0.018]">
+      <svg viewBox="0 0 310 224" role="img" aria-label={label} className="mx-auto block h-auto w-full max-w-[330px] text-foreground">
+        <line x1="12" y1="201" x2="290" y2="201" stroke="currentColor" strokeOpacity="0.12" />
+        <polygon points={polygon([top[0], top[1], top[2], top[3]])} fill="currentColor" fillOpacity={fill} stroke="currentColor" strokeOpacity="0.42" strokeWidth="1" />
+        <polygon points={polygon([base[0], base[1], top[1], top[0]])} fill="currentColor" fillOpacity={fill / 2} stroke="currentColor" strokeOpacity="0.52" strokeWidth="1" />
+        <polygon points={polygon([base[1], base[2], top[2], top[1]])} fill="currentColor" fillOpacity={fill * 1.4} stroke="currentColor" strokeOpacity="0.52" strokeWidth="1" />
+        <path d={"M " + point(base[0]) + " L " + point(base[3]) + " L " + point(base[2])} stroke="currentColor" strokeOpacity="0.27" strokeDasharray="4 5" fill="none" />
+        <path d={"M " + point(base[3]) + " L " + point(top[3])} stroke="currentColor" strokeOpacity="0.27" strokeDasharray="4 5" fill="none" />
+        <circle cx={base[0][0]} cy={base[0][1]} r="2" fill="currentColor" fillOpacity="0.6" />
+        <circle cx={top[2][0]} cy={top[2][1]} r="2" fill="currentColor" fillOpacity="0.6" />
+        <g fontFamily="inherit" fontSize="12" fontWeight="400" fill="currentColor" fillOpacity="0.85">
+          <text x={ox + x / 2} y={oy + 16} textAnchor="middle">A</text>
+          <text x={base[1][0] + y / 2 + 4} y={oy - y * 0.225 + 15} textAnchor="middle">B</text>
+          <text x={base[2][0] + 11} y={base[2][1] - z / 2} textAnchor="middle">C</text>
+        </g>
       </svg>
-      <span className="absolute bottom-3 left-4 text-[9px] uppercase tracking-[0.17em] text-muted-foreground/70">A × B × C</span>
-    </div>
+      <div className="grid grid-cols-3 gap-2 border-t border-border/60 px-3 py-2.5 text-[11px] text-foreground/80 sm:px-4">
+        {["A", "B", "C"].map((axis, i) => (
+          <span key={axis} className="whitespace-nowrap font-light tabular-nums">
+            <span className="mr-1 font-medium">{axis}</span>
+            {display(i)}
+          </span>
+        ))}
+      </div>
+    </figure>
   );
 };
 
@@ -207,7 +228,7 @@ const UnoCalc = () => {
 
         <section className="mb-8 mt-7 grid gap-3 border-b border-border/75 pb-7 sm:mb-10 sm:mt-9 sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] sm:gap-10" aria-label="UNOcalc">
           <div>
-            <p className="mb-2 text-[11px] font-normal uppercase tracking-[0.17em] text-foreground/65">{t.eyebrow}</p>
+            <p className="mb-2 text-[11px] font-normal uppercase tracking-[0.17em] text-foreground/78">{t.eyebrow}</p>
             <p className="text-[20px] font-light leading-tight tracking-[-0.015em] text-foreground sm:text-[25px]">{t.heroTop}</p>
           </div>
           <p className="max-w-[490px] text-[13px] font-light leading-[1.75] text-foreground/75">{t.intro}</p>
@@ -218,13 +239,13 @@ const UnoCalc = () => {
             <section aria-labelledby="unocalc-dimensions">
               <div className="mb-4 flex flex-col gap-1">
                 <h2 id="unocalc-dimensions" className="text-[12px] font-medium uppercase tracking-[0.13em]">{t.dimensions}</h2>
-                <p className="text-[12px] font-light leading-[1.65] text-foreground/65">{t.dimensionNote}</p>
+                <p className="text-[12px] font-light leading-[1.65] text-foreground/78">{t.dimensionNote}</p>
               </div>
               <div className="grid grid-cols-3 gap-4 sm:gap-5">
                 {dimensions.map((field) => (
                   <div key={field.key} className="min-w-0">
                     <label htmlFor={"unocalc-" + field.key} className="block text-[12px] font-light text-foreground/80">
-                      {field.label} <span className="text-foreground/55">/ {t.unit}</span>
+                      {field.label} <span className="text-foreground/74">/ {t.unit}</span>
                     </label>
                     <input
                       id={"unocalc-" + field.key}
@@ -244,17 +265,17 @@ const UnoCalc = () => {
               </div>
               {feedback && <p id="unocalc-feedback" role="alert" className="mt-3 text-[12px] text-red-700">{feedback}</p>}
               <div className="mt-4 flex items-baseline justify-between gap-3 border-b border-border/60 py-2">
-                <span className="text-[12px] text-foreground/70">{t.volume}</span>
+                <span className="text-[12px] text-foreground/74">{t.volume}</span>
                 <span className="text-[20px] font-light tabular-nums tracking-[-0.02em]">
                   {ready ? formatVolume(calculation.volume) : "—"}
-                  <span className="ml-1 text-[12px] text-foreground/60">{t.cubic}</span>
+                  <span className="ml-1 text-[12px] text-foreground/72">{t.cubic}</span>
                 </span>
               </div>
             </section>
 
             <fieldset className="mt-8">
               <legend className="w-full border-t border-foreground/25 pt-4 text-[12px] font-medium uppercase tracking-[0.13em]">{t.settings}</legend>
-              <p className="mb-4 mt-1 text-[12px] font-light text-foreground/65">{t.qualityNote}</p>
+              <p className="mb-4 mt-1 text-[12px] font-light text-foreground/78">{t.qualityNote}</p>
               <div className="divide-y divide-border/65 border-y border-border/65">
                 {levels.map((level) => {
                   const active = q === level;
@@ -275,12 +296,12 @@ const UnoCalc = () => {
                         onChange={() => setQ(level)}
                         className="sr-only"
                       />
-                      <span className={"ml-2 w-[55px] shrink-0 text-[25px] font-extralight tracking-[-0.035em] tabular-nums sm:w-[64px] " + (active ? "text-foreground" : "text-foreground/55")}>
+                      <span className={"ml-2 w-[55px] shrink-0 text-[25px] font-extralight tracking-[-0.035em] tabular-nums sm:w-[64px] " + (active ? "text-foreground" : "text-foreground/74")}>
                         {level}
                       </span>
                       <span className="min-w-0 flex-1 pr-2">
                         <span className={"block text-[13px] font-normal leading-[1.4] " + (active ? "text-foreground" : "text-foreground/80")}>{item.label}</span>
-                        <span className="mt-0.5 block text-[11px] font-light leading-[1.5] text-foreground/65">{item.hint}</span>
+                        <span className="mt-0.5 block text-[12px] font-light leading-[1.55] text-foreground/78">{item.hint}</span>
                       </span>
                       <span
                         aria-hidden="true"
@@ -296,14 +317,15 @@ const UnoCalc = () => {
           <section className="md:border-l md:border-border/70 md:pl-8 lg:pl-10" aria-labelledby="unocalc-result">
             <div className="flex items-baseline justify-between gap-2">
               <h2 id="unocalc-result" className="text-[12px] font-medium uppercase tracking-[0.13em]">{t.result}</h2>
-              <span className="text-[10px] tracking-[0.17em] text-foreground/55">A × B × C</span>
+              <span className="text-[10px] tracking-[0.17em] text-foreground/74">A × B × C</span>
             </div>
             <div className="mt-4">
               <VolumeDiagram dimensions={[a, b, c]} level={q} label={t.wireframe} />
+              <p className="mt-2 text-[11px] text-foreground/74">{t.wireframeNote}</p>
             </div>
             <div className="mt-5 flex items-center justify-between gap-3">
-              <span className="text-[12px] text-foreground/70">{t.reference}</span>
-              <span className="text-[12px] font-light tracking-[0.12em] text-foreground/70">U.E.R.</span>
+              <span className="text-[12px] text-foreground/74">{t.reference}</span>
+              <span className="text-[12px] font-light tracking-[0.12em] text-foreground/74">U.E.R.</span>
             </div>
             <output
               aria-live="polite"
@@ -311,17 +333,28 @@ const UnoCalc = () => {
             >
               {ready ? formatUer(calculation.energy) : "—"}
             </output>
+            {ready && (
+              <div className="mt-4 border-b border-border/60 pb-4">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-[12px] text-foreground/78">{t.costReference}</span>
+                  <span className="text-[20px] font-light tracking-[-0.02em] tabular-nums">
+                    ≈ $ {Number(formatUer(calculation.energy)).toLocaleString("en-US", { maximumFractionDigits: 3 })}
+                  </span>
+                </div>
+                <p className="mt-2 text-[11px] font-light leading-[1.6] text-foreground/74">{t.costBasis}</p>
+              </div>
+            )}
             <div className="mt-4 flex justify-between gap-4">
-              <span className="text-[12px] text-foreground/65">{t.selection}</span>
+              <span className="text-[12px] text-foreground/78">{t.selection}</span>
               <span className="text-right text-[13px] font-normal">{q} · {t.levels[q].label}</span>
             </div>
-            <p className="mt-4 text-[12px] font-light leading-[1.65] text-foreground/65">
+            <p className="mt-4 text-[12px] font-light leading-[1.65] text-foreground/78">
               {ready ? t.analysis : feedback ?? t.prompt}
             </p>
           </section>
         </div>
 
-        <footer className="mt-10 flex flex-col justify-between gap-2 border-t border-border/70 pt-4 text-[11px] font-light leading-[1.7] text-foreground/60 md:mt-12 md:flex-row md:gap-10">
+        <footer className="mt-10 flex flex-col justify-between gap-2 border-t border-border/70 pt-4 text-[12px] font-light leading-[1.7] text-foreground/72 md:mt-12 md:flex-row md:gap-10">
           <p>U.E.R. — unit of energy resonance / {t.definition}</p>
           <p className="max-w-[490px]">{t.disclaimer}</p>
         </footer>
