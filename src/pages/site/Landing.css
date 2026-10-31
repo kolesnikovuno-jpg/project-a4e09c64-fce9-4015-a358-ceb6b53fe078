@@ -249,6 +249,28 @@
   }
 }
 
+/* Shared quiet navigation for the Lab and UNOcalc exits. */
+.landing-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  column-gap: 2rem;
+  row-gap: 0.25rem;
+  margin-top: 2rem;
+}
+
+.landing-links .landing-lab {
+  margin-top: 0;
+}
+
+@media (max-width: 640px) {
+  .landing-links {
+    margin-top: 1.5rem;
+    column-gap: 1.5rem;
+  }
+}
+
 /* Understated exit to the Architectural Object Lab prototype:
    a quiet annotation below the composition, not a button */
 .landing-lab {
