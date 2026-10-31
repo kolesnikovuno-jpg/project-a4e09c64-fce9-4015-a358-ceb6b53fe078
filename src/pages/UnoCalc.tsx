@@ -85,7 +85,7 @@ const copy = {
     allocationNames: { retail: "retail", design: "project / design", installation: "installation", components: "components" },
     allocationBalanced: "Balance",
     allocationAdapted: "Adaptation",
-    allocationFlexibility: "Adjust within ±2.5 percentage points; the other shares rebalance automatically.",
+    allocationFlexibility: "Moving one slider automatically spreads the compensation among the other three, weighted by their base shares. Each share stays within ±2.5 percentage points; total stays at 100%.",
     allocationBeyond: "If real requirements exceed this range, reconsider the total project resource rather than forcing the shares.",
     allocationReset: "Reset",
     allocationAdjust: "Adjust share",
@@ -149,7 +149,7 @@ const copy = {
     allocationNames: { retail: "ритейл", design: "проект / дизайн", installation: "монтаж", components: "комплектующие" },
     allocationBalanced: "Равновесие",
     allocationAdapted: "Адаптация",
-    allocationFlexibility: "Меняй доли в пределах ±2,5 п.п. Остальные автоматически компенсируют изменение.",
+    allocationFlexibility: "При изменении одной доли компенсация распределяется между тремя остальными с учётом их исходного веса. Допуск каждой доли ±2,5 п.п., сумма всегда 100%.",
     allocationBeyond: "Если реальные потребности выходят за допуск, следует пересмотреть общую ресурсную ёмкость, а не подгонять проценты.",
     allocationReset: "Сбросить",
     allocationAdjust: "Изменить долю",
@@ -213,7 +213,7 @@ const copy = {
     allocationNames: { retail: "ритейл", design: "проєкт / дизайн", installation: "монтаж", components: "комплектуючі" },
     allocationBalanced: "Рівновага",
     allocationAdapted: "Адаптація",
-    allocationFlexibility: "Змінюй частки в межах ±2,5 в.п. Решта автоматично компенсують зміну.",
+    allocationFlexibility: "Під час зміни однієї частки компенсація розподіляється між трьома іншими відповідно до їхньої початкової ваги. Допуск кожної частки ±2,5 в.п., сума завжди 100%.",
     allocationBeyond: "Якщо реальні потреби виходять за межі допуску, слід переглянути загальну ресурсну місткість, а не підганяти відсотки.",
     allocationReset: "Скинути",
     allocationAdjust: "Змінити частку",
@@ -616,6 +616,12 @@ const UnoCalc = () => {
                         <span className="min-w-0 flex-1 text-foreground/85">{t.allocationNames[share.id]}</span>
                         <span className="w-16 shrink-0 text-right tabular-nums text-foreground/75">
                           {currentPercent.toLocaleString(shareLocale)}%
+                          {currentPercent !== share.percent && (
+                            <span className="ml-1 text-[10px] text-foreground/60">
+                              {currentPercent > share.percent ? "+" : "−"}
+                              {Math.abs(currentPercent - share.percent).toLocaleString(shareLocale)}
+                            </span>
+                          )}
                         </span>
                         <span className="w-[108px] shrink-0 text-right font-light tabular-nums sm:w-[122px]">
                           {part ? formatShare(part.amount) : "—"}
@@ -629,7 +635,7 @@ const UnoCalc = () => {
                         value={currentPercent}
                         onChange={(event) => changeShare(index, Number(event.target.value))}
                         aria-label={t.allocationAdjust + ": " + t.allocationNames[share.id]}
-                        className="mt-2 block h-5 w-full cursor-pointer accent-foreground"
+                        className="mt-2 block h-10 w-full cursor-pointer accent-foreground"
                       />
                       <div className="flex justify-between text-[10px] tabular-nums text-foreground/60">
                         <span>{(share.percent - FLEXIBILITY_PP).toLocaleString(shareLocale)}%</span>

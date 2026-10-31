@@ -31,9 +31,15 @@ export const isValidResourcePercentages = (shares: ResourcePercentages): boolean
   );
 
 /**
- * Increases/decreases one share in 0.5-point ticks, and redistributes the
- * offset to the other three within their bounds. Prefer offsets that return
- * previously deviated shares towards their baseline.
+ * Move the chosen slider to its requested value. Redistribute the difference
+ * across the other three shares, favoring the smallest increase in squared
+ * percentage deviation from the baseline, weighted by each baseline share.
+ * This spreads compensation across related functions instead of mechanically
+ * draining the first row. Existing deviations are restored before creating
+ * new ones where possible. The requested share remains fixed.
+ *
+ * Constraints: ±2.5 percentage points per share, 0.5 pp increments,
+ * all four shares always total exactly 100%.
  */
 export const adaptResourcePercentages = (
   current: ResourcePercentages,
@@ -58,11 +64,15 @@ export const adaptResourcePercentages = (
       ticks[candidate] + direction <= MAX_TICKS[candidate]
     );
     if (options.length === 0) return current;
-    options.sort((a, b) =>
-      direction === -1
-        ? (ticks[b] - BASE_TICKS[b]) - (ticks[a] - BASE_TICKS[a]) || a - b
-        : (ticks[a] - BASE_TICKS[a]) - (ticks[b] - BASE_TICKS[b]) || a - b
-    );
+    // Distribute the offset in proportion to each category's baseline
+    // capacity. The 40% components category may absorb more of a correction
+    // than a 20% category without taking the entire burden.
+    const changePenalty = (candidate: number) => {
+      const deviation = ticks[candidate] - BASE_TICKS[candidate];
+      const nextDeviation = deviation + direction;
+      return (nextDeviation ** 2 - deviation ** 2) / BASE_TICKS[candidate];
+    };
+    options.sort((a, b) => changePenalty(a) - changePenalty(b) || a - b);
     ticks[options[0]] += direction;
   }
   const next = ticks.map((tick) => tick * SHARE_STEP_PP) as ResourcePercentages;
