@@ -68,6 +68,7 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   { path: "start", element: <StudioStart /> },
   // Previous landing (architectural research) kept for backward compatibility
   { path: "research", element: <Index /> },
+  { path: "unocalc", element: <UnoCalc /> },
   { path: "lyra", element: <Lyra /> },
   { path: "nava", element: <Nava /> },
   { path: "about", element: <About /> },
@@ -114,7 +115,6 @@ const App = () => (
           {/* Non-localized utility routes. */}
           <Route path="/doodle" element={<Canvas />} />
           <Route path="/pixels" element={<PixelTransition />} />
-          <Route path="/unocalc" element={<UnoCalc />} />
           <Route path="/lyra-concept" element={<LyraConcept />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
 
