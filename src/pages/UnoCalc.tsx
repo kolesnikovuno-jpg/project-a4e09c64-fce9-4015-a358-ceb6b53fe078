@@ -228,7 +228,7 @@ const UnoCalc = () => {
 
         <section className="mb-8 mt-7 grid gap-3 border-b border-border/75 pb-7 sm:mb-10 sm:mt-9 sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] sm:gap-10" aria-label="UNOcalc">
           <div>
-            <p className="mb-2 text-[11px] font-normal uppercase tracking-[0.17em] text-foreground/78">{t.eyebrow}</p>
+            <p className="mb-2 text-[11px] font-normal uppercase tracking-[0.17em] text-foreground/80">{t.eyebrow}</p>
             <p className="text-[20px] font-light leading-tight tracking-[-0.015em] text-foreground sm:text-[25px]">{t.heroTop}</p>
           </div>
           <p className="max-w-[490px] text-[13px] font-light leading-[1.75] text-foreground/75">{t.intro}</p>
@@ -239,13 +239,13 @@ const UnoCalc = () => {
             <section aria-labelledby="unocalc-dimensions">
               <div className="mb-4 flex flex-col gap-1">
                 <h2 id="unocalc-dimensions" className="text-[12px] font-medium uppercase tracking-[0.13em]">{t.dimensions}</h2>
-                <p className="text-[12px] font-light leading-[1.65] text-foreground/78">{t.dimensionNote}</p>
+                <p className="text-[12px] font-light leading-[1.65] text-foreground/80">{t.dimensionNote}</p>
               </div>
               <div className="grid grid-cols-3 gap-4 sm:gap-5">
                 {dimensions.map((field) => (
                   <div key={field.key} className="min-w-0">
                     <label htmlFor={"unocalc-" + field.key} className="block text-[12px] font-light text-foreground/80">
-                      {field.label} <span className="text-foreground/74">/ {t.unit}</span>
+                      {field.label} <span className="text-foreground/75">/ {t.unit}</span>
                     </label>
                     <input
                       id={"unocalc-" + field.key}
@@ -265,7 +265,7 @@ const UnoCalc = () => {
               </div>
               {feedback && <p id="unocalc-feedback" role="alert" className="mt-3 text-[12px] text-red-700">{feedback}</p>}
               <div className="mt-4 flex items-baseline justify-between gap-3 border-b border-border/60 py-2">
-                <span className="text-[12px] text-foreground/74">{t.volume}</span>
+                <span className="text-[12px] text-foreground/75">{t.volume}</span>
                 <span className="text-[20px] font-light tabular-nums tracking-[-0.02em]">
                   {ready ? formatVolume(calculation.volume) : "—"}
                   <span className="ml-1 text-[12px] text-foreground/72">{t.cubic}</span>
@@ -275,7 +275,7 @@ const UnoCalc = () => {
 
             <fieldset className="mt-8">
               <legend className="w-full border-t border-foreground/25 pt-4 text-[12px] font-medium uppercase tracking-[0.13em]">{t.settings}</legend>
-              <p className="mb-4 mt-1 text-[12px] font-light text-foreground/78">{t.qualityNote}</p>
+              <p className="mb-4 mt-1 text-[12px] font-light text-foreground/80">{t.qualityNote}</p>
               <div className="divide-y divide-border/65 border-y border-border/65">
                 {levels.map((level) => {
                   const active = q === level;
@@ -296,12 +296,12 @@ const UnoCalc = () => {
                         onChange={() => setQ(level)}
                         className="sr-only"
                       />
-                      <span className={"ml-2 w-[55px] shrink-0 text-[25px] font-extralight tracking-[-0.035em] tabular-nums sm:w-[64px] " + (active ? "text-foreground" : "text-foreground/74")}>
+                      <span className={"ml-2 w-[55px] shrink-0 text-[25px] font-extralight tracking-[-0.035em] tabular-nums sm:w-[64px] " + (active ? "text-foreground" : "text-foreground/75")}>
                         {level}
                       </span>
                       <span className="min-w-0 flex-1 pr-2">
                         <span className={"block text-[13px] font-normal leading-[1.4] " + (active ? "text-foreground" : "text-foreground/80")}>{item.label}</span>
-                        <span className="mt-0.5 block text-[12px] font-light leading-[1.55] text-foreground/78">{item.hint}</span>
+                        <span className="mt-0.5 block text-[12px] font-light leading-[1.55] text-foreground/80">{item.hint}</span>
                       </span>
                       <span
                         aria-hidden="true"
@@ -317,15 +317,15 @@ const UnoCalc = () => {
           <section className="md:border-l md:border-border/70 md:pl-8 lg:pl-10" aria-labelledby="unocalc-result">
             <div className="flex items-baseline justify-between gap-2">
               <h2 id="unocalc-result" className="text-[12px] font-medium uppercase tracking-[0.13em]">{t.result}</h2>
-              <span className="text-[10px] tracking-[0.17em] text-foreground/74">A × B × C</span>
+              <span className="text-[10px] tracking-[0.17em] text-foreground/75">A × B × C</span>
             </div>
             <div className="mt-4">
               <VolumeDiagram dimensions={[a, b, c]} level={q} label={t.wireframe} />
-              <p className="mt-2 text-[11px] text-foreground/74">{t.wireframeNote}</p>
+              <p className="mt-2 text-[11px] text-foreground/75">{t.wireframeNote}</p>
             </div>
             <div className="mt-5 flex items-center justify-between gap-3">
-              <span className="text-[12px] text-foreground/74">{t.reference}</span>
-              <span className="text-[12px] font-light tracking-[0.12em] text-foreground/74">U.E.R.</span>
+              <span className="text-[12px] text-foreground/75">{t.reference}</span>
+              <span className="text-[12px] font-light tracking-[0.12em] text-foreground/75">U.E.R.</span>
             </div>
             <output
               aria-live="polite"
@@ -336,19 +336,19 @@ const UnoCalc = () => {
             {ready && (
               <div className="mt-4 border-b border-border/60 pb-4">
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-[12px] text-foreground/78">{t.costReference}</span>
+                  <span className="text-[12px] text-foreground/80">{t.costReference}</span>
                   <span className="text-[20px] font-light tracking-[-0.02em] tabular-nums">
                     ≈ $ {Number(formatUer(calculation.energy)).toLocaleString("en-US", { maximumFractionDigits: 3 })}
                   </span>
                 </div>
-                <p className="mt-2 text-[11px] font-light leading-[1.6] text-foreground/74">{t.costBasis}</p>
+                <p className="mt-2 text-[11px] font-light leading-[1.6] text-foreground/75">{t.costBasis}</p>
               </div>
             )}
             <div className="mt-4 flex justify-between gap-4">
-              <span className="text-[12px] text-foreground/78">{t.selection}</span>
+              <span className="text-[12px] text-foreground/80">{t.selection}</span>
               <span className="text-right text-[13px] font-normal">{q} · {t.levels[q].label}</span>
             </div>
-            <p className="mt-4 text-[12px] font-light leading-[1.65] text-foreground/78">
+            <p className="mt-4 text-[12px] font-light leading-[1.65] text-foreground/80">
               {ready ? t.analysis : feedback ?? t.prompt}
             </p>
           </section>
