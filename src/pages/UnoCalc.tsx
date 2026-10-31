@@ -623,7 +623,7 @@ const UnoCalc = () => {
                 <h3 id="unocalc-allocation-title" className="text-[12px] font-medium uppercase tracking-[0.13em]">
                   {t.allocationHeading}
                 </h3>
-                <span className="text-[12px] tabular-nums text-foreground/80">100%</span>
+                <span className="text-[12px] tabular-nums text-foreground/80">{cashSummary ? Number(cashSummary.paidPercentOfReference.toFixed(1)).toLocaleString(locale === "en" ? "en-US" : "ru-RU") + "%" : "—"}</span>
               </div>
               <p className="mt-2 text-[12px] font-light leading-[1.65] text-foreground/80">
                 {t.allocationIntro}
@@ -649,7 +649,7 @@ const UnoCalc = () => {
               <div
                 className="mt-5 flex h-[6px] overflow-hidden bg-foreground/10"
                 role="img"
-                aria-label={RESOURCE_SHARES.map((share, index) => t.allocationNames[share.id] + " " + resourcePercentages[index] + "%").join(", ")}
+                aria-label={RESOURCE_SHARES.map((share, index) => t.allocationNames[share.id] + " " + (paidMask[index] ? resourcePercentages[index] : 0) + "%").join(", ")}
               >
                 {RESOURCE_SHARES.map((share, index) => (
                   <div
@@ -659,7 +659,7 @@ const UnoCalc = () => {
                       index === 1 ? "bg-foreground/55" :
                       index === 2 ? "bg-foreground/75" : "bg-foreground"
                     }
-                    style={{ width: resourcePercentages[index] + "%" }}
+                    style={{ width: (paidMask[index] ? resourcePercentages[index] : 0) + "%" }}
                   />
                 ))}
               </div>
@@ -681,8 +681,8 @@ const UnoCalc = () => {
                       <div className="flex items-baseline justify-between gap-3">
                         <span className="min-w-0 flex-1 text-foreground/85">{t.allocationNames[share.id]}</span>
                         <span className="w-16 shrink-0 text-right tabular-nums text-foreground/75">
-                          {currentPercent.toLocaleString(shareLocale)}%
-                          {currentPercent !== share.percent && (
+                          {(isPaid ? currentPercent : 0).toLocaleString(shareLocale)}%
+                          {isPaid && currentPercent !== share.percent && (
                             <span className="ml-1 text-[10px] text-foreground/60">
                               {currentPercent > share.percent ? "+" : "−"}
                               {Math.abs(currentPercent - share.percent).toLocaleString(shareLocale)}
@@ -713,7 +713,7 @@ const UnoCalc = () => {
                       </div>
                       {!isPaid && part && (
                         <p className="mt-1 text-[11px] font-light text-foreground/65">
-                          {t.allocationReference}: {formatShare(part.amount)}
+                          {t.allocationReference}: {currentPercent.toLocaleString(shareLocale)}% · {formatShare(part.amount)}
                         </p>
                       )}
                       {isPaid && <input
