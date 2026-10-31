@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
+import UnoBalanceDiagram from "@/components/unocalc/UnoBalanceDiagram";
 import {
   allocateResource,
   RESOURCE_SHARES,
@@ -588,22 +589,11 @@ const UnoCalc = () => {
                 </button>
               </div>
               <p className="mt-1 text-[11px] font-light leading-[1.6] text-foreground/75">{t.allocationFlexibility}</p>
-              <div
-                className="mt-5 flex h-[6px] overflow-hidden bg-foreground/10"
-                role="img"
-                aria-label={RESOURCE_SHARES.map((share, index) => t.allocationNames[share.id] + " " + resourcePercentages[index] + "%").join(", ")}
-              >
-                {RESOURCE_SHARES.map((share, index) => (
-                  <div
-                    key={share.id}
-                    className={
-                      index === 0 ? "bg-foreground/35" :
-                      index === 1 ? "bg-foreground/55" :
-                      index === 2 ? "bg-foreground/75" : "bg-foreground"
-                    }
-                    style={{ width: resourcePercentages[index] + "%" }}
-                  />
-                ))}
+              <div className="mt-4 border-y border-border/60 py-4">
+                <UnoBalanceDiagram
+                  shares={resourcePercentages}
+                  labels={t.allocationNames}
+                />
               </div>
               <div className="mt-2 divide-y divide-border/60">
                 {RESOURCE_SHARES.map((share, index) => {
