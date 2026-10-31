@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   allocateResource, RESOURCE_SHARES, BASE_RESOURCE_PERCENTAGES, FLEXIBILITY_PP,
   adaptResourcePercentages, isValidResourcePercentages, type ResourcePercentages,
+  INITIAL_RESOURCE_COUNTERPARTS, linkResourceCounterparts, resourceShareRange,
 } from "@/lib/unocalcAllocation";
 
 describe("UNOcalc resource distribution", () => {
@@ -50,6 +51,55 @@ describe("UNOcalc resource distribution", () => {
               const next = adaptResourcePercentages(current, index, requested);
               expect(next[index]).toBe(requested);
               expect(isValidResourcePercentages(next)).toBe(true);
+            }
+          }
+        }
+      }
+    }
+  });
+
+  it("transfers design only into installation while retail and components stay untouched", () => {
+    // User case: Retail 20, Components 42.5, Installation 17.5.
+    const start: ResourcePercentages = [20, 20, 17.5, 42.5];
+    const paired = adaptResourcePercentages(start, 1, 17.5, 2);
+    expect(paired).toEqual([20, 17.5, 20, 42.5]);
+    expect(adaptResourcePercentages(paired, 2, 17.5, 1)).toEqual(start);
+    expect(resourceShareRange(start, 1, 2)).toEqual({ min: 17.5, max: 20 });
+  });
+
+  it("pairs categories bidirectionally and cleanly relinks / unlinks", () => {
+    const designInstallation = linkResourceCounterparts(INITIAL_RESOURCE_COUNTERPARTS, 1, 2);
+    expect(designInstallation).toEqual([null, 2, 1, null]);
+    const retailComponents = linkResourceCounterparts(designInstallation, 0, 3);
+    expect(retailComponents).toEqual([3, 2, 1, 0]);
+    const switched = linkResourceCounterparts(retailComponents, 1, 0);
+    expect(switched).toEqual([1, 0, null, null]);
+    expect(linkResourceCounterparts(switched, 0, null)).toEqual(INITIAL_RESOURCE_COUNTERPARTS);
+    expect(linkResourceCounterparts(switched, 1, 1)).toBe(switched);
+  });
+
+  it("allows every paired slider position reachable from any balanced allocation", () => {
+    // There are 891 valid 0.5 pp allocations; check every pair and requested value.
+    for (let a = -5; a <= 5; a++) {
+      for (let b = -5; b <= 5; b++) {
+        for (let c = -5; c <= 5; c++) {
+          const d = -(a + b + c);
+          if (d < -5 || d > 5) continue;
+          const current: ResourcePercentages = [20 + a / 2, 20 + b / 2, 20 + c / 2, 40 + d / 2];
+          for (let index = 0; index < 4; index++) {
+            for (let partner = 0; partner < 4; partner++) {
+              if (index === partner) continue;
+              const bounds = resourceShareRange(current, index, partner);
+              for (let tick = -5; tick <= 5; tick++) {
+                const requested = BASE_RESOURCE_PERCENTAGES[index] + tick / 2;
+                const applied = Math.max(bounds.min, Math.min(bounds.max, requested));
+                const result = adaptResourcePercentages(current, index, requested, partner);
+                expect(result[index]).toBe(applied);
+                expect(result.filter((_, row) => row !== index && row !== partner)).toEqual(
+                  current.filter((_, row) => row !== index && row !== partner)
+                );
+                expect(isValidResourcePercentages(result)).toBe(true);
+              }
             }
           }
         }

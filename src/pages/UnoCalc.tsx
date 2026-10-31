@@ -6,7 +6,11 @@ import {
   RESOURCE_SHARES,
   BASE_RESOURCE_PERCENTAGES,
   FLEXIBILITY_PP,
+  INITIAL_RESOURCE_COUNTERPARTS,
+  linkResourceCounterparts,
+  resourceShareRange,
   adaptResourcePercentages,
+  type ResourceCounterparts,
   type ResourcePercentages,
 } from "@/lib/unocalcAllocation";
 import {
@@ -85,10 +89,13 @@ const copy = {
     allocationNames: { retail: "retail", design: "project / design", installation: "installation", components: "components" },
     allocationBalanced: "Balance",
     allocationAdapted: "Adaptation",
-    allocationFlexibility: "Moving one slider automatically spreads the compensation among the other three, weighted by their base shares. Each share stays within ±2.5 percentage points; total stays at 100%.",
+    allocationFlexibility: "Choose Auto for weighted redistribution or link any two shares for direct transfer. Every share remains within ±2.5 percentage points; total is always 100%.",
     allocationBeyond: "If real requirements exceed this range, reconsider the total project resource rather than forcing the shares.",
     allocationReset: "Reset",
     allocationAdjust: "Adjust share",
+    allocationCounterpart: "Balance with",
+    allocationAuto: "Auto · all available",
+    allocationPairLimit: "This pair has reached its available range. Select another partner to redistribute further.",
     levels: {
       108: { label: "basic form", hint: "Accessible materials, established methods and sound execution without complex detailing." },
       270: { label: "functional architecture", hint: "Considered functions, quality materials, precise detailing and balanced execution." },
@@ -149,10 +156,13 @@ const copy = {
     allocationNames: { retail: "ритейл", design: "проект / дизайн", installation: "монтаж", components: "комплектующие" },
     allocationBalanced: "Равновесие",
     allocationAdapted: "Адаптация",
-    allocationFlexibility: "При изменении одной доли компенсация распределяется между тремя остальными с учётом их исходного веса. Допуск каждой доли ±2,5 п.п., сумма всегда 100%.",
+    allocationFlexibility: "Авто распределяет изменение между остальными. Для точного переноса свяжи две доли: например, дизайн ↔ монтаж. Допуск ±2,5 п.п., сумма всегда 100%.",
     allocationBeyond: "Если реальные потребности выходят за допуск, следует пересмотреть общую ресурсную ёмкость, а не подгонять проценты.",
     allocationReset: "Сбросить",
     allocationAdjust: "Изменить долю",
+    allocationCounterpart: "Баланс с",
+    allocationAuto: "Авто · остальные доли",
+    allocationPairLimit: "Пара достигла доступного предела. Для другого перераспределения выбери другой связанный раздел.",
     levels: {
       108: { label: "базовая форма", hint: "Доступные материалы, проверенные технологии и аккуратное исполнение без сложной деталировки." },
       270: { label: "функциональная архитектура", hint: "Продуманная функция, качественные материалы, точная деталировка и сбалансированное исполнение." },
@@ -213,10 +223,13 @@ const copy = {
     allocationNames: { retail: "ритейл", design: "проєкт / дизайн", installation: "монтаж", components: "комплектуючі" },
     allocationBalanced: "Рівновага",
     allocationAdapted: "Адаптація",
-    allocationFlexibility: "Під час зміни однієї частки компенсація розподіляється між трьома іншими відповідно до їхньої початкової ваги. Допуск кожної частки ±2,5 в.п., сума завжди 100%.",
+    allocationFlexibility: "Авто розподіляє зміну між іншими. Для точного перенесення зв’яжи дві частки: наприклад, дизайн ↔ монтаж. Допуск ±2,5 в.п., сума завжди 100%.",
     allocationBeyond: "Якщо реальні потреби виходять за межі допуску, слід переглянути загальну ресурсну місткість, а не підганяти відсотки.",
     allocationReset: "Скинути",
     allocationAdjust: "Змінити частку",
+    allocationCounterpart: "Баланс з",
+    allocationAuto: "Авто · інші частки",
+    allocationPairLimit: "Пара досягла доступної межі. Для іншого перерозподілу обери інший пов’язаний розділ.",
     levels: {
       108: { label: "базова форма", hint: "Доступні матеріали, перевірені технології й акуратне виконання без складної деталізації." },
       270: { label: "функціональна архітектура", hint: "Продумана функція, якісні матеріали, точна деталізація та збалансоване виконання." },
@@ -294,6 +307,7 @@ const UnoCalc = () => {
   const [country, setCountry] = useState<RegionCountryCode | "none">("none");
   const [cityId, setCityId] = useState<string>("");
   const [resourcePercentages, setResourcePercentages] = useState<ResourcePercentages>(BASE_RESOURCE_PERCENTAGES);
+  const [resourceCounterparts, setResourceCounterparts] = useState<ResourceCounterparts>(INITIAL_RESOURCE_COUNTERPARTS);
   const { locale, localePath } = useLocale();
   const t = copy[locale];
 
@@ -313,8 +327,11 @@ const UnoCalc = () => {
     : `≈ ${euroEstimate !== null ? "€" : "$"}${Number(formatUer(displayedAmount)).toLocaleString("en-US", { maximumFractionDigits: 3 })}`;
   const allocation = displayedAmount === null ? null : allocateResource(displayedAmount, resourcePercentages);
   const isAdapted = resourcePercentages.some((value, index) => value !== BASE_RESOURCE_PERCENTAGES[index]);
+  const hasLinkedPair = resourceCounterparts.some((value) => value !== null);
   const changeShare = (index: number, value: number) =>
-    setResourcePercentages((current) => adaptResourcePercentages(current, index, value));
+    setResourcePercentages((current) => adaptResourcePercentages(current, index, value, resourceCounterparts[index]));
+  const changeCounterpart = (index: number, value: string) =>
+    setResourceCounterparts((current) => linkResourceCounterparts(current, index, value === "auto" ? null : Number(value)));
   const currencySymbol = euroEstimate !== null ? "€" : "$";
   const formatShare = (amount: number) =>
     currencySymbol + amount.toLocaleString("en-US", {
@@ -580,8 +597,11 @@ const UnoCalc = () => {
                 </span>
                 <button
                   type="button"
-                  disabled={!isAdapted}
-                  onClick={() => setResourcePercentages(BASE_RESOURCE_PERCENTAGES)}
+                  disabled={!isAdapted && !hasLinkedPair}
+                  onClick={() => {
+                    setResourcePercentages(BASE_RESOURCE_PERCENTAGES);
+                    setResourceCounterparts(INITIAL_RESOURCE_COUNTERPARTS);
+                  }}
                   className="min-h-9 border-b border-foreground/30 text-[12px] text-foreground/80 transition-colors hover:text-foreground disabled:cursor-default disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                 >
                   {t.allocationReset}
@@ -610,6 +630,11 @@ const UnoCalc = () => {
                   const part = allocation?.parts[index];
                   const currentPercent = resourcePercentages[index];
                   const shareLocale = locale === "en" ? "en-US" : "ru-RU";
+                  const counterpart = resourceCounterparts[index];
+                  const sliderRange = resourceShareRange(resourcePercentages, index, counterpart);
+                  const pairedLimit = counterpart !== null &&
+                    (sliderRange.min > share.percent - FLEXIBILITY_PP ||
+                      sliderRange.max < share.percent + FLEXIBILITY_PP);
                   return (
                     <div key={share.id} className="py-3 text-[13px]">
                       <div className="flex items-baseline justify-between gap-3">
@@ -629,8 +654,8 @@ const UnoCalc = () => {
                       </div>
                       <input
                         type="range"
-                        min={share.percent - FLEXIBILITY_PP}
-                        max={share.percent + FLEXIBILITY_PP}
+                        min={sliderRange.min}
+                        max={sliderRange.max}
                         step="0.5"
                         value={currentPercent}
                         onChange={(event) => changeShare(index, Number(event.target.value))}
@@ -638,9 +663,35 @@ const UnoCalc = () => {
                         className="mt-2 block h-10 w-full cursor-pointer accent-foreground"
                       />
                       <div className="flex justify-between text-[10px] tabular-nums text-foreground/60">
-                        <span>{(share.percent - FLEXIBILITY_PP).toLocaleString(shareLocale)}%</span>
-                        <span>{(share.percent + FLEXIBILITY_PP).toLocaleString(shareLocale)}%</span>
+                        <span>{sliderRange.min.toLocaleString(shareLocale)}%</span>
+                        <span>{sliderRange.max.toLocaleString(shareLocale)}%</span>
                       </div>
+                      <div className="mt-2 flex items-center justify-between gap-3">
+                        <label
+                          htmlFor={"unocalc-pair-" + share.id}
+                          className="shrink-0 text-[11px] text-foreground/70"
+                        >
+                          {t.allocationCounterpart}
+                        </label>
+                        <select
+                          id={"unocalc-pair-" + share.id}
+                          value={counterpart ?? "auto"}
+                          onChange={(event) => changeCounterpart(index, event.target.value)}
+                          className="max-w-[65%] min-w-0 rounded-none border border-border/80 bg-background px-2 py-2 text-[12px] text-foreground outline-none focus:border-primary focus-visible:ring-1 focus-visible:ring-primary"
+                        >
+                          <option value="auto">{t.allocationAuto}</option>
+                          {RESOURCE_SHARES.map((other, otherIndex) =>
+                            otherIndex === index ? null : (
+                              <option key={other.id} value={otherIndex}>{t.allocationNames[other.id]}</option>
+                            )
+                          )}
+                        </select>
+                      </div>
+                      {pairedLimit && (
+                        <p className="mt-1 text-[10px] leading-[1.55] text-foreground/60">
+                          {t.allocationPairLimit}
+                        </p>
+                      )}
                     </div>
                   );
                 })}

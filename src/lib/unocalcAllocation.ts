@@ -31,7 +31,8 @@ export const isValidResourcePercentages = (shares: ResourcePercentages): boolean
   );
 
 /**
- * Move the chosen slider to its requested value. Redistribute the difference
+ * In linked-pair mode, move only the selected share and its explicit counterpart.
+ * In automatic mode, redistribute the difference
  * across the other three shares, favoring the smallest increase in squared
  * percentage deviation from the baseline, weighted by each baseline share.
  * This spreads compensation across related functions instead of mechanically
@@ -45,10 +46,22 @@ export const adaptResourcePercentages = (
   current: ResourcePercentages,
   index: number,
   requested: number,
+  counterpart: number | null = null,
 ): ResourcePercentages => {
   if (!isValidResourcePercentages(current) ||
       !Number.isInteger(index) || index < 0 || index >= 4 ||
       !Number.isFinite(requested)) return current;
+
+  if (counterpart !== null) {
+    if (!Number.isInteger(counterpart) || counterpart < 0 || counterpart >= 4 || counterpart === index) return current;
+    const { min, max } = resourceShareRange(current, index, counterpart);
+    const target = Math.max(min, Math.min(max, Math.round(requested / SHARE_STEP_PP) * SHARE_STEP_PP));
+    const updated = [...current];
+    updated[index] = target;
+    updated[counterpart] = current[index] + current[counterpart] - target;
+    const next = updated as unknown as ResourcePercentages;
+    return isValidResourcePercentages(next) ? next : current;
+  }
 
   const ticks = current.map((percent) => Math.round(percent / SHARE_STEP_PP));
   const target = Math.max(MIN_TICKS[index], Math.min(MAX_TICKS[index], Math.round(requested / SHARE_STEP_PP)));
@@ -77,6 +90,58 @@ export const adaptResourcePercentages = (
   }
   const next = ticks.map((tick) => tick * SHARE_STEP_PP) as ResourcePercentages;
   return isValidResourcePercentages(next) ? next : current;
+};
+
+/**
+ * A linked pair transfers shares exclusively between its two members.
+ * Reciprocal links are kept in sync: choosing Design ↔ Installation on either
+ * row gives the same behavior in both slider directions.
+ */
+export type ResourceCounterparts = readonly [number | null, number | null, number | null, number | null];
+export const INITIAL_RESOURCE_COUNTERPARTS: ResourceCounterparts = [null, null, null, null];
+
+export const linkResourceCounterparts = (
+  current: ResourceCounterparts,
+  selected: number,
+  counterpart: number | null,
+): ResourceCounterparts => {
+  if (!Number.isInteger(selected) || selected < 0 || selected >= 4 ||
+      (counterpart !== null && (!Number.isInteger(counterpart) ||
+      counterpart < 0 || counterpart >= 4 || counterpart === selected))) return current;
+
+  const links = [...current];
+  const unlink = (index: number) => {
+    const previous = links[index];
+    links[index] = null;
+    if (previous !== null && links[previous] === index) links[previous] = null;
+  };
+  unlink(selected);
+  if (counterpart !== null) {
+    unlink(counterpart);
+    links[selected] = counterpart;
+    links[counterpart] = selected;
+  }
+  return links as unknown as ResourceCounterparts;
+};
+
+export const resourceShareRange = (
+  current: ResourcePercentages,
+  index: number,
+  counterpart: number | null = null,
+): { min: number; max: number } => {
+  if (!isValidResourcePercentages(current) ||
+      !Number.isInteger(index) || index < 0 || index >= 4) return { min: 0, max: 0 };
+  const ownMin = BASE_RESOURCE_PERCENTAGES[index] - FLEXIBILITY_PP;
+  const ownMax = BASE_RESOURCE_PERCENTAGES[index] + FLEXIBILITY_PP;
+  if (counterpart === null) return { min: ownMin, max: ownMax };
+  if (!Number.isInteger(counterpart) || counterpart < 0 || counterpart >= 4 || counterpart === index) {
+    return { min: current[index], max: current[index] };
+  }
+  const pairTotal = current[index] + current[counterpart];
+  return {
+    min: Math.max(ownMin, pairTotal - (BASE_RESOURCE_PERCENTAGES[counterpart] + FLEXIBILITY_PP)),
+    max: Math.min(ownMax, pairTotal - (BASE_RESOURCE_PERCENTAGES[counterpart] - FLEXIBILITY_PP)),
+  };
 };
 
 export type ResourceAllocation = {
