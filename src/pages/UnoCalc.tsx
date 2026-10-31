@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
-import { allocateResource, RESOURCE_SHARES } from "@/lib/unocalcAllocation";
+import {
+  allocateResource,
+  RESOURCE_SHARES,
+  BASE_RESOURCE_PERCENTAGES,
+  FLEXIBILITY_PP,
+  adaptResourcePercentages,
+  type ResourcePercentages,
+} from "@/lib/unocalcAllocation";
 import {
   REGION_CITIES,
   REGION_COUNTRIES,
@@ -76,6 +83,12 @@ const copy = {
     allocationIntro: "Author's allocation model applied to the reference above. Shares are illustrative, not verified market cost components.",
     allocationTotal: "Allocation",
     allocationNames: { retail: "retail", design: "project / design", installation: "installation", components: "components" },
+    allocationBalanced: "Balance",
+    allocationAdapted: "Adaptation",
+    allocationFlexibility: "Adjust within ±2.5 percentage points; the other shares rebalance automatically.",
+    allocationBeyond: "If real requirements exceed this range, reconsider the total project resource rather than forcing the shares.",
+    allocationReset: "Reset",
+    allocationAdjust: "Adjust share",
     levels: {
       108: { label: "basic form", hint: "Accessible materials, established methods and sound execution without complex detailing." },
       270: { label: "functional architecture", hint: "Considered functions, quality materials, precise detailing and balanced execution." },
@@ -134,6 +147,12 @@ const copy = {
     allocationIntro: "Авторская модель распределения итогового ориентира. Доли условные и не отражают подтверждённую структуру рыночных затрат.",
     allocationTotal: "Распределено",
     allocationNames: { retail: "ритейл", design: "проект / дизайн", installation: "монтаж", components: "комплектующие" },
+    allocationBalanced: "Равновесие",
+    allocationAdapted: "Адаптация",
+    allocationFlexibility: "Меняй доли в пределах ±2,5 п.п. Остальные автоматически компенсируют изменение.",
+    allocationBeyond: "Если реальные потребности выходят за допуск, следует пересмотреть общую ресурсную ёмкость, а не подгонять проценты.",
+    allocationReset: "Сбросить",
+    allocationAdjust: "Изменить долю",
     levels: {
       108: { label: "базовая форма", hint: "Доступные материалы, проверенные технологии и аккуратное исполнение без сложной деталировки." },
       270: { label: "функциональная архитектура", hint: "Продуманная функция, качественные материалы, точная деталировка и сбалансированное исполнение." },
@@ -192,6 +211,12 @@ const copy = {
     allocationIntro: "Авторська модель розподілу підсумкового орієнтира. Частки умовні й не відображають підтверджену структуру ринкових витрат.",
     allocationTotal: "Розподілено",
     allocationNames: { retail: "ритейл", design: "проєкт / дизайн", installation: "монтаж", components: "комплектуючі" },
+    allocationBalanced: "Рівновага",
+    allocationAdapted: "Адаптація",
+    allocationFlexibility: "Змінюй частки в межах ±2,5 в.п. Решта автоматично компенсують зміну.",
+    allocationBeyond: "Якщо реальні потреби виходять за межі допуску, слід переглянути загальну ресурсну місткість, а не підганяти відсотки.",
+    allocationReset: "Скинути",
+    allocationAdjust: "Змінити частку",
     levels: {
       108: { label: "базова форма", hint: "Доступні матеріали, перевірені технології й акуратне виконання без складної деталізації." },
       270: { label: "функціональна архітектура", hint: "Продумана функція, якісні матеріали, точна деталізація та збалансоване виконання." },
@@ -268,6 +293,7 @@ const UnoCalc = () => {
   const [q, setQ] = useState<UnoLevel>(108);
   const [country, setCountry] = useState<RegionCountryCode | "none">("none");
   const [cityId, setCityId] = useState<string>("");
+  const [resourcePercentages, setResourcePercentages] = useState<ResourcePercentages>(BASE_RESOURCE_PERCENTAGES);
   const { locale, localePath } = useLocale();
   const t = copy[locale];
 
@@ -285,7 +311,10 @@ const UnoCalc = () => {
   const formattedAmount = displayedAmount === null
     ? "—"
     : `≈ ${euroEstimate !== null ? "€" : "$"}${Number(formatUer(displayedAmount)).toLocaleString("en-US", { maximumFractionDigits: 3 })}`;
-  const allocation = displayedAmount === null ? null : allocateResource(displayedAmount);
+  const allocation = displayedAmount === null ? null : allocateResource(displayedAmount, resourcePercentages);
+  const isAdapted = resourcePercentages.some((value, index) => value !== BASE_RESOURCE_PERCENTAGES[index]);
+  const changeShare = (index: number, value: number) =>
+    setResourcePercentages((current) => adaptResourcePercentages(current, index, value));
   const currencySymbol = euroEstimate !== null ? "€" : "$";
   const formatShare = (amount: number) =>
     currencySymbol + amount.toLocaleString("en-US", {
@@ -545,10 +574,24 @@ const UnoCalc = () => {
               <p className="mt-2 text-[12px] font-light leading-[1.65] text-foreground/80">
                 {t.allocationIntro}
               </p>
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <span className="text-[12px] font-medium text-foreground/80">
+                  {isAdapted ? t.allocationAdapted : t.allocationBalanced}
+                </span>
+                <button
+                  type="button"
+                  disabled={!isAdapted}
+                  onClick={() => setResourcePercentages(BASE_RESOURCE_PERCENTAGES)}
+                  className="min-h-9 border-b border-foreground/30 text-[12px] text-foreground/80 transition-colors hover:text-foreground disabled:cursor-default disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                >
+                  {t.allocationReset}
+                </button>
+              </div>
+              <p className="mt-1 text-[11px] font-light leading-[1.6] text-foreground/75">{t.allocationFlexibility}</p>
               <div
                 className="mt-5 flex h-[6px] overflow-hidden bg-foreground/10"
                 role="img"
-                aria-label={RESOURCE_SHARES.map((share) => t.allocationNames[share.id] + " " + share.percent + "%").join(", ")}
+                aria-label={RESOURCE_SHARES.map((share, index) => t.allocationNames[share.id] + " " + resourcePercentages[index] + "%").join(", ")}
               >
                 {RESOURCE_SHARES.map((share, index) => (
                   <div
@@ -558,20 +601,40 @@ const UnoCalc = () => {
                       index === 1 ? "bg-foreground/55" :
                       index === 2 ? "bg-foreground/75" : "bg-foreground"
                     }
-                    style={{ width: share.percent + "%" }}
+                    style={{ width: resourcePercentages[index] + "%" }}
                   />
                 ))}
               </div>
               <div className="mt-2 divide-y divide-border/60">
-                {RESOURCE_SHARES.map((share) => {
-                  const part = allocation?.parts.find((p) => p.id === share.id);
+                {RESOURCE_SHARES.map((share, index) => {
+                  const part = allocation?.parts[index];
+                  const currentPercent = resourcePercentages[index];
+                  const shareLocale = locale === "en" ? "en-US" : "ru-RU";
                   return (
-                    <div key={share.id} className="flex items-baseline justify-between gap-3 py-3 text-[13px]">
-                      <span className="min-w-0 flex-1 text-foreground/85">{t.allocationNames[share.id]}</span>
-                      <span className="w-11 shrink-0 text-right tabular-nums text-foreground/75">{share.percent}%</span>
-                      <span className="w-[108px] shrink-0 text-right font-light tabular-nums sm:w-[122px]">
-                        {part ? formatShare(part.amount) : "—"}
-                      </span>
+                    <div key={share.id} className="py-3 text-[13px]">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <span className="min-w-0 flex-1 text-foreground/85">{t.allocationNames[share.id]}</span>
+                        <span className="w-16 shrink-0 text-right tabular-nums text-foreground/75">
+                          {currentPercent.toLocaleString(shareLocale)}%
+                        </span>
+                        <span className="w-[108px] shrink-0 text-right font-light tabular-nums sm:w-[122px]">
+                          {part ? formatShare(part.amount) : "—"}
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={share.percent - FLEXIBILITY_PP}
+                        max={share.percent + FLEXIBILITY_PP}
+                        step="0.5"
+                        value={currentPercent}
+                        onChange={(event) => changeShare(index, Number(event.target.value))}
+                        aria-label={t.allocationAdjust + ": " + t.allocationNames[share.id]}
+                        className="mt-2 block h-5 w-full cursor-pointer accent-foreground"
+                      />
+                      <div className="flex justify-between text-[10px] tabular-nums text-foreground/60">
+                        <span>{(share.percent - FLEXIBILITY_PP).toLocaleString(shareLocale)}%</span>
+                        <span>{(share.percent + FLEXIBILITY_PP).toLocaleString(shareLocale)}%</span>
+                      </div>
                     </div>
                   );
                 })}
@@ -582,6 +645,9 @@ const UnoCalc = () => {
                   {allocation ? formatShare(allocation.displayedTotal) : "—"}
                 </span>
               </div>
+              <p className="mt-3 text-[11px] font-light leading-[1.65] text-foreground/75">
+                {t.allocationBeyond}
+              </p>
             </section>
           </section>
         </div>
