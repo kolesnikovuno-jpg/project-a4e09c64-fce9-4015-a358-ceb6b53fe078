@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
+import {
+  REGION_CITIES,
+  REGION_COUNTRIES,
+  REGION_SOURCES,
+  regionCitiesForCountry,
+  regionCoefficient,
+  regionalUsdEstimate,
+  type RegionCountryCode,
+} from "@/lib/unocalcRegion";
 import { useLocale } from "@/i18n/useLocale";
 import {
   calculateUno,
@@ -40,6 +49,24 @@ const copy = {
     outOfRange: "Dimensions are outside the supported calculation range.",
     definition: "unit of energy resonance",
     disclaimer: "U.E.R. is an author-defined index, not a physical energy measurement.",
+    regionalHeading: "Regional context / optional",
+    regionalIntro: "Pilot benchmarks for interior finishing only, not furniture or whole buildings.",
+    regionCountry: "country",
+    regionCity: "city",
+    noRegion: "No regional adjustment",
+    selectCity: "Select a city",
+    regionalFactor: "regional coefficient",
+    regionalSource: "Data and method",
+    uaMethod: "Ukraine, 2026: Kyiv = 1.00. A contractor's apartment labor price midpoints, assuming 50% labor and 50% similar-priced materials. Low confidence: not verified project totals.",
+    euMethod: "Europe, 2026: Warsaw = 1.00. Medium all-in office fit-out costs, EUR/m². Relative comparison only; no validated conversion from Kyiv to Warsaw.",
+    regionReference: "baseline",
+    ukraineBaseline: "Kyiv, Ukraine",
+    europeBaseline: "Warsaw, Poland",
+    regionApplied: "Preliminary city-adjusted estimate",
+    regionNotApplied: "The European factor is shown for comparison; it is NOT applied to the USD estimate without a verified Kyiv–Warsaw bridge.",
+    regionUnknown: "Original UNOcalc reference, without regional adjustment.",
+    regionUpdated: "Market reference: 2026. Not a real-time quote. Regional factors have not been validated to ±10%.",
+    originalReference: "Original U.E.R.-based reference",
     levels: {
       108: { label: "basic form", hint: "Accessible materials, established methods and sound execution without complex detailing." },
       270: { label: "functional architecture", hint: "Considered functions, quality materials, precise detailing and balanced execution." },
@@ -73,6 +100,24 @@ const copy = {
     outOfRange: "Размеры выходят за пределы допустимого расчёта.",
     definition: "единица энергетического резонанса",
     disclaimer: "U.E.R. — авторский расчётный индекс, не физическая единица энергии.",
+    regionalHeading: "Регион / дополнительно",
+    regionalIntro: "Пилотная поправка для отделки интерьеров. Не применять автоматически к мебели и строительству зданий.",
+    regionCountry: "страна",
+    regionCity: "город",
+    noRegion: "Без региональной поправки",
+    selectCity: "Выбери город",
+    regionalFactor: "региональный коэффициент",
+    regionalSource: "Данные и метод",
+    uaMethod: "Украина, 2026: Киев = 1,00. Средние точки диапазонов стоимости работ по квартирам; допущение: 50% работы и 50% материалов по сопоставимой цене. Уверенность низкая: итоговые бюджеты не проверены.",
+    euMethod: "Европа, 2026: Варшава = 1,00. Средняя категория полной офисной отделки, €/м². Только сравнение городов; переход Киев → Варшава не откалиброван.",
+    regionReference: "базовый город",
+    ukraineBaseline: "Киев, Украина",
+    europeBaseline: "Варшава, Польша",
+    regionApplied: "Предварительный ориентир с поправкой на город",
+    regionNotApplied: "Европейский коэффициент — только для сравнения. Он НЕ умножает долларовый расчёт без проверенной связки Киев–Варшава.",
+    regionUnknown: "Исходный ориентир UNOcalc без региональной поправки.",
+    regionUpdated: "Рыночные данные: 2026 год. Не онлайн-смета. Точность коэффициентов ±10% не подтверждена.",
+    originalReference: "Исходный ориентир по U.E.R.",
     levels: {
       108: { label: "базовая форма", hint: "Доступные материалы, проверенные технологии и аккуратное исполнение без сложной деталировки." },
       270: { label: "функциональная архитектура", hint: "Продуманная функция, качественные материалы, точная деталировка и сбалансированное исполнение." },
@@ -106,6 +151,24 @@ const copy = {
     outOfRange: "Розміри виходять за межі допустимого розрахунку.",
     definition: "одиниця енергетичного резонансу",
     disclaimer: "U.E.R. — авторський розрахунковий індекс, не фізична одиниця енергії.",
+    regionalHeading: "Регіон / додатково",
+    regionalIntro: "Пілотна поправка для оздоблення інтер'єрів. Не застосовувати автоматично до меблів і будівництва споруд.",
+    regionCountry: "країна",
+    regionCity: "місто",
+    noRegion: "Без регіональної поправки",
+    selectCity: "Обери місто",
+    regionalFactor: "регіональний коефіцієнт",
+    regionalSource: "Дані та метод",
+    uaMethod: "Україна, 2026: Київ = 1,00. Середини діапазонів вартості квартирних робіт; припущення: 50% роботи та 50% матеріалів за співставною ціною. Достовірність низька: повні бюджети не перевірено.",
+    euMethod: "Європа, 2026: Варшава = 1,00. Середня категорія повного офісного оздоблення, €/м². Лише порівняння міст; перехід Київ → Варшава не відкалібровано.",
+    regionReference: "базове місто",
+    ukraineBaseline: "Київ, Україна",
+    europeBaseline: "Варшава, Польща",
+    regionApplied: "Попередній орієнтир із поправкою на місто",
+    regionNotApplied: "Європейський коефіцієнт — тільки для порівняння. Він НЕ множить доларовий розрахунок без перевіреного зв'язку Київ–Варшава.",
+    regionUnknown: "Початковий орієнтир UNOcalc без регіональної поправки.",
+    regionUpdated: "Ринкові дані: 2026 рік. Не онлайн-кошторис. Точність коефіцієнтів ±10% не підтверджена.",
+    originalReference: "Початковий орієнтир за U.E.R.",
     levels: {
       108: { label: "базова форма", hint: "Доступні матеріали, перевірені технології й акуратне виконання без складної деталізації." },
       270: { label: "функціональна архітектура", hint: "Продумана функція, якісні матеріали, точна деталізація та збалансоване виконання." },
@@ -180,11 +243,21 @@ const UnoCalc = () => {
   const [b, setB] = useState("");
   const [c, setC] = useState("");
   const [q, setQ] = useState<UnoLevel>(108);
+  const [country, setCountry] = useState<RegionCountryCode | "none">("none");
+  const [cityId, setCityId] = useState<string>("");
   const { locale, localePath } = useLocale();
   const t = copy[locale];
 
   const calculation = calculateUno({ a, b, c, q });
   const ready = calculation.status === "ok";
+  const cities = country === "none" ? [] : regionCitiesForCountry(country);
+  const city = REGION_CITIES.find((option) => option.id === cityId);
+  const coefficient = city ? regionCoefficient(city) : null;
+  const regionalUsd = ready && city ? regionalUsdEstimate(calculation.energy, city) : null;
+  const displayedUsd = ready ? (regionalUsd ?? calculation.energy) : null;
+  const formattedUsd = displayedUsd === null
+    ? "—"
+    : `≈ ${Number(formatUer(displayedUsd)).toLocaleString("en-US", { maximumFractionDigits: 3 })}`;
   const feedback =
     calculation.status === "invalid"
       ? t.invalid
@@ -309,6 +382,68 @@ const UnoCalc = () => {
                 })}
               </div>
             </fieldset>
+
+            <section className="mt-8 border-t border-foreground/25 pt-4" aria-labelledby="unocalc-region-title">
+              <h2 id="unocalc-region-title" className="text-[12px] font-medium uppercase tracking-[0.13em]">{t.regionalHeading}</h2>
+              <p className="mt-2 text-[12px] font-light leading-[1.7] text-foreground/80">{t.regionalIntro}</p>
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-5">
+                <div>
+                  <label htmlFor="unocalc-country" className="mb-2 block text-[12px] text-foreground/80">{t.regionCountry}</label>
+                  <select
+                    id="unocalc-country"
+                    value={country}
+                    onChange={(event) => {
+                      const next = event.target.value as RegionCountryCode | "none";
+                      setCountry(next);
+                      setCityId(next === "none" ? "" : regionCitiesForCountry(next)[0]?.id ?? "");
+                    }}
+                    className="w-full min-w-0 rounded-none border border-border/80 bg-background px-3 py-2.5 text-[13px] text-foreground outline-none focus:border-primary focus-visible:ring-1 focus-visible:ring-primary"
+                  >
+                    <option value="none">{t.noRegion}</option>
+                    {REGION_COUNTRIES.map((item) => (
+                      <option key={item.code} value={item.code}>{item.name[locale]}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="unocalc-city" className="mb-2 block text-[12px] text-foreground/80">{t.regionCity}</label>
+                  <select
+                    id="unocalc-city"
+                    value={cityId}
+                    onChange={(event) => setCityId(event.target.value)}
+                    disabled={country === "none"}
+                    className="w-full min-w-0 rounded-none border border-border/80 bg-background px-3 py-2.5 text-[13px] text-foreground outline-none focus:border-primary focus-visible:ring-1 focus-visible:ring-primary disabled:opacity-45"
+                  >
+                    {country === "none" && <option value="">{t.selectCity}</option>}
+                    {cities.map((item) => (
+                      <option key={item.id} value={item.id}>{item.name[locale]}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              {city && coefficient !== null && (
+                <div className="mt-4 border-t border-border/60 pt-4">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="text-[12px] text-foreground/80">{t.regionalFactor}</span>
+                    <span className="text-[23px] font-light tabular-nums">× {coefficient.toFixed(2)}</span>
+                  </div>
+                  <p className="mt-1 text-[11px] text-foreground/75">
+                    {t.regionReference}: {city.family === "ua-apartment" ? t.ukraineBaseline : t.europeBaseline}
+                  </p>
+                  <p className="mt-3 text-[11px] font-light leading-[1.7] text-foreground/80">
+                    {city.family === "ua-apartment" ? t.uaMethod : t.euMethod}
+                  </p>
+                  <a
+                    href={REGION_SOURCES[city.family].url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex min-h-9 items-center border-b border-foreground/30 text-[11px] text-foreground hover:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                  >
+                    {t.regionalSource} · {REGION_SOURCES[city.family].year} ↗
+                  </a>
+                </div>
+              )}
+            </section>
           </div>
 
           <section className="md:border-l md:border-border/70 md:pl-8 lg:pl-10" aria-labelledby="unocalc-result">
@@ -321,17 +456,21 @@ const UnoCalc = () => {
               <p className="mt-2 text-[11px] text-foreground/75">{t.wireframeNote}</p>
             </div>
             <div className="mt-5 flex items-center justify-between gap-3">
-              <span className="text-[12px] font-medium text-foreground/80">{t.costReference}</span>
+              <span className="text-[12px] font-medium text-foreground/80">{city?.family === "eu-office" ? t.originalReference : t.costReference}</span>
               <span className="text-[11px] tracking-[0.12em] text-foreground/75">USD</span>
             </div>
             <output
               aria-live="polite"
               className="mt-2 block break-all border-b border-foreground/35 pb-4 text-right text-[clamp(3rem,6vw,4.5rem)] font-extralight leading-[1.1] tracking-[-0.045em] tabular-nums"
             >
-              {ready
-                ? `≈ $${Number(formatUer(calculation.energy)).toLocaleString("en-US", { maximumFractionDigits: 3 })}`
-                : "—"}
+              {formattedUsd}
             </output>
+            {city?.family === "eu-office" && coefficient !== null && (
+              <div className="mt-3 flex items-baseline justify-between gap-3 border-b border-border/60 pb-3">
+                <span className="text-[12px] text-foreground/80">{t.regionalFactor} · {t.europeBaseline}</span>
+                <span className="text-[20px] font-light tabular-nums">× {coefficient.toFixed(2)}</span>
+              </div>
+            )}
             <div className="mt-4 flex items-baseline justify-between gap-3">
               <span className="text-[12px] text-foreground/80">{t.reference}</span>
               <span className="text-[14px] font-light tabular-nums text-foreground/90">
@@ -343,7 +482,13 @@ const UnoCalc = () => {
               <span className="text-right text-[13px] font-normal">{q} · {t.levels[q].label}</span>
             </div>
             <p className="mt-4 text-[12px] font-light leading-[1.65] text-foreground/80">
-              {ready ? t.costBasis : feedback ?? t.prompt}
+              {ready
+                ? city?.family === "eu-office"
+                  ? t.regionNotApplied
+                  : regionalUsd !== null
+                    ? t.regionApplied + ". " + t.costBasis + " " + t.regionUpdated
+                    : t.costBasis
+                : feedback ?? t.prompt}
             </p>
           </section>
         </div>
