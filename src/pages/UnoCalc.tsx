@@ -8,6 +8,7 @@ import {
   regionCitiesForCountry,
   regionCoefficient,
   regionalUsdEstimate,
+  regionalOfficeEuroEstimate,
   type RegionCountryCode,
 } from "@/lib/unocalcRegion";
 import { useLocale } from "@/i18n/useLocale";
@@ -50,7 +51,7 @@ const copy = {
     definition: "unit of energy resonance",
     disclaimer: "U.E.R. is an author-defined index, not a physical energy measurement.",
     regionalHeading: "Regional context / optional",
-    regionalIntro: "Pilot benchmarks for interior finishing only, not furniture or whole buildings.",
+    regionalIntro: "Two separate pilot markets: apartment finishing in Ukraine and office fit-out in Europe. Their coefficients are not interchangeable.",
     regionCountry: "country",
     regionCity: "city",
     noRegion: "No regional adjustment",
@@ -58,15 +59,18 @@ const copy = {
     regionalFactor: "regional coefficient",
     regionalSource: "Data and method",
     uaMethod: "Ukraine, 2026: Kyiv = 1.00. A contractor's apartment labor price midpoints, assuming 50% labor and 50% similar-priced materials. Low confidence: not verified project totals.",
-    euMethod: "Europe, 2026: Warsaw = 1.00. Medium all-in office fit-out costs, EUR/m². Relative comparison only; no validated conversion from Kyiv to Warsaw.",
+    euMethod: "Europe, 2026: Warsaw is the reference at each tier. Office fit-out prices per m² from Cushman & Wakefield. UNOcalc levels 108/270/432 are mapped approximately to low/medium/high for comparison; they are not validated as equivalent.",
     regionReference: "baseline",
     ukraineBaseline: "Kyiv, Ukraine",
     europeBaseline: "Warsaw, Poland",
     regionApplied: "Preliminary city-adjusted estimate",
-    regionNotApplied: "The European factor is shown for comparison; it is NOT applied to the USD estimate without a verified Kyiv–Warsaw bridge.",
+    regionNotApplied: "Independent European office fit-out reference: EUR per m² × floor area. Not a conversion of U.E.R. into euros and not a benchmark for housing or furniture.",
     regionUnknown: "Original UNOcalc reference, without regional adjustment.",
     regionUpdated: "Market reference: 2026. Not a real-time quote. Regional factors have not been validated to ±10%.",
     originalReference: "Original U.E.R.-based reference",
+    officeCostReference: "Office fit-out market benchmark",
+    unadjustedLabel: "Original UNOcalc index (no European calibration)",
+    areaLabel: "Floor area",
     levels: {
       108: { label: "basic form", hint: "Accessible materials, established methods and sound execution without complex detailing." },
       270: { label: "functional architecture", hint: "Considered functions, quality materials, precise detailing and balanced execution." },
@@ -101,7 +105,7 @@ const copy = {
     definition: "единица энергетического резонанса",
     disclaimer: "U.E.R. — авторский расчётный индекс, не физическая единица энергии.",
     regionalHeading: "Регион / дополнительно",
-    regionalIntro: "Пилотная поправка для отделки интерьеров. Не применять автоматически к мебели и строительству зданий.",
+    regionalIntro: "Два отдельных сценария: квартирные работы в Украине и офисная отделка в Европе. Их коэффициенты нельзя смешивать.",
     regionCountry: "страна",
     regionCity: "город",
     noRegion: "Без региональной поправки",
@@ -109,15 +113,18 @@ const copy = {
     regionalFactor: "региональный коэффициент",
     regionalSource: "Данные и метод",
     uaMethod: "Украина, 2026: Киев = 1,00. Средние точки диапазонов стоимости работ по квартирам; допущение: 50% работы и 50% материалов по сопоставимой цене. Уверенность низкая: итоговые бюджеты не проверены.",
-    euMethod: "Европа, 2026: Варшава = 1,00. Средняя категория полной офисной отделки, €/м². Только сравнение городов; переход Киев → Варшава не откалиброван.",
+    euMethod: "Европа, 2026: Варшава — база для каждого уровня. Стоимость офисной отделки за м² по Cushman & Wakefield. Уровни 108/270/432 условно сопоставлены с low/medium/high; их эквивалентность не проверена.",
     regionReference: "базовый город",
     ukraineBaseline: "Киев, Украина",
     europeBaseline: "Варшава, Польша",
     regionApplied: "Предварительный ориентир с поправкой на город",
-    regionNotApplied: "Европейский коэффициент — только для сравнения. Он НЕ умножает долларовый расчёт без проверенной связки Киев–Варшава.",
+    regionNotApplied: "Отдельный европейский ориентир офисной отделки: €/м² × площадь пола. Это не перевод U.E.R. в евро и не оценка квартир, зданий или мебели.",
     regionUnknown: "Исходный ориентир UNOcalc без региональной поправки.",
     regionUpdated: "Рыночные данные: 2026 год. Не онлайн-смета. Точность коэффициентов ±10% не подтверждена.",
     originalReference: "Исходный ориентир по U.E.R.",
+    officeCostReference: "Рыночный ориентир офисной отделки",
+    unadjustedLabel: "Исходный индекс UNOcalc (без калибровки для Европы)",
+    areaLabel: "Площадь пола",
     levels: {
       108: { label: "базовая форма", hint: "Доступные материалы, проверенные технологии и аккуратное исполнение без сложной деталировки." },
       270: { label: "функциональная архитектура", hint: "Продуманная функция, качественные материалы, точная деталировка и сбалансированное исполнение." },
@@ -152,7 +159,7 @@ const copy = {
     definition: "одиниця енергетичного резонансу",
     disclaimer: "U.E.R. — авторський розрахунковий індекс, не фізична одиниця енергії.",
     regionalHeading: "Регіон / додатково",
-    regionalIntro: "Пілотна поправка для оздоблення інтер'єрів. Не застосовувати автоматично до меблів і будівництва споруд.",
+    regionalIntro: "Два окремі сценарії: квартирні роботи в Україні й офісне оздоблення у Європі. Їхні коефіцієнти не можна змішувати.",
     regionCountry: "країна",
     regionCity: "місто",
     noRegion: "Без регіональної поправки",
@@ -160,15 +167,18 @@ const copy = {
     regionalFactor: "регіональний коефіцієнт",
     regionalSource: "Дані та метод",
     uaMethod: "Україна, 2026: Київ = 1,00. Середини діапазонів вартості квартирних робіт; припущення: 50% роботи та 50% матеріалів за співставною ціною. Достовірність низька: повні бюджети не перевірено.",
-    euMethod: "Європа, 2026: Варшава = 1,00. Середня категорія повного офісного оздоблення, €/м². Лише порівняння міст; перехід Київ → Варшава не відкалібровано.",
+    euMethod: "Європа, 2026: Варшава — база для кожного рівня. Вартість офісного оздоблення за м² за Cushman & Wakefield. Рівні 108/270/432 умовно зіставлені з low/medium/high; їх еквівалентність не перевірено.",
     regionReference: "базове місто",
     ukraineBaseline: "Київ, Україна",
     europeBaseline: "Варшава, Польща",
     regionApplied: "Попередній орієнтир із поправкою на місто",
-    regionNotApplied: "Європейський коефіцієнт — тільки для порівняння. Він НЕ множить доларовий розрахунок без перевіреного зв'язку Київ–Варшава.",
+    regionNotApplied: "Окремий європейський орієнтир офісного оздоблення: €/м² × площа підлоги. Це не перетворення U.E.R. на євро й не оцінка квартир, будівель або меблів.",
     regionUnknown: "Початковий орієнтир UNOcalc без регіональної поправки.",
     regionUpdated: "Ринкові дані: 2026 рік. Не онлайн-кошторис. Точність коефіцієнтів ±10% не підтверджена.",
     originalReference: "Початковий орієнтир за U.E.R.",
+    officeCostReference: "Ринковий орієнтир офісного оздоблення",
+    unadjustedLabel: "Початковий індекс UNOcalc (без калібрування для Європи)",
+    areaLabel: "Площа підлоги",
     levels: {
       108: { label: "базова форма", hint: "Доступні матеріали, перевірені технології й акуратне виконання без складної деталізації." },
       270: { label: "функціональна архітектура", hint: "Продумана функція, якісні матеріали, точна деталізація та збалансоване виконання." },
@@ -252,12 +262,16 @@ const UnoCalc = () => {
   const ready = calculation.status === "ok";
   const cities = country === "none" ? [] : regionCitiesForCountry(country);
   const city = REGION_CITIES.find((option) => option.id === cityId);
-  const coefficient = city ? regionCoefficient(city) : null;
+  const coefficient = city ? regionCoefficient(city, q) : null;
+  const areaSquareMeters = ready ? (Number(a) / 1000) * (Number(b) / 1000) : null;
+  const euroEstimate = city && areaSquareMeters !== null
+    ? regionalOfficeEuroEstimate(areaSquareMeters, city, q)
+    : null;
   const regionalUsd = ready && city ? regionalUsdEstimate(calculation.energy, city) : null;
-  const displayedUsd = ready ? (regionalUsd ?? calculation.energy) : null;
-  const formattedUsd = displayedUsd === null
+  const displayedAmount = ready ? euroEstimate ?? regionalUsd ?? calculation.energy : null;
+  const formattedAmount = displayedAmount === null
     ? "—"
-    : `≈ ${Number(formatUer(displayedUsd)).toLocaleString("en-US", { maximumFractionDigits: 3 })}`;
+    : `≈ ${euroEstimate !== null ? "€" : "$"}${Number(formatUer(displayedAmount)).toLocaleString("en-US", { maximumFractionDigits: 3 })}`;
   const feedback =
     calculation.status === "invalid"
       ? t.invalid
@@ -425,7 +439,7 @@ const UnoCalc = () => {
                 <div className="mt-4 border-t border-border/60 pt-4">
                   <div className="flex items-baseline justify-between gap-3">
                     <span className="text-[12px] text-foreground/80">{t.regionalFactor}</span>
-                    <span className="text-[23px] font-light tabular-nums">× {coefficient.toFixed(2)}</span>
+                    <span className="text-[23px] font-light tabular-nums">× {coefficient.toFixed(city?.family === "eu-office" ? 3 : 2)}</span>
                   </div>
                   <p className="mt-1 text-[11px] text-foreground/75">
                     {t.regionReference}: {city.family === "ua-apartment" ? t.ukraineBaseline : t.europeBaseline}
@@ -456,19 +470,30 @@ const UnoCalc = () => {
               <p className="mt-2 text-[11px] text-foreground/75">{t.wireframeNote}</p>
             </div>
             <div className="mt-5 flex items-center justify-between gap-3">
-              <span className="text-[12px] font-medium text-foreground/80">{city?.family === "eu-office" ? t.originalReference : t.costReference}</span>
-              <span className="text-[11px] tracking-[0.12em] text-foreground/75">USD</span>
+              <span className="text-[12px] font-medium text-foreground/80">{euroEstimate !== null ? t.officeCostReference : t.costReference}</span>
+              <span className="text-[11px] tracking-[0.12em] text-foreground/75">{euroEstimate !== null ? "EUR" : "USD"}</span>
             </div>
             <output
               aria-live="polite"
               className="mt-2 block break-all border-b border-foreground/35 pb-4 text-right text-[clamp(3rem,6vw,4.5rem)] font-extralight leading-[1.1] tracking-[-0.045em] tabular-nums"
             >
-              {formattedUsd}
+              {formattedAmount}
             </output>
             {city?.family === "eu-office" && coefficient !== null && (
-              <div className="mt-3 flex items-baseline justify-between gap-3 border-b border-border/60 pb-3">
-                <span className="text-[12px] text-foreground/80">{t.regionalFactor} · {t.europeBaseline}</span>
-                <span className="text-[20px] font-light tabular-nums">× {coefficient.toFixed(2)}</span>
+              <div className="mt-3 border-b border-border/60 pb-3">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-[12px] text-foreground/80">{t.regionalFactor} · {t.europeBaseline}</span>
+                  <span className="text-[20px] font-light tabular-nums">× {coefficient.toFixed(3)}</span>
+                </div>
+                {areaSquareMeters !== null && (
+                  <div className="mt-2 flex items-baseline justify-between gap-3">
+                    <span className="text-[12px] text-foreground/80">{t.areaLabel}</span>
+                    <span className="text-[13px] font-light tabular-nums">{formatVolume(areaSquareMeters)} m²</span>
+                  </div>
+                )}
+                <p className="mt-3 text-[11px] font-light leading-[1.6] text-foreground/80">
+                  {t.unadjustedLabel}: {ready ? formatUer(calculation.energy) : "—"} U.E.R.
+                </p>
               </div>
             )}
             <div className="mt-4 flex items-baseline justify-between gap-3">
@@ -483,8 +508,8 @@ const UnoCalc = () => {
             </div>
             <p className="mt-4 text-[12px] font-light leading-[1.65] text-foreground/80">
               {ready
-                ? city?.family === "eu-office"
-                  ? t.regionNotApplied
+                ? euroEstimate !== null
+                  ? t.regionNotApplied + " " + t.regionUpdated
                   : regionalUsd !== null
                     ? t.regionApplied + ". " + t.costBasis + " " + t.regionUpdated
                     : t.costBasis
