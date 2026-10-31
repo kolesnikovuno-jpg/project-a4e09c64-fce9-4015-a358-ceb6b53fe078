@@ -90,6 +90,7 @@ const copy = {
     allocationBeyond: "If real requirements exceed this range, reconsider the total project resource rather than forcing the shares.",
     allocationReset: "Reset",
     allocationAdjust: "Adjust share",
+    allocationDragHint: "Drag a circle outward or toward the center to adjust its share; the other circles rebalance automatically.",
     levels: {
       108: { label: "basic form", hint: "Accessible materials, established methods and sound execution without complex detailing." },
       270: { label: "functional architecture", hint: "Considered functions, quality materials, precise detailing and balanced execution." },
@@ -154,6 +155,7 @@ const copy = {
     allocationBeyond: "Если реальные потребности выходят за допуск, следует пересмотреть общую ресурсную ёмкость, а не подгонять проценты.",
     allocationReset: "Сбросить",
     allocationAdjust: "Изменить долю",
+    allocationDragHint: "Перемещай кружок от центра или к центру: доли автоматически уравновешиваются.",
     levels: {
       108: { label: "базовая форма", hint: "Доступные материалы, проверенные технологии и аккуратное исполнение без сложной деталировки." },
       270: { label: "функциональная архитектура", hint: "Продуманная функция, качественные материалы, точная деталировка и сбалансированное исполнение." },
@@ -218,6 +220,7 @@ const copy = {
     allocationBeyond: "Якщо реальні потреби виходять за межі допуску, слід переглянути загальну ресурсну місткість, а не підганяти відсотки.",
     allocationReset: "Скинути",
     allocationAdjust: "Змінити частку",
+    allocationDragHint: "Переміщуй кружечок від центру або до центру: частки автоматично врівноважуються.",
     levels: {
       108: { label: "базова форма", hint: "Доступні матеріали, перевірені технології й акуратне виконання без складної деталізації." },
       270: { label: "функціональна архітектура", hint: "Продумана функція, якісні матеріали, точна деталізація та збалансоване виконання." },
@@ -593,6 +596,9 @@ const UnoCalc = () => {
                 <UnoBalanceDiagram
                   shares={resourcePercentages}
                   labels={t.allocationNames}
+                  onShareChange={changeShare}
+                  dragHint={t.allocationDragHint}
+                  adjustLabel={t.allocationAdjust}
                 />
               </div>
               <div className="mt-2 divide-y divide-border/60">
