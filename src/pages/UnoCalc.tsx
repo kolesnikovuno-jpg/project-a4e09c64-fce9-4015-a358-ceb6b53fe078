@@ -6,15 +6,7 @@ import {
   RESOURCE_SHARES,
   BASE_RESOURCE_PERCENTAGES,
   FLEXIBILITY_PP,
-  INITIAL_RESOURCE_COUNTERPARTS,
-  linkResourceCounterparts,
-  resourceShareRange,
   adaptResourcePercentages,
-  DEFAULT_RESOURCE_COST_MODES,
-  resourcePaidMask,
-  resourceCashSummary,
-  type ResourceCostModes,
-  type ResourceCounterparts,
   type ResourcePercentages,
 } from "@/lib/unocalcAllocation";
 import {
@@ -88,26 +80,15 @@ const copy = {
     unadjustedLabel: "Original UNOcalc index (no European calibration)",
     areaLabel: "Floor area",
     allocationHeading: "04 / Resource distribution",
-    allocationIntro: "Resource reference and cash expenses are different. Select how each function is performed; a zero-payment item does not increase the others.",
-    allocationTotal: "Resource reference",
+    allocationIntro: "Recommended resource balance: 20 / 20 / 20 / 40. A model of the project's whole resource capacity, not a required payment split or a verified market cost breakdown.",
+    allocationTotal: "Allocation",
     allocationNames: { retail: "retail", design: "project / design", installation: "installation", components: "components" },
     allocationBalanced: "Balance",
     allocationAdapted: "Adaptation",
-    allocationFlexibility: "Paid functions can rebalance within ±2.5 percentage points. Self-performed or unneeded functions have zero external payment and are excluded from balancing.",
+    allocationFlexibility: "Fixed: the four shares always total 100%. Flexible: each may vary by ±2.5 percentage points; the others compensate automatically.",
     allocationBeyond: "If real requirements exceed this range, reconsider the total project resource rather than forcing the shares.",
     allocationReset: "Reset",
     allocationAdjust: "Adjust share",
-    allocationCounterpart: "Balance with",
-    allocationAuto: "Auto · all available",
-    allocationPairLimit: "This pair has reached its available range. Select another partner to redistribute further.",
-    allocationCostMode: "Execution",
-    allocationPaid: "Paid / outsourced",
-    allocationSelf: "Done in-house · no external payment",
-    allocationUnneeded: "Not needed · no expense",
-    allocationCashTotal: "Modeled direct payments",
-    allocationNoncash: "No direct payment in this scenario",
-    allocationCashNote: "Payment estimates use the author's reference proportions, not supplier quotations. In-house work still takes time and may carry indirect costs; zero here means no separately modeled payment, not zero economic value.",
-    allocationReference: "Reference",
     levels: {
       108: { label: "basic form", hint: "Accessible materials, established methods and sound execution without complex detailing." },
       270: { label: "functional architecture", hint: "Considered functions, quality materials, precise detailing and balanced execution." },
@@ -163,26 +144,15 @@ const copy = {
     unadjustedLabel: "Исходный индекс UNOcalc (без калибровки для Европы)",
     areaLabel: "Площадь пола",
     allocationHeading: "04 / Распределение ресурса",
-    allocationIntro: "Ресурсная стоимость и денежные затраты — разные величины. Укажи способ участия каждого раздела: исключение оплаты не увеличивает другие статьи.",
-    allocationTotal: "Ресурсный ориентир",
+    allocationIntro: "Рекомендуемый ресурсный баланс: 20 / 20 / 20 / 40. Модель целостности проекта, а не обязательное распределение платежей или подтверждённая рыночная смета.",
+    allocationTotal: "Распределено",
     allocationNames: { retail: "ритейл", design: "проект / дизайн", installation: "монтаж", components: "комплектующие" },
     allocationBalanced: "Равновесие",
     allocationAdapted: "Адаптация",
-    allocationFlexibility: "Оплачиваемые разделы могут перераспределяться в пределах ±2,5 п.п. Собственная работа и ненужные разделы не требуют отдельной оплаты и исключены из компенсации.",
+    allocationFlexibility: "Жёсткость: сумма долей всегда 100%. Гибкость: каждая доля может отклоняться на ±2,5 п.п.; остальные автоматически компенсируют изменение.",
     allocationBeyond: "Если реальные потребности выходят за допуск, следует пересмотреть общую ресурсную ёмкость, а не подгонять проценты.",
     allocationReset: "Сбросить",
     allocationAdjust: "Изменить долю",
-    allocationCounterpart: "Баланс с",
-    allocationAuto: "Авто · остальные доли",
-    allocationPairLimit: "Пара достигла доступного предела. Для другого перераспределения выбери другой связанный раздел.",
-    allocationCostMode: "Участие",
-    allocationPaid: "Оплачивается",
-    allocationSelf: "Своими силами · без отдельной оплаты",
-    allocationUnneeded: "Не требуется · расход 0",
-    allocationCashTotal: "Расчётные денежные расходы",
-    allocationNoncash: "Без прямой оплаты в этом сценарии",
-    allocationCashNote: "Суммы основаны на авторской пропорции, а не на сметах подрядчиков. Собственная работа требует времени и может иметь косвенные затраты: ноль здесь означает отсутствие отдельного платежа, а не отсутствие ценности.",
-    allocationReference: "В составе ориентира",
     levels: {
       108: { label: "базовая форма", hint: "Доступные материалы, проверенные технологии и аккуратное исполнение без сложной деталировки." },
       270: { label: "функциональная архитектура", hint: "Продуманная функция, качественные материалы, точная деталировка и сбалансированное исполнение." },
@@ -238,26 +208,15 @@ const copy = {
     unadjustedLabel: "Початковий індекс UNOcalc (без калібрування для Європи)",
     areaLabel: "Площа підлоги",
     allocationHeading: "04 / Розподіл ресурсу",
-    allocationIntro: "Ресурсна вартість і грошові витрати — різні величини. Укажи спосіб участі кожного розділу: виключення оплати не збільшує інші статті.",
-    allocationTotal: "Ресурсний орієнтир",
+    allocationIntro: "Рекомендований ресурсний баланс: 20 / 20 / 20 / 40. Модель цілісності проєкту, а не обов’язковий розподіл платежів чи підтверджений ринковий кошторис.",
+    allocationTotal: "Розподілено",
     allocationNames: { retail: "ритейл", design: "проєкт / дизайн", installation: "монтаж", components: "комплектуючі" },
     allocationBalanced: "Рівновага",
     allocationAdapted: "Адаптація",
-    allocationFlexibility: "Оплачувані розділи можуть перерозподілятись у межах ±2,5 в.п. Власна робота та непотрібні розділи не потребують окремої оплати і не беруть участі в компенсації.",
+    allocationFlexibility: "Жорсткість: сума часток завжди 100%. Гнучкість: кожна частка може відхилятися на ±2,5 в.п.; інші автоматично компенсують зміну.",
     allocationBeyond: "Якщо реальні потреби виходять за межі допуску, слід переглянути загальну ресурсну місткість, а не підганяти відсотки.",
     allocationReset: "Скинути",
     allocationAdjust: "Змінити частку",
-    allocationCounterpart: "Баланс з",
-    allocationAuto: "Авто · інші частки",
-    allocationPairLimit: "Пара досягла доступної межі. Для іншого перерозподілу обери інший пов’язаний розділ.",
-    allocationCostMode: "Участь",
-    allocationPaid: "Оплачується",
-    allocationSelf: "Власними силами · без окремої оплати",
-    allocationUnneeded: "Не потрібно · витрата 0",
-    allocationCashTotal: "Розрахункові грошові витрати",
-    allocationNoncash: "Без прямої оплати в цьому сценарії",
-    allocationCashNote: "Суми базуються на авторській пропорції, а не на кошторисах підрядників. Власна робота потребує часу й може мати непрямі витрати: нуль тут означає відсутність окремого платежу, а не відсутність цінності.",
-    allocationReference: "У складі орієнтира",
     levels: {
       108: { label: "базова форма", hint: "Доступні матеріали, перевірені технології й акуратне виконання без складної деталізації." },
       270: { label: "функціональна архітектура", hint: "Продумана функція, якісні матеріали, точна деталізація та збалансоване виконання." },
@@ -335,8 +294,6 @@ const UnoCalc = () => {
   const [country, setCountry] = useState<RegionCountryCode | "none">("none");
   const [cityId, setCityId] = useState<string>("");
   const [resourcePercentages, setResourcePercentages] = useState<ResourcePercentages>(BASE_RESOURCE_PERCENTAGES);
-  const [resourceCounterparts, setResourceCounterparts] = useState<ResourceCounterparts>(INITIAL_RESOURCE_COUNTERPARTS);
-  const [resourceCostModes, setResourceCostModes] = useState<ResourceCostModes>(DEFAULT_RESOURCE_COST_MODES);
   const { locale, localePath } = useLocale();
   const t = copy[locale];
 
@@ -355,20 +312,9 @@ const UnoCalc = () => {
     ? "—"
     : `≈ ${euroEstimate !== null ? "€" : "$"}${Number(formatUer(displayedAmount)).toLocaleString("en-US", { maximumFractionDigits: 3 })}`;
   const allocation = displayedAmount === null ? null : allocateResource(displayedAmount, resourcePercentages);
-  const cashSummary = resourceCashSummary(allocation, resourceCostModes);
-  const paidMask = resourcePaidMask(resourceCostModes);
   const isAdapted = resourcePercentages.some((value, index) => value !== BASE_RESOURCE_PERCENTAGES[index]);
-  const hasLinkedPair = resourceCounterparts.some((value) => value !== null);
-  const hasCostOverrides = resourceCostModes.some((mode) => mode !== "paid");
   const changeShare = (index: number, value: number) =>
-    setResourcePercentages((current) => adaptResourcePercentages(current, index, value, resourceCounterparts[index], paidMask));
-  const changeCounterpart = (index: number, value: string) =>
-    setResourceCounterparts((current) => linkResourceCounterparts(current, index, value === "auto" ? null : Number(value)));
-  const changeCostMode = (index: number, mode: ResourceCostModes[number]) => {
-    setResourceCostModes((current) => current.map((value, row) => row === index ? mode : value) as unknown as ResourceCostModes);
-    setResourcePercentages(BASE_RESOURCE_PERCENTAGES);
-    setResourceCounterparts(INITIAL_RESOURCE_COUNTERPARTS);
-  };
+    setResourcePercentages((current) => adaptResourcePercentages(current, index, value));
   const currencySymbol = euroEstimate !== null ? "€" : "$";
   const formatShare = (amount: number) =>
     currencySymbol + amount.toLocaleString("en-US", {
@@ -623,7 +569,7 @@ const UnoCalc = () => {
                 <h3 id="unocalc-allocation-title" className="text-[12px] font-medium uppercase tracking-[0.13em]">
                   {t.allocationHeading}
                 </h3>
-                <span className="text-[12px] tabular-nums text-foreground/80">{cashSummary ? Number(cashSummary.paidPercentOfReference.toFixed(1)).toLocaleString(locale === "en" ? "en-US" : "ru-RU") + "%" : "—"}</span>
+                <span className="text-[12px] tabular-nums text-foreground/80">100%</span>
               </div>
               <p className="mt-2 text-[12px] font-light leading-[1.65] text-foreground/80">
                 {t.allocationIntro}
@@ -634,12 +580,8 @@ const UnoCalc = () => {
                 </span>
                 <button
                   type="button"
-                  disabled={!isAdapted && !hasLinkedPair && !hasCostOverrides}
-                  onClick={() => {
-                    setResourcePercentages(BASE_RESOURCE_PERCENTAGES);
-                    setResourceCounterparts(INITIAL_RESOURCE_COUNTERPARTS);
-                    setResourceCostModes(DEFAULT_RESOURCE_COST_MODES);
-                  }}
+                  disabled={!isAdapted}
+                  onClick={() => setResourcePercentages(BASE_RESOURCE_PERCENTAGES)}
                   className="min-h-9 border-b border-foreground/30 text-[12px] text-foreground/80 transition-colors hover:text-foreground disabled:cursor-default disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                 >
                   {t.allocationReset}
@@ -649,7 +591,7 @@ const UnoCalc = () => {
               <div
                 className="mt-5 flex h-[6px] overflow-hidden bg-foreground/10"
                 role="img"
-                aria-label={RESOURCE_SHARES.map((share, index) => t.allocationNames[share.id] + " " + (paidMask[index] ? resourcePercentages[index] : 0) + "%").join(", ")}
+                aria-label={RESOURCE_SHARES.map((share, index) => t.allocationNames[share.id] + " " + resourcePercentages[index] + "%").join(", ")}
               >
                 {RESOURCE_SHARES.map((share, index) => (
                   <div
@@ -659,30 +601,22 @@ const UnoCalc = () => {
                       index === 1 ? "bg-foreground/55" :
                       index === 2 ? "bg-foreground/75" : "bg-foreground"
                     }
-                    style={{ width: (paidMask[index] ? resourcePercentages[index] : 0) + "%" }}
+                    style={{ width: resourcePercentages[index] + "%" }}
                   />
                 ))}
               </div>
               <div className="mt-2 divide-y divide-border/60">
                 {RESOURCE_SHARES.map((share, index) => {
                   const part = allocation?.parts[index];
-                  const cashLine = cashSummary?.lines[index];
-                  const costMode = resourceCostModes[index];
-                  const isPaid = costMode === "paid";
                   const currentPercent = resourcePercentages[index];
                   const shareLocale = locale === "en" ? "en-US" : "ru-RU";
-                  const counterpart = resourceCounterparts[index];
-                  const sliderRange = resourceShareRange(resourcePercentages, index, counterpart, paidMask);
-                  const pairedLimit = counterpart !== null &&
-                    (sliderRange.min > share.percent - FLEXIBILITY_PP ||
-                      sliderRange.max < share.percent + FLEXIBILITY_PP);
                   return (
                     <div key={share.id} className="py-3 text-[13px]">
                       <div className="flex items-baseline justify-between gap-3">
                         <span className="min-w-0 flex-1 text-foreground/85">{t.allocationNames[share.id]}</span>
                         <span className="w-16 shrink-0 text-right tabular-nums text-foreground/75">
-                          {(isPaid ? currentPercent : 0).toLocaleString(shareLocale)}%
-                          {isPaid && currentPercent !== share.percent && (
+                          {currentPercent.toLocaleString(shareLocale)}%
+                          {currentPercent !== share.percent && (
                             <span className="ml-1 text-[10px] text-foreground/60">
                               {currentPercent > share.percent ? "+" : "−"}
                               {Math.abs(currentPercent - share.percent).toLocaleString(shareLocale)}
@@ -690,72 +624,23 @@ const UnoCalc = () => {
                           )}
                         </span>
                         <span className="w-[108px] shrink-0 text-right font-light tabular-nums sm:w-[122px]">
-                          {cashLine ? formatShare(cashLine.directPayment) : "—"}
+                          {part ? formatShare(part.amount) : "—"}
                         </span>
                       </div>
-                      <div className="mt-2 flex items-center justify-between gap-3">
-                        <label
-                          htmlFor={"unocalc-mode-" + share.id}
-                          className="shrink-0 text-[11px] text-foreground/70"
-                        >
-                          {t.allocationCostMode}
-                        </label>
-                        <select
-                          id={"unocalc-mode-" + share.id}
-                          value={costMode}
-                          onChange={(event) => changeCostMode(index, event.target.value as ResourceCostModes[number])}
-                          className="min-w-0 max-w-[75%] rounded-none border border-border/80 bg-background px-2 py-2 text-[12px] text-foreground outline-none focus:border-primary focus-visible:ring-1 focus-visible:ring-primary"
-                        >
-                          <option value="paid">{t.allocationPaid}</option>
-                          <option value="self">{t.allocationSelf}</option>
-                          <option value="not-needed">{t.allocationUnneeded}</option>
-                        </select>
-                      </div>
-                      {!isPaid && part && (
-                        <p className="mt-1 text-[11px] font-light text-foreground/65">
-                          {t.allocationReference}: {currentPercent.toLocaleString(shareLocale)}% · {formatShare(part.amount)}
-                        </p>
-                      )}
-                      {isPaid && <input
+                      <input
                         type="range"
-                        min={sliderRange.min}
-                        max={sliderRange.max}
+                        min={share.percent - FLEXIBILITY_PP}
+                        max={share.percent + FLEXIBILITY_PP}
                         step="0.5"
                         value={currentPercent}
                         onChange={(event) => changeShare(index, Number(event.target.value))}
                         aria-label={t.allocationAdjust + ": " + t.allocationNames[share.id]}
                         className="mt-2 block h-10 w-full cursor-pointer accent-foreground"
-                      />}
-                      {isPaid && <div className="flex justify-between text-[10px] tabular-nums text-foreground/60">
-                        <span>{sliderRange.min.toLocaleString(shareLocale)}%</span>
-                        <span>{sliderRange.max.toLocaleString(shareLocale)}%</span>
-                      </div>}
-                      {isPaid && <div className="mt-2 flex items-center justify-between gap-3">
-                        <label
-                          htmlFor={"unocalc-pair-" + share.id}
-                          className="shrink-0 text-[11px] text-foreground/70"
-                        >
-                          {t.allocationCounterpart}
-                        </label>
-                        <select
-                          id={"unocalc-pair-" + share.id}
-                          value={counterpart ?? "auto"}
-                          onChange={(event) => changeCounterpart(index, event.target.value)}
-                          className="max-w-[65%] min-w-0 rounded-none border border-border/80 bg-background px-2 py-2 text-[12px] text-foreground outline-none focus:border-primary focus-visible:ring-1 focus-visible:ring-primary"
-                        >
-                          <option value="auto">{t.allocationAuto}</option>
-                          {RESOURCE_SHARES.map((other, otherIndex) =>
-                            otherIndex === index || !paidMask[otherIndex] ? null : (
-                              <option key={other.id} value={otherIndex}>{t.allocationNames[other.id]}</option>
-                            )
-                          )}
-                        </select>
-                      </div>}
-                      {isPaid && pairedLimit && (
-                        <p className="mt-1 text-[10px] leading-[1.55] text-foreground/60">
-                          {t.allocationPairLimit}
-                        </p>
-                      )}
+                      />
+                      <div className="flex justify-between text-[10px] tabular-nums text-foreground/60">
+                        <span>{(share.percent - FLEXIBILITY_PP).toLocaleString(shareLocale)}%</span>
+                        <span>{(share.percent + FLEXIBILITY_PP).toLocaleString(shareLocale)}%</span>
+                      </div>
                     </div>
                   );
                 })}
@@ -766,17 +651,6 @@ const UnoCalc = () => {
                   {allocation ? formatShare(allocation.displayedTotal) : "—"}
                 </span>
               </div>
-              <div className="mt-3 flex items-baseline justify-between gap-3 text-[13px]">
-                <span className="font-medium text-foreground">{t.allocationCashTotal}</span>
-                <span className="font-medium tabular-nums text-foreground">
-                  {cashSummary ? formatShare(cashSummary.paid) : "—"}
-                </span>
-              </div>
-              <div className="mt-1 flex items-baseline justify-between gap-3 text-[11px] text-foreground/75">
-                <span>{t.allocationNoncash}</span>
-                <span className="tabular-nums">{cashSummary ? formatShare(cashSummary.noDirectPayment) : "—"}</span>
-              </div>
-              <p className="mt-3 text-[11px] font-light leading-[1.65] text-foreground/75">{t.allocationCashNote}</p>
               <p className="mt-3 text-[11px] font-light leading-[1.65] text-foreground/75">
                 {t.allocationBeyond}
               </p>

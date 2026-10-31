@@ -2,8 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   allocateResource, RESOURCE_SHARES, BASE_RESOURCE_PERCENTAGES, FLEXIBILITY_PP,
   adaptResourcePercentages, isValidResourcePercentages, type ResourcePercentages,
-  INITIAL_RESOURCE_COUNTERPARTS, linkResourceCounterparts, resourceShareRange,
-  resourcePaidMask, resourceCashSummary, DEFAULT_RESOURCE_COST_MODES,
 } from "@/lib/unocalcAllocation";
 
 describe("UNOcalc resource distribution", () => {
@@ -59,55 +57,6 @@ describe("UNOcalc resource distribution", () => {
     }
   });
 
-  it("transfers design only into installation while retail and components stay untouched", () => {
-    // User case: Retail 20, Components 42.5, Installation 17.5.
-    const start: ResourcePercentages = [20, 20, 17.5, 42.5];
-    const paired = adaptResourcePercentages(start, 1, 17.5, 2);
-    expect(paired).toEqual([20, 17.5, 20, 42.5]);
-    expect(adaptResourcePercentages(paired, 2, 17.5, 1)).toEqual(start);
-    expect(resourceShareRange(start, 1, 2)).toEqual({ min: 17.5, max: 20 });
-  });
-
-  it("pairs categories bidirectionally and cleanly relinks / unlinks", () => {
-    const designInstallation = linkResourceCounterparts(INITIAL_RESOURCE_COUNTERPARTS, 1, 2);
-    expect(designInstallation).toEqual([null, 2, 1, null]);
-    const retailComponents = linkResourceCounterparts(designInstallation, 0, 3);
-    expect(retailComponents).toEqual([3, 2, 1, 0]);
-    const switched = linkResourceCounterparts(retailComponents, 1, 0);
-    expect(switched).toEqual([1, 0, null, null]);
-    expect(linkResourceCounterparts(switched, 0, null)).toEqual(INITIAL_RESOURCE_COUNTERPARTS);
-    expect(linkResourceCounterparts(switched, 1, 1)).toBe(switched);
-  });
-
-  it("allows every paired slider position reachable from any balanced allocation", () => {
-    // There are 891 valid 0.5 pp allocations; check every pair and requested value.
-    for (let a = -5; a <= 5; a++) {
-      for (let b = -5; b <= 5; b++) {
-        for (let c = -5; c <= 5; c++) {
-          const d = -(a + b + c);
-          if (d < -5 || d > 5) continue;
-          const current: ResourcePercentages = [20 + a / 2, 20 + b / 2, 20 + c / 2, 40 + d / 2];
-          for (let index = 0; index < 4; index++) {
-            for (let partner = 0; partner < 4; partner++) {
-              if (index === partner) continue;
-              const bounds = resourceShareRange(current, index, partner);
-              for (let tick = -5; tick <= 5; tick++) {
-                const requested = BASE_RESOURCE_PERCENTAGES[index] + tick / 2;
-                const applied = Math.max(bounds.min, Math.min(bounds.max, requested));
-                const result = adaptResourcePercentages(current, index, requested, partner);
-                expect(result[index]).toBe(applied);
-                expect(result.filter((_, row) => row !== index && row !== partner)).toEqual(
-                  current.filter((_, row) => row !== index && row !== partner)
-                );
-                expect(isValidResourcePercentages(result)).toBe(true);
-              }
-            }
-          }
-        }
-      }
-    }
-  });
-
   it("clamps requests outside the allowed 5-point windows", () => {
     expect(adaptResourcePercentages(BASE_RESOURCE_PERCENTAGES, 3, 100)[3]).toBe(42.5);
     expect(adaptResourcePercentages(BASE_RESOURCE_PERCENTAGES, 0, 0)[0]).toBe(17.5);
@@ -132,54 +81,6 @@ describe("UNOcalc resource distribution", () => {
   it("rejects invalid totals or unauthorized shares", () => {
     expect(allocateResource(10000, [20, 20, 20, 41])).toBeNull();
     expect(allocateResource(10000, [12, 28, 20, 40])).toBeNull();
-  });
-
-
-  it("separates direct payments from reference resource: personal project without retail and outsourced design", () => {
-    const allocation = allocateResource(40000);
-    const modes = ["not-needed", "self", "paid", "paid"] as const;
-    const cash = resourceCashSummary(allocation, modes);
-    expect(cash?.lines.map((line) => line.directPayment)).toEqual([0, 0, 8000, 16000]);
-    expect(cash?.paid).toBe(24000);
-    expect(cash?.noDirectPayment).toBe(16000);
-    expect(cash?.paidPercentOfReference).toBe(60);
-    expect(allocation?.displayedTotal).toBe(40000);
-  });
-
-  it("retail can be absent while design still carries value but no separate payment", () => {
-    const cash = resourceCashSummary(allocateResource(15625),
-      ["not-needed", "self", "paid", "paid"]);
-    expect(cash?.lines[0].referenceAmount).toBe(3125);
-    expect(cash?.lines[0].mode).toBe("not-needed");
-    expect(cash?.lines[1].referenceAmount).toBe(3125);
-    expect(cash?.lines[1].mode).toBe("self");
-    expect(cash?.lines[0].directPayment).toBe(0);
-    expect(cash?.lines[1].directPayment).toBe(0);
-  });
-
-  it("only paid directions rebalance: without retail and self-design, montage and components exchange only", () => {
-    const allowed = resourcePaidMask(["not-needed", "self", "paid", "paid"]);
-    expect(allowed).toEqual([false, false, true, true]);
-    const change = adaptResourcePercentages(BASE_RESOURCE_PERCENTAGES, 2, 22.5, null, allowed);
-    expect(change).toEqual([20, 20, 22.5, 37.5]);
-    expect(adaptResourcePercentages(change, 2, 20, null, allowed)).toEqual(BASE_RESOURCE_PERCENTAGES);
-    expect(resourceShareRange(BASE_RESOURCE_PERCENTAGES, 0, null, allowed)).toEqual({ min: 20, max: 20 });
-    expect(adaptResourcePercentages(BASE_RESOURCE_PERCENTAGES, 1, 22.5, null, allowed))
-      .toEqual(BASE_RESOURCE_PERCENTAGES);
-  });
-
-  it("cannot change the paid allocation when only one paid category remains", () => {
-    const allowed = resourcePaidMask(["not-needed", "self", "not-needed", "paid"]);
-    expect(resourceShareRange(BASE_RESOURCE_PERCENTAGES, 3, null, allowed))
-      .toEqual({ min: 40, max: 40 });
-    expect(adaptResourcePercentages(BASE_RESOURCE_PERCENTAGES, 3, 42.5, null, allowed))
-      .toEqual(BASE_RESOURCE_PERCENTAGES);
-  });
-
-  it("default payment mode leaves the original four-part monetary allocation intact", () => {
-    const allocation = allocateResource(10000);
-    expect(resourceCashSummary(allocation, DEFAULT_RESOURCE_COST_MODES)?.paid).toBe(10000);
-    expect(resourceCashSummary(allocation, DEFAULT_RESOURCE_COST_MODES)?.noDirectPayment).toBe(0);
   });
 
   it("allocates the original $15,625 reference exactly", () => {
