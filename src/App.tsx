@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Canvas from "./pages/Canvas";
 import Pricing from "./pages/Pricing";
 import UnoCalc from "./pages/UnoCalc";
+import UnoLab from "./pages/UnoLab";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import PixelTransition from "./pages/PixelTransition";
@@ -69,6 +70,7 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   // Previous landing (architectural research) kept for backward compatibility
   { path: "research", element: <Index /> },
   { path: "unocalc", element: <UnoCalc /> },
+  { path: "unocalc/lab", element: <UnoLab /> },
   { path: "lyra", element: <Lyra /> },
   { path: "nava", element: <Nava /> },
   { path: "about", element: <About /> },

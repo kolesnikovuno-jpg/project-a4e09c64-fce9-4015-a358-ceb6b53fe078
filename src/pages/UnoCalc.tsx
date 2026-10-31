@@ -249,6 +249,29 @@ const UnoCalc = () => {
           </p>
         </section>
 
+        <section className="mt-9 border-t border-border/50 pt-7" aria-labelledby="unocalc-lab-title">
+          <h2 id="unocalc-lab-title" className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            UNOcalc Lab
+          </h2>
+          <p className="mt-3 text-[12px] font-light leading-[1.8] text-foreground/80">
+            {{
+              ru: "Исследуй взаимодействие пространства и внимания: геометрия, личные наблюдения и сравнение вариантов.",
+              uk: "Досліджуй взаємодію простору й уваги: геометрія, власні спостереження та порівняння варіантів.",
+              en: "Explore space and attention through geometry, personal observations, and scenario comparison.",
+            }[locale]}
+          </p>
+          <Link
+            to={localePath("/unocalc/lab")}
+            className="mt-5 inline-flex min-h-11 items-center border-b border-foreground/40 text-[12px] tracking-[0.1em] text-primary hover:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          >
+            {{
+              ru: "Открыть лабораторию →",
+              uk: "Відкрити лабораторію →",
+              en: "Open the lab →",
+            }[locale]}
+          </Link>
+        </section>
+
         <footer className="mt-10 pt-6 border-t border-border/30">
           <p className="text-center text-[11px] tracking-[0.04em] lowercase text-foreground/80 font-light leading-relaxed">
             {t.analysis}
