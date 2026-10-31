@@ -168,12 +168,11 @@ export default function UnoBalanceDiagram({
                 cx={position.x}
                 cy={position.y}
                 r={resourceNodeRadius(shares[index])}
-                fill="var(--background)"
-                fillOpacity="0.94"
+                fill="none"
                 stroke="currentColor"
                 strokeWidth={active ? "2" : "1.5"}
                 opacity="0.96"
-                className="motion-safe:transition-all motion-safe:duration-150"
+                className="fill-background motion-safe:transition-all motion-safe:duration-150"
                 pointerEvents="none"
               />
               <circle
