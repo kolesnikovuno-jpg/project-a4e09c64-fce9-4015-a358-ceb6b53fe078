@@ -20,10 +20,10 @@ type UnoBalanceDiagramProps = {
 };
 
 const NODES = [
-  { id: "retail" },
-  { id: "design" },
-  { id: "installation" },
-  { id: "components" },
+  { id: "retail", x: -1, y: 0 },
+  { id: "design", x: 0, y: -1 },
+  { id: "installation", x: 0, y: 1 },
+  { id: "components", x: 1, y: 0 },
 ] as const;
 
 const PERIMETER_POINTS = [
@@ -33,27 +33,34 @@ const PERIMETER_POINTS = [
   { x: 40, y: 160 },
 ] as const;
 
-const TRACK_START = 53;
-const TRACK_END = 107;
-const AXIS = [
-  { x: -1, y: 0 },
-  { x: 0, y: -1 },
-  { x: 0, y: 1 },
-  { x: 1, y: 0 },
-] as const;
+const TRACK_START = 60;
+const TRACK_MIDDLE = 80;
+const TRACK_END = 100;
 
+const formatPercent = (value: number): string => {
+  const formatted = String(value);
+  return formatted + "%";
+};
+
+/**
+ * Resource balance is a single interactive instrument. The perimeter and
+ * central anchor do not move; all four handles travel radially in ±2.5 pp,
+ * with the parent allocating the opposite changes to keep a 100% total.
+ */
 export default function UnoBalanceDiagram({
   shares, labels, onShareChange, dragHint, adjustLabel,
 }: UnoBalanceDiagramProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const draggingPointer = useRef<number | null>(null);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
 
   const applyPointer = (index: number, event: PointerEvent<SVGGElement>) => {
     const svg = svgRef.current;
     if (!svg) return;
     const bounds = svg.getBoundingClientRect();
     if (bounds.width <= 0 || bounds.height <= 0) return;
+
     const x = (event.clientX - bounds.left) / bounds.width * RESOURCE_DIAGRAM_SIZE;
     const y = (event.clientY - bounds.top) / bounds.height * RESOURCE_DIAGRAM_SIZE;
     onShareChange(index, resourceShareFromPointer(index, x, y));
@@ -61,6 +68,7 @@ export default function UnoBalanceDiagram({
 
   const startDrag = (index: number, event: PointerEvent<SVGGElement>) => {
     if (draggingPointer.current !== null) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
     event.preventDefault();
     draggingPointer.current = event.pointerId;
     setActiveIndex(index);
@@ -73,7 +81,7 @@ export default function UnoBalanceDiagram({
     applyPointer(index, event);
   };
 
-  const endDrag = (event: PointerEvent<SVGGElement>) => {
+  const finishDrag = (event: PointerEvent<SVGGElement>) => {
     if (draggingPointer.current !== event.pointerId) return;
     draggingPointer.current = null;
     setActiveIndex(null);
@@ -82,15 +90,15 @@ export default function UnoBalanceDiagram({
     }
   };
 
-  const onKey = (index: number, event: KeyboardEvent<SVGGElement>) => {
-    const requested = resourceShareFromKey(index, shares[index], event.key);
-    if (requested === null) return;
+  const changeWithKey = (index: number, event: KeyboardEvent<SVGGElement>) => {
+    const next = resourceShareFromKey(index, shares[index], event.key);
+    if (next === null) return;
     event.preventDefault();
-    onShareChange(index, requested);
+    onShareChange(index, next);
   };
 
   const description = NODES.map((node, index) =>
-    labels[node.id] + ": " + shares[index] + "%"
+    labels[node.id] + ": " + formatPercent(shares[index])
   ).join("; ");
 
   return (
@@ -100,30 +108,51 @@ export default function UnoBalanceDiagram({
         viewBox="0 0 320 320"
         xmlns="http://www.w3.org/2000/svg"
         aria-label={description}
-        className="mx-auto block h-auto w-full max-w-[350px] overflow-visible text-foreground"
+        className="mx-auto block h-auto w-full max-w-[380px] text-foreground"
       >
+        <title>{description}</title>
         <circle
-          cx="160" cy="160" r="120" fill="none"
-          stroke="currentColor" strokeWidth="1.2" opacity="0.57"
+          cx="160" cy="160" r="120"
+          fill="none" stroke="currentColor" strokeWidth="1.15" opacity="0.58"
         />
         <path
           d="M40 160 H280 M160 40 V280"
-          fill="none" stroke="currentColor" strokeWidth="1" opacity="0.42"
+          fill="none" stroke="currentColor" strokeWidth="0.9" opacity="0.3"
         />
         {PERIMETER_POINTS.map(({ x, y }) => (
           <circle
-            key={x + "-" + y} cx={x} cy={y} r="2.7"
-            fill="none" stroke="currentColor" strokeWidth="1.3" opacity="0.85"
+            key={x + "-" + y}
+            cx={x} cy={y} r="2.6"
+            fill="none" stroke="currentColor" strokeWidth="1.2"
+            opacity="0.85"
           />
         ))}
+
+        {/* Fixed center represents the integrity constraint, not a fifth share. */}
         <circle
-          cx="160" cy="160" r="11" fill="none"
-          stroke="currentColor" strokeWidth="1.4" opacity="0.91"
+          cx="160" cy="160" r="13"
+          fill="hsl(var(--background))" stroke="currentColor"
+          strokeWidth="1.2" opacity="0.94"
         />
+        <text
+          x="160" y="160.5" fontSize="7.8" fontWeight="400"
+          textAnchor="middle" dominantBaseline="central"
+          fill="currentColor" pointerEvents="none"
+        >
+          100%
+        </text>
+
         {NODES.map((node, index) => {
           const position = resourceNodePosition(index, shares[index]);
-          const axis = AXIS[index];
-          const active = activeIndex === index;
+          const isDragging = activeIndex === index;
+          const highlighted = isDragging || focusedIndex === index;
+          const center = RESOURCE_DIAGRAM_CENTER;
+          const xMin = center + node.x * TRACK_START;
+          const yMin = center + node.y * TRACK_START;
+          const xMax = center + node.x * TRACK_END;
+          const yMax = center + node.y * TRACK_END;
+          const midX = center + node.x * TRACK_MIDDLE;
+          const midY = center + node.y * TRACK_MIDDLE;
           const base = BASE_RESOURCE_PERCENTAGES[index];
 
           return (
@@ -135,77 +164,116 @@ export default function UnoBalanceDiagram({
               aria-valuemin={base - FLEXIBILITY_PP}
               aria-valuemax={base + FLEXIBILITY_PP}
               aria-valuenow={shares[index]}
-              aria-valuetext={shares[index] + "%"}
+              aria-valuetext={formatPercent(shares[index])}
               onPointerDown={(event) => startDrag(index, event)}
               onPointerMove={(event) => drag(index, event)}
-              onPointerUp={endDrag}
-              onPointerCancel={endDrag}
+              onPointerUp={finishDrag}
+              onPointerCancel={finishDrag}
               onLostPointerCapture={(event) => {
                 if (draggingPointer.current === event.pointerId) {
                   draggingPointer.current = null;
                   setActiveIndex(null);
                 }
               }}
-              onKeyDown={(event) => onKey(index, event)}
-              style={{ touchAction: "none", cursor: active ? "grabbing" : "grab" }}
+              onFocus={() => setFocusedIndex(index)}
+              onBlur={() => setFocusedIndex(null)}
+              onKeyDown={(event) => changeWithKey(index, event)}
+              style={{ touchAction: "none", cursor: isDragging ? "grabbing" : "grab" }}
             >
-              {/* Wider invisible touch rail: tap a position or drag the node. */}
+              {/* Explicit endpoints communicate the full permitted travel. */}
               <path
-                d={"M" + (RESOURCE_DIAGRAM_CENTER + axis.x * TRACK_START) +
-                  " " + (RESOURCE_DIAGRAM_CENTER + axis.y * TRACK_START) +
-                  " L" + (RESOURCE_DIAGRAM_CENTER + axis.x * TRACK_END) +
-                  " " + (RESOURCE_DIAGRAM_CENTER + axis.y * TRACK_END)}
-                fill="none" stroke="transparent" strokeWidth="32" pointerEvents="stroke"
-              />
-              <circle
-                cx={position.x} cy={position.y} r={active ? 16 : 14}
+                d={"M" + xMin + " " + yMin + " L" + xMax + " " + yMax}
                 fill="none" stroke="currentColor"
-                strokeWidth="0.8" opacity={active ? 0.33 : 0}
-                className="motion-safe:transition-all motion-safe:duration-150"
+                strokeWidth={highlighted ? "4" : "2"}
+                opacity={highlighted ? 0.27 : 0.12}
                 pointerEvents="none"
               />
+              <circle cx={xMin} cy={yMin} r="2" fill="currentColor" opacity="0.44" pointerEvents="none" />
+              <circle cx={xMax} cy={yMax} r="2" fill="currentColor" opacity="0.44" pointerEvents="none" />
+              <circle cx={midX} cy={midY} r="2.2"
+                fill="hsl(var(--background))" stroke="currentColor"
+                strokeWidth="1" opacity="0.6" pointerEvents="none"
+              />
+
+              {highlighted && (
+                <circle
+                  cx={position.x} cy={position.y} r="22"
+                  fill="none" stroke="currentColor"
+                  strokeWidth="0.8" opacity="0.4"
+                  pointerEvents="none"
+                />
+              )}
               <circle
-                cx={position.x}
-                cy={position.y}
+                cx={position.x} cy={position.y}
                 r={resourceNodeRadius(shares[index])}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={active ? "2" : "1.5"}
-                opacity="0.96"
-                className="fill-background motion-safe:transition-all motion-safe:duration-150"
+                fill="hsl(var(--background))" stroke="currentColor"
+                strokeWidth={highlighted ? "2" : "1.5"}
+                opacity="0.98"
+                style={{
+                  transition: isDragging ? "none" :
+                    "cx 190ms ease-out, cy 190ms ease-out, r 190ms ease-out",
+                }}
                 pointerEvents="none"
               />
+
+              {/* 44px touch target; pointer capture keeps drags alive outside. */}
               <circle
-                cx={position.x} cy={position.y} r="21"
+                cx={position.x} cy={position.y} r="23"
                 fill="transparent" pointerEvents="all"
+              />
+              <path
+                d={"M" + xMin + " " + yMin + " L" + xMax + " " + yMax}
+                fill="none" stroke="transparent"
+                strokeWidth="32" pointerEvents="stroke"
               />
             </g>
           );
         })}
-        {/* Readouts outside the fixed perimeter; editable nodes stay uncluttered. */}
+
+        {/* Direction captions, outside the fixed outer circle. */}
+        <text x="160" y="17" fontSize="9.5" textAnchor="middle"
+          fill="currentColor" opacity="0.76" pointerEvents="none">
+          {labels.design}
+        </text>
+        <text x="160" y="313" fontSize="9.5" textAnchor="middle"
+          fill="currentColor" opacity="0.76" pointerEvents="none">
+          {labels.installation}
+        </text>
+        <text x="15" y="160" transform="rotate(-90 15 160)"
+          fontSize="9.5" textAnchor="middle" fill="currentColor"
+          opacity="0.76" pointerEvents="none">
+          {labels.retail}
+        </text>
+        <text x="305" y="160" transform="rotate(90 305 160)"
+          fontSize="9.5" textAnchor="middle" fill="currentColor"
+          opacity="0.76" pointerEvents="none">
+          {labels.components}
+        </text>
+
+        {/* Values follow the handles so the interaction has instant feedback. */}
         {NODES.map((node, index) => {
-          const placed = [
-            { x: 19, y: 176 },
-            { x: 177, y: 27 },
-            { x: 177, y: 309 },
-            { x: 292, y: 176 },
-          ][index];
+          const p = resourceNodePosition(index, shares[index]);
+          const horizontal = node.x !== 0;
+          const x = horizontal ? p.x : p.x + 20;
+          const y = horizontal ? p.y - 21 : p.y + 3;
+          const selected = activeIndex === index || focusedIndex === index;
           return (
             <text
-              key={node.id}
-              x={placed.x} y={placed.y}
-              textAnchor={index === 0 ? "middle" : index === 3 ? "middle" : "middle"}
+              key={"value-" + node.id}
+              x={x} y={y}
               fontSize="10.5"
-              fontWeight="300"
-              fill="currentColor" opacity="0.75"
+              fontWeight={selected ? "600" : "400"}
+              textAnchor="middle"
+              fill="currentColor"
+              opacity={selected ? "1" : "0.84"}
               pointerEvents="none"
             >
-              {shares[index]}%
+              {formatPercent(shares[index])}
             </text>
           );
         })}
       </svg>
-      <p className="mt-1 text-center text-[11px] font-light leading-[1.55] text-foreground/70">
+      <p className="mt-2 text-center text-[11px] font-light leading-[1.55] text-foreground/70">
         {dragHint}
       </p>
     </div>

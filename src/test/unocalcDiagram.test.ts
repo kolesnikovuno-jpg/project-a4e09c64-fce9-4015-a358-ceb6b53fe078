@@ -58,6 +58,19 @@ describe("UNOcalc interactive balance diagram", () => {
     expect(resourceShareFromPointer(3, RESOURCE_DIAGRAM_CENTER, 160)).toBe(37.5);
   });
 
+  it("keeps the inward and outward circular guides within the outer radius", () => {
+    for (let index = 0; index < 4; index++) {
+      const base = BASE_RESOURCE_PERCENTAGES[index];
+      const inner = resourceNodePosition(index, base - 2.5);
+      const outer = resourceNodePosition(index, base + 2.5);
+      const radius = (point: { x: number; y: number }) =>
+        Math.hypot(point.x - RESOURCE_DIAGRAM_CENTER, point.y - RESOURCE_DIAGRAM_CENTER);
+      expect(radius(inner)).toBe(60);
+      expect(radius(outer)).toBe(100);
+      expect(radius(outer)).toBeLessThan(120);
+    }
+  });
+
   it("supports keyboard adjustment, Home and End", () => {
     expect(resourceShareFromKey(1, 20, "ArrowRight")).toBe(20.5);
     expect(resourceShareFromKey(1, 20, "ArrowDown")).toBe(19.5);

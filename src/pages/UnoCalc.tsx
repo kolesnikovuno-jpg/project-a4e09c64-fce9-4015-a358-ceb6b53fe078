@@ -6,7 +6,6 @@ import {
   allocateResource,
   RESOURCE_SHARES,
   BASE_RESOURCE_PERCENTAGES,
-  FLEXIBILITY_PP,
   adaptResourcePercentages,
   type ResourcePercentages,
 } from "@/lib/unocalcAllocation";
@@ -90,7 +89,7 @@ const copy = {
     allocationBeyond: "If real requirements exceed this range, reconsider the total project resource rather than forcing the shares.",
     allocationReset: "Reset",
     allocationAdjust: "Adjust share",
-    allocationDragHint: "Drag a circle outward or toward the center to adjust its share; the other circles rebalance automatically.",
+    allocationDragHint: "Move a circle outward to increase its share, inward to reduce it. Use arrow keys when a circle is focused.",
     levels: {
       108: { label: "basic form", hint: "Accessible materials, established methods and sound execution without complex detailing." },
       270: { label: "functional architecture", hint: "Considered functions, quality materials, precise detailing and balanced execution." },
@@ -155,7 +154,7 @@ const copy = {
     allocationBeyond: "Если реальные потребности выходят за допуск, следует пересмотреть общую ресурсную ёмкость, а не подгонять проценты.",
     allocationReset: "Сбросить",
     allocationAdjust: "Изменить долю",
-    allocationDragHint: "Перемещай кружок от центра или к центру: доли автоматически уравновешиваются.",
+    allocationDragHint: "Тяни кружки наружу, чтобы увеличить долю, и к центру — чтобы уменьшить. С клавиатуры работают стрелки.",
     levels: {
       108: { label: "базовая форма", hint: "Доступные материалы, проверенные технологии и аккуратное исполнение без сложной деталировки." },
       270: { label: "функциональная архитектура", hint: "Продуманная функция, качественные материалы, точная деталировка и сбалансированное исполнение." },
@@ -220,7 +219,7 @@ const copy = {
     allocationBeyond: "Якщо реальні потреби виходять за межі допуску, слід переглянути загальну ресурсну місткість, а не підганяти відсотки.",
     allocationReset: "Скинути",
     allocationAdjust: "Змінити частку",
-    allocationDragHint: "Переміщуй кружечок від центру або до центру: частки автоматично врівноважуються.",
+    allocationDragHint: "Тягни кружечки назовні, щоб збільшити частку, та до центру — щоб зменшити. На клавіатурі працюють стрілки.",
     levels: {
       108: { label: "базова форма", hint: "Доступні матеріали, перевірені технології й акуратне виконання без складної деталізації." },
       270: { label: "функціональна архітектура", hint: "Продумана функція, якісні матеріали, точна деталізація та збалансоване виконання." },
@@ -623,20 +622,7 @@ const UnoCalc = () => {
                           {part ? formatShare(part.amount) : "—"}
                         </span>
                       </div>
-                      <input
-                        type="range"
-                        min={share.percent - FLEXIBILITY_PP}
-                        max={share.percent + FLEXIBILITY_PP}
-                        step="0.5"
-                        value={currentPercent}
-                        onChange={(event) => changeShare(index, Number(event.target.value))}
-                        aria-label={t.allocationAdjust + ": " + t.allocationNames[share.id]}
-                        className="mt-2 block h-10 w-full cursor-pointer accent-foreground"
-                      />
-                      <div className="flex justify-between text-[10px] tabular-nums text-foreground/60">
-                        <span>{(share.percent - FLEXIBILITY_PP).toLocaleString(shareLocale)}%</span>
-                        <span>{(share.percent + FLEXIBILITY_PP).toLocaleString(shareLocale)}%</span>
-                      </div>
+
                     </div>
                   );
                 })}
