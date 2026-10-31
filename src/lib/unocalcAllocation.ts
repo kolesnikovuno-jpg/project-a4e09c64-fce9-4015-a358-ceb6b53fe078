@@ -11,6 +11,64 @@ export const RESOURCE_SHARES = [
 
 export type ResourceShareId = (typeof RESOURCE_SHARES)[number]["id"];
 
+// 5 percentage-point window: ±2.5 pp around each base share.
+export const FLEXIBILITY_PP = 2.5;
+export const SHARE_STEP_PP = 0.5;
+export type ResourcePercentages = readonly [number, number, number, number];
+export const BASE_RESOURCE_PERCENTAGES: ResourcePercentages = [20, 20, 20, 40];
+
+const BASE_TICKS = BASE_RESOURCE_PERCENTAGES.map((value) => value * 2);
+const MIN_TICKS = BASE_TICKS.map((value) => value - 5);
+const MAX_TICKS = BASE_TICKS.map((value) => value + 5);
+
+export const isValidResourcePercentages = (shares: ResourcePercentages): boolean =>
+  shares.length === 4 &&
+  shares.reduce((sum, value) => sum + value, 0) === 100 &&
+  shares.every((value, i) =>
+    Number.isFinite(value) && Number.isInteger(value / SHARE_STEP_PP) &&
+    value >= BASE_RESOURCE_PERCENTAGES[i] - FLEXIBILITY_PP &&
+    value <= BASE_RESOURCE_PERCENTAGES[i] + FLEXIBILITY_PP
+  );
+
+/**
+ * Increases/decreases one share in 0.5-point ticks, and redistributes the
+ * offset to the other three within their bounds. Prefer offsets that return
+ * previously deviated shares towards their baseline.
+ */
+export const adaptResourcePercentages = (
+  current: ResourcePercentages,
+  index: number,
+  requested: number,
+): ResourcePercentages => {
+  if (!isValidResourcePercentages(current) ||
+      !Number.isInteger(index) || index < 0 || index >= 4 ||
+      !Number.isFinite(requested)) return current;
+
+  const ticks = current.map((percent) => Math.round(percent / SHARE_STEP_PP));
+  const target = Math.max(MIN_TICKS[index], Math.min(MAX_TICKS[index], Math.round(requested / SHARE_STEP_PP)));
+  const change = target - ticks[index];
+  if (change === 0) return current;
+  ticks[index] = target;
+
+  const direction = change > 0 ? -1 : 1;
+  for (let step = 0; step < Math.abs(change); step += 1) {
+    const options = [0, 1, 2, 3].filter((candidate) =>
+      candidate !== index &&
+      ticks[candidate] + direction >= MIN_TICKS[candidate] &&
+      ticks[candidate] + direction <= MAX_TICKS[candidate]
+    );
+    if (options.length === 0) return current;
+    options.sort((a, b) =>
+      direction === -1
+        ? (ticks[b] - BASE_TICKS[b]) - (ticks[a] - BASE_TICKS[a]) || a - b
+        : (ticks[a] - BASE_TICKS[a]) - (ticks[b] - BASE_TICKS[b]) || a - b
+    );
+    ticks[options[0]] += direction;
+  }
+  const next = ticks.map((tick) => tick * SHARE_STEP_PP) as ResourcePercentages;
+  return isValidResourcePercentages(next) ? next : current;
+};
+
 export type ResourceAllocation = {
   displayedTotal: number;
   parts: Array<{ id: ResourceShareId; percent: number; amount: number }>;
@@ -22,7 +80,8 @@ export type ResourceAllocation = {
  * displayed amounts sum to the displayed total, including uneven totals.
  * For sub-unit results, retain the precision of formatUer().
  */
-export const allocateResource = (total: number): ResourceAllocation | null => {
+export const allocateResource = (total: number, shares: ResourcePercentages = BASE_RESOURCE_PERCENTAGES): ResourceAllocation | null => {
+  if (!isValidResourcePercentages(shares)) return null;
   if (!Number.isFinite(total) || total <= 0) return null;
 
   const formatted = formatUer(total);
@@ -38,7 +97,7 @@ export const allocateResource = (total: number): ResourceAllocation | null => {
   if (!Number.isSafeInteger(units) || units < 1) return null;
 
   const parts = RESOURCE_SHARES.map((share, index) => {
-    const exactUnits = units * share.percent / 100;
+    const exactUnits = units * shares[index] / 100;
     const roundedDown = Math.floor(exactUnits);
     return { ...share, index, amountUnits: roundedDown, fraction: exactUnits - roundedDown };
   });
@@ -49,7 +108,7 @@ export const allocateResource = (total: number): ResourceAllocation | null => {
   return {
     displayedTotal,
     parts: parts.map(({ id, percent, amountUnits }) => ({
-      id, percent, amount: amountUnits / scale,
+      id, percent: shares[RESOURCE_SHARES.findIndex((share) => share.id === id)], amount: amountUnits / scale,
     })),
   };
 };
