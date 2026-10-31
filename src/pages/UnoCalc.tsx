@@ -34,13 +34,13 @@ const copy = {
     wireframe: "schematic proportions of the bounding volume",
     wireframeNote: "Proportions only; not a scale drawing.",
     costReference: "Indicative resource in USD",
-    costBasis: "Working assumption: 1 U.E.R. ≈ 1 USD. This is an indicative comparison, not a verified quote.",
+    costBasis: "Based on the working assumption 1 U.E.R. ≈ $1. The final cost is refined during design; this is neither a detailed estimate nor a selling price.",
     prompt: "Enter dimensions to see the reference.",
     invalid: "Each dimension must be a positive number greater than zero.",
     outOfRange: "Dimensions are outside the supported calculation range.",
     analysis: "The final cost is refined after design and specification.",
     definition: "unit of energy resonance",
-    disclaimer: "U.E.R. is an author-defined reference index, not a measured physical energy unit, detailed estimate, or retail price.",
+    disclaimer: "U.E.R. is an author-defined index, not a physical energy measurement.",
     levels: {
       108: { label: "basic form", hint: "Accessible materials, established methods and sound execution without complex detailing." },
       270: { label: "functional architecture", hint: "Considered functions, quality materials, precise detailing and balanced execution." },
@@ -68,13 +68,13 @@ const copy = {
     wireframe: "схема пропорций габаритного объёма",
     wireframeNote: "Условные пропорции, не масштабный чертёж.",
     costReference: "Ресурсный ориентир в USD",
-    costBasis: "Рабочее сопоставление: 1 U.E.R. ≈ 1 USD. Это ориентир, а не подтверждённая смета.",
+    costBasis: "По рабочему соотношению 1 U.E.R. ≈ $1. Итоговая стоимость уточняется в проекте; это не смета и не цена продажи.",
     prompt: "Введи размеры, чтобы получить ориентир.",
     invalid: "Каждый размер должен быть положительным числом больше нуля.",
     outOfRange: "Размеры выходят за пределы допустимого расчёта.",
     analysis: "Окончательная стоимость уточняется после проектирования и комплектации.",
     definition: "единица энергетического резонанса",
-    disclaimer: "U.E.R. — авторский расчётный индекс, не физическая единица энергии, не подробная смета и не цена продажи.",
+    disclaimer: "U.E.R. — авторский расчётный индекс, не физическая единица энергии.",
     levels: {
       108: { label: "базовая форма", hint: "Доступные материалы, проверенные технологии и аккуратное исполнение без сложной деталировки." },
       270: { label: "функциональная архитектура", hint: "Продуманная функция, качественные материалы, точная деталировка и сбалансированное исполнение." },
@@ -102,13 +102,13 @@ const copy = {
     wireframe: "схема пропорцій габаритного об'єму",
     wireframeNote: "Умовні пропорції, не масштабне креслення.",
     costReference: "Ресурсний орієнтир у USD",
-    costBasis: "Робоче зіставлення: 1 U.E.R. ≈ 1 USD. Це орієнтир, а не підтверджений кошторис.",
+    costBasis: "За робочим співвідношенням 1 U.E.R. ≈ $1. Остаточна вартість уточнюється у проєкті; це не кошторис і не ціна продажу.",
     prompt: "Введи розміри, щоб отримати орієнтир.",
     invalid: "Кожен розмір має бути додатним числом, більшим за нуль.",
     outOfRange: "Розміри виходять за межі допустимого розрахунку.",
     analysis: "Остаточна вартість уточнюється після проєктування та комплектації.",
     definition: "одиниця енергетичного резонансу",
-    disclaimer: "U.E.R. — авторський розрахунковий індекс, не фізична одиниця енергії, не докладний кошторис і не ціна продажу.",
+    disclaimer: "U.E.R. — авторський розрахунковий індекс, не фізична одиниця енергії.",
     levels: {
       108: { label: "базова форма", hint: "Доступні матеріали, перевірені технології й акуратне виконання без складної деталізації." },
       270: { label: "функціональна архітектура", hint: "Продумана функція, якісні матеріали, точна деталізація та збалансоване виконання." },
@@ -324,32 +324,29 @@ const UnoCalc = () => {
               <p className="mt-2 text-[11px] text-foreground/75">{t.wireframeNote}</p>
             </div>
             <div className="mt-5 flex items-center justify-between gap-3">
-              <span className="text-[12px] text-foreground/75">{t.reference}</span>
-              <span className="text-[12px] font-light tracking-[0.12em] text-foreground/75">U.E.R.</span>
+              <span className="text-[12px] font-medium text-foreground/80">{t.costReference}</span>
+              <span className="text-[11px] tracking-[0.12em] text-foreground/75">USD</span>
             </div>
             <output
               aria-live="polite"
               className="mt-2 block break-all border-b border-foreground/35 pb-4 text-right text-[clamp(3rem,6vw,4.5rem)] font-extralight leading-[1.1] tracking-[-0.045em] tabular-nums"
             >
-              {ready ? formatUer(calculation.energy) : "—"}
+              {ready
+                ? `≈ $${Number(formatUer(calculation.energy)).toLocaleString("en-US", { maximumFractionDigits: 3 })}`
+                : "—"}
             </output>
-            {ready && (
-              <div className="mt-4 border-b border-border/60 pb-4">
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-[12px] text-foreground/80">{t.costReference}</span>
-                  <span className="text-[20px] font-light tracking-[-0.02em] tabular-nums">
-                    ≈ $ {Number(formatUer(calculation.energy)).toLocaleString("en-US", { maximumFractionDigits: 3 })}
-                  </span>
-                </div>
-                <p className="mt-2 text-[11px] font-light leading-[1.6] text-foreground/75">{t.costBasis}</p>
-              </div>
-            )}
-            <div className="mt-4 flex justify-between gap-4">
+            <div className="mt-4 flex items-baseline justify-between gap-3">
+              <span className="text-[12px] text-foreground/80">{t.reference}</span>
+              <span className="text-[14px] font-light tabular-nums text-foreground/90">
+                {ready ? formatUer(calculation.energy) : "—"} <span className="text-[11px] text-foreground/75">U.E.R.</span>
+              </span>
+            </div>
+            <div className="mt-4 flex justify-between gap-4 border-t border-border/60 pt-4">
               <span className="text-[12px] text-foreground/80">{t.selection}</span>
               <span className="text-right text-[13px] font-normal">{q} · {t.levels[q].label}</span>
             </div>
             <p className="mt-4 text-[12px] font-light leading-[1.65] text-foreground/80">
-              {ready ? t.analysis : feedback ?? t.prompt}
+              {ready ? t.costBasis : feedback ?? t.prompt}
             </p>
           </section>
         </div>
