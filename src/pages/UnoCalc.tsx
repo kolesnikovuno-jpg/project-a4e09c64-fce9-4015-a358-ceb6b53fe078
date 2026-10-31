@@ -128,7 +128,7 @@ const VolumeDiagram = ({
   const z = 62 + (49 * values[2]) / largest;
   const ox = 55;
   const oy = 182;
-  const point = (px: number, py: number) => px.toFixed(1) + "," + py.toFixed(1);
+  const point = (...coords: number[]) => coords[0].toFixed(1) + "," + coords[1].toFixed(1);
   const base = [
     [ox, oy],
     [ox + x, oy],
