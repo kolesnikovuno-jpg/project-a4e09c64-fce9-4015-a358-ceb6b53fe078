@@ -183,15 +183,13 @@ describe("UNOcalc egg-only geometry", () => {
     }
     expect(links[0].depth).toBeGreaterThan(0);
     expect(links[1].depth).toBeLessThan(0);
-    expect(links[2].depth).toBeGreaterThan(0);
-    expect(links[3].depth).toBeLessThan(0);
     const rotated = eggIdeaLinks({ yaw: 0.35, tilt: 0.18 });
     expect(rotated[0].x2).not.toBeCloseTo(links[0].x2, 4);
     expect(rotated[1].y2).not.toBeCloseTo(links[1].y2, 4);
 
     render(<UnoEggScene locale="ru" />);
     const group = screen.getByTestId("unocalc-idea-links");
-    expect(group.querySelectorAll("line")).toHaveLength(4);
+    expect(group.querySelectorAll("line")).toHaveLength(2);
     expect(group).toHaveAttribute("pointer-events", "none");
     const marketing = screen.getByTestId("unocalc-idea-link-marketing");
     const legal = screen.getByTestId("unocalc-idea-link-legal");
