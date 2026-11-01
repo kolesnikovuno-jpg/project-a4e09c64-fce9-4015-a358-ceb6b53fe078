@@ -25,6 +25,19 @@ describe("UNOcalc crystal entry scene", () => {
     expect(container.querySelectorAll("svg > circle")).toHaveLength(4);
   });
 
+  it("renders a tapered egg shell with transparent shading layers", () => {
+    const { container } = render(
+      <UnoCrystalScene locale="ru" dimensions={["", "", ""]} onOpenInputs={vi.fn()} />
+    );
+    const egg = container.querySelector('clipPath#uno-egg-clip path');
+    expect(egg).not.toBeNull();
+    expect(egg?.getAttribute("d")).toContain("C 78 338 127 457 236 563");
+    expect(container.querySelector("#uno-egg-side-shadow")).not.toBeNull();
+    expect(container.querySelector("#uno-egg-lower-shadow")).not.toBeNull();
+    expect(container.querySelector("#uno-egg-reflection")).not.toBeNull();
+    expect(container.querySelector('g[clip-path="url(#uno-egg-clip)"]')).not.toBeNull();
+  });
+
   it("shows a proportional 3D cuboid only for valid dimensions", () => {
     const onOpenInputs = vi.fn();
     const { container, rerender } = render(

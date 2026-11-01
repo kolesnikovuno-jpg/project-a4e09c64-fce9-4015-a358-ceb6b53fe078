@@ -53,6 +53,10 @@ const nodes: { id: NodeId; point: Point3; color: string }[] = [
 const top: Point3 = [0, 1.57, 0];
 const bottom: Point3 = [0, -1.57, 0];
 const initialOrbit = { yaw: 0.28, pitch: 0.56 };
+// An actual egg silhouette: widest in the upper third, gradually tapering to
+// a narrower, rounded base. The enclosing membrane stays stationary while
+// the crystal and its observation plane rotate within it.
+const EGG_PATH = "M 380 39 C 269 29 146 91 112 222 C 78 338 127 457 236 563 C 295 621 351 650 380 655 C 409 650 465 621 524 563 C 633 457 682 338 648 222 C 614 91 491 29 380 39 Z";
 type Projected = { x: number; y: number; depth: number };
 const project = ([x, y, z]: Point3, yaw: number, pitch: number): Projected => {
   const rx = x * Math.cos(yaw) + z * Math.sin(yaw);
@@ -144,11 +148,39 @@ const UnoCrystalScene = ({ locale, dimensions, onOpenInputs }: Props) => {
           onPointerDown={onPointerDown} onPointerMove={onPointerMove}
           onPointerUp={stopPointer} onPointerCancel={stopPointer}>
           <defs>
-            <radialGradient id="uno-egg-fill" cx="40%" cy="32%" r="70%">
-              <stop offset="0" stopColor="#dcece7" stopOpacity=".37" />
-              <stop offset=".62" stopColor="#d5e5e0" stopOpacity=".12" />
-              <stop offset="1" stopColor="#9fbcb2" stopOpacity=".07" />
+            <clipPath id="uno-egg-clip">
+              <path d={EGG_PATH} />
+            </clipPath>
+            <radialGradient id="uno-egg-fill" gradientUnits="userSpaceOnUse"
+              cx="264" cy="163" r="520" gradientTransform="translate(0 8) scale(1 1.04)">
+              <stop offset="0" stopColor="#f6fffc" stopOpacity=".35" />
+              <stop offset=".34" stopColor="#dceee7" stopOpacity=".28" />
+              <stop offset=".68" stopColor="#b4d3c8" stopOpacity=".18" />
+              <stop offset="1" stopColor="#789f94" stopOpacity=".23" />
             </radialGradient>
+            <linearGradient id="uno-egg-side-shadow" x1="105" y1="340" x2="660" y2="340" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stopColor="#e8fff7" stopOpacity=".25" />
+              <stop offset=".24" stopColor="#ffffff" stopOpacity=".04" />
+              <stop offset=".59" stopColor="#6f9e91" stopOpacity="0" />
+              <stop offset=".85" stopColor="#557f75" stopOpacity=".14" />
+              <stop offset="1" stopColor="#3e6b60" stopOpacity=".29" />
+            </linearGradient>
+            <linearGradient id="uno-egg-lower-shadow" x1="380" y1="300" x2="380" y2="670" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stopColor="#7eac9d" stopOpacity="0" />
+              <stop offset=".58" stopColor="#6b988b" stopOpacity=".045" />
+              <stop offset="1" stopColor="#50786d" stopOpacity=".22" />
+            </linearGradient>
+            <radialGradient id="uno-egg-reflection" gradientUnits="userSpaceOnUse"
+              cx="221" cy="168" r="255" gradientTransform="translate(0 50) scale(1 .78)">
+              <stop offset="0" stopColor="#ffffff" stopOpacity=".58" />
+              <stop offset=".34" stopColor="#f5fffb" stopOpacity=".25" />
+              <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
+            </radialGradient>
+            <linearGradient id="uno-egg-rim" x1="110" y1="240" x2="640" y2="420" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stopColor="#9bbeb2" stopOpacity=".42" />
+              <stop offset=".45" stopColor="#789e91" stopOpacity=".18" />
+              <stop offset="1" stopColor="#47766a" stopOpacity=".48" />
+            </linearGradient>
             <radialGradient id="uno-cloud-fill">
               <stop offset="0" stopColor="#b9e8d0" stopOpacity=".83" />
               <stop offset=".65" stopColor="#c6ead9" stopOpacity=".45" />
@@ -158,12 +190,29 @@ const UnoCrystalScene = ({ locale, dimensions, onOpenInputs }: Props) => {
               <feGaussianBlur stdDeviation="12" />
             </filter>
           </defs>
-          <path d="M 380 38 C 255 24 128 112 106 277 C 71 461 211 628 380 654 C 549 628 687 460 654 277 C 631 112 503 24 380 38 Z"
-            fill="url(#uno-egg-fill)" stroke="#6d8c83" strokeWidth="1.15" strokeOpacity=".3" />
-          <path d="M 112 325 C 165 227 586 226 648 325" fill="none" stroke="#819b91" strokeOpacity=".17" strokeDasharray="5 9" />
-          <path d="M 113 370 C 205 477 555 475 647 370" fill="none" stroke="#819b91" strokeOpacity=".14" strokeDasharray="5 9" />
-          <path d="M 380 45 C 304 165 303 514 380 651" fill="none" stroke="#819b91" strokeOpacity=".12" strokeDasharray="4 9" />
-          <path d="M 380 45 C 457 165 457 514 380 651" fill="none" stroke="#819b91" strokeOpacity=".12" strokeDasharray="4 9" />
+          {/* Layered, translucent shell: broad upper shoulder, tapered lower end,
+              soft specular reflection and gentle right/bottom shadow. */}
+          <path d={EGG_PATH} fill="url(#uno-egg-fill)" />
+          <g clipPath="url(#uno-egg-clip)" aria-hidden="true">
+            <path d={EGG_PATH} fill="url(#uno-egg-side-shadow)" />
+            <path d={EGG_PATH} fill="url(#uno-egg-lower-shadow)" />
+            <ellipse cx="227" cy="176" rx="200" ry="185" fill="url(#uno-egg-reflection)" />
+            <path d="M 157 159 C 101 267 132 392 222 497"
+              fill="none" stroke="#f9fffd" strokeWidth="18" strokeOpacity=".11"
+              strokeLinecap="round" />
+            <path d="M 593 156 C 653 260 633 386 548 497"
+              fill="none" stroke="#4b786d" strokeWidth="12" strokeOpacity=".08"
+              strokeLinecap="round" />
+          </g>
+          <path d={EGG_PATH} fill="none" stroke="url(#uno-egg-rim)" strokeWidth="1.65" />
+          <path d="M 115 274 C 189 213 568 208 645 274" fill="none"
+            stroke="#799d91" strokeOpacity=".13" strokeDasharray="5 9" />
+          <path d="M 136 399 C 232 487 527 486 624 399" fill="none"
+            stroke="#799d91" strokeOpacity=".11" strokeDasharray="5 9" />
+          <path d="M 380 44 C 307 160 305 516 380 649" fill="none"
+            stroke="#819b91" strokeOpacity=".09" strokeDasharray="4 9" />
+          <path d="M 380 44 C 453 160 455 516 380 649" fill="none"
+            stroke="#819b91" strokeOpacity=".09" strokeDasharray="4 9" />
           <line x1={topP.x} y1={topP.y} x2={bottomP.x} y2={bottomP.y}
             stroke="#3e5b54" strokeWidth="1.15" strokeOpacity=".38" strokeDasharray="7 10" />
           {projectedNodes.filter((node) => node.projected.depth < 0).map((node) => (
