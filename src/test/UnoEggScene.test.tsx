@@ -12,7 +12,7 @@ vi.mock("@/lib/unocalcSketches", () => ({
   },
 }));
 import UnoEggScene from "@/components/unocalc/UnoEggScene";
-import { EGG_BOTTOM, EGG_TOP, EGG_EQUATOR, LOWER_SPHERE_SECTION_Y, LOWER_SPHERE_Y, eggLowerSphereNodes, visibleEggLowerSphereNodes, eggLowerRingArcs, eggRadiusAtSection, eggPoleNodes, eggSectionAxes, visibleEggSectionNodes, eggSurface, projectEggPoint, convexOutline } from "@/lib/unocalcEgg3d";
+import { EGG_BOTTOM, EGG_TOP, EGG_EQUATOR, LOWER_SPHERE_SECTION_Y, LOWER_SPHERE_Y, eggLowerSphereNodes, eggIdeaLinks, visibleEggLowerSphereNodes, eggLowerRingArcs, eggRadiusAtSection, eggPoleNodes, eggSectionAxes, visibleEggSectionNodes, eggSurface, projectEggPoint, convexOutline } from "@/lib/unocalcEgg3d";
 
 describe("UNOcalc egg-only geometry", () => {
   beforeEach(() => {
@@ -168,6 +168,42 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.getByTestId("unocalc-rotation-hint")).toHaveTextContent("Обертайте форму жестом, мишею або стрілками");
     rerender(<UnoEggScene locale="en" />);
     expect(screen.getByTestId("unocalc-rotation-hint")).toHaveTextContent("Drag or use arrow keys to rotate");
+  });
+
+  it("draws exactly two fine 3D links from Idea to Marketing and Legal, trimmed at sphere contours", () => {
+    const orientation = { yaw: 0, tilt: 0 };
+    const links = eggIdeaLinks(orientation);
+    expect(links.map((link) => link.id)).toEqual(["marketing", "legal"]);
+    const idea = eggPoleNodes(orientation)[0];
+    const lower = eggLowerSphereNodes(orientation);
+    for (const [index, destination] of [lower[1], lower[3]].entries()) {
+      const link = links[index];
+      expect(Math.hypot(link.x1 - idea.x, link.y1 - idea.y)).toBeCloseTo(10.5, 6);
+      expect(Math.hypot(link.x2 - destination.x, link.y2 - destination.y)).toBeCloseTo(10.5, 6);
+    }
+    expect(links[0].depth).toBeGreaterThan(0);
+    expect(links[1].depth).toBeLessThan(0);
+    const rotated = eggIdeaLinks({ yaw: 0.35, tilt: 0.18 });
+    expect(rotated[0].x2).not.toBeCloseTo(links[0].x2, 4);
+    expect(rotated[1].y2).not.toBeCloseTo(links[1].y2, 4);
+
+    render(<UnoEggScene locale="ru" />);
+    const group = screen.getByTestId("unocalc-idea-links");
+    expect(group.querySelectorAll("line")).toHaveLength(2);
+    expect(group).toHaveAttribute("pointer-events", "none");
+    const marketing = screen.getByTestId("unocalc-idea-link-marketing");
+    const legal = screen.getByTestId("unocalc-idea-link-legal");
+    for (const line of [marketing, legal]) {
+      expect(line).toHaveAttribute("stroke-width", ".75");
+      expect(line).toHaveAttribute("pointer-events", "none");
+    }
+    expect(marketing).toHaveAttribute("stroke-opacity", ".38");
+    expect(legal).toHaveAttribute("stroke-opacity", ".22");
+    const xBefore = marketing.getAttribute("x2");
+    fireEvent.keyDown(screen.getByTestId("unocalc-egg-svg"), { key: "ArrowRight" });
+    expect(marketing.getAttribute("x2")).not.toBe(xBefore);
+    fireEvent.click(screen.getByTestId("unocalc-marketing-hit"));
+    expect(screen.getByTestId("unocalc-marketing-panel")).toBeInTheDocument();
   });
 
   it("uses identical contours for all visible functional spheres after tilting and when selected", () => {
