@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import UnoCrystalScene from "@/components/unocalc/UnoCrystalScene";
 import { Link } from "react-router-dom";
 import { readUnoScenario, writeUnoScenario } from "@/lib/unocalcScenario";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
@@ -41,6 +42,15 @@ const qualityLevels: QualityId[] = ["basic", "functional", "field"];
 
 const copy = {
   en: {
+    crystalHeading: "A field of relationships",
+    crystalIntro: "Six points form a crystal: two poles and four perspectives on the object's creation. Rotate the field and touch the central form to enter its dimensions.",
+    crystalInputs: "Object parameters",
+    crystalClose: "Close",
+    crystalDetails: "Explore the full resource model",
+    crystalDetailsHide: "Hide detailed model",
+    crystalResult: "Preliminary index",
+    crystalEmpty: "Enter three dimensions to reveal the proportional volume.",
+    crystalFootnote: "The crystal is a navigational model, not a physical field measurement. Its four perspectives are separate from the resource allocation below.",
     eyebrow: "Educational tool · preliminary model",
     heroTop: "Explore the resources behind a form.",
     heroBottom: "Resource.",
@@ -133,6 +143,15 @@ const copy = {
     },
   },
   ru: {
+    crystalHeading: "Поле взаимосвязей",
+    crystalIntro: "Шесть точек образуют кристалл: два полюса и четыре взгляда на создание объекта. Вращайте поле и коснитесь центральной формы, чтобы ввести размеры.",
+    crystalInputs: "Параметры объекта",
+    crystalClose: "Закрыть",
+    crystalDetails: "Исследовать полную ресурсную модель",
+    crystalDetailsHide: "Скрыть подробную модель",
+    crystalResult: "Предварительный индекс",
+    crystalEmpty: "Введите три размера, чтобы увидеть объём в заданных пропорциях.",
+    crystalFootnote: "Кристалл — навигационная модель, а не измерение физического поля. Четыре точки восприятия не равны статьям ресурсного распределения ниже.",
     eyebrow: "Просветительский инструмент · предварительная модель",
     heroTop: "Исследуйте ресурс за формой.",
     heroBottom: "Ресурс.",
@@ -225,6 +244,15 @@ const copy = {
     },
   },
   uk: {
+    crystalHeading: "Поле взаємозв’язків",
+    crystalIntro: "Шість точок утворюють кристал: два полюси та чотири погляди на створення об’єкта. Обертайте поле й торкніться центральної форми, щоб увести розміри.",
+    crystalInputs: "Параметри об’єкта",
+    crystalClose: "Закрити",
+    crystalDetails: "Дослідити повну ресурсну модель",
+    crystalDetailsHide: "Сховати докладну модель",
+    crystalResult: "Попередній індекс",
+    crystalEmpty: "Уведіть три розміри, щоб побачити об’єм у заданих пропорціях.",
+    crystalFootnote: "Кристал — навігаційна модель, а не вимірювання фізичного поля. Чотири точки сприйняття не тотожні статтям розподілу ресурсу нижче.",
     eyebrow: "Просвітницький інструмент · попередня модель",
     heroTop: "Досліджуйте ресурс за формою.",
     heroBottom: "Ресурс.",
@@ -390,6 +418,18 @@ const UnoCalc = () => {
   const [cityId, setCityId] = useState<string>(initial.cityId);
   const [resourcePercentages, setResourcePercentages] = useState<ResourcePercentages>(initial.shares);
   const [copyStatus, setCopyStatus] = useState<"summary" | "link" | "error" | null>(null);
+  const [crystalInputsOpen, setCrystalInputsOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const crystalInputsRef = useRef<HTMLDivElement>(null);
+  const detailsRef = useRef<HTMLDivElement>(null);
+  const openCrystalInputs = () => {
+    setCrystalInputsOpen(true);
+    requestAnimationFrame(() => crystalInputsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }));
+  };
+  const openDetails = () => {
+    setDetailsOpen(true);
+    requestAnimationFrame(() => detailsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  };
   const { locale, localePath } = useLocale();
   const t = copy[locale];
 
@@ -519,6 +559,80 @@ const UnoCalc = () => {
           </nav>
         </header>
 
+
+        <section className="mt-7" aria-labelledby="unocalc-crystal-title">
+          <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end sm:gap-8">
+            <div>
+              <p className="text-[11px] font-normal uppercase tracking-[0.17em] text-foreground/70">{t.eyebrow}</p>
+              <h2 id="unocalc-crystal-title" className="mt-2 text-[clamp(1.4rem,3vw,2rem)] font-light tracking-[-0.03em]">{t.crystalHeading}</h2>
+            </div>
+            <p className="max-w-[430px] text-[12px] font-light leading-[1.7] text-foreground/70">{t.crystalIntro}</p>
+          </div>
+          <UnoCrystalScene locale={locale} dimensions={[a, b, c]} onOpenInputs={openCrystalInputs} />
+          <p className="mx-auto mt-3 max-w-[760px] text-[11px] font-light leading-[1.7] text-foreground/60">{t.crystalFootnote}</p>
+        </section>
+
+        {crystalInputsOpen && (
+          <div ref={crystalInputsRef} className="mx-auto mt-7 max-w-[760px] border-y border-foreground/25 bg-foreground/[0.018] px-4 py-6 sm:px-8" id="unocalc-crystal-inputs">
+            <div className="flex items-center justify-between gap-4">
+              <h3 className="text-[12px] font-medium uppercase tracking-[0.13em]">{t.crystalInputs}</h3>
+              <button type="button" onClick={() => setCrystalInputsOpen(false)}
+                className="min-h-9 border-b border-foreground/30 text-[12px] text-foreground/70 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                {t.crystalClose} ×
+              </button>
+            </div>
+            <p className="mt-3 text-[12px] font-light leading-[1.65] text-foreground/70">{t.dimensionNote}</p>
+            <div className="mt-5 grid grid-cols-3 gap-3 sm:gap-6">
+              {dimensions.map((field) => (
+                <label key={field.key} className="block min-w-0 text-[12px] text-foreground/75">
+                  {field.label} / {t.unit}
+                  <input type="number" inputMode="decimal" min="0" step="any"
+                    value={field.value} onChange={(event) => field.set(event.target.value)}
+                    aria-invalid={isInvalidDimension(field.value)}
+                    className="mt-2 w-full min-w-0 rounded-none border-0 border-b border-foreground/30 bg-transparent py-2 text-[23px] font-light tabular-nums outline-none focus:border-primary aria-[invalid=true]:border-red-600/75"
+                    placeholder="—" />
+                </label>
+              ))}
+            </div>
+            {feedback && <p role="alert" className="mt-3 text-[12px] text-red-700">{feedback}</p>}
+            <fieldset className="mt-6">
+              <legend className="text-[12px] font-medium uppercase tracking-[0.1em]">{t.settings}</legend>
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                {qualityLevels.map((level) => (
+                  <label key={level} className={"flex min-h-11 cursor-pointer items-center gap-2 border px-3 py-2 text-[12px] leading-snug " +
+                    (quality === level ? "border-foreground/60 bg-foreground/[0.045]" : "border-border/70")}>
+                    <input type="radio" name="unocalc-crystal-quality" checked={quality === level}
+                      onChange={() => setQuality(level)} className="accent-foreground" />
+                    {t.levels[level].label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            <div className="mt-6 flex flex-wrap items-baseline justify-between gap-3 border-t border-foreground/20 pt-4">
+              <span className="text-[12px] text-foreground/70">{t.crystalResult}</span>
+              <output className="text-[26px] font-light tabular-nums" aria-live="polite">
+                {ready ? formatUer(calculation.energy) + " U.E.R." : "—"}
+              </output>
+            </div>
+            <p className="mt-2 text-[11px] text-foreground/65">
+              {ready ? t.indexMeaning : t.crystalEmpty}
+            </p>
+            <button type="button" onClick={openDetails}
+              className="mt-5 min-h-10 border-b border-foreground/40 text-[12px] hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+              {t.crystalDetails} →
+            </button>
+          </div>
+        )}
+
+        <div className="mx-auto mt-8 flex max-w-[760px] justify-center border-t border-border/60 pt-5">
+          <button type="button" onClick={() => detailsOpen ? setDetailsOpen(false) : openDetails()}
+            aria-expanded={detailsOpen} className="min-h-10 border-b border-foreground/35 text-[12px] text-foreground/80 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+            {detailsOpen ? t.crystalDetailsHide : t.crystalDetails} {detailsOpen ? "−" : "+"}
+          </button>
+        </div>
+
+        {detailsOpen && (
+          <div ref={detailsRef}>
         <section className="mb-8 mt-7 grid gap-3 border-b border-border/75 pb-7 sm:mb-10 sm:mt-9 sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] sm:gap-10" aria-label="UNOcalc">
           <div>
             <p className="mb-2 text-[11px] font-normal uppercase tracking-[0.17em] text-foreground/80">{t.eyebrow}</p>
@@ -867,6 +981,9 @@ const UnoCalc = () => {
             </div>
           </section>
         </div>
+
+          </div>
+        )}
 
         <footer className="mt-10 flex flex-col justify-between gap-2 border-t border-border/70 pt-4 text-[12px] font-light leading-[1.7] text-foreground/75 md:mt-12 md:flex-row md:gap-10">
           <p>U.E.R. — unit of energy resonance / {t.definition}</p>

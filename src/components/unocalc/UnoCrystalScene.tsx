@@ -1,0 +1,241 @@
+import { useRef, useState, type PointerEvent } from "react";
+
+type Locale = "ru" | "en" | "uk";
+type Point3 = [number, number, number];
+type NodeId = "retail" | "commerce" | "production" | "design";
+type Props = { locale: Locale; dimensions: [string, string, string]; onOpenInputs: () => void };
+
+const labels = {
+  ru: {
+    title: "Кристалл ресурса", hint: "Вращайте поле жестом или мышью. Выберите узел или центральную форму.",
+    cloud: "Ввести параметры", edit: "Изменить параметры", top: "Сверху", bottom: "Снизу", reset: "Исходный вид",
+    retail: "ритейл", commerce: "коммерция", production: "производство", design: "дизайн",
+    details: {
+      retail: "Взаимодействие с конечным пользователем и каналами предложения.",
+      commerce: "Организация обмена, коммерческие условия и жизнеспособность модели.",
+      production: "Технология, изготовление и практическое воплощение.",
+      design: "Замысел, проектирование и качество формообразования.",
+    },
+    cube: "Габаритный объём в пропорциях введённых размеров. Не чертёж.",
+  },
+  en: {
+    title: "Resource crystal", hint: "Drag to rotate the field. Select a node or the central form.",
+    cloud: "Enter dimensions", edit: "Edit dimensions", top: "Top view", bottom: "Bottom view", reset: "Reset view",
+    retail: "retail", commerce: "commerce", production: "production", design: "design",
+    details: {
+      retail: "Contact with the end user and channels of presentation.",
+      commerce: "The organization of exchange, commercial conditions and viability.",
+      production: "Technology, fabrication and practical execution.",
+      design: "Intent, design development and the quality of form.",
+    },
+    cube: "Bounding volume in the proportions of the entered dimensions. Not a technical drawing.",
+  },
+  uk: {
+    title: "Кристал ресурсу", hint: "Обертайте поле жестом або мишею. Оберіть вузол чи центральну форму.",
+    cloud: "Увести параметри", edit: "Змінити параметри", top: "Зверху", bottom: "Знизу", reset: "Початковий вигляд",
+    retail: "ритейл", commerce: "комерція", production: "виробництво", design: "дизайн",
+    details: {
+      retail: "Взаємодія з кінцевим користувачем і каналами пропозиції.",
+      commerce: "Організація обміну, комерційні умови та життєздатність моделі.",
+      production: "Технологія, виготовлення та практичне втілення.",
+      design: "Задум, проєктування та якість формоутворення.",
+    },
+    cube: "Габаритний об'єм у пропорціях уведених розмірів. Не креслення.",
+  },
+} as const;
+
+const nodes: { id: NodeId; point: Point3; color: string }[] = [
+  { id: "retail", point: [0, 0, 1.18], color: "#c49be2" },
+  { id: "commerce", point: [0, 0, -1.18], color: "#e6a1cb" },
+  { id: "production", point: [1.18, 0, 0], color: "#e9ba6d" },
+  { id: "design", point: [-1.18, 0, 0], color: "#62cbd0" },
+];
+const top: Point3 = [0, 1.57, 0];
+const bottom: Point3 = [0, -1.57, 0];
+const initialOrbit = { yaw: 0.28, pitch: 0.56 };
+type Projected = { x: number; y: number; depth: number };
+const project = ([x, y, z]: Point3, yaw: number, pitch: number): Projected => {
+  const rx = x * Math.cos(yaw) + z * Math.sin(yaw);
+  const rz = z * Math.cos(yaw) - x * Math.sin(yaw);
+  return {
+    x: 380 + rx * 172,
+    y: 343 - (y * Math.cos(pitch) - rz * Math.sin(pitch)) * 172,
+    depth: y * Math.sin(pitch) + rz * Math.cos(pitch),
+  };
+};
+const coord = (point: Projected) => point.x.toFixed(2) + "," + point.y.toFixed(2);
+const polygon = (points: Projected[]) => points.map(coord).join(" ");
+
+const UnoCrystalScene = ({ locale, dimensions, onOpenInputs }: Props) => {
+  const t = labels[locale];
+  const [orbit, setOrbit] = useState(initialOrbit);
+  const [selected, setSelected] = useState<NodeId | null>(null);
+  const pointer = useRef<{ id: number; x: number; y: number } | null>(null);
+  const p = (point: Point3) => project(point, orbit.yaw, orbit.pitch);
+  const topP = p(top);
+  const bottomP = p(bottom);
+  const projectedNodes = nodes.map((node) => ({ ...node, projected: p(node.point) }));
+  const plane = (["commerce", "production", "retail", "design"] as NodeId[]).map((id) =>
+    projectedNodes.find((node) => node.id === id)!.projected
+  );
+  const raw = dimensions.map(Number);
+  const valid = dimensions.every((value) => value.trim() !== "") &&
+    raw.every((value) => Number.isFinite(value) && value > 0 && value <= 100_000_000);
+  const largest = valid ? Math.max(...raw) : 1;
+  // A = x, B = z, C = y; uniform scale preserves all three ratios.
+  const hx = valid ? (raw[0] / largest) * 0.55 : 0;
+  const hz = valid ? (raw[1] / largest) * 0.55 : 0;
+  const hy = valid ? (raw[2] / largest) * 0.55 : 0;
+  const vertices: Point3[] = [
+    [-hx, -hy, -hz], [hx, -hy, -hz], [hx, -hy, hz], [-hx, -hy, hz],
+    [-hx, hy, -hz], [hx, hy, -hz], [hx, hy, hz], [-hx, hy, hz],
+  ];
+  const cubePoints = vertices.map(p);
+  const faces = [
+    { ids: [0, 1, 5, 4], fill: "#c3e5db" },
+    { ids: [1, 2, 6, 5], fill: "#a9d8ce" },
+    { ids: [2, 3, 7, 6], fill: "#a4d4c9" },
+    { ids: [3, 0, 4, 7], fill: "#cdece3" },
+    { ids: [4, 5, 6, 7], fill: "#d6f0e7" },
+    { ids: [3, 2, 1, 0], fill: "#b4ded3" },
+  ].map((face) => ({
+    ...face,
+    depth: face.ids.reduce((sum, id) => sum + cubePoints[id].depth, 0) / 4,
+  })).sort((a, b) => a.depth - b.depth);
+
+  const onPointerDown = (event: PointerEvent<SVGSVGElement>) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    pointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const onPointerMove = (event: PointerEvent<SVGSVGElement>) => {
+    const active = pointer.current;
+    if (!active || active.id !== event.pointerId) return;
+    const dx = event.clientX - active.x;
+    const dy = event.clientY - active.y;
+    pointer.current = { ...active, x: event.clientX, y: event.clientY };
+    setOrbit((current) => ({
+      yaw: current.yaw + dx * 0.009,
+      pitch: Math.max(-1.5, Math.min(1.5, current.pitch + dy * 0.008)),
+    }));
+  };
+  const stopPointer = (event: PointerEvent<SVGSVGElement>) => {
+    if (pointer.current?.id !== event.pointerId) return;
+    pointer.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+
+  return (
+    <div className="w-full">
+      <style>{"@keyframes uno-crystal-breathe {0%,100%{opacity:.7;transform:translateY(0px) scale(1)}50%{opacity:.95;transform:translateY(-3px) scale(1.035)}} @media (prefers-reduced-motion:reduce){.uno-crystal-cloud{animation:none!important}}"}</style>
+      <div className="relative mx-auto w-full max-w-[760px]">
+        <svg viewBox="0 0 760 690" className="block h-auto w-full cursor-grab select-none active:cursor-grabbing"
+          style={{ touchAction: "none" }} role="img" aria-label={t.title + ". " + t.hint}
+          onPointerDown={onPointerDown} onPointerMove={onPointerMove}
+          onPointerUp={stopPointer} onPointerCancel={stopPointer}>
+          <defs>
+            <radialGradient id="uno-egg-fill" cx="40%" cy="32%" r="70%">
+              <stop offset="0" stopColor="#dcece7" stopOpacity=".37" />
+              <stop offset=".62" stopColor="#d5e5e0" stopOpacity=".12" />
+              <stop offset="1" stopColor="#9fbcb2" stopOpacity=".07" />
+            </radialGradient>
+            <radialGradient id="uno-cloud-fill">
+              <stop offset="0" stopColor="#b9e8d0" stopOpacity=".83" />
+              <stop offset=".65" stopColor="#c6ead9" stopOpacity=".45" />
+              <stop offset="1" stopColor="#c6ead9" stopOpacity="0" />
+            </radialGradient>
+            <filter id="uno-cloud-blur" x="-30%" y="-60%" width="160%" height="220%">
+              <feGaussianBlur stdDeviation="12" />
+            </filter>
+          </defs>
+          <path d="M 380 38 C 255 24 128 112 106 277 C 71 461 211 628 380 654 C 549 628 687 460 654 277 C 631 112 503 24 380 38 Z"
+            fill="url(#uno-egg-fill)" stroke="#6d8c83" strokeWidth="1.15" strokeOpacity=".3" />
+          <path d="M 112 325 C 165 227 586 226 648 325" fill="none" stroke="#819b91" strokeOpacity=".17" strokeDasharray="5 9" />
+          <path d="M 113 370 C 205 477 555 475 647 370" fill="none" stroke="#819b91" strokeOpacity=".14" strokeDasharray="5 9" />
+          <path d="M 380 45 C 304 165 303 514 380 651" fill="none" stroke="#819b91" strokeOpacity=".12" strokeDasharray="4 9" />
+          <path d="M 380 45 C 457 165 457 514 380 651" fill="none" stroke="#819b91" strokeOpacity=".12" strokeDasharray="4 9" />
+          <line x1={topP.x} y1={topP.y} x2={bottomP.x} y2={bottomP.y}
+            stroke="#3e5b54" strokeWidth="1.15" strokeOpacity=".38" strokeDasharray="7 10" />
+          {projectedNodes.filter((node) => node.projected.depth < 0).map((node) => (
+            <g key={"back-" + node.id}>
+              <line x1={topP.x} y1={topP.y} x2={node.projected.x} y2={node.projected.y}
+                stroke="#3d5953" strokeWidth="1" strokeOpacity=".3" strokeDasharray="6 8" />
+              <line x1={bottomP.x} y1={bottomP.y} x2={node.projected.x} y2={node.projected.y}
+                stroke="#3d5953" strokeWidth="1" strokeOpacity=".3" strokeDasharray="6 8" />
+            </g>
+          ))}
+          <polygon points={polygon(plane)} fill="#bcebd0" fillOpacity=".43"
+            stroke="#5e8e7b" strokeWidth="1.4" strokeOpacity=".62" />
+          <path d={"M " + coord(plane[0]) + " L " + coord(plane[2])}
+            fill="none" stroke="#4f7e70" strokeOpacity=".26" strokeDasharray="7 8" />
+          <path d={"M " + coord(plane[1]) + " L " + coord(plane[3])}
+            fill="none" stroke="#4f7e70" strokeOpacity=".26" strokeDasharray="7 8" />
+          <g className="uno-crystal-cloud"
+            style={{ transformOrigin: "380px 343px", animation: "uno-crystal-breathe 7s ease-in-out infinite" }}>
+            <ellipse cx="380" cy="343" rx="139" ry="84" fill="url(#uno-cloud-fill)" filter="url(#uno-cloud-blur)" />
+            <ellipse cx="380" cy="343" rx="97" ry="56" fill="url(#uno-cloud-fill)" opacity=".65" />
+          </g>
+          {valid && (
+            <g aria-label={t.cube}>
+              {faces.map((face, index) => (
+                <polygon key={index} points={polygon(face.ids.map((id) => cubePoints[id]))}
+                  fill={face.fill} fillOpacity=".32" stroke="#316e62" strokeOpacity=".59" strokeWidth="1.25" />
+              ))}
+            </g>
+          )}
+          {projectedNodes.filter((node) => node.projected.depth >= 0).map((node) => (
+            <g key={"front-" + node.id}>
+              <line x1={topP.x} y1={topP.y} x2={node.projected.x} y2={node.projected.y}
+                stroke="#38574e" strokeWidth="1.25" strokeOpacity=".58" />
+              <line x1={bottomP.x} y1={bottomP.y} x2={node.projected.x} y2={node.projected.y}
+                stroke="#38574e" strokeWidth="1.25" strokeOpacity=".58" />
+            </g>
+          ))}
+          <circle cx={topP.x} cy={topP.y} r="18" fill="#47b9df" fillOpacity=".74" />
+          <circle cx={topP.x} cy={topP.y} r="4" fill="#244b58" fillOpacity=".65" />
+          <circle cx={bottomP.x} cy={bottomP.y} r="18" fill="#f0aa86" fillOpacity=".7" />
+          <circle cx={bottomP.x} cy={bottomP.y} r="4" fill="#785b4a" fillOpacity=".65" />
+        </svg>
+        <div className="pointer-events-none absolute inset-0">
+          {projectedNodes.map((node) => (
+            <button key={node.id} type="button" title={t[node.id]}
+              aria-label={t[node.id]} aria-pressed={selected === node.id}
+              onClick={() => setSelected((current) => current === node.id ? null : node.id)}
+              className="pointer-events-auto absolute flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+              style={{ left: (node.projected.x / 760 * 100) + "%", top: (node.projected.y / 690 * 100) + "%" }}>
+              <span className="absolute h-8 w-8 rounded-full border border-black/15 transition-transform duration-200 hover:scale-110"
+                style={{ backgroundColor: node.color, opacity: selected === node.id ? 1 : .78 }} />
+              <span className="relative h-2 w-2 rounded-full bg-foreground/60" />
+              <span className="pointer-events-none absolute top-[38px] whitespace-nowrap rounded-sm bg-background/75 px-1.5 py-0.5 text-[10px] tracking-[0.02em] text-foreground/80 sm:text-[12px]">
+                {t[node.id]}
+              </span>
+            </button>
+          ))}
+          <button type="button" onClick={onOpenInputs} aria-label={valid ? t.edit : t.cloud}
+            className="pointer-events-auto absolute left-1/2 top-[49.7%] flex h-[13%] w-[26%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[50%] text-[11px] text-foreground/85 outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-foreground/50 sm:text-[13px]">
+            <span className="rounded-full border border-foreground/20 bg-background/70 px-3 py-1.5 shadow-sm backdrop-blur-sm">
+              {valid ? t.edit : t.cloud} <span aria-hidden="true">+</span>
+            </span>
+          </button>
+        </div>
+      </div>
+      <div className="mx-auto flex max-w-[760px] flex-wrap items-center justify-between gap-3 border-t border-foreground/15 pt-3">
+        <p className="max-w-[390px] text-[11px] font-light leading-[1.6] text-foreground/65">
+          {selected ? t.details[selected] : valid ? t.cube : t.hint}
+        </p>
+        <div className="flex shrink-0 flex-wrap gap-3">
+          <button type="button" onClick={() => setOrbit({ yaw: orbit.yaw, pitch: 1.48 })}
+            className="border-b border-foreground/25 py-1 text-[11px] text-foreground/75 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-foreground">{t.top}</button>
+          <button type="button" onClick={() => setOrbit({ yaw: orbit.yaw, pitch: -1.48 })}
+            className="border-b border-foreground/25 py-1 text-[11px] text-foreground/75 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-foreground">{t.bottom}</button>
+          <button type="button" onClick={() => setOrbit(initialOrbit)}
+            className="border-b border-foreground/25 py-1 text-[11px] text-foreground/75 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-foreground">{t.reset}</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default UnoCrystalScene;

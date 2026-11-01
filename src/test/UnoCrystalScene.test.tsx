@@ -1,0 +1,32 @@
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import UnoCrystalScene from "@/components/unocalc/UnoCrystalScene";
+
+describe("UNOcalc crystal entry scene", () => {
+  it("exposes four independent interactive perspectives and opens the input panel", () => {
+    const onOpenInputs = vi.fn();
+    render(<UnoCrystalScene locale="ru" dimensions={["", "", ""]} onOpenInputs={onOpenInputs} />);
+    for (const name of ["ритейл", "коммерция", "производство", "дизайн"]) {
+      expect(screen.getByRole("button", { name })).toBeInTheDocument();
+    }
+    fireEvent.click(screen.getByRole("button", { name: "коммерция" }));
+    expect(screen.getByRole("button", { name: "коммерция" })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(screen.getByRole("button", { name: "Ввести параметры" }));
+    expect(onOpenInputs).toHaveBeenCalledOnce();
+  });
+
+  it("shows a proportional 3D cuboid only for valid dimensions", () => {
+    const onOpenInputs = vi.fn();
+    const { container, rerender } = render(
+      <UnoCrystalScene locale="en" dimensions={["", "", ""]} onOpenInputs={onOpenInputs} />
+    );
+    expect(container.querySelectorAll("g[aria-label] polygon")).toHaveLength(0);
+    rerender(<UnoCrystalScene locale="en" dimensions={["10000", "10000", "3000"]} onOpenInputs={onOpenInputs} />);
+    const cuboid = container.querySelectorAll("g[aria-label] polygon");
+    expect(cuboid).toHaveLength(6);
+    const firstFace = cuboid[0].getAttribute("points");
+    rerender(<UnoCrystalScene locale="en" dimensions={["10000", "5000", "3000"]} onOpenInputs={onOpenInputs} />);
+    expect(container.querySelectorAll("g[aria-label] polygon")[0].getAttribute("points")).not.toBe(firstFace);
+    expect(screen.getByRole("button", { name: "Edit dimensions" })).toBeInTheDocument();
+  });
+});
