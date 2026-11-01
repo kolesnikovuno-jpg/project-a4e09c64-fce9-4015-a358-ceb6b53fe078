@@ -3,6 +3,7 @@ import {
   convexOutline,
   eggAxisEndpoints,
   eggEquatorArcs,
+  eggSectionAxes,
   eggSurface,
   projectEggPoint,
   svgOutline,
@@ -12,7 +13,7 @@ import {
 type Locale = "ru" | "uk" | "en";
 type Props = { locale: Locale };
 
-const INITIAL: EggOrientation = { roll: 0, tilt: 0.22 };
+const INITIAL: EggOrientation = { roll: 0, tilt: 0.46 };
 const SURFACE = eggSurface();
 
 const text = {
@@ -30,6 +31,7 @@ const UnoEggScene = ({ locale }: Props) => {
       silhouette: svgOutline(convexOutline(points)),
       equator: eggEquatorArcs(orientation),
       axis: eggAxisEndpoints(orientation),
+      sectionAxes: eggSectionAxes(orientation),
     };
   }, [orientation]);
 
@@ -96,6 +98,37 @@ const UnoEggScene = ({ locale }: Props) => {
           <path d={geometry.equator.front} fill="none"
             stroke="currentColor" strokeWidth=".9" strokeOpacity=".3"
             vectorEffect="non-scaling-stroke" />
+          {/* Two perpendicular 3D diameters in the section plane.
+              The four endpoint spheres sit exactly on the egg surface. */}
+          {geometry.sectionAxes.map((sectionAxis, index) => (
+            <line
+              key={`section-axis-${index}`}
+              data-testid="unocalc-section-axis"
+              x1={sectionAxis.start.x}
+              y1={sectionAxis.start.y}
+              x2={sectionAxis.end.x}
+              y2={sectionAxis.end.y}
+              stroke="currentColor"
+              strokeWidth="1.05"
+              strokeOpacity=".42"
+              strokeDasharray="7 8"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+          {geometry.sectionAxes.flatMap((sectionAxis) => sectionAxis.nodes).map((node, index) => (
+            <circle
+              key={`section-sphere-${index}`}
+              data-testid="unocalc-section-sphere"
+              cx={node.x}
+              cy={node.y}
+              r="10.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.1"
+              strokeOpacity=".72"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
           <path
             data-testid="unocalc-egg-outline"
             d={geometry.silhouette}

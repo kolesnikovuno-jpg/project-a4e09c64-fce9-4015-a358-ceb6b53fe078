@@ -17,9 +17,10 @@ export const eggRadiusAtSection = (sectionY: number): number => {
   return Math.sqrt(Math.max(0, LOWER_RADIUS ** 2 - (sectionY - 1) ** 2));
 };
 
-export const EGG_TOP = SECTION_CENTER + 1;
-export const EGG_BOTTOM = SECTION_CENTER - SECTION_BOTTOM;
-export const EGG_EQUATOR = SECTION_CENTER;
+// Narrow end points up, broad circular end points down.
+export const EGG_TOP = SECTION_BOTTOM - SECTION_CENTER;
+export const EGG_BOTTOM = -1 - SECTION_CENTER;
+export const EGG_EQUATOR = -SECTION_CENTER;
 
 /** Surface of revolution: a real 3D egg, not a flat path. */
 export const eggSurface = (rings = 108, sides = 48): Point3[] => {
@@ -27,7 +28,7 @@ export const eggSurface = (rings = 108, sides = 48): Point3[] => {
   for (let i = 0; i <= rings; i++) {
     const sectionY = -1 + (SECTION_BOTTOM + 1) * i / rings;
     const r = eggRadiusAtSection(sectionY);
-    const y = SECTION_CENTER - sectionY;
+    const y = sectionY - SECTION_CENTER;
     for (let j = 0; j < sides; j++) {
       const angle = 2 * Math.PI * j / sides;
       points.push({ x: r * Math.cos(angle), y, z: r * Math.sin(angle) });
@@ -102,6 +103,29 @@ export const eggEquatorArcs = (orientation: EggOrientation, steps = 144) => {
     }
   }
   return { front: front.join(" "), back: back.join(" ") };
+};
+
+/**
+ * Two perpendicular diameters of the equatorial plane. Their four nodes lie
+ * exactly on the egg surface; a small extension of each axis remains visible
+ * beyond the shell. All points use the same 3D transform as the egg.
+ */
+export const eggSectionAxes = (orientation: EggOrientation) => {
+  const directions = [Math.PI / 4, (3 * Math.PI) / 4];
+  const axes = directions.map((angle) => {
+    const ux = Math.cos(angle);
+    const uz = Math.sin(angle);
+    const atRadius = (r: number): Point3 => ({ x: r * ux, y: EGG_EQUATOR, z: r * uz });
+    return {
+      start: projectEggPoint(atRadius(-1.15), orientation),
+      end: projectEggPoint(atRadius(1.15), orientation),
+      nodes: [
+        projectEggPoint(atRadius(-1), orientation),
+        projectEggPoint(atRadius(1), orientation),
+      ],
+    };
+  });
+  return axes;
 };
 
 export const eggAxisEndpoints = (orientation: EggOrientation) => ({
