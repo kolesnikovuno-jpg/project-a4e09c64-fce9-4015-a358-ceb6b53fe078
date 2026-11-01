@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent, type MouseEvent, type PointerEvent } from "react";
 import { createPortal } from "react-dom";
+import { IDEA_CYCLE_KEY, newIdeaCycle, restoreIdeaCycle, UnoEggIdeaCyclePanel, type IdeaCycle } from "./UnoEggIdeaCyclePanel";
 import { designCopy, EMPTY_BRIEF, makeSketchPrompt, type DesignBrief } from "@/lib/unocalcDesign";
 import { listSketches, removeStoredSketch, storeSketch, type StoredSketch } from "@/lib/unocalcSketches";
 import {
@@ -312,6 +313,7 @@ const UnoEggScene = ({ locale }: Props) => {
     catch { return ""; }
   });
   const [ideaSaveStatus, setIdeaSaveStatus] = useState<"idle" | "saved" | "error" | "empty">("idle");
+  const [ideaCycle, setIdeaCycle] = useState<IdeaCycle | null>(restoreIdeaCycle);
   const [brief, setBrief] = useState<DesignBrief>(() => {
     try {
       const raw = window.localStorage.getItem(DESIGN_STORAGE_KEY);
@@ -351,11 +353,38 @@ const UnoEggScene = ({ locale }: Props) => {
     matter: { title: copy.matter, description: copy.matterDescription, number: copy.matterNode, openLabel: copy.matterLabel, closeLabel: copy.matterCloseLabel },
   };
   const hasIdea = ideaDraft.trim().length > 0;
+  const cycleSignal = (node: InteractiveNode): "idle" | "processing" | "returned" | "attention" => {
+    if (!ideaCycle) return "idle";
+    if (node === "idea") return ideaCycle.phase === "synthesis" ? "attention" :
+      ideaCycle.phase === "layered" ? "returned" : ideaCycle.phase === "forwarded" ? "processing" : "idle";
+    if (node === "marketing" || node === "legal") {
+      if (ideaCycle.phase === "seed") return "idle";
+      if (ideaCycle.phase === "forwarded") return "returned";
+      return ideaCycle[`${node}Returned` as "marketingReturned" | "legalReturned"] ? "returned" : "processing";
+    }
+    if ((node === "design" || node === "production") && ideaCycle.phase === "forwarded") return "attention";
+    return "idle";
+  };
+  const signalColor = (node: InteractiveNode) => cycleSignal(node) === "attention" ? "#c49d65" :
+    cycleSignal(node) !== "idle" ? "hsl(var(--primary))" : "currentColor";
   const hasSketch = sketches.length > 0;
   // Every sphere can be inspected at any time. Only the actual Design
   // workspace is gated by an idea; creating a sketch remains a later step.
   const canActivateNode = (_node: InteractiveNode) => true;
   const sketchPrompt = makeSketchPrompt(brief, locale);
+
+  useEffect(() => {
+    try {
+      if (ideaCycle) window.localStorage.setItem(IDEA_CYCLE_KEY, JSON.stringify(ideaCycle));
+      else window.localStorage.removeItem(IDEA_CYCLE_KEY);
+    } catch { /* Manual prototype remains usable without persistence. */ }
+  }, [ideaCycle]);
+
+  const placeSeedInCore = () => {
+    if (!ideaDraft.trim()) return;
+    setIdeaCycle(newIdeaCycle(ideaDraft));
+    try { window.localStorage.setItem(IDEA_STORAGE_KEY, ideaDraft); } catch { /* local-only */ }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -1097,26 +1126,13 @@ const UnoEggScene = ({ locale }: Props) => {
                 </button>
               </div>
             </header>
-            <div className="unocalc-workspace-body flex min-h-0 flex-1 items-center justify-center overflow-y-auto overscroll-contain px-5 py-8 text-center sm:px-8">
-              {workspaceNode === "author" ? (
-                <div data-testid="unocalc-author-workspace-content" className="max-w-[310px] space-y-5 text-left">
-                  <div>
-                    <p className="text-[10px] uppercase tracking-[0.16em] text-foreground/45">
-                      {locale === "ru" ? "ПАНЕЛЬ АВТОРА" : locale === "uk" ? "ПАНЕЛЬ АВТОРА" : "AUTHOR WORKSPACE"}
-                    </p>
-                    <p className="mt-2 text-[15px] font-light leading-relaxed text-foreground/80">
-                      {locale === "ru" ? "Центр наблюдения и участия в формировании объекта." : locale === "uk" ? "Центр спостереження й участі у формуванні об’єкта." : "A place to observe and participate in shaping the object."}
-                    </p>
-                  </div>
-                  <div className="border-t border-foreground/15 pt-4">
-                    <p className="text-[11px] font-light text-foreground/65">
-                      {locale === "ru" ? "Связь с главным ИИ-оператором" : locale === "uk" ? "Зв’язок із головним ШІ-оператором" : "Connection to the main AI operator"}
-                    </p>
-                    <p className="mt-2 text-[12px] font-light leading-[1.8] text-foreground/40">
-                      {locale === "ru" ? "Механика диалога, работы с зерном смысла и управления системой ещё определяется. Сейчас проверяем вход через Ядро." : locale === "uk" ? "Механіка діалогу, роботи із зерном сенсу та керування системою ще визначається. Зараз перевіряємо вхід через Ядро." : "Dialogue, the seed of meaning, and system control are still being designed. For now, testing entry through the Core."}
-                    </p>
-                  </div>
-                </div>
+            <div className="unocalc-workspace-body flex min-h-0 flex-1 items-start justify-center overflow-y-auto overscroll-contain px-5 py-8 text-center sm:px-8">
+              {(workspaceNode === "author" || workspaceNode === "idea" || workspaceNode === "marketing" ||
+                workspaceNode === "legal" || workspaceNode === "design" || workspaceNode === "production") ? (
+                <UnoEggIdeaCyclePanel
+                  locale={locale} node={workspaceNode} draft={ideaDraft} onDraft={setIdeaDraft}
+                  cycle={ideaCycle} setCycle={setIdeaCycle} onSetSeed={placeSeedInCore}
+                />
               ) : (
                 <p className="max-w-[260px] text-[12px] font-light leading-[1.8] text-foreground/40">
                   {locale === "ru" ? "Пустое рабочее пространство. Проверяем открытие и закрытие панели." : locale === "uk" ? "Порожній робочий простір. Перевіряємо відкриття та закриття панелі." : "Empty workspace. Testing panel opening and closing."}
