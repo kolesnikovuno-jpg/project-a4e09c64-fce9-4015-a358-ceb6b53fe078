@@ -251,7 +251,6 @@ const NodeDescription = ({ node, detail }: { node: InteractiveNode; detail: Node
 const UnoEggScene = ({ locale }: Props) => {
   const [orientation, setOrientation] = useState<EggOrientation>(INITIAL);
   const [selectedNodes, setSelectedNodes] = useState<InteractiveNode[]>([]);
-  const [hoveredMarketing, setHoveredMarketing] = useState(false);
   const [ideaDraft, setIdeaDraft] = useState(() => {
     try { return window.localStorage.getItem(IDEA_STORAGE_KEY) ?? ""; }
     catch { return ""; }
@@ -758,28 +757,12 @@ const UnoEggScene = ({ locale }: Props) => {
                     aria-pressed={active}
                     aria-describedby="unocalc-marketing-description"
                     className="cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
-                    onPointerEnter={() => setHoveredMarketing(true)}
-                    onPointerLeave={() => setHoveredMarketing(false)}
-                    onFocus={() => setHoveredMarketing(true)}
-                    onBlur={() => setHoveredMarketing(false)}
                     onKeyDown={(event) => onNodeKeyDown(event, "marketing")}
                   />
                 )}
               </g>
             );
           })}
-          {/* The label appears on hover, focus and after touch selection.
-              The detailed Marketing panel also opens on tap. */}
-          {geometry.lowerNodes.filter((node) => node.id === "support-2").map((node) =>
-            (hoveredMarketing || selectedNodes.includes("marketing")) ? (
-              <g key="marketing-tooltip" data-testid="unocalc-marketing-tooltip" pointerEvents="none" aria-hidden="true">
-                <rect x={node.x - 57} y={node.y - 53} width="114" height="29" rx="9"
-                  fill="hsl(var(--background))" stroke="currentColor" strokeOpacity=".28" />
-                <text x={node.x} y={node.y - 34} textAnchor="middle" fontSize="12"
-                  fill="currentColor" fontWeight="400">{copy.marketing}</text>
-              </g>
-            ) : null
-          )}
           {geometry.poleNodes.map((node, index) => {
             const nodeType: InteractiveNode = index === 0 ? "idea" : "matter";
             const active = selectedNodes.includes(nodeType);
