@@ -19,7 +19,7 @@ import {
 
 type Locale = "ru" | "uk" | "en";
 type Props = { locale: Locale };
-type InteractiveNode = "retail" | "commerce" | "design" | "production" | "marketing" | "idea" | "matter";
+type InteractiveNode = "retail" | "commerce" | "design" | "production" | "marketing" | "testDrive" | "idea" | "matter";
 type NodeDetail = { title: string; description: string; number: string; openLabel: string; closeLabel: string };
 
 // Front elevation: the horizontal diameter has two side nodes, while
@@ -37,12 +37,17 @@ const text = {
     label: "Трёхмерная форма яйца с вертикальной осью. Вращайте жестом или стрелками клавиатуры.",
     coreLabel: "Центральная сфера — формируемый объект",
     lowerSphereLabel: "Нижняя сфера",
-    lowerRingHint: "Нижний пояс: 06 — Маркетинг (между Дизайном и Ритейлом). Сферы 05, 07, 08 пока без назначения.",
+    lowerRingHint: "Нижний пояс: 05 — Тест-драйв (между Производством и Ритейлом); 06 — Маркетинг. Сферы 07 и 08 пока без назначения.",
     marketing: "Маркетинг",
     marketingLabel: "Открыть описание узла «Маркетинг»",
     marketingCloseLabel: "Закрыть описание узла «Маркетинг»",
     marketingDescription: "Связь между дизайном и ритейлом. Здесь можно исследовать, как будущий объект будет представлен, воспринят и найден своей аудиторией.",
     marketingNode: "Узел / 06",
+    testDrive: "Тест-драйв",
+    testDriveLabel: "Открыть описание узла «Тест-драйв»",
+    testDriveCloseLabel: "Закрыть описание узла «Тест-драйв»",
+    testDriveDescription: "Проба объекта в использовании и проверка его свойств перед выходом в ритейл. Название рабочее — назначение можно уточнить.",
+    testDriveNode: "Узел / 05",
     ideaInputLabel: "Описание идеи",
     ideaInputPlaceholder: "Опишите замысел, назначение, свойства будущего объекта…",
     ideaSave: "Сохранить идею",
@@ -85,12 +90,17 @@ const text = {
     label: "Тривимірна форма яйця з вертикальною віссю. Обертайте жестом або стрілками клавіатури.",
     coreLabel: "Центральна сфера — об’єкт, що формується",
     lowerSphereLabel: "Нижня сфера",
-    lowerRingHint: "Нижній пояс: 06 — Маркетинг (між Дизайном і Ритейлом). Сфери 05, 07, 08 поки без призначення.",
+    lowerRingHint: "Нижній пояс: 05 — Тест-драйв (між Виробництвом і Ритейлом); 06 — Маркетинг. Сфери 07 і 08 поки без призначення.",
     marketing: "Маркетинг",
     marketingLabel: "Відкрити опис вузла «Маркетинг»",
     marketingCloseLabel: "Закрити опис вузла «Маркетинг»",
     marketingDescription: "Зв’язок між дизайном і ритейлом. Тут можна досліджувати, як майбутній об’єкт буде представлений, сприйнятий і знайдений своєю аудиторією.",
     marketingNode: "Вузол / 06",
+    testDrive: "Тест-драйв",
+    testDriveLabel: "Відкрити опис вузла «Тест-драйв»",
+    testDriveCloseLabel: "Закрити опис вузла «Тест-драйв»",
+    testDriveDescription: "Проба об’єкта у використанні та перевірка його властивостей перед виходом у ритейл. Назва робоча — призначення можна уточнити.",
+    testDriveNode: "Вузол / 05",
     ideaInputLabel: "Опис ідеї",
     ideaInputPlaceholder: "Опишіть задум, призначення, властивості майбутнього об’єкта…",
     ideaSave: "Зберегти ідею",
@@ -133,12 +143,17 @@ const text = {
     label: "Three-dimensional egg with a vertical axis. Drag or use arrow keys to rotate.",
     coreLabel: "Central sphere — the object taking form",
     lowerSphereLabel: "Lower sphere",
-    lowerRingHint: "Lower ring: 06 — Marketing (between Design and Retail). Spheres 05, 07, 08 remain unassigned.",
+    lowerRingHint: "Lower ring: 05 — Test drive (between Production and Retail); 06 — Marketing. Spheres 07 and 08 remain unassigned.",
     marketing: "Marketing",
     marketingLabel: "Open the Marketing node description",
     marketingCloseLabel: "Close the Marketing node description",
     marketingDescription: "The link between Design and Retail. Explore how the future object might be presented, perceived and discovered by its audience.",
     marketingNode: "Node / 06",
+    testDrive: "Test drive",
+    testDriveLabel: "Open the Test drive node description",
+    testDriveCloseLabel: "Close the Test drive node description",
+    testDriveDescription: "Try the object in use and verify its properties before it reaches retail. The name is provisional and can be refined.",
+    testDriveNode: "Node / 05",
     ideaInputLabel: "Describe your idea",
     ideaInputPlaceholder: "Describe the intent, purpose, and qualities of the future object…",
     ideaSave: "Save idea",
@@ -287,13 +302,14 @@ const UnoEggScene = ({ locale }: Props) => {
     design: { title: copy.design, description: copy.designDescription, number: copy.designNode, openLabel: copy.designLabel, closeLabel: copy.designCloseLabel },
     production: { title: copy.production, description: copy.productionDescription, number: copy.productionNode, openLabel: copy.productionLabel, closeLabel: copy.productionCloseLabel },
     marketing: { title: copy.marketing, description: copy.marketingDescription, number: copy.marketingNode, openLabel: copy.marketingLabel, closeLabel: copy.marketingCloseLabel },
+    testDrive: { title: copy.testDrive, description: copy.testDriveDescription, number: copy.testDriveNode, openLabel: copy.testDriveLabel, closeLabel: copy.testDriveCloseLabel },
     idea: { title: copy.idea, description: copy.ideaDescription, number: copy.ideaNode, openLabel: copy.ideaLabel, closeLabel: copy.ideaCloseLabel },
     matter: { title: copy.matter, description: copy.matterDescription, number: copy.matterNode, openLabel: copy.matterLabel, closeLabel: copy.matterCloseLabel },
   };
   const hasIdea = ideaDraft.trim().length > 0;
   const hasSketch = sketches.length > 0;
   const canActivateNode = (node: InteractiveNode) =>
-    node === "idea" || node === "marketing" || (node === "design" ? hasIdea : hasSketch);
+    node === "idea" || node === "marketing" || node === "testDrive" || (node === "design" ? hasIdea : hasSketch);
   const sketchPrompt = makeSketchPrompt(brief, locale);
 
   useEffect(() => {
@@ -323,7 +339,7 @@ const UnoEggScene = ({ locale }: Props) => {
 
   useEffect(() => {
     if (sketchesLoaded && !hasSketch) {
-      setSelectedNodes((current) => current.filter((node) => node === "idea" || node === "design" || node === "marketing"));
+      setSelectedNodes((current) => current.filter((node) => node === "idea" || node === "design" || node === "marketing" || node === "testDrive"));
     }
   }, [hasSketch, sketchesLoaded]);
 
@@ -515,7 +531,7 @@ const UnoEggScene = ({ locale }: Props) => {
     if (event.type === "pointerup" && !active.moved &&
       (active.targetNode === "retail" || active.targetNode === "commerce" ||
        active.targetNode === "design" || active.targetNode === "production" ||
-       active.targetNode === "marketing" || active.targetNode === "idea" || active.targetNode === "matter")) {
+       active.targetNode === "marketing" || active.targetNode === "testDrive" || active.targetNode === "idea" || active.targetNode === "matter")) {
       activateNode(active.targetNode);
     }
   };
@@ -543,6 +559,7 @@ const UnoEggScene = ({ locale }: Props) => {
   return (
     <div className="relative mx-auto w-full min-w-0 max-w-full" data-testid="unocalc-egg-stage">
       <span id="unocalc-marketing-description" className="sr-only">{copy.marketing}. {copy.marketingDescription}</span>
+      <span id="unocalc-test-drive-description" className="sr-only">{copy.testDrive}. {copy.testDriveDescription}</span>
       <div className="unocalc-egg-canvas mx-auto w-full min-w-0">
         <svg
           data-testid="unocalc-egg-svg"
@@ -703,17 +720,22 @@ const UnoEggScene = ({ locale }: Props) => {
               </g>
             );
           })}
-          {/* Lower support spheres follow the shell. Marketing (06) is the
-              first interactive support node; the others stay unassigned. */}
+          {/* The two lower nodes assigned so far are independently clickable.
+              05: Test drive, between Production (+X) and Retail (+Z).
+              06: Marketing, between Retail (+Z) and Design (-X).
+              07 and 08 remain unassigned; no floating tooltips. */}
           {geometry.lowerNodes.map((node) => {
-            const isMarketing = node.id === "support-2";
-            const active = isMarketing && selectedNodes.includes("marketing");
+            const nodeType: "testDrive" | "marketing" | null =
+              node.id === "support-1" ? "testDrive" :
+              node.id === "support-2" ? "marketing" : null;
+            const active = nodeType !== null && selectedNodes.includes(nodeType);
+            const detail = nodeType === null ? null : nodeDetails[nodeType];
             return (
               <g key={node.id} data-testid="unocalc-lower-sphere-node">
                 <circle
                   data-testid="unocalc-lower-sphere"
                   data-node-id={node.id}
-                  data-node-role={isMarketing ? "marketing" : "unassigned"}
+                  data-node-role={nodeType ?? "unassigned"}
                   cx={node.x}
                   cy={node.y}
                   r="10.5"
@@ -724,8 +746,8 @@ const UnoEggScene = ({ locale }: Props) => {
                   vectorEffect="non-scaling-stroke"
                   pointerEvents="none"
                   role="img"
-                  aria-label={isMarketing
-                    ? `${copy.lowerSphereLabel} 06 — ${copy.marketing}`
+                  aria-label={detail
+                    ? `${copy.lowerSphereLabel} ${String(node.number).padStart(2, "0")} — ${detail.title}`
                     : `${copy.lowerSphereLabel} ${String(node.number).padStart(2, "0")}`}
                 />
                 <text
@@ -742,10 +764,10 @@ const UnoEggScene = ({ locale }: Props) => {
                 >
                   {String(node.number).padStart(2, "0")}
                 </text>
-                {isMarketing && (
+                {nodeType && detail && (
                   <circle
-                    data-testid="unocalc-marketing-hit"
-                    data-egg-node="marketing"
+                    data-testid={nodeType === "marketing" ? "unocalc-marketing-hit" : "unocalc-test-drive-hit"}
+                    data-egg-node={nodeType}
                     cx={node.x}
                     cy={node.y}
                     r="25"
@@ -753,11 +775,11 @@ const UnoEggScene = ({ locale }: Props) => {
                     stroke="none"
                     role="button"
                     tabIndex={0}
-                    aria-label={active ? copy.marketingCloseLabel : copy.marketingLabel}
+                    aria-label={active ? detail.closeLabel : detail.openLabel}
                     aria-pressed={active}
-                    aria-describedby="unocalc-marketing-description"
+                    aria-describedby={nodeType === "marketing" ? "unocalc-marketing-description" : "unocalc-test-drive-description"}
                     className="cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
-                    onKeyDown={(event) => onNodeKeyDown(event, "marketing")}
+                    onKeyDown={(event) => onNodeKeyDown(event, nodeType)}
                   />
                 )}
               </g>
