@@ -2,7 +2,7 @@ import { getEggConstruction } from "@/lib/unocalcEgg";
 
 export type Point2 = { x: number; y: number };
 export type Point3 = { x: number; y: number; z: number };
-export type EggOrientation = { roll: number; tilt: number };
+export type EggOrientation = { yaw: number; tilt: number };
 
 const SQRT2 = Math.SQRT2;
 const LOWER_RADIUS = 2 - SQRT2;
@@ -38,16 +38,15 @@ export const eggSurface = (rings = 108, sides = 48): Point3[] => {
 };
 
 export const rotateEggPoint = (point: Point3, orientation: EggOrientation): Point3 => {
-  const { roll, tilt } = orientation;
-  // Horizontal gesture rolls the entire axis left/right; vertical gesture
-  // tilts the egg in depth. Spinning a symmetric egg around its own axis
-  // would not visibly change its outline.
-  const x1 = point.x * Math.cos(roll) - point.y * Math.sin(roll);
-  const y1 = point.x * Math.sin(roll) + point.y * Math.cos(roll);
+  const { yaw, tilt } = orientation;
+  // Horizontal gesture spins around the vertical axis; vertical gesture tilts.
+  // Apply the same transform to the shell, plane, nodes and pole spheres.
+  const x1 = point.x * Math.cos(yaw) + point.z * Math.sin(yaw);
+  const z1 = -point.x * Math.sin(yaw) + point.z * Math.cos(yaw);
   return {
     x: x1,
-    y: y1 * Math.cos(tilt) - point.z * Math.sin(tilt),
-    z: y1 * Math.sin(tilt) + point.z * Math.cos(tilt),
+    y: point.y * Math.cos(tilt) - z1 * Math.sin(tilt),
+    z: point.y * Math.sin(tilt) + z1 * Math.cos(tilt),
   };
 };
 
@@ -147,6 +146,12 @@ export const visibleEggSectionNodes = (
   }
   return visible;
 };
+
+/** Spheres at the egg's upper and lower axial poles. */
+export const eggPoleNodes = (orientation: EggOrientation) => [
+  projectEggPoint({ x: 0, y: EGG_TOP, z: 0 }, orientation),
+  projectEggPoint({ x: 0, y: EGG_BOTTOM, z: 0 }, orientation),
+];
 
 export const eggAxisEndpoints = (orientation: EggOrientation) => ({
   start: projectEggPoint({ x: 0, y: EGG_TOP + 0.25, z: 0 }, orientation),

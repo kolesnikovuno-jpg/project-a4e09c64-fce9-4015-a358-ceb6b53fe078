@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import UnoEggScene from "@/components/unocalc/UnoEggScene";
-import { EGG_BOTTOM, EGG_TOP, EGG_EQUATOR, eggRadiusAtSection, eggSectionAxes, visibleEggSectionNodes, eggSurface, projectEggPoint, convexOutline } from "@/lib/unocalcEgg3d";
+import { EGG_BOTTOM, EGG_TOP, EGG_EQUATOR, eggRadiusAtSection, eggPoleNodes, eggSectionAxes, visibleEggSectionNodes, eggSurface, projectEggPoint, convexOutline } from "@/lib/unocalcEgg3d";
 
 describe("UNOcalc egg-only geometry", () => {
   it("builds a closed 3D ovoid of revolution with a narrow upper pole and broad lower pole", () => {
@@ -14,7 +14,7 @@ describe("UNOcalc egg-only geometry", () => {
     expect(EGG_EQUATOR).toBeLessThan(0);
     const surface = eggSurface(24, 16);
     expect(surface).toHaveLength(25 * 16);
-    const hull = convexOutline(surface.map(p => projectEggPoint(p, { roll: 0, tilt: 0.22 })));
+    const hull = convexOutline(surface.map(p => projectEggPoint(p, { yaw: 0, tilt: 0.22 })));
     expect(hull.length).toBeGreaterThan(20);
   });
 
@@ -29,7 +29,13 @@ describe("UNOcalc egg-only geometry", () => {
     expect(spheres).toHaveLength(3);
     spheres.forEach((sphere) => expect(sphere).toHaveAttribute("fill", "none"));
     expect(screen.getAllByTestId("unocalc-section-axis")).toHaveLength(2);
-    expect(screen.getByTestId("unocalc-egg-svg").querySelectorAll("circle")).toHaveLength(3);
+    const poles = screen.getAllByTestId("unocalc-pole-sphere");
+    expect(poles).toHaveLength(2);
+    poles.forEach((sphere) => {
+      expect(sphere).toHaveAttribute("fill", "none");
+      expect(sphere.getAttribute("cx")).toBe("380");
+    });
+    expect(screen.getByTestId("unocalc-egg-svg").querySelectorAll("circle")).toHaveLength(5);
     const xs = spheres.map((sphere) => Number(sphere.getAttribute("cx"))).sort((a, b) => a - b);
     expect(xs).toEqual([168, 380, 592]);
     const ys = spheres.map((sphere) => Number(sphere.getAttribute("cy")));
@@ -38,7 +44,7 @@ describe("UNOcalc egg-only geometry", () => {
   });
 
   it("places two nodes at the sides and two in depth, with the rear node occluded in front view", () => {
-    const front = eggSectionAxes({ roll: 0, tilt: 0 });
+    const front = eggSectionAxes({ yaw: 0, tilt: 0 });
     expect(front).toHaveLength(2);
     expect(front[0].nodes.map((p) => p.x)).toEqual([168, 592]);
     expect(front[1].nodes.every((p) => Math.abs(p.x - 380) < 0.001)).toBe(true);
@@ -46,30 +52,41 @@ describe("UNOcalc egg-only geometry", () => {
     expect(front[1].nodes[0].depth).toBeLessThan(front[1].nodes[1].depth);
     expect(visibleEggSectionNodes(front)).toHaveLength(3);
 
-    const tilted = eggSectionAxes({ roll: 0, tilt: 0.2 });
+    const tilted = eggSectionAxes({ yaw: 0, tilt: 0.2 });
     expect(visibleEggSectionNodes(tilted)).toHaveLength(4);
     const projectedCenter = 350 - 212 * EGG_EQUATOR * Math.cos(0.2);
     expect(tilted[1].nodes[0].y).toBeLessThan(projectedCenter);
     expect(tilted[1].nodes[1].y).toBeGreaterThan(projectedCenter);
   });
 
-  it("rotates the projected silhouette, section nodes and axis by keyboard, and resets", () => {
+  it("spins horizontally around the upright axis, tilts vertically and resets", () => {
     render(<UnoEggScene locale="ru" />);
     const svg = screen.getByTestId("unocalc-egg-svg");
-    const outline = screen.getByTestId("unocalc-egg-outline");
     const axis = screen.getByTestId("unocalc-egg-axis");
-    const original = outline.getAttribute("d");
-    const x = axis.getAttribute("x1");
-    const sphere = screen.getAllByTestId("unocalc-section-sphere")[0];
-    const originalSphereX = sphere.getAttribute("cx");
+    const initialAxisX = axis.getAttribute("x1");
+    const initialAxisY = axis.getAttribute("y1");
+    const firstSideSphere = screen.getAllByTestId("unocalc-section-sphere")[0];
+    const initialSphereX = firstSideSphere.getAttribute("cx");
     fireEvent.keyDown(svg, { key: "ArrowRight" });
-    expect(outline.getAttribute("d")).not.toBe(original);
-    expect(axis.getAttribute("x1")).not.toBe(x);
-    expect(sphere.getAttribute("cx")).not.toBe(originalSphereX);
-    fireEvent.keyDown(svg, { key: "Home" });
-    expect(outline.getAttribute("d")).toBe(original);
-    expect(sphere.getAttribute("cx")).toBe(originalSphereX);
+    expect(axis.getAttribute("x1")).toBe(initialAxisX);
+    expect(axis.getAttribute("y1")).toBe(initialAxisY);
+    expect(firstSideSphere.getAttribute("cx")).not.toBe(initialSphereX);
     fireEvent.keyDown(svg, { key: "ArrowDown" });
+    expect(axis.getAttribute("y1")).not.toBe(initialAxisY);
     expect(screen.getAllByTestId("unocalc-section-sphere")).toHaveLength(4);
+    fireEvent.keyDown(svg, { key: "Home" });
+    expect(axis.getAttribute("y1")).toBe(initialAxisY);
+    expect(screen.getAllByTestId("unocalc-section-sphere")).toHaveLength(3);
+  });
+
+  it("puts both pole spheres at the egg's axial endpoints", () => {
+    const initial = eggPoleNodes({ yaw: 0, tilt: 0 });
+    expect(initial).toHaveLength(2);
+    expect(initial[0].x).toBeCloseTo(380);
+    expect(initial[1].x).toBeCloseTo(380);
+    expect(initial[0].y).toBeCloseTo(350 - 212 * EGG_TOP);
+    expect(initial[1].y).toBeCloseTo(350 - 212 * EGG_BOTTOM);
+    const spun = eggPoleNodes({ yaw: Math.PI / 3, tilt: 0 });
+    expect(spun).toEqual(initial);
   });
 });

@@ -3,6 +3,7 @@ import {
   convexOutline,
   eggAxisEndpoints,
   eggEquatorArcs,
+  eggPoleNodes,
   eggSectionAxes,
   eggSurface,
   projectEggPoint,
@@ -16,7 +17,7 @@ type Props = { locale: Locale };
 
 // Front elevation: the horizontal diameter has two side nodes, while
 // the nearer node of the depth diameter hides the fourth node behind it.
-const INITIAL: EggOrientation = { roll: 0, tilt: 0 };
+const INITIAL: EggOrientation = { yaw: 0, tilt: 0 };
 const SURFACE = eggSurface();
 
 const text = {
@@ -37,6 +38,7 @@ const UnoEggScene = ({ locale }: Props) => {
       axis: eggAxisEndpoints(orientation),
       sectionAxes,
       sectionNodes: visibleEggSectionNodes(sectionAxes),
+      poleNodes: eggPoleNodes(orientation),
     };
   }, [orientation]);
 
@@ -51,7 +53,7 @@ const UnoEggScene = ({ locale }: Props) => {
     const dx = event.clientX - active.x;
     const dy = event.clientY - active.y;
     pointer.current = { ...active, x: event.clientX, y: event.clientY };
-    setOrientation((current) => ({ roll: current.roll + dx * 0.008, tilt: current.tilt + dy * 0.008 }));
+    setOrientation((current) => ({ yaw: current.yaw + dx * 0.008, tilt: current.tilt + dy * 0.008 }));
   };
   const onPointerEnd = (event: PointerEvent<SVGSVGElement>) => {
     if (pointer.current?.id !== event.pointerId) return;
@@ -67,7 +69,7 @@ const UnoEggScene = ({ locale }: Props) => {
     } else if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) {
       event.preventDefault();
       setOrientation((current) => ({
-        roll: current.roll + (event.key === "ArrowLeft" ? -0.09 : event.key === "ArrowRight" ? 0.09 : 0),
+        yaw: current.yaw + (event.key === "ArrowLeft" ? -0.09 : event.key === "ArrowRight" ? 0.09 : 0),
         tilt: current.tilt + (event.key === "ArrowUp" ? -0.09 : event.key === "ArrowDown" ? 0.09 : 0),
       }));
     }
@@ -124,6 +126,20 @@ const UnoEggScene = ({ locale }: Props) => {
             <circle
               key={`section-sphere-${index}`}
               data-testid="unocalc-section-sphere"
+              cx={node.x}
+              cy={node.y}
+              r="10.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.1"
+              strokeOpacity=".72"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+          {geometry.poleNodes.map((node, index) => (
+            <circle
+              key={`pole-sphere-${index}`}
+              data-testid="unocalc-pole-sphere"
               cx={node.x}
               cy={node.y}
               r="10.5"
