@@ -1,4 +1,5 @@
 import { useRef, useState, type PointerEvent } from "react";
+import { buildEggOutline } from "@/lib/unocalcEgg";
 
 type Locale = "ru" | "en" | "uk";
 type Point3 = [number, number, number];
@@ -53,10 +54,9 @@ const nodes: { id: NodeId; point: Point3; color: string }[] = [
 const top: Point3 = [0, 1.57, 0];
 const bottom: Point3 = [0, -1.57, 0];
 const initialOrbit = { yaw: 0.28, pitch: 0.56 };
-// An actual egg silhouette: widest around the upper shoulder, continuously tapering to
-// a narrower, rounded base. The enclosing membrane stays stationary while
-// the crystal and its observation plane rotate within it.
-const EGG_PATH = "M 380 66 C 250 66 151 142 145 268 C 139 374 195 488 280 579 C 322 624 355 638 380 640 C 405 638 438 624 480 579 C 565 488 621 374 615 268 C 609 142 510 66 380 66 Z";
+// The shell uses a mathematically constructed asymmetric ovoid, not a
+// manually approximated ellipse. Broad pole up; narrow pole down.
+const EGG_PATH = buildEggOutline();
 type Projected = { x: number; y: number; depth: number };
 const project = ([x, y, z]: Point3, yaw: number, pitch: number): Projected => {
   const rx = x * Math.cos(yaw) + z * Math.sin(yaw);

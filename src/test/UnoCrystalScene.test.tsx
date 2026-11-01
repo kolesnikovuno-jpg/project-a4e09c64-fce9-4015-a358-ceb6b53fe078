@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import UnoCrystalScene from "@/components/unocalc/UnoCrystalScene";
+import { buildEggOutline, eggHalfWidthAtHeight } from "@/lib/unocalcEgg";
 
 describe("UNOcalc crystal entry scene", () => {
   it("exposes four independent interactive perspectives and opens the input panel", () => {
@@ -31,7 +32,10 @@ describe("UNOcalc crystal entry scene", () => {
     );
     const egg = container.querySelector('clipPath#uno-egg-clip path');
     expect(egg).not.toBeNull();
-    expect(egg?.getAttribute("d")).toContain("C 139 374 195 488 280 579");
+    expect(egg?.getAttribute("d")).toBe(buildEggOutline());
+    expect(eggHalfWidthAtHeight(-0.35)).toBeGreaterThan(eggHalfWidthAtHeight(0.35));
+    expect(eggHalfWidthAtHeight(-1)).toBe(0);
+    expect(eggHalfWidthAtHeight(1)).toBe(0);
     expect(container.querySelector("#uno-egg-side-shadow")).not.toBeNull();
     expect(container.querySelector("#uno-egg-lower-shadow")).not.toBeNull();
     expect(container.querySelector("#uno-egg-reflection")).not.toBeNull();
