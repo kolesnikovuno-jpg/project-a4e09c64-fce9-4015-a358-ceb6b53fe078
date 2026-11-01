@@ -22,6 +22,7 @@ import {
 type Locale = "ru" | "uk" | "en";
 type Props = { locale: Locale };
 type InteractiveNode = "retail" | "commerce" | "design" | "production" | "marketing" | "testDrive" | "procurement" | "legal" | "idea" | "matter";
+type EggHitNode = InteractiveNode | "author";
 type NodeDetail = { title: string; description: string; number: string; openLabel: string; closeLabel: string };
 
 // Front elevation: the horizontal diameter has two side nodes, while
@@ -300,7 +301,7 @@ const NodeDescription = ({ node, detail }: { node: InteractiveNode; detail: Node
 const UnoEggScene = ({ locale }: Props) => {
   const [orientation, setOrientation] = useState<EggOrientation>(INITIAL);
   const [selectedNodes, setSelectedNodes] = useState<InteractiveNode[]>([]);
-  const [workspaceNode, setWorkspaceNode] = useState<InteractiveNode | null>(null);
+  const [workspaceNode, setWorkspaceNode] = useState<EggHitNode | null>(null);
   const workspaceOpen = workspaceNode !== null;
   const [workspaceExpanded, setWorkspaceExpanded] = useState(false);
   const [workspaceVisible, setWorkspaceVisible] = useState(false);
@@ -331,7 +332,7 @@ const UnoEggScene = ({ locale }: Props) => {
   const sketchUrls = useRef<string[]>([]);
   const designWorkspace = useRef<HTMLElement>(null);
   const pointer = useRef<{ id: number; x: number; y: number; startX: number; startY: number; moved: boolean; targetNode: string | null } | null>(null);
-  const lastPointerActivation = useRef<{ node: InteractiveNode; time: number } | null>(null);
+  const lastPointerActivation = useRef<{ node: EggHitNode; time: number } | null>(null);
   const suppressDragClick = useRef(false);
   const copy = text[locale];
   const workflowCopy = designCopy[locale];
@@ -407,6 +408,12 @@ const UnoEggScene = ({ locale }: Props) => {
     window.addEventListener("keydown", onEscape);
     return () => window.removeEventListener("keydown", onEscape);
   }, [workspaceOpen]);
+
+  const activateAuthor = () => {
+    setWorkspaceExpanded(false);
+    setWorkspaceNode("author");
+    giveNodeFeedback();
+  };
 
   const activateNode = (node: InteractiveNode) => {
     if (!canActivateNode(node)) return;
@@ -584,9 +591,10 @@ const UnoEggScene = ({ locale }: Props) => {
         event.currentTarget.releasePointerCapture(event.pointerId);
       }
     } catch { /* Safari can release capture automatically. */ }
-    if (event.type === "pointerup" && !active.moved && isInteractiveNode(active.targetNode)) {
+    if (event.type === "pointerup" && !active.moved && (active.targetNode === "author" || isInteractiveNode(active.targetNode))) {
       lastPointerActivation.current = { node: active.targetNode, time: Date.now() };
-      activateNode(active.targetNode);
+      if (active.targetNode === "author") activateAuthor();
+      else activateNode(active.targetNode);
     }
   };
   // Fallback for browsers that dispatch a click but lose SVG pointerup/capture.
@@ -598,17 +606,19 @@ const UnoEggScene = ({ locale }: Props) => {
     }
     const target = event.target as Element;
     const node = target.closest("[data-egg-node]")?.getAttribute("data-egg-node") ?? null;
-    if (!isInteractiveNode(node)) return;
+    if (!isInteractiveNode(node) && node !== "author") return;
     const previous = lastPointerActivation.current;
     lastPointerActivation.current = null;
     if (previous?.node === node && Date.now() - previous.time < 800) return;
-    activateNode(node);
+    if (node === "author") activateAuthor();
+    else activateNode(node);
   };
-  const onNodeKeyDown = (event: KeyboardEvent<SVGCircleElement>, node: InteractiveNode) => {
+  const onNodeKeyDown = (event: KeyboardEvent<SVGCircleElement>, node: EggHitNode) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       event.stopPropagation();
-      activateNode(node);
+      if (node === "author") activateAuthor();
+      else activateNode(node);
     }
   };
 
@@ -755,8 +765,8 @@ const UnoEggScene = ({ locale }: Props) => {
               />
             ))}
           </g>
-          {/* The unformed object: a quiet, larger sphere inside the shell.
-              It is not a seventh functional node and does not intercept gestures. */}
+          {/* The central core represents the object. Tapping opens the Author panel;
+              dragging still rotates the egg without triggering panel activation. */}
           <circle
             data-testid="unocalc-core-sphere"
             cx={geometry.core.x}
@@ -770,6 +780,21 @@ const UnoEggScene = ({ locale }: Props) => {
             pointerEvents="none"
             role="img"
             aria-label={copy.coreLabel}
+          />
+          <circle
+            data-testid="unocalc-author-hit"
+            data-egg-node="author"
+            cx={geometry.core.x}
+            cy={geometry.core.y}
+            r="45"
+            fill="transparent"
+            pointerEvents="all"
+            stroke="none"
+            role="button"
+            tabIndex={0}
+            aria-label={locale === "ru" ? "Открыть панель Автора" : locale === "uk" ? "Відкрити панель Автора" : "Open Author panel"}
+            className="cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
+            onKeyDown={(event) => onNodeKeyDown(event, "author")}
           />
           {hasSketch && (
             <circle
@@ -1020,8 +1045,8 @@ const UnoEggScene = ({ locale }: Props) => {
             className={`relative z-10 flex h-full flex-col overflow-hidden border-l border-foreground/15 bg-background shadow-2xl transition-[width,transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${workspaceVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-95"} ${workspaceExpanded ? "w-full" : "w-full sm:w-[min(520px,60vw)]"}`}>
             <header className="flex items-start justify-between gap-4 border-b border-foreground/10 px-6 py-6 sm:px-8">
               <div>
-                <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-foreground/45">UNO / EGG / {workspaceNode ? nodeDetails[workspaceNode].number : ""}</p>
-                <h2 id="unocalc-sphere-workspace-title" className="text-[26px] font-extralight tracking-[-0.035em]">{workspaceNode ? nodeDetails[workspaceNode].title : ""}</h2>
+                <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-foreground/45">UNO / EGG / {workspaceNode === "author" ? (locale === "en" ? "CORE" : "ЯДРО") : workspaceNode ? nodeDetails[workspaceNode].number : ""}</p>
+                <h2 id="unocalc-sphere-workspace-title" className="text-[26px] font-extralight tracking-[-0.035em]">{workspaceNode === "author" ? (locale === "en" ? "Author" : "Автор") : workspaceNode ? nodeDetails[workspaceNode].title : ""}</h2>
               </div>
               <div className="flex gap-2">
                 <button type="button" data-testid="unocalc-sphere-expand" onClick={() => setWorkspaceExpanded((value) => !value)}
@@ -1035,9 +1060,30 @@ const UnoEggScene = ({ locale }: Props) => {
               </div>
             </header>
             <div className="flex flex-1 items-center justify-center px-6 text-center">
-              <p className="max-w-[260px] text-[12px] font-light leading-[1.8] text-foreground/40">
-                {locale === "ru" ? "Пустое рабочее пространство. Проверяем открытие, закрытие и разворачивание панели." : locale === "uk" ? "Порожній робочий простір. Перевіряємо відкриття, закриття та розгортання панелі." : "Empty workspace. Testing open, close and expand interactions."}
-              </p>
+              {workspaceNode === "author" ? (
+                <div data-testid="unocalc-author-workspace-content" className="max-w-[310px] space-y-5 text-left">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-foreground/45">
+                      {locale === "ru" ? "ПАНЕЛЬ АВТОРА" : locale === "uk" ? "ПАНЕЛЬ АВТОРА" : "AUTHOR WORKSPACE"}
+                    </p>
+                    <p className="mt-2 text-[15px] font-light leading-relaxed text-foreground/80">
+                      {locale === "ru" ? "Центр наблюдения и участия в формировании объекта." : locale === "uk" ? "Центр спостереження й участі у формуванні об’єкта." : "A place to observe and participate in shaping the object."}
+                    </p>
+                  </div>
+                  <div className="border-t border-foreground/15 pt-4">
+                    <p className="text-[11px] font-light text-foreground/65">
+                      {locale === "ru" ? "Связь с главным ИИ-оператором" : locale === "uk" ? "Зв’язок із головним ШІ-оператором" : "Connection to the main AI operator"}
+                    </p>
+                    <p className="mt-2 text-[12px] font-light leading-[1.8] text-foreground/40">
+                      {locale === "ru" ? "Механика диалога, работы с зерном смысла и управления системой ещё определяется. Сейчас проверяем вход через Ядро." : locale === "uk" ? "Механіка діалогу, роботи із зерном сенсу та керування системою ще визначається. Зараз перевіряємо вхід через Ядро." : "Dialogue, the seed of meaning, and system control are still being designed. For now, testing entry through the Core."}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p className="max-w-[260px] text-[12px] font-light leading-[1.8] text-foreground/40">
+                  {locale === "ru" ? "Пустое рабочее пространство. Проверяем открытие, закрытие и разворачивание панели." : locale === "uk" ? "Порожній робочий простір. Перевіряємо відкриття, закриття та розгортання панелі." : "Empty workspace. Testing open, close and expand interactions."}
+                </p>
+              )}
             </div>
           </section>
         </div>
