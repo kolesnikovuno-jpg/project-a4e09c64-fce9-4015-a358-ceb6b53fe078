@@ -9,6 +9,7 @@ import {
   resourceNodeRadius,
   resourceShareFromKey,
   resourceShareFromPointer,
+  resourceValueLabelPosition,
 } from "@/lib/unocalcDiagram";
 
 type UnoBalanceDiagramProps = {
@@ -17,6 +18,7 @@ type UnoBalanceDiagramProps = {
   onShareChange: (index: number, value: number) => void;
   dragHint: string;
   adjustLabel: string;
+  locale: string;
 };
 
 const NODES = [
@@ -37,10 +39,10 @@ const TRACK_START = 60;
 const TRACK_MIDDLE = 80;
 const TRACK_END = 100;
 
-const formatPercent = (value: number): string => {
-  const formatted = String(value);
-  return formatted + "%";
-};
+const formatPercent = (value: number, locale: string): string =>
+  value.toLocaleString(locale === "en" ? "en-US" : locale === "uk" ? "uk-UA" : "ru-RU", {
+    maximumFractionDigits: 1,
+  }) + "%";
 
 /**
  * Resource balance is a single interactive instrument. The perimeter and
@@ -48,7 +50,7 @@ const formatPercent = (value: number): string => {
  * with the parent allocating the opposite changes to keep a 100% total.
  */
 export default function UnoBalanceDiagram({
-  shares, labels, onShareChange, dragHint, adjustLabel,
+  shares, labels, onShareChange, dragHint, adjustLabel, locale,
 }: UnoBalanceDiagramProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const draggingPointer = useRef<number | null>(null);
@@ -98,7 +100,7 @@ export default function UnoBalanceDiagram({
   };
 
   const description = NODES.map((node, index) =>
-    labels[node.id] + ": " + formatPercent(shares[index])
+    labels[node.id] + ": " + formatPercent(shares[index], locale)
   ).join("; ");
 
   return (
@@ -164,7 +166,7 @@ export default function UnoBalanceDiagram({
               aria-valuemin={base - FLEXIBILITY_PP}
               aria-valuemax={base + FLEXIBILITY_PP}
               aria-valuenow={shares[index]}
-              aria-valuetext={formatPercent(shares[index])}
+              aria-valuetext={formatPercent(shares[index], locale)}
               onPointerDown={(event) => startDrag(index, event)}
               onPointerMove={(event) => drag(index, event)}
               onPointerUp={finishDrag}
@@ -252,23 +254,20 @@ export default function UnoBalanceDiagram({
 
         {/* Values follow the handles so the interaction has instant feedback. */}
         {NODES.map((node, index) => {
-          const p = resourceNodePosition(index, shares[index]);
-          const horizontal = node.x !== 0;
-          const x = horizontal ? p.x : p.x + 20;
-          const y = horizontal ? p.y - 21 : p.y + 3;
+          const label = resourceValueLabelPosition(index, shares[index]);
           const selected = activeIndex === index || focusedIndex === index;
           return (
             <text
               key={"value-" + node.id}
-              x={x} y={y}
-              fontSize="10.5"
+              x={label.x} y={label.y}
+              fontSize="11.2"
               fontWeight={selected ? "600" : "400"}
-              textAnchor="middle"
+              textAnchor={label.anchor}
               fill="currentColor"
               opacity={selected ? "1" : "0.84"}
               pointerEvents="none"
             >
-              {formatPercent(shares[index])}
+              {formatPercent(shares[index], locale)}
             </text>
           );
         })}

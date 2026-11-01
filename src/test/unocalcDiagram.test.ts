@@ -9,6 +9,7 @@ import {
   resourceNodeRadius,
   resourceShareFromPointer,
   resourceShareFromKey,
+  resourceValueLabelPosition,
 } from "@/lib/unocalcDiagram";
 
 describe("UNOcalc interactive balance diagram", () => {
@@ -68,6 +69,30 @@ describe("UNOcalc interactive balance diagram", () => {
       expect(radius(inner)).toBe(60);
       expect(radius(outer)).toBe(100);
       expect(radius(outer)).toBeLessThan(120);
+    }
+  });
+
+  it("keeps percentage labels clear of the draggable rings at every position", () => {
+    for (let index = 0; index < 4; index++) {
+      const base = BASE_RESOURCE_PERCENTAGES[index];
+      for (let ticks = -5; ticks <= 5; ticks++) {
+        const share = base + ticks * 0.5;
+        const node = resourceNodePosition(index, share);
+        const label = resourceValueLabelPosition(index, share);
+        if (index === 0 || index === 3) {
+          expect(label.anchor).toBe("middle");
+          // Text baseline is at least 33px above the center; drag halo is 23px.
+          expect(node.y - label.y).toBeGreaterThanOrEqual(33);
+        } else {
+          expect(label.anchor).toBe("start");
+          // Text begins beyond the 23px draggable/focus halo.
+          expect(label.x - node.x).toBeGreaterThanOrEqual(35);
+        }
+        expect(label.x).toBeGreaterThan(0);
+        expect(label.x).toBeLessThan(300);
+        expect(label.y).toBeGreaterThan(0);
+        expect(label.y).toBeLessThan(320);
+      }
     }
   });
 

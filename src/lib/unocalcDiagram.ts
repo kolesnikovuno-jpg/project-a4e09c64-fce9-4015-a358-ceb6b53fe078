@@ -71,3 +71,19 @@ export const resourceShareFromKey = (index: number, current: number, key: string
   if (key === "ArrowDown" || key === "ArrowLeft") return Math.max(min, current - SHARE_STEP_PP);
   return null;
 };
+
+
+/**
+ * Label coordinates leave the 23px interactive/focus halo unobstructed.
+ * Horizontal node values sit above the handle; vertical values start to its
+ * right. All extrema remain within the 320px diagram canvas.
+ */
+export const resourceValueLabelPosition = (
+  index: number,
+  share: number,
+): { x: number; y: number; anchor: "middle" | "start" } => {
+  const p = resourceNodePosition(index, share);
+  return index === 0 || index === 3
+    ? { x: p.x, y: p.y - 33, anchor: "middle" }
+    : { x: p.x + 35, y: p.y + 3.5, anchor: "start" };
+};

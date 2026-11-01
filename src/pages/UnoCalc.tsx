@@ -598,6 +598,7 @@ const UnoCalc = () => {
                   onShareChange={changeShare}
                   dragHint={t.allocationDragHint}
                   adjustLabel={t.allocationAdjust}
+                  locale={locale}
                 />
               </div>
               <div className="mt-2 divide-y divide-border/60">
