@@ -21,6 +21,7 @@ describe("UNOcalc egg-only geometry", () => {
     sketchStore.items = [];
     Object.defineProperty(URL, "createObjectURL", { configurable: true, value: vi.fn(() => "blob:unocalc-test") });
     Object.defineProperty(URL, "revokeObjectURL", { configurable: true, value: vi.fn() });
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", { configurable: true, value: vi.fn() });
   });
   const withExistingSketch = () => {
     window.localStorage.setItem("unocalc.idea.v1", "Кресло для чтения");
@@ -160,11 +161,35 @@ describe("UNOcalc egg-only geometry", () => {
     fireEvent.click(screen.getByRole("button", { name: "Сохранить идею" }));
     expect(window.localStorage.getItem("unocalc.idea.v1")).toBe("Светильник для чтения из гибких материалов");
     expect(screen.getByTestId("unocalc-idea-editor").querySelector('[role="status"]')).toHaveTextContent("Идея сохранена в этом браузере.");
+    expect(screen.getByTestId("unocalc-design-workspace")).toBeInTheDocument();
+    expect(screen.getByTestId("unocalc-brief-concept")).toHaveValue("Светильник для чтения из гибких материалов");
+    expect(HTMLElement.prototype.scrollIntoView).toHaveBeenCalled();
     unmount();
     render(<UnoEggScene locale="ru" />);
     expect(screen.getByTestId("unocalc-idea-field")).toBeInTheDocument();
+    expect(screen.queryByTestId("unocalc-design-workspace")).not.toBeInTheDocument();
+    expect(screen.getByTestId("unocalc-continue-design")).toHaveTextContent("Продолжить → Дизайн");
+    fireEvent.click(screen.getByTestId("unocalc-continue-design"));
+    expect(screen.getByTestId("unocalc-design-workspace")).toBeInTheDocument();
     fireEvent.keyDown(screen.getByTestId("unocalc-idea-hit"), { key: "Enter" });
     expect(screen.getByRole("textbox", { name: "Описание идеи" })).toHaveValue("Светильник для чтения из гибких материалов");
+  });
+
+  it("does not advance with an empty idea, and exposes a direct Design action while typing", () => {
+    render(<UnoEggScene locale="ru" />);
+    expect(screen.queryByTestId("unocalc-continue-design")).not.toBeInTheDocument();
+    fireEvent.keyDown(screen.getByTestId("unocalc-idea-hit"), { key: "Enter" });
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить идею" }));
+    expect(screen.getByTestId("unocalc-idea-editor")).toHaveTextContent("Введите описание идеи");
+    expect(screen.queryByTestId("unocalc-design-workspace")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByRole("textbox", { name: "Описание идеи" }), {
+      target: { value: "Новая настольная лампа" },
+    });
+    expect(screen.getByTestId("unocalc-continue-design")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("unocalc-continue-design"));
+    expect(window.localStorage.getItem("unocalc.idea.v1")).toBe("Новая настольная лампа");
+    expect(screen.getByTestId("unocalc-design-workspace")).toBeInTheDocument();
+    expect(screen.getByTestId("unocalc-brief-concept")).toHaveValue("Новая настольная лампа");
   });
 
   it("unlocks Design after the idea, builds an editable brief, and unlocks other nodes only after a sketch", async () => {
