@@ -167,6 +167,64 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.getByRole("textbox", { name: "Описание идеи" })).toHaveValue("Светильник для чтения из гибких материалов");
   });
 
+  it("unlocks Design after the idea, builds an editable brief, and unlocks other nodes only after a sketch", async () => {
+    render(<UnoEggScene locale="ru" />);
+    const design = screen.getByTestId("unocalc-design-hit");
+    const retail = screen.getByTestId("unocalc-retail-hit");
+    expect(design).toHaveAttribute("aria-disabled", "true");
+    expect(retail).toHaveAttribute("aria-disabled", "true");
+    fireEvent.keyDown(design, { key: "Enter" });
+    expect(screen.queryByTestId("unocalc-design-workspace")).not.toBeInTheDocument();
+
+    fireEvent.keyDown(screen.getByTestId("unocalc-idea-hit"), { key: "Enter" });
+    fireEvent.change(screen.getByRole("textbox", { name: "Описание идеи" }), {
+      target: { value: "Кресло для чтения с мягким силуэтом" },
+    });
+    expect(design).toHaveAttribute("aria-disabled", "false");
+    fireEvent.keyDown(design, { key: "Enter" });
+    expect(screen.getByTestId("unocalc-design-workspace")).toBeInTheDocument();
+    expect(screen.getByTestId("unocalc-brief-concept")).toHaveValue("Кресло для чтения с мягким силуэтом");
+    expect(screen.getByTestId("unocalc-sketch-prompt")).toHaveValue(expect.stringContaining("Кресло для чтения"));
+
+    fireEvent.change(screen.getByTestId("unocalc-brief-purpose"), { target: { value: "Тихое чтение" } });
+    expect(screen.getByTestId("unocalc-sketch-prompt")).toHaveValue(expect.stringContaining("Тихое чтение"));
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить бриф" }));
+    expect(JSON.parse(window.localStorage.getItem("unocalc.design.v1") ?? "{}").purpose).toBe("Тихое чтение");
+    expect(retail).toHaveAttribute("aria-disabled", "true");
+    expect(screen.queryByTestId("unocalc-core-progress")).not.toBeInTheDocument();
+
+    const sketch = new File(["sketch"], "first-sketch.png", { type: "image/png" });
+    fireEvent.change(screen.getByTestId("unocalc-sketch-upload"), { target: { files: [sketch] } });
+    await waitFor(() => expect(screen.getByTestId("unocalc-sketch-gallery")).toBeInTheDocument());
+    expect(retail).toHaveAttribute("aria-disabled", "false");
+    expect(screen.getByTestId("unocalc-core-progress")).toBeInTheDocument();
+    expect(sketchStore.items).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole("button", { name: "Удалить" }));
+    await waitFor(() => expect(screen.queryByTestId("unocalc-sketch-gallery")).not.toBeInTheDocument());
+    expect(retail).toHaveAttribute("aria-disabled", "true");
+    expect(screen.queryByTestId("unocalc-core-progress")).not.toBeInTheDocument();
+  });
+
+  it("restores the saved design brief and browser-local sketches after reopening", async () => {
+    window.localStorage.setItem("unocalc.idea.v1", "Настольный светильник");
+    window.localStorage.setItem("unocalc.design.v1", JSON.stringify({
+      concept: "Настольный светильник", purpose: "Чтение", character: "Мягкий свет",
+      constraints: "", ideaSnapshot: "Настольный светильник",
+    }));
+    withExistingSketch();
+    const { unmount } = render(<UnoEggScene locale="ru" />);
+    await waitForUnlockedNodes();
+    expect(screen.getByTestId("unocalc-core-progress")).toBeInTheDocument();
+    unmount();
+    render(<UnoEggScene locale="ru" />);
+    await waitForUnlockedNodes();
+    fireEvent.keyDown(screen.getByTestId("unocalc-design-hit"), { key: "Enter" });
+    expect(screen.getByTestId("unocalc-brief-purpose")).toHaveValue("Чтение");
+    expect(screen.getByTestId("unocalc-brief-character")).toHaveValue("Мягкий свет");
+    expect(screen.getByTestId("unocalc-sketch-gallery")).toBeInTheDocument();
+  });
+
   it("opens the retail explanation only after tapping the central front sphere", async () => {
     withExistingSketch();
     render(<UnoEggScene locale="ru" />);
