@@ -948,7 +948,7 @@ const UnoEggScene = ({ locale }: Props) => {
           {selectedNodes.map((node) => (
             <div key={node} className="flex min-w-0 flex-col gap-4">
               <NodeDescription node={node} detail={nodeDetails[node]} />
-              {node !== "idea" && node !== "matter" && (
+              {(
                 <button type="button" data-testid={`unocalc-${node}-open`} onClick={() => setWorkspaceNode(node)}
                   className="self-start border-b border-foreground/35 pb-1 text-left text-[11px] font-light text-foreground/75 hover:text-foreground">
                   {locale === "ru" ? "Открыть рабочее пространство" : locale === "uk" ? "Відкрити робочий простір" : "Open workspace"}
