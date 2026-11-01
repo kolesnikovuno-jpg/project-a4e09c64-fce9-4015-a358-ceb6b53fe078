@@ -18,6 +18,9 @@ type UnoBalanceDiagramProps = {
   onShareChange: (index: number, value: number) => void;
   dragHint: string;
   adjustLabel: string;
+  investmentLabel: string;
+  investmentHint: string;
+  centerHint: string;
   locale: string;
 };
 
@@ -25,7 +28,6 @@ const NODES = [
   { id: "retail", x: -1, y: 0 },
   { id: "design", x: 0, y: -1 },
   { id: "installation", x: 0, y: 1 },
-  { id: "components", x: 1, y: 0 },
 ] as const;
 
 const PERIMETER_POINTS = [
@@ -45,12 +47,13 @@ const formatPercent = (value: number, locale: string): string =>
   }) + "%";
 
 /**
- * Resource balance is a single interactive instrument. The perimeter and
- * central anchor do not move; all four handles travel radially in ±2.5 pp,
- * with the parent allocating the opposite changes to keep a 100% total.
+ * Three draggable production branches surround the fixed central materials
+ * circle. The fourth branch (investment) is an incoming funding source, not
+ * a cost share. The central components share is adjustable via keys / buttons.
+ * All four production allocations still total 100%.
  */
 export default function UnoBalanceDiagram({
-  shares, labels, onShareChange, dragHint, adjustLabel, locale,
+  shares, labels, onShareChange, dragHint, adjustLabel, investmentLabel, investmentHint, centerHint, locale,
 }: UnoBalanceDiagramProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const draggingPointer = useRef<number | null>(null);
@@ -101,7 +104,7 @@ export default function UnoBalanceDiagram({
 
   const description = NODES.map((node, index) =>
     labels[node.id] + ": " + formatPercent(shares[index], locale)
-  ).join("; ");
+  ).concat(labels.components + ": " + formatPercent(shares[3], locale), investmentLabel + ": " + investmentHint).join("; ");
 
   return (
     <div className="w-full">
@@ -130,19 +133,53 @@ export default function UnoBalanceDiagram({
           />
         ))}
 
-        {/* Fixed center represents the integrity constraint, not a fifth share. */}
-        <circle
-          cx="160" cy="160" r="13"
-          fill="hsl(var(--background))" stroke="currentColor"
-          strokeWidth="1.2" opacity="0.94"
+        {/* The investment branch supplies funds but has no allocation percentage. */}
+        <path
+          d="M 236 160 H 195 m 9 -5 l -9 5 l 9 5"
+          fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.66"
+          strokeLinecap="round" strokeLinejoin="round" pointerEvents="none"
         />
-        <text
-          x="160" y="160.5" fontSize="7.8" fontWeight="400"
-          textAnchor="middle" dominantBaseline="central"
-          fill="currentColor" pointerEvents="none"
-        >
-          100%
+        <circle
+          cx="240" cy="160" r="10"
+          fill="hsl(var(--background))" stroke="currentColor"
+          strokeWidth="1.3" strokeDasharray="3 2" opacity="0.95" pointerEvents="none"
+        />
+        <text x="240" y="130" fontSize="10" textAnchor="middle"
+          fill="currentColor" opacity="0.82" pointerEvents="none">
+          {investmentHint}
         </text>
+
+        {/* Components are the fixed core. Its resource share remains adjustable. */}
+        <g
+          tabIndex={0}
+          role="slider"
+          aria-label={adjustLabel + ": " + labels.components}
+          aria-valuemin={BASE_RESOURCE_PERCENTAGES[3] - FLEXIBILITY_PP}
+          aria-valuemax={BASE_RESOURCE_PERCENTAGES[3] + FLEXIBILITY_PP}
+          aria-valuenow={shares[3]}
+          aria-valuetext={formatPercent(shares[3], locale)}
+          onKeyDown={(event) => changeWithKey(3, event)}
+          className="cursor-default focus:outline-none"
+        >
+          <circle
+            cx="160" cy="160" r="31"
+            fill="hsl(var(--background))" stroke="currentColor"
+            strokeWidth="1.5" opacity="0.98"
+          />
+          <text
+            x="160" y="154" fontSize="15" fontWeight="400"
+            textAnchor="middle" dominantBaseline="central"
+            fill="currentColor" pointerEvents="none"
+          >
+            {formatPercent(shares[3], locale)}
+          </text>
+          <text
+            x="160" y="172" fontSize="8.1" textAnchor="middle"
+            fill="currentColor" opacity="0.86" pointerEvents="none"
+          >
+            {labels.components}
+          </text>
+        </g>
 
         {NODES.map((node, index) => {
           const position = resourceNodePosition(index, shares[index]);
@@ -249,7 +286,7 @@ export default function UnoBalanceDiagram({
         <text x="305" y="160" transform="rotate(90 305 160)"
           fontSize="9.5" textAnchor="middle" fill="currentColor"
           opacity="0.76" pointerEvents="none">
-          {labels.components}
+          {investmentLabel}
         </text>
 
         {/* Values follow the handles so the interaction has instant feedback. */}
@@ -272,6 +309,23 @@ export default function UnoBalanceDiagram({
           );
         })}
       </svg>
+      <div className="mt-2 flex items-center justify-center gap-4 text-[12px]">
+        <button
+          type="button"
+          aria-label={adjustLabel + ": " + labels.components + " −"}
+          onClick={() => onShareChange(3, Math.max(BASE_RESOURCE_PERCENTAGES[3] - FLEXIBILITY_PP, shares[3] - 0.5))}
+          disabled={shares[3] <= BASE_RESOURCE_PERCENTAGES[3] - FLEXIBILITY_PP}
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-foreground/30 text-[20px] font-light transition-colors hover:border-primary disabled:opacity-30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+        >−</button>
+        <span className="text-[11px] text-foreground/75">{centerHint}</span>
+        <button
+          type="button"
+          aria-label={adjustLabel + ": " + labels.components + " +"}
+          onClick={() => onShareChange(3, Math.min(BASE_RESOURCE_PERCENTAGES[3] + FLEXIBILITY_PP, shares[3] + 0.5))}
+          disabled={shares[3] >= BASE_RESOURCE_PERCENTAGES[3] + FLEXIBILITY_PP}
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-foreground/30 text-[20px] font-light transition-colors hover:border-primary disabled:opacity-30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+        >+</button>
+      </div>
       <p className="mt-2 text-center text-[11px] font-light leading-[1.55] text-foreground/70">
         {dragHint}
       </p>

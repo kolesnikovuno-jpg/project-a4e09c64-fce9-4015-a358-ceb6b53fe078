@@ -102,7 +102,7 @@ const copy = {
     unadjustedLabel: "Original UNOcalc index (no European calibration)",
     areaLabel: "Floor area",
     allocationHeading: "04 / Resource distribution",
-    allocationIntro: "Recommended resource balance: 20 / 20 / 20 / 40. A model of the project's whole resource capacity, not a required payment split or a verified market cost breakdown.",
+    allocationIntro: "The central circle represents components. Four branches surround it: retail, design, execution and incoming investment. Only retail, design, execution and components divide the 100% creation resource: 20 / 20 / 20 / 40.",
     allocationTotal: "Allocation",
     allocationNames: { retail: "retail", design: "project / design", installation: "installation", components: "components" },
     allocationBalanced: "Balance",
@@ -114,7 +114,10 @@ const copy = {
     investorLink: "Investment and resource capacity",
     allocationReset: "Reset",
     allocationAdjust: "Adjust share",
-    allocationDragHint: "Move a circle outward to increase its share, inward to reduce it. Use arrow keys when a circle is focused.",
+    allocationDragHint: "Drag the three execution branches to redistribute their shares. Investment is incoming capital, not a percentage.",
+    investmentDiagramLabel: "investment",
+    investmentDiagramHint: "capital in",
+    componentsAdjustHint: "components",
     levels: {
       basic: { label: "basic form", hint: "Essential utility, reliability and sound workmanship without unnecessary complexity." },
       functional: { label: "functional architecture", hint: "Integrated function, construction, materials and considered detailing." },
@@ -183,7 +186,7 @@ const copy = {
     unadjustedLabel: "Исходный индекс UNOcalc (без калибровки для Европы)",
     areaLabel: "Площадь пола",
     allocationHeading: "04 / Распределение ресурса",
-    allocationIntro: "Четыре равнозначные по необходимости стороны, но разные доли ресурса: 20 / 20 / 20 / 40. Авторская модель, не обязательная схема платежей и не подтверждённая рыночная смета.",
+    allocationIntro: "Центральный кружок — комплектация, основание ствола. Четыре ветви — ритейл, проектирование, реализация и инвестиция. В 100% расходного ресурса входят только ритейл, проект, реализация и комплектация: 20 / 20 / 20 / 40.",
     allocationTotal: "Распределено",
     allocationNames: { retail: "ритейл", design: "проект / дизайн", installation: "монтаж", components: "комплектующие" },
     allocationBalanced: "Равновесие",
@@ -195,7 +198,10 @@ const copy = {
     investorLink: "Инвестиции и ресурсная ёмкость",
     allocationReset: "Сбросить",
     allocationAdjust: "Изменить долю",
-    allocationDragHint: "Тяни кружки наружу, чтобы увеличить долю, и к центру — чтобы уменьшить. С клавиатуры работают стрелки.",
+    allocationDragHint: "Тяни три рабочие ветви, чтобы изменить доли. Инвестиция — входящий капитал, без процента.",
+    investmentDiagramLabel: "инвестиция",
+    investmentDiagramHint: "вклад",
+    componentsAdjustHint: "комплектация",
     levels: {
       basic: { label: "базовая форма", hint: "Необходимая польза, надёжность и добротное исполнение без избыточной сложности." },
       functional: { label: "функциональная архитектура", hint: "Согласованность функции, конструкции, материалов и продуманной деталировки." },
@@ -264,7 +270,7 @@ const copy = {
     unadjustedLabel: "Початковий індекс UNOcalc (без калібрування для Європи)",
     areaLabel: "Площа підлоги",
     allocationHeading: "04 / Розподіл ресурсу",
-    allocationIntro: "Чотири рівнозначні за необхідністю сторони, але різні частки ресурсу: 20 / 20 / 20 / 40. Авторська модель, а не обов’язковий розподіл платежів чи перевірений ринковий кошторис.",
+    allocationIntro: "Центральне коло — комплектуючі, основа стовбура. Чотири гілки — ритейл, проєктування, реалізація та інвестиція. До 100% витратного ресурсу входять лише ритейл, проєкт, реалізація і комплектуючі: 20 / 20 / 20 / 40.",
     allocationTotal: "Розподілено",
     allocationNames: { retail: "ритейл", design: "проєкт / дизайн", installation: "монтаж", components: "комплектуючі" },
     allocationBalanced: "Рівновага",
@@ -276,7 +282,10 @@ const copy = {
     investorLink: "Інвестиції та ресурсна місткість",
     allocationReset: "Скинути",
     allocationAdjust: "Змінити частку",
-    allocationDragHint: "Тягни кружечки назовні, щоб збільшити частку, та до центру — щоб зменшити. На клавіатурі працюють стрілки.",
+    allocationDragHint: "Перетягуй три робочі гілки, щоб змінити частки. Інвестиція — вхідний капітал, без відсотка.",
+    investmentDiagramLabel: "інвестиція",
+    investmentDiagramHint: "внесок",
+    componentsAdjustHint: "комплектуючі",
     levels: {
       basic: { label: "базова форма", hint: "Необхідна користь, надійність і добротне виконання без зайвої складності." },
       functional: { label: "функціональна архітектура", hint: "Узгодженість функції, конструкції, матеріалів і продуманої деталізації." },
@@ -732,6 +741,9 @@ const UnoCalc = () => {
                   onShareChange={changeShare}
                   dragHint={t.allocationDragHint}
                   adjustLabel={t.allocationAdjust}
+                  investmentLabel={t.investmentDiagramLabel}
+                  investmentHint={t.investmentDiagramHint}
+                  centerHint={t.componentsAdjustHint}
                   locale={locale}
                 />
               </div>
