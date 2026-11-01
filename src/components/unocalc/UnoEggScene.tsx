@@ -5,6 +5,8 @@ import {
   convexOutline,
   eggAxisEndpoints,
   eggEquatorArcs,
+  eggLowerRingArcs,
+  visibleEggLowerSphereNodes,
   EGG_EQUATOR,
   eggPoleNodes,
   eggSectionAxes,
@@ -34,6 +36,8 @@ const text = {
   ru: {
     label: "Трёхмерная форма яйца с вертикальной осью. Вращайте жестом или стрелками клавиатуры.",
     coreLabel: "Центральная сфера — формируемый объект",
+    lowerSphereLabel: "Нижняя сфера",
+    lowerRingHint: "Нижний пояс: четыре сферы без назначения. Поверните яйцо, чтобы увидеть все.",
     ideaInputLabel: "Описание идеи",
     ideaInputPlaceholder: "Опишите замысел, назначение, свойства будущего объекта…",
     ideaSave: "Сохранить идею",
@@ -75,6 +79,8 @@ const text = {
   uk: {
     label: "Тривимірна форма яйця з вертикальною віссю. Обертайте жестом або стрілками клавіатури.",
     coreLabel: "Центральна сфера — об’єкт, що формується",
+    lowerSphereLabel: "Нижня сфера",
+    lowerRingHint: "Нижній пояс: чотири сфери без призначення. Обертайте яйце, щоб побачити всі.",
     ideaInputLabel: "Опис ідеї",
     ideaInputPlaceholder: "Опишіть задум, призначення, властивості майбутнього об’єкта…",
     ideaSave: "Зберегти ідею",
@@ -116,6 +122,8 @@ const text = {
   en: {
     label: "Three-dimensional egg with a vertical axis. Drag or use arrow keys to rotate.",
     coreLabel: "Central sphere — the object taking form",
+    lowerSphereLabel: "Lower sphere",
+    lowerRingHint: "Lower ring: four unassigned spheres. Rotate the egg to see all four.",
     ideaInputLabel: "Describe your idea",
     ideaInputPlaceholder: "Describe the intent, purpose, and qualities of the future object…",
     ideaSave: "Save idea",
@@ -408,6 +416,8 @@ const UnoEggScene = ({ locale }: Props) => {
     return {
       silhouette: svgOutline(convexOutline(points)),
       equator: eggEquatorArcs(orientation),
+      lowerRing: eggLowerRingArcs(orientation),
+      lowerNodes: visibleEggLowerSphereNodes(orientation),
       axis: eggAxisEndpoints(orientation),
       sectionAxes,
       sectionNodes: visibleEggSectionNodes(sectionAxes),
@@ -575,6 +585,12 @@ const UnoEggScene = ({ locale }: Props) => {
             stroke="currentColor" strokeWidth="1.05" strokeOpacity=".43"
             strokeDasharray="7 8" vectorEffect="non-scaling-stroke"
           />
+          <path data-testid="unocalc-lower-ring-back" d={geometry.lowerRing.back} fill="none"
+            stroke="currentColor" strokeWidth=".9" strokeOpacity=".13"
+            strokeDasharray="4 7" vectorEffect="non-scaling-stroke" />
+          <path data-testid="unocalc-lower-ring-front" d={geometry.lowerRing.front} fill="none"
+            stroke="currentColor" strokeWidth=".9" strokeOpacity=".28"
+            strokeDasharray="4 7" vectorEffect="non-scaling-stroke" />
           <path d={geometry.equator.back} fill="none"
             stroke="currentColor" strokeWidth=".9" strokeOpacity=".18"
             strokeDasharray="5 6" vectorEffect="non-scaling-stroke" />
@@ -670,6 +686,40 @@ const UnoEggScene = ({ locale }: Props) => {
               </g>
             );
           })}
+          {/* Four provisional lower spheres, rotated 45° between the principal
+              nodes and placed on the shell below their plane. They are not
+              interactive until their functions are defined by the author. */}
+          {geometry.lowerNodes.map((node) => (
+            <g key={node.id} data-testid="unocalc-lower-sphere-node" pointerEvents="none">
+              <circle
+                data-testid="unocalc-lower-sphere"
+                data-node-id={node.id}
+                cx={node.x}
+                cy={node.y}
+                r="10.5"
+                fill="hsl(var(--primary) / 0.055)"
+                stroke="currentColor"
+                strokeWidth="1.05"
+                strokeOpacity=".48"
+                vectorEffect="non-scaling-stroke"
+                role="img"
+                aria-label={`${copy.lowerSphereLabel} ${String(node.number).padStart(2, "0")}`}
+              />
+              <text
+                x={node.x}
+                y={node.y}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize="7.2"
+                fontWeight="300"
+                fill="currentColor"
+                fillOpacity=".55"
+                aria-hidden="true"
+              >
+                {String(node.number).padStart(2, "0")}
+              </text>
+            </g>
+          ))}
           {geometry.poleNodes.map((node, index) => {
             const nodeType: InteractiveNode = index === 0 ? "idea" : "matter";
             const active = selectedNodes.includes(nodeType);
@@ -791,6 +841,10 @@ const UnoEggScene = ({ locale }: Props) => {
       )}
       <p className="mt-2 px-3 text-center text-[10px] font-light leading-relaxed tracking-[0.02em] text-foreground/50">
         {workflowCopy.flowHint}
+      </p>
+      <p data-testid="unocalc-lower-ring-hint"
+        className="mt-1 px-3 text-center text-[10px] font-light leading-relaxed tracking-[0.02em] text-foreground/45">
+        {copy.lowerRingHint}
       </p>
       {selectedNodes.includes("design") && (
         <section
