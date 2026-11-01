@@ -111,7 +111,9 @@ export const eggEquatorArcs = (orientation: EggOrientation, steps = 144) => {
  * beyond the shell. All points use the same 3D transform as the egg.
  */
 export const eggSectionAxes = (orientation: EggOrientation) => {
-  const directions = [Math.PI / 4, (3 * Math.PI) / 4];
+  // X diameter is visible left/right in the front view; the perpendicular
+  // Z diameter projects to one central node (front) hiding the rear node.
+  const directions = [0, Math.PI / 2];
   const axes = directions.map((angle) => {
     const ux = Math.cos(angle);
     const uz = Math.sin(angle);
@@ -126,6 +128,24 @@ export const eggSectionAxes = (orientation: EggOrientation) => {
     };
   });
   return axes;
+};
+
+/**
+ * Opaque contour nodes: if two spheres project onto each other, only the
+ * nearest one is visible. They separate naturally as the plane tilts.
+ */
+export const visibleEggSectionNodes = (
+  axes: ReturnType<typeof eggSectionAxes>,
+  sphereRadius = 10.5,
+) => {
+  const nodes = axes.flatMap((axis) => axis.nodes).sort((a, b) => b.depth - a.depth);
+  const visible: typeof nodes = [];
+  for (const node of nodes) {
+    if (!visible.some((front) => Math.hypot(node.x - front.x, node.y - front.y) < sphereRadius * 2)) {
+      visible.push(node);
+    }
+  }
+  return visible;
 };
 
 export const eggAxisEndpoints = (orientation: EggOrientation) => ({

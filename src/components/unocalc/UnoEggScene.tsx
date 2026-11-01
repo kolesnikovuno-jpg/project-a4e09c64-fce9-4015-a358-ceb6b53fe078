@@ -7,13 +7,16 @@ import {
   eggSurface,
   projectEggPoint,
   svgOutline,
+  visibleEggSectionNodes,
   type EggOrientation,
 } from "@/lib/unocalcEgg3d";
 
 type Locale = "ru" | "uk" | "en";
 type Props = { locale: Locale };
 
-const INITIAL: EggOrientation = { roll: 0, tilt: 0.46 };
+// Front elevation: the horizontal diameter has two side nodes, while
+// the nearer node of the depth diameter hides the fourth node behind it.
+const INITIAL: EggOrientation = { roll: 0, tilt: 0 };
 const SURFACE = eggSurface();
 
 const text = {
@@ -27,11 +30,13 @@ const UnoEggScene = ({ locale }: Props) => {
   const pointer = useRef<{ id: number; x: number; y: number } | null>(null);
   const geometry = useMemo(() => {
     const points = SURFACE.map((point) => projectEggPoint(point, orientation));
+    const sectionAxes = eggSectionAxes(orientation);
     return {
       silhouette: svgOutline(convexOutline(points)),
       equator: eggEquatorArcs(orientation),
       axis: eggAxisEndpoints(orientation),
-      sectionAxes: eggSectionAxes(orientation),
+      sectionAxes,
+      sectionNodes: visibleEggSectionNodes(sectionAxes),
     };
   }, [orientation]);
 
@@ -115,7 +120,7 @@ const UnoEggScene = ({ locale }: Props) => {
               vectorEffect="non-scaling-stroke"
             />
           ))}
-          {geometry.sectionAxes.flatMap((sectionAxis) => sectionAxis.nodes).map((node, index) => (
+          {geometry.sectionNodes.map((node, index) => (
             <circle
               key={`section-sphere-${index}`}
               data-testid="unocalc-section-sphere"
