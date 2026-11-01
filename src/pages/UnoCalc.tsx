@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { readUnoScenario, writeUnoScenario } from "@/lib/unocalcScenario";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import UnoBalanceDiagram from "@/components/unocalc/UnoBalanceDiagram";
 import {
@@ -43,7 +44,20 @@ const copy = {
     eyebrow: "Before the project",
     heroTop: "Form / Quality / Resource",
     heroBottom: "Resource.",
-    intro: "Dimensions and desired quality provide an early resource reference — before detailed design and estimation.",
+    intro: "UNOcalc offers a starting resource reference: spatial scale, intended quality and the balance of four necessary contributions — before a detailed estimate.",
+    aboutLink: "The principle",
+    example: "Try an example · 10 × 10 × 3 m",
+    readTitle: "How to read this reference",
+    readInsight: "A reference is a starting point, not an instruction to spend exactly this amount. Below it, ask how savings were achieved; above it, ask which extra conditions justify more resources.",
+    readLimit: "The result does not verify actual quality or account for every construction and production detail.",
+    copySummary: "Copy assessment",
+    copyLink: "Copy scenario link",
+    copiedSummary: "Assessment copied",
+    copiedLink: "Link copied",
+    copyError: "Copying is unavailable in this browser",
+    sharingNote: "A scenario link restores the dimensions, quality, region and balance. No account or server storage.",
+    summaryTitle: "Resource reference",
+    summaryAssumptions: "Model assumption: 1 U.E.R. ≈ $1; not a verified project cost or selling price.",
     dimensions: "01 / Overall dimensions",
     dimensionNote: "Enter the object's maximum length, width and height. For irregular forms, this is the bounding volume, not the exact geometric volume.",
     length: "length",
@@ -99,16 +113,29 @@ const copy = {
     allocationAdjust: "Adjust share",
     allocationDragHint: "Move a circle outward to increase its share, inward to reduce it. Use arrow keys when a circle is focused.",
     levels: {
-      basic: { label: "basic form", hint: "Accessible materials, established methods and sound execution without complex detailing." },
-      functional: { label: "functional architecture", hint: "Considered functions, quality materials, precise detailing and balanced execution." },
-      field: { label: "field of strength", hint: "Individual solutions, selected materials, demanding details and meticulous execution." },
+      basic: { label: "basic form", hint: "Essential utility, reliability and sound workmanship without unnecessary complexity." },
+      functional: { label: "functional architecture", hint: "Integrated function, construction, materials and considered detailing." },
+      field: { label: "field of strength", hint: "A coherent, individually tuned relation of form, environment and execution." },
     },
   },
   ru: {
     eyebrow: "до начала проекта",
     heroTop: "Форма / Качество / Ресурс",
     heroBottom: "Ресурс.",
-    intro: "Габариты и желаемое качество дают предварительный ресурсный ориентир — ещё до разработки проекта и сметы.",
+    intro: "UNOcalc задаёт исходный ресурсный ориентир: масштаб формы, предполагаемая плотность качества и баланс четырёх необходимых сторон — ещё до сметы.",
+    aboutLink: "Принцип UNOcalc",
+    example: "Попробовать пример · 10 × 10 × 3 м",
+    readTitle: "Как читать ориентир",
+    readInsight: "Ориентир — точка отсчёта, а не предписание потратить именно эту сумму. Ниже него — за счёт чего получена экономия? Выше — какие дополнительные условия оправдывают ресурс?",
+    readLimit: "Расчёт не проверяет фактическое качество и не учитывает каждую особенность конструкции и производства.",
+    copySummary: "Копировать результат",
+    copyLink: "Копировать ссылку на сценарий",
+    copiedSummary: "Результат скопирован",
+    copiedLink: "Ссылка скопирована",
+    copyError: "Не удалось скопировать в этом браузере",
+    sharingNote: "Ссылка восстанавливает габариты, уровень, регион и баланс. Без аккаунта и хранения на сервере.",
+    summaryTitle: "Ресурсный ориентир",
+    summaryAssumptions: "Допущение модели: 1 U.E.R. ≈ $1; это не подтверждённая себестоимость и не цена продажи.",
     dimensions: "01 / Габариты",
     dimensionNote: "Укажи максимальные длину, ширину и высоту объекта. Для сложной формы используется габаритная оболочка, а не точный геометрический объём.",
     length: "длина",
@@ -153,7 +180,7 @@ const copy = {
     unadjustedLabel: "Исходный индекс UNOcalc (без калибровки для Европы)",
     areaLabel: "Площадь пола",
     allocationHeading: "04 / Распределение ресурса",
-    allocationIntro: "Рекомендуемый ресурсный баланс: 20 / 20 / 20 / 40. Модель целостности проекта, а не обязательное распределение платежей или подтверждённая рыночная смета.",
+    allocationIntro: "Четыре равнозначные по необходимости стороны, но разные доли ресурса: 20 / 20 / 20 / 40. Авторская модель, не обязательная схема платежей и не подтверждённая рыночная смета.",
     allocationTotal: "Распределено",
     allocationNames: { retail: "ритейл", design: "проект / дизайн", installation: "монтаж", components: "комплектующие" },
     allocationBalanced: "Равновесие",
@@ -164,16 +191,29 @@ const copy = {
     allocationAdjust: "Изменить долю",
     allocationDragHint: "Тяни кружки наружу, чтобы увеличить долю, и к центру — чтобы уменьшить. С клавиатуры работают стрелки.",
     levels: {
-      basic: { label: "базовая форма", hint: "Доступные материалы, проверенные технологии и аккуратное исполнение без сложной деталировки." },
-      functional: { label: "функциональная архитектура", hint: "Продуманная функция, качественные материалы, точная деталировка и сбалансированное исполнение." },
-      field: { label: "поле силы", hint: "Индивидуальные решения, отборные материалы, сложные узлы и высокий уровень исполнения." },
+      basic: { label: "базовая форма", hint: "Необходимая польза, надёжность и добротное исполнение без избыточной сложности." },
+      functional: { label: "функциональная архитектура", hint: "Согласованность функции, конструкции, материалов и продуманной деталировки." },
+      field: { label: "поле силы", hint: "Целостное, индивидуально настроенное соответствие формы, среды и исполнения." },
     },
   },
   uk: {
     eyebrow: "до початку проєкту",
     heroTop: "Форма / Якість / Ресурс",
     heroBottom: "Ресурс.",
-    intro: "Габарити й бажана якість дають попередній ресурсний орієнтир — ще до розробки проєкту й кошторису.",
+    intro: "UNOcalc задає початковий ресурсний орієнтир: масштаб форми, передбачувана щільність якості та баланс чотирьох необхідних сторін — ще до кошторису.",
+    aboutLink: "Принцип UNOcalc",
+    example: "Спробувати приклад · 10 × 10 × 3 м",
+    readTitle: "Як читати орієнтир",
+    readInsight: "Орієнтир — початкова точка, а не вимога витратити саме цю суму. Нижче нього — завдяки чому досягнута економія? Вище — які додаткові умови виправдовують ресурс?",
+    readLimit: "Розрахунок не перевіряє фактичтичну якість і не враховує кожної особливості конструкції та виробництва.",
+    copySummary: "Копіювати результат",
+    copyLink: "Копіювати посилання на сценарій",
+    copiedSummary: "Результат скопійовано",
+    copiedLink: "Посилання скопійовано",
+    copyError: "Не вдалося скопіювати в цьому браузері",
+    sharingNote: "Посилання відновлює габарити, рівень, регіон і баланс. Без облікового запису та зберігання на сервері.",
+    summaryTitle: "Ресурсний орієнтир",
+    summaryAssumptions: "Припущення моделі: 1 U.E.R. ≈ $1; це не підтверджена собівартість і не ціна продажу.",
     dimensions: "01 / Габарити",
     dimensionNote: "Укажи найбільші довжину, ширину та висоту об’єкта. Для складної форми використовується габаритна оболонка, а не точний геометричний об’єм.",
     length: "довжина",
@@ -218,7 +258,7 @@ const copy = {
     unadjustedLabel: "Початковий індекс UNOcalc (без калібрування для Європи)",
     areaLabel: "Площа підлоги",
     allocationHeading: "04 / Розподіл ресурсу",
-    allocationIntro: "Рекомендований ресурсний баланс: 20 / 20 / 20 / 40. Модель цілісності проєкту, а не обов’язковий розподіл платежів чи підтверджений ринковий кошторис.",
+    allocationIntro: "Чотири рівнозначні за необхідністю сторони, але різні частки ресурсу: 20 / 20 / 20 / 40. Авторська модель, а не обов’язковий розподіл платежів чи перевірений ринковий кошторис.",
     allocationTotal: "Розподілено",
     allocationNames: { retail: "ритейл", design: "проєкт / дизайн", installation: "монтаж", components: "комплектуючі" },
     allocationBalanced: "Рівновага",
@@ -229,9 +269,9 @@ const copy = {
     allocationAdjust: "Змінити частку",
     allocationDragHint: "Тягни кружечки назовні, щоб збільшити частку, та до центру — щоб зменшити. На клавіатурі працюють стрілки.",
     levels: {
-      basic: { label: "базова форма", hint: "Доступні матеріали, перевірені технології й акуратне виконання без складної деталізації." },
-      functional: { label: "функціональна архітектура", hint: "Продумана функція, якісні матеріали, точна деталізація та збалансоване виконання." },
-      field: { label: "поле сили", hint: "Індивідуальні рішення, добірні матеріали, складні вузли та високий рівень виконання." },
+      basic: { label: "базова форма", hint: "Необхідна користь, надійність і добротне виконання без зайвої складності." },
+      functional: { label: "функціональна архітектура", hint: "Узгодженість функції, конструкції, матеріалів і продуманої деталізації." },
+      field: { label: "поле сили", hint: "Цілісна, індивідуально налаштована відповідність форми, середовища та виконання." },
     },
   },
 } as const;
@@ -298,14 +338,16 @@ const VolumeDiagram = ({
 };
 
 const UnoCalc = () => {
-  const [a, setA] = useState("");
-  const [b, setB] = useState("");
-  const [c, setC] = useState("");
-  const [quality, setQuality] = useState<QualityId>("basic");
+  const [initial] = useState(() => readUnoScenario(new URLSearchParams(window.location.search)));
+  const [a, setA] = useState(initial.a);
+  const [b, setB] = useState(initial.b);
+  const [c, setC] = useState(initial.c);
+  const [quality, setQuality] = useState<QualityId>(initial.quality);
   const q: UnoLevel = qualityCoefficients[quality];
-  const [country, setCountry] = useState<RegionCountryCode | "none">("none");
-  const [cityId, setCityId] = useState<string>("");
-  const [resourcePercentages, setResourcePercentages] = useState<ResourcePercentages>(BASE_RESOURCE_PERCENTAGES);
+  const [country, setCountry] = useState<RegionCountryCode | "none">(initial.country);
+  const [cityId, setCityId] = useState<string>(initial.cityId);
+  const [resourcePercentages, setResourcePercentages] = useState<ResourcePercentages>(initial.shares);
+  const [copyStatus, setCopyStatus] = useState<"summary" | "link" | "error" | null>(null);
   const { locale, localePath } = useLocale();
   const t = copy[locale];
 
@@ -333,6 +375,62 @@ const UnoCalc = () => {
       minimumFractionDigits: 0,
       maximumFractionDigits: amount < 1 ? 12 : 0,
     });
+  const scenarioParams = writeUnoScenario({ a, b, c, quality, country, cityId, shares: resourcePercentages });
+  const aboutPath = localePath("/unocalc/about") + "?" + scenarioParams.toString();
+  const tryExample = () => {
+    setA("10000");
+    setB("10000");
+    setC("3000");
+    setQuality("basic");
+    setCountry("none");
+    setCityId("");
+    setResourcePercentages(BASE_RESOURCE_PERCENTAGES);
+    setCopyStatus(null);
+  };
+  const copyText = async (mode: "summary" | "link") => {
+    const link = window.location.origin + localePath("/unocalc") + "?" + scenarioParams.toString();
+    const summary = [
+      "UNOcalc — " + t.summaryTitle,
+      "",
+      t.length + ": " + a + " " + t.unit,
+      t.width + ": " + b + " " + t.unit,
+      t.height + ": " + c + " " + t.unit,
+      t.volume + ": " + (ready ? formatVolume(calculation.volume) : "—") + " m³",
+      t.selection + ": " + t.levels[quality].label,
+      t.reference + ": " + (ready ? formatUer(calculation.energy) : "—") + " U.E.R.",
+      (euroEstimate !== null ? t.officeCostReference : t.costReference) + ": " + formattedAmount,
+      city ? t.regionCity + ": " + city.name[locale] : t.noRegion,
+      "",
+      t.allocationHeading,
+      ...RESOURCE_SHARES.map((share, index) =>
+        t.allocationNames[share.id] + ": " + resourcePercentages[index] + "% — " +
+        (allocation ? formatShare(allocation.parts[index].amount) : "—")
+      ),
+      "",
+      euroEstimate !== null ? t.regionNotApplied : t.summaryAssumptions,
+      t.disclaimer,
+      link,
+    ].join("\n");
+    try {
+      const text = mode === "link" ? link : summary;
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const area = document.createElement("textarea");
+        area.value = text;
+        area.style.position = "fixed";
+        area.style.opacity = "0";
+        document.body.appendChild(area);
+        area.select();
+        const succeeded = document.execCommand("copy");
+        document.body.removeChild(area);
+        if (!succeeded) throw new Error("copy failed");
+      }
+      setCopyStatus(mode);
+    } catch {
+      setCopyStatus("error");
+    }
+  };
   const feedback =
     calculation.status === "invalid"
       ? t.invalid
@@ -363,12 +461,20 @@ const UnoCalc = () => {
           <h1 className="text-[25px] font-light leading-none tracking-[-0.045em] sm:text-[28px]">
             UNO<span className="font-normal">calc</span>
           </h1>
-          <Link
-            to={localePath("/")}
-            className="inline-flex min-h-9 items-center text-[12px] tracking-[0.12em] text-foreground/80 transition-colors hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-          >
-            .uno
-          </Link>
+          <nav className="flex items-center gap-5 sm:gap-7">
+            <Link
+              to={aboutPath}
+              className="inline-flex min-h-9 items-center border-b border-foreground/35 text-[12px] tracking-[0.03em] text-foreground/85 transition-colors hover:border-primary hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            >
+              {t.aboutLink}
+            </Link>
+            <Link
+              to={localePath("/")}
+              className="inline-flex min-h-9 items-center text-[12px] tracking-[0.12em] text-foreground/80 transition-colors hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            >
+              .uno
+            </Link>
+          </nav>
         </header>
 
         <section className="mb-8 mt-7 grid gap-3 border-b border-border/75 pb-7 sm:mb-10 sm:mt-9 sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] sm:gap-10" aria-label="UNOcalc">
@@ -385,6 +491,13 @@ const UnoCalc = () => {
               <div className="mb-4 flex flex-col gap-1">
                 <h2 id="unocalc-dimensions" className="text-[12px] font-medium uppercase tracking-[0.13em]">{t.dimensions}</h2>
                 <p className="text-[12px] font-light leading-[1.65] text-foreground/80">{t.dimensionNote}</p>
+                <button
+                  type="button"
+                  onClick={tryExample}
+                  className="mt-2 self-start border-b border-foreground/35 py-1 text-left text-[11px] font-normal text-foreground/75 transition-colors hover:border-primary hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                >
+                  {t.example} ↗
+                </button>
               </div>
               <div className="grid grid-cols-3 gap-4 sm:gap-5">
                 {dimensions.map((field) => (
@@ -573,6 +686,12 @@ const UnoCalc = () => {
                     : t.costBasis
                 : feedback ?? t.prompt}
             </p>
+            <aside className="mt-5 border-t border-border/70 pt-4" aria-labelledby="unocalc-reading">
+              <h3 id="unocalc-reading" className="text-[12px] font-medium uppercase tracking-[0.13em]">{t.readTitle}</h3>
+              <p className="mt-2 text-[12px] font-light leading-[1.75] text-foreground/80">{t.readInsight}</p>
+              <p className="mt-2 text-[11px] font-light leading-[1.7] text-foreground/70">{t.readLimit}</p>
+              <Link to={aboutPath} className="mt-3 inline-flex min-h-9 items-center border-b border-foreground/35 text-[12px] hover:border-primary hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">{t.aboutLink} →</Link>
+            </aside>
             <section aria-labelledby="unocalc-allocation-title" className="mt-8 border-t border-foreground/25 pt-4">
               <div className="flex items-baseline justify-between gap-3">
                 <h3 id="unocalc-allocation-title" className="text-[12px] font-medium uppercase tracking-[0.13em]">
@@ -644,6 +763,29 @@ const UnoCalc = () => {
                 {t.allocationBeyond}
               </p>
             </section>
+            <div className="mt-7 border-t border-border/70 pt-4">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                <button
+                  type="button"
+                  disabled={!ready}
+                  onClick={() => { void copyText("summary"); }}
+                  className="inline-flex min-h-10 items-center border-b border-foreground/40 text-[12px] text-foreground transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                >
+                  {t.copySummary} ↗
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { void copyText("link"); }}
+                  className="inline-flex min-h-10 items-center border-b border-foreground/40 text-[12px] text-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                >
+                  {t.copyLink} ↗
+                </button>
+              </div>
+              <p className="mt-3 text-[11px] font-light leading-[1.7] text-foreground/70">{t.sharingNote}</p>
+              <p role="status" aria-live="polite" className="mt-2 min-h-5 text-[12px] text-foreground/80">
+                {copyStatus === "summary" ? t.copiedSummary : copyStatus === "link" ? t.copiedLink : copyStatus === "error" ? t.copyError : ""}
+              </p>
+            </div>
           </section>
         </div>
 
