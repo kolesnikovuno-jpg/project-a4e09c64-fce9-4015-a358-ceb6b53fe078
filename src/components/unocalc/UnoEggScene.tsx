@@ -302,6 +302,7 @@ const UnoEggScene = ({ locale }: Props) => {
   const [selectedNodes, setSelectedNodes] = useState<InteractiveNode[]>([]);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [workspaceExpanded, setWorkspaceExpanded] = useState(false);
+  const [workspaceVisible, setWorkspaceVisible] = useState(false);
   const [ideaDraft, setIdeaDraft] = useState(() => {
     try { return window.localStorage.getItem(IDEA_STORAGE_KEY) ?? ""; }
     catch { return ""; }
@@ -390,6 +391,12 @@ const UnoEggScene = ({ locale }: Props) => {
     // without requiring users to find and tap the Design sphere.
     designWorkspace.current?.scrollIntoView?.({ behavior: "smooth", block: "start" });
   }, [designNavigation, selectedNodes]);
+
+  useEffect(() => {
+    if (!workspaceOpen) { setWorkspaceVisible(false); return; }
+    const frame = window.requestAnimationFrame(() => setWorkspaceVisible(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, [workspaceOpen]);
 
   useEffect(() => {
     if (!workspaceOpen) return;
@@ -1007,9 +1014,9 @@ const UnoEggScene = ({ locale }: Props) => {
       {workspaceOpen && (
         <div data-testid="unocalc-procurement-workspace" className="fixed inset-0 z-[90] flex items-stretch justify-end" role="presentation">
           <button type="button" aria-label={locale === "ru" ? "Закрыть панель" : locale === "uk" ? "Закрити панель" : "Close panel"}
-            className="absolute inset-0 bg-black/35" onClick={() => { setWorkspaceOpen(false); setWorkspaceExpanded(false); }} />
+            className={`absolute inset-0 bg-black/35 transition-opacity duration-500 ease-out motion-reduce:transition-none ${workspaceVisible ? "opacity-100" : "opacity-0"}`} onClick={() => { setWorkspaceOpen(false); setWorkspaceExpanded(false); }} />
           <section role="dialog" aria-modal="true" aria-labelledby="unocalc-procurement-workspace-title"
-            className={`relative z-10 flex h-full flex-col overflow-hidden border-l border-foreground/15 bg-background shadow-2xl transition-[width] duration-300 ${workspaceExpanded ? "w-full" : "w-full sm:w-[min(520px,60vw)]"}`}>
+            className={`relative z-10 flex h-full flex-col overflow-hidden border-l border-foreground/15 bg-background shadow-2xl transition-[width,transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${workspaceVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-95"} ${workspaceExpanded ? "w-full" : "w-full sm:w-[min(520px,60vw)]"}`}>
             <header className="flex items-start justify-between gap-4 border-b border-foreground/10 px-6 py-6 sm:px-8">
               <div>
                 <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-foreground/45">UNO / EGG / 07</p>
