@@ -90,6 +90,17 @@ describe("Egg object core and cross-sphere dependencies", () => {
     }
   });
 
+  it("distinguishes nonnumeric input from missing input", () => {
+    const properties = {
+      ...initial().elements[0].properties,
+      rollWidthMm: "unknown", finishedWidthMm: "900", finishedLengthMm: "1000",
+      seamAllowanceMm: "20", quantity: "1",
+    };
+    const result = calculateTextileCut(properties);
+    expect(result.status).toBe("invalid");
+    if (result.status === "invalid") expect(result.fields).toContain("rollWidthMm");
+  });
+
   it("captures the core in an approved revision without changing the previous snapshot", () => {
     const original = { ...emptyObjectDocument(), core: initial() };
     const approved = approveObjectRevision(original, "Chair", EMPTY_BRIEF, "2026-11-01T10:00:00Z");
