@@ -15,6 +15,7 @@ import {
 type Locale = "ru" | "uk" | "en";
 type Props = { locale: Locale };
 type InteractiveNode = "retail" | "commerce" | "design" | "production";
+type NodeDetail = { title: string; description: string; number: string; openLabel: string; closeLabel: string };
 
 // Front elevation: the horizontal diameter has two side nodes, while
 // the nearer node of the depth diameter hides the fourth node behind it.
@@ -124,26 +125,12 @@ const giveNodeFeedback = () => {
   try { navigator.vibrate?.(9); } catch { /* iPadOS Safari does not expose vibration. */ }
 };
 
-const UnoEggScene = ({ locale }: Props) => {
-  const [orientation, setOrientation] = useState<EggOrientation>(INITIAL);
-  const [selectedNode, setSelectedNode] = useState<InteractiveNode | null>(null);
+/** Each selected node owns its typing animation, so selecting another never interrupts it. */
+const NodeDescription = ({ node, detail }: { node: InteractiveNode; detail: NodeDetail }) => {
+  const fullCopy = detail.title + "\n" + detail.description;
   const [typedLength, setTypedLength] = useState(0);
-  const pointer = useRef<{ id: number; x: number; y: number; startX: number; startY: number; moved: boolean; targetNode: string | null } | null>(null);
-  const copy = text[locale];
-  const nodeDetails: Record<InteractiveNode, { title: string; description: string; number: string; openLabel: string; closeLabel: string }> = {
-    retail: { title: copy.retail, description: copy.retailDescription, number: copy.node, openLabel: copy.retailLabel, closeLabel: copy.retailCloseLabel },
-    commerce: { title: copy.commerce, description: copy.commerceDescription, number: copy.commerceNode, openLabel: copy.commerceLabel, closeLabel: copy.commerceCloseLabel },
-    design: { title: copy.design, description: copy.designDescription, number: copy.designNode, openLabel: copy.designLabel, closeLabel: copy.designCloseLabel },
-    production: { title: copy.production, description: copy.productionDescription, number: copy.productionNode, openLabel: copy.productionLabel, closeLabel: copy.productionCloseLabel },
-  };
-  const activeCopy = selectedNode ? nodeDetails[selectedNode] : null;
-  const fullCopy = activeCopy ? activeCopy.title + "\n" + activeCopy.description : "";
 
   useEffect(() => {
-    if (!selectedNode) {
-      setTypedLength(0);
-      return;
-    }
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
       setTypedLength(fullCopy.length);
       return;
@@ -156,11 +143,45 @@ const UnoEggScene = ({ locale }: Props) => {
       if (index === fullCopy.length) window.clearInterval(interval);
     }, 26);
     return () => window.clearInterval(interval);
-  }, [selectedNode, fullCopy]);
+  }, [fullCopy]);
 
+  return (
+    <aside
+      data-testid={`unocalc-${node}-panel`}
+      className="w-full min-w-0 text-left"
+      aria-label={detail.title}
+    >
+      <p className="mb-3 text-[10px] font-light tracking-[0.16em] text-foreground/40 uppercase">{detail.number}</p>
+      <h2 className="min-h-[32px] text-[24px] font-extralight leading-tight tracking-[-0.03em] text-foreground/85" aria-hidden="true">
+        {fullCopy.slice(0, Math.min(typedLength, detail.title.length))}
+      </h2>
+      <p className="mt-2 text-[13px] font-light leading-[1.8] tracking-[0.01em] text-foreground/65" aria-hidden="true">
+        {fullCopy.slice(detail.title.length + 1, typedLength)}
+        {typedLength < fullCopy.length && typedLength > detail.title.length && (
+          <span className="unocalc-type-caret" aria-hidden="true">▍</span>
+        )}
+      </p>
+      <span className="sr-only" role="status">{detail.title}. {detail.description}</span>
+    </aside>
+  );
+};
+
+const UnoEggScene = ({ locale }: Props) => {
+  const [orientation, setOrientation] = useState<EggOrientation>(INITIAL);
+  const [selectedNodes, setSelectedNodes] = useState<InteractiveNode[]>([]);
+  const pointer = useRef<{ id: number; x: number; y: number; startX: number; startY: number; moved: boolean; targetNode: string | null } | null>(null);
+  const copy = text[locale];
+  const nodeDetails: Record<InteractiveNode, NodeDetail> = {
+    retail: { title: copy.retail, description: copy.retailDescription, number: copy.node, openLabel: copy.retailLabel, closeLabel: copy.retailCloseLabel },
+    commerce: { title: copy.commerce, description: copy.commerceDescription, number: copy.commerceNode, openLabel: copy.commerceLabel, closeLabel: copy.commerceCloseLabel },
+    design: { title: copy.design, description: copy.designDescription, number: copy.designNode, openLabel: copy.designLabel, closeLabel: copy.designCloseLabel },
+    production: { title: copy.production, description: copy.productionDescription, number: copy.productionNode, openLabel: copy.productionLabel, closeLabel: copy.productionCloseLabel },
+  };
   const activateNode = (node: InteractiveNode) => {
-    // One active sphere at a time; tapping it again removes both the highlight and the note.
-    setSelectedNode((current) => current === node ? null : node);
+    // Independent toggles: any combination of the four nodes can remain active.
+    setSelectedNodes((current) =>
+      current.includes(node) ? current.filter((selected) => selected !== node) : [...current, node]
+    );
     giveNodeFeedback();
     playNodeClick();
   };
@@ -283,7 +304,7 @@ const UnoEggScene = ({ locale }: Props) => {
             const nodeType: InteractiveNode | null =
               node.id === "retail" || node.id === "commerce" || node.id === "design" || node.id === "production"
                 ? node.id : null;
-            const active = nodeType !== null && selectedNode === nodeType;
+            const active = nodeType !== null && selectedNodes.includes(nodeType);
             const label = nodeType ? (active ? nodeDetails[nodeType].closeLabel : nodeDetails[nodeType].openLabel) : "";
             return (
               <g key={`section-sphere-${node.id}`}>
@@ -346,24 +367,15 @@ const UnoEggScene = ({ locale }: Props) => {
           />
         </svg>
       </div>
-      {activeCopy && (
-        <aside
-          data-testid={`unocalc-${selectedNode}-panel`}
-          className="mx-auto mt-4 w-full max-w-[320px] min-h-[100px] text-left min-[900px]:absolute min-[900px]:right-0 min-[900px]:top-[43%] min-[900px]:mt-0 min-[900px]:w-[23%] min-[900px]:max-w-[240px]"
-          aria-label={activeCopy.title}
+      {selectedNodes.length > 0 && (
+        <div
+          data-testid="unocalc-active-panels"
+          className="mx-auto mt-5 flex w-full max-w-[320px] flex-col gap-7 pb-2 min-[900px]:absolute min-[900px]:right-0 min-[900px]:top-[15%] min-[900px]:mt-0 min-[900px]:max-h-[70dvh] min-[900px]:w-[23%] min-[900px]:max-w-[240px] min-[900px]:overflow-y-auto min-[900px]:pr-2"
         >
-          <p className="mb-4 text-[10px] font-light tracking-[0.16em] text-foreground/40 uppercase">{activeCopy.number}</p>
-          <h2 className="min-h-[32px] text-[24px] font-extralight leading-tight tracking-[-0.03em] text-foreground/85" aria-hidden="true">
-            {fullCopy.slice(0, Math.min(typedLength, activeCopy.title.length))}
-          </h2>
-          <p className="mt-3 text-[13px] font-light leading-[1.8] tracking-[0.01em] text-foreground/65" aria-hidden="true">
-            {fullCopy.slice(activeCopy.title.length + 1, typedLength)}
-            {typedLength < fullCopy.length && typedLength > activeCopy.title.length && (
-              <span className="unocalc-type-caret" aria-hidden="true">▍</span>
-            )}
-          </p>
-          <span className="sr-only" role="status">{activeCopy.title}. {activeCopy.description}</span>
-        </aside>
+          {selectedNodes.map((node) => (
+            <NodeDescription key={node} node={node} detail={nodeDetails[node]} />
+          ))}
+        </div>
       )}
       <p className="mt-1 text-center text-[11px] font-light tracking-[0.025em] text-foreground/50">
         {text[locale].hint}
