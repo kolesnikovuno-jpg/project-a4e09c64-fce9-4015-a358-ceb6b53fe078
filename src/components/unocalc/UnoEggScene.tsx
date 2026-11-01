@@ -321,7 +321,6 @@ const UnoEggScene = ({ locale }: Props) => {
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
   const [sketches, setSketches] = useState<SketchPreview[]>([]);
   const [sketchNotice, setSketchNotice] = useState("");
-  const [sketchesLoaded, setSketchesLoaded] = useState(false);
   const [designNavigation, setDesignNavigation] = useState(0);
   const sketchUrls = useRef<string[]>([]);
   const designWorkspace = useRef<HTMLElement>(null);
@@ -364,8 +363,6 @@ const UnoEggScene = ({ locale }: Props) => {
       });
     }).catch(() => {
       if (!cancelled) setSketchNotice(designCopy[locale].sketchStorageError);
-    }).finally(() => {
-      if (!cancelled) setSketchesLoaded(true);
     });
     return () => {
       cancelled = true;
