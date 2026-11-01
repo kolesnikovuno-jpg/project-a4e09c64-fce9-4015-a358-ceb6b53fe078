@@ -1,4 +1,5 @@
 import type { DesignBrief } from "@/lib/unocalcDesign";
+import { emptyObjectCore, normalizeObjectCore, type ObjectCore } from "@/lib/unocalcObjectCore";
 
 export type SphereId = "design" | "production" | "commerce" | "retail" | "law" | "components" | "marketing" | "testing";
 export type ProposalStatus = "pending" | "accepted" | "rejected";
@@ -32,11 +33,13 @@ export type ObjectRevision = {
   fields: ObjectFields;
   idea: string;
   brief: DesignBrief;
+  core?: ObjectCore;
 };
 
 export type ObjectDocument = {
   schemaVersion: 1;
   fields: ObjectFields;
+  core: ObjectCore;
   revision: number;
   revisions: ObjectRevision[];
   updatedAt: string;
@@ -61,6 +64,7 @@ export const EMPTY_OBJECT_FIELDS: ObjectFields = {
 export const emptyObjectDocument = (): ObjectDocument => ({
   schemaVersion: 1,
   fields: { ...EMPTY_OBJECT_FIELDS, proposals: [] },
+  core: emptyObjectCore(),
   revision: 0,
   revisions: [],
   updatedAt: "",
@@ -80,6 +84,7 @@ export const readObjectDocument = (): ObjectDocument => {
     return {
       schemaVersion: 1,
       fields: safeFields,
+      core: normalizeObjectCore(value.core),
       revision: Number.isInteger(value.revision) ? Math.max(0, value.revision!) : 0,
       revisions: Array.isArray(value.revisions) ? value.revisions : [],
       updatedAt: typeof value.updatedAt === "string" ? value.updatedAt : "",
@@ -104,6 +109,7 @@ export const approveObjectRevision = (
     number,
     savedAt,
     fields: structuredClone(document.fields),
+    core: structuredClone(document.core),
     idea,
     brief: { ...brief },
   };
