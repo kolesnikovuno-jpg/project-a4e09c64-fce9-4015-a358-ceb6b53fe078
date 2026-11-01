@@ -28,7 +28,15 @@ import {
   type UnoLevel,
 } from "@/lib/unocalc";
 
-const levels: UnoLevel[] = [108, 270, 432];
+// Quality identifiers are semantic in the interface. The numerical weights
+// are internal UNOcalc coefficients and are never shown as level labels.
+const qualityCoefficients = {
+  basic: 108,
+  functional: 270,
+  field: 432,
+} as const satisfies Record<string, UnoLevel>;
+type QualityId = keyof typeof qualityCoefficients;
+const qualityLevels: QualityId[] = ["basic", "functional", "field"];
 
 const copy = {
   en: {
@@ -91,9 +99,9 @@ const copy = {
     allocationAdjust: "Adjust share",
     allocationDragHint: "Move a circle outward to increase its share, inward to reduce it. Use arrow keys when a circle is focused.",
     levels: {
-      108: { label: "basic form", hint: "Accessible materials, established methods and sound execution without complex detailing." },
-      270: { label: "functional architecture", hint: "Considered functions, quality materials, precise detailing and balanced execution." },
-      432: { label: "field of strength", hint: "Individual solutions, selected materials, demanding details and meticulous execution." },
+      basic: { label: "basic form", hint: "Accessible materials, established methods and sound execution without complex detailing." },
+      functional: { label: "functional architecture", hint: "Considered functions, quality materials, precise detailing and balanced execution." },
+      field: { label: "field of strength", hint: "Individual solutions, selected materials, demanding details and meticulous execution." },
     },
   },
   ru: {
@@ -156,9 +164,9 @@ const copy = {
     allocationAdjust: "Изменить долю",
     allocationDragHint: "Тяни кружки наружу, чтобы увеличить долю, и к центру — чтобы уменьшить. С клавиатуры работают стрелки.",
     levels: {
-      108: { label: "базовая форма", hint: "Доступные материалы, проверенные технологии и аккуратное исполнение без сложной деталировки." },
-      270: { label: "функциональная архитектура", hint: "Продуманная функция, качественные материалы, точная деталировка и сбалансированное исполнение." },
-      432: { label: "поле силы", hint: "Индивидуальные решения, отборные материалы, сложные узлы и высокий уровень исполнения." },
+      basic: { label: "базовая форма", hint: "Доступные материалы, проверенные технологии и аккуратное исполнение без сложной деталировки." },
+      functional: { label: "функциональная архитектура", hint: "Продуманная функция, качественные материалы, точная деталировка и сбалансированное исполнение." },
+      field: { label: "поле силы", hint: "Индивидуальные решения, отборные материалы, сложные узлы и высокий уровень исполнения." },
     },
   },
   uk: {
@@ -221,9 +229,9 @@ const copy = {
     allocationAdjust: "Змінити частку",
     allocationDragHint: "Тягни кружечки назовні, щоб збільшити частку, та до центру — щоб зменшити. На клавіатурі працюють стрілки.",
     levels: {
-      108: { label: "базова форма", hint: "Доступні матеріали, перевірені технології й акуратне виконання без складної деталізації." },
-      270: { label: "функціональна архітектура", hint: "Продумана функція, якісні матеріали, точна деталізація та збалансоване виконання." },
-      432: { label: "поле сили", hint: "Індивідуальні рішення, добірні матеріали, складні вузли та високий рівень виконання." },
+      basic: { label: "базова форма", hint: "Доступні матеріали, перевірені технології й акуратне виконання без складної деталізації." },
+      functional: { label: "функціональна архітектура", hint: "Продумана функція, якісні матеріали, точна деталізація та збалансоване виконання." },
+      field: { label: "поле сили", hint: "Індивідуальні рішення, добірні матеріали, складні вузли та високий рівень виконання." },
     },
   },
 } as const;
@@ -293,7 +301,8 @@ const UnoCalc = () => {
   const [a, setA] = useState("");
   const [b, setB] = useState("");
   const [c, setC] = useState("");
-  const [q, setQ] = useState<UnoLevel>(108);
+  const [quality, setQuality] = useState<QualityId>("basic");
+  const q: UnoLevel = qualityCoefficients[quality];
   const [country, setCountry] = useState<RegionCountryCode | "none">("none");
   const [cityId, setCityId] = useState<string>("");
   const [resourcePercentages, setResourcePercentages] = useState<ResourcePercentages>(BASE_RESOURCE_PERCENTAGES);
@@ -413,8 +422,8 @@ const UnoCalc = () => {
               <legend className="w-full border-t border-foreground/25 pt-4 text-[12px] font-medium uppercase tracking-[0.13em]">{t.settings}</legend>
               <p className="mb-4 mt-1 text-[12px] font-light text-foreground/80">{t.qualityNote}</p>
               <div className="divide-y divide-border/65 border-y border-border/65">
-                {levels.map((level) => {
-                  const active = q === level;
+                {qualityLevels.map((level) => {
+                  const active = quality === level;
                   const item = t.levels[level];
                   return (
                     <label
@@ -429,7 +438,7 @@ const UnoCalc = () => {
                         name="unocalc-level"
                         value={level}
                         checked={active}
-                        onChange={() => setQ(level)}
+                        onChange={() => setQuality(level)}
                         className="sr-only"
                       />
                       <span className="min-w-0 flex-1 pl-3 pr-2">
@@ -553,7 +562,7 @@ const UnoCalc = () => {
             </div>
             <div className="mt-4 flex justify-between gap-4 border-t border-border/60 pt-4">
               <span className="text-[12px] text-foreground/80">{t.selection}</span>
-              <span className="text-right text-[13px] font-normal">{t.levels[q].label}</span>
+              <span className="text-right text-[13px] font-normal">{t.levels[quality].label}</span>
             </div>
             <p className="mt-4 text-[12px] font-light leading-[1.65] text-foreground/80">
               {ready
