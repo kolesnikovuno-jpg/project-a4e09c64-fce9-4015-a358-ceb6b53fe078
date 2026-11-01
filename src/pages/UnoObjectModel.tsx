@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowUpRight, Check, Clock3, Download, FileText, History, ImagePlus, RotateCcw, Save, Upload, X } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Check, Download, FileText, History, ImagePlus, RotateCcw, Upload, X } from "lucide-react";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import { useLocale } from "@/i18n/useLocale";
 import { EMPTY_BRIEF, type DesignBrief } from "@/lib/unocalcDesign";
@@ -334,7 +334,7 @@ const UnoObjectModel = () => {
   const input = (label: string, field: Exclude<keyof ObjectFields, "proposals">, placeholder = "", type = "text") => (
     <label className="block">
       <span className={mutedLabel}>{label}</span>
-      <input className={fieldClass} type={type} min={type === "number" ? "0" : undefined}
+      <input className={fieldClass} type={type} min={type === "number" ? "0" : undefined} step={type === "number" ? "any" : undefined}
         inputMode={type === "number" ? "decimal" : undefined}
         placeholder={placeholder} value={doc.fields[field]}
         onChange={(event) => changeField(field, event.target.value)} />
@@ -348,7 +348,7 @@ const UnoObjectModel = () => {
       paddingLeft: "max(1rem, env(safe-area-inset-left))",
       paddingRight: "max(1rem, env(safe-area-inset-right))",
     }}>
-      <LanguageSwitcher />
+      <div className="print:hidden"><LanguageSwitcher /></div>
       <main className="mx-auto max-w-[1500px] print:hidden">
         <header className="mb-6 flex flex-wrap items-start justify-between gap-4 border-b border-foreground/10 pb-5">
           <div>
