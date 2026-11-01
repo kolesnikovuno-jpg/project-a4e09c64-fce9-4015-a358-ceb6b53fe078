@@ -195,6 +195,36 @@ export const eggPoleNodes = (orientation: EggOrientation) => [
   projectEggPoint({ x: 0, y: EGG_BOTTOM, z: 0 }, orientation),
 ];
 
+/**
+ * Two explicit 3D relationships from Idea to Marketing and Legal.
+ * Project both endpoints with the egg's current orientation, then stop the
+ * lines at the circular contours rather than crossing the sphere interiors.
+ * The rear link remains present when its destination overlaps a front node.
+ */
+export const eggIdeaLinks = (orientation: EggOrientation, sphereRadius = 10.5) => {
+  const idea = eggPoleNodes(orientation)[0];
+  const lower = eggLowerSphereNodes(orientation);
+  return [
+    { id: "marketing", target: lower[1] },
+    { id: "legal", target: lower[3] },
+  ].map(({ id, target }) => {
+    const dx = target.x - idea.x;
+    const dy = target.y - idea.y;
+    const distance = Math.hypot(dx, dy);
+    const trim = Math.min(sphereRadius, distance / 2);
+    const ux = distance > 0 ? dx / distance : 0;
+    const uy = distance > 0 ? dy / distance : 0;
+    return {
+      id,
+      x1: idea.x + ux * trim,
+      y1: idea.y + uy * trim,
+      x2: target.x - ux * trim,
+      y2: target.y - uy * trim,
+      depth: target.depth,
+    };
+  });
+};
+
 export const eggAxisEndpoints = (orientation: EggOrientation) => ({
   start: projectEggPoint({ x: 0, y: EGG_TOP + 0.25, z: 0 }, orientation),
   end: projectEggPoint({ x: 0, y: EGG_BOTTOM - 0.25, z: 0 }, orientation),
