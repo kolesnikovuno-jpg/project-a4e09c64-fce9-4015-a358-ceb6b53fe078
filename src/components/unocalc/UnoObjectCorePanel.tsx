@@ -18,7 +18,7 @@ const copy = {
   ru: {
     heading: "Ядро объекта · элементы и связи", description: "Одна модель для восьми сфер. Изменение параметра создаёт задачи проверки для связанных компетенций.",
     add: "Добавить текстильный элемент", empty: "Добавьте первый элемент, чтобы проверить согласование сфер на реальных параметрах.",
-    defaultTitle: "Тканевый элемент", title: "Наименование элемента",
+    defaultTitle: "Тканевый элемент", title: "Наименование элемента", author: "Автор", unit: "мм",
     properties: "Параметры элемента", assessments: "Оценки восьми сфер",
     cutting: "Раскрой · предварительный расчёт", history: "История изменений",
     pending: "Требуется проверка", noPending: "Нет новых зависимых проверок",
@@ -45,7 +45,7 @@ const copy = {
   uk: {
     heading: "Ядро об’єкта · елементи та зв’язки", description: "Одна модель для восьми сфер. Зміна параметра створює завдання перевірки для пов’язаних компетенцій.",
     add: "Додати текстильний елемент", empty: "Додайте перший елемент, щоб перевірити узгодження сфер на реальних параметрах.",
-    defaultTitle: "Текстильний елемент", title: "Назва елемента",
+    defaultTitle: "Текстильний елемент", title: "Назва елемента", author: "Автор", unit: "мм",
     properties: "Параметри елемента", assessments: "Оцінки восьми сфер",
     cutting: "Розкрій · попередній розрахунок", history: "Історія змін",
     pending: "Потрібна перевірка", noPending: "Немає нових залежних перевірок",
@@ -72,7 +72,7 @@ const copy = {
   en: {
     heading: "Object core · elements and dependencies", description: "One shared model for eight spheres. Changing a property flags related specialist assessments for review.",
     add: "Add textile element", empty: "Add the first element to test cross-sphere coordination with real parameters.",
-    defaultTitle: "Textile element", title: "Element name",
+    defaultTitle: "Textile element", title: "Element name", author: "Author", unit: "mm",
     properties: "Element properties", assessments: "Eight-sphere assessments",
     cutting: "Cutting · preliminary estimate", history: "Change history",
     pending: "Review required", noPending: "No new dependent reviews",
@@ -194,13 +194,13 @@ export default function UnoObjectCorePanel({ locale, core, onUpdate }: Props) {
                 {estimate?.status === "invalid" && <p role="alert" className="text-[12px] text-foreground/75">{t.invalid}</p>}
                 {estimate?.status === "does_not_fit" && (
                   <p role="alert" className="text-[12px] leading-relaxed text-foreground/85">
-                    {t.doesNotFit} ({formatNumber(estimate.cutWidthMm, 0)} × {formatNumber(estimate.cutLengthMm, 0)} мм / {formatNumber(estimate.rollWidthMm, 0)} мм)
+                    {t.doesNotFit} ({formatNumber(estimate.cutWidthMm, 0)} × {formatNumber(estimate.cutLengthMm, 0)} мм / {formatNumber(estimate.rollWidthMm, 0)} {t.unit})
                   </p>
                 )}
                 {estimate?.status === "calculated" && (
                   <dl className="grid grid-cols-2 gap-3 text-[12px] sm:grid-cols-3" data-testid="textile-cut-result">
                     {([
-                      [t.cut, `${formatNumber(estimate.cutWidthMm, 0)} × ${formatNumber(estimate.cutLengthMm, 0)} мм`],
+                      [t.cut, `${formatNumber(estimate.cutWidthMm, 0)} × ${formatNumber(estimate.cutLengthMm, 0)} ${t.unit}`],
                       [t.orientation, estimate.orientation === "normal" ? t.normal : t.rotated],
                       [t.perRow, String(estimate.piecesPerRow)],
                       [t.rows, String(estimate.rows)],
@@ -281,7 +281,7 @@ export default function UnoObjectCorePanel({ locale, core, onUpdate }: Props) {
                   {[...element.events].reverse().slice(0, 8).map((event) => (
                     <div key={event.id} className="border-t border-foreground/10 pt-2 text-[11px]">
                       <div className="flex flex-wrap justify-between gap-1">
-                        <span>{event.actor === "author" ? "Автор" : t.spheres[event.actor]}</span>
+                        <span>{event.actor === "author" ? t.author : t.spheres[event.actor]}</span>
                         <span className="text-[10px] text-foreground/45">{new Date(event.at).toLocaleString(locale === "uk" ? "uk-UA" : locale === "en" ? "en-GB" : "ru-RU")}</span>
                       </div>
                       <p className="mt-1 break-words text-foreground/60">{event.kind === "property" ? (t.fields[event.detail as TextileField] ?? event.detail) : t.statuses[event.detail as EvidenceStatus] ?? event.detail}</p>
