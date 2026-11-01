@@ -1,10 +1,34 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const sketchStore = vi.hoisted(() => ({
+  items: [] as Array<{ id: string; name: string; blob: Blob; createdAt: number }>,
+}));
+vi.mock("@/lib/unocalcSketches", () => ({
+  listSketches: async () => [...sketchStore.items],
+  storeSketch: async (sketch: (typeof sketchStore.items)[number]) => { sketchStore.items.push(sketch); },
+  removeStoredSketch: async (id: string) => {
+    sketchStore.items = sketchStore.items.filter((item) => item.id !== id);
+  },
+}));
 import UnoEggScene from "@/components/unocalc/UnoEggScene";
 import { EGG_BOTTOM, EGG_TOP, EGG_EQUATOR, eggRadiusAtSection, eggPoleNodes, eggSectionAxes, visibleEggSectionNodes, eggSurface, projectEggPoint, convexOutline } from "@/lib/unocalcEgg3d";
 
 describe("UNOcalc egg-only geometry", () => {
-  beforeEach(() => window.localStorage.removeItem("unocalc.idea.v1"));
+  beforeEach(() => {
+    window.localStorage.removeItem("unocalc.idea.v1");
+    window.localStorage.removeItem("unocalc.design.v1");
+    sketchStore.items = [];
+    Object.defineProperty(URL, "createObjectURL", { configurable: true, value: vi.fn(() => "blob:unocalc-test") });
+    Object.defineProperty(URL, "revokeObjectURL", { configurable: true, value: vi.fn() });
+  });
+  const withExistingSketch = () => {
+    window.localStorage.setItem("unocalc.idea.v1", "Кресло для чтения");
+    sketchStore.items.push({ id: "initial-sketch", name: "draft.png", blob: new Blob(["image"], { type: "image/png" }), createdAt: 1 });
+  };
+  const waitForUnlockedNodes = async () => {
+    await waitFor(() => expect(screen.getByTestId("unocalc-retail-hit")).toHaveAttribute("aria-disabled", "false"));
+  };
   it("builds a closed 3D ovoid of revolution with a narrow upper pole and broad lower pole", () => {
     expect(eggRadiusAtSection(-1)).toBe(0);
     expect(eggRadiusAtSection(0)).toBe(1);
@@ -48,11 +72,11 @@ describe("UNOcalc egg-only geometry", () => {
     expect(xs).toEqual([168, 380, 592]);
     const ys = spheres.map((sphere) => Number(sphere.getAttribute("cy")));
     expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(0, 5);
-    expect(screen.getByRole("button", { name: "Открыть описание узла «Ритейл»" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Открыть описание узла «Дизайн»" })).toHaveAttribute("cx", "168");
-    expect(screen.getByRole("button", { name: "Открыть описание узла «Производство»" })).toHaveAttribute("cx", "592");
+    expect(screen.getByRole("button", { name: "Ритейл — Доступно после первого эскиза" })).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByRole("button", { name: "Дизайн — Сначала опишите идею" })).toHaveAttribute("cx", "168");
+    expect(screen.getByRole("button", { name: "Производство — Доступно после первого эскиза" })).toHaveAttribute("cx", "592");
     expect(screen.getByRole("button", { name: "Открыть описание полюса «Идея»" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Открыть описание полюса «Материя»" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Материя — Доступно после первого эскиза" })).toHaveAttribute("aria-disabled", "true");
   });
 
   it("places two nodes at the sides and two in depth, with the rear node occluded in front view", () => {
@@ -143,8 +167,10 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.getByRole("textbox", { name: "Описание идеи" })).toHaveValue("Светильник для чтения из гибких материалов");
   });
 
-  it("opens the retail explanation only after tapping the central front sphere", () => {
+  it("opens the retail explanation only after tapping the central front sphere", async () => {
+    withExistingSketch();
     render(<UnoEggScene locale="ru" />);
+    await waitForUnlockedNodes();
     const hit = screen.getByTestId("unocalc-retail-hit");
     const svg = screen.getByTestId("unocalc-egg-svg");
     expect(hit).toHaveAttribute("cx", "380");
@@ -165,8 +191,10 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.getByTestId("unocalc-retail-panel")).toBeInTheDocument();
   });
 
-  it("opens Commerce after turning the egg around, and closes it on the second tap", () => {
+  it("opens Commerce after turning the egg around, and closes it on the second tap", async () => {
+    withExistingSketch();
     render(<UnoEggScene locale="ru" />);
+    await waitForUnlockedNodes();
     const svg = screen.getByTestId("unocalc-egg-svg");
     expect(screen.queryByTestId("unocalc-commerce-hit")).not.toBeInTheDocument();
     fireEvent.pointerDown(svg, { pointerId: 10, clientX: 100, clientY: 300 });
@@ -188,8 +216,10 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.getAllByTestId("unocalc-section-sphere").find((sphere) => sphere.getAttribute("data-node-id") === "commerce")).toHaveAttribute("fill", "none");
   });
 
-  it("keeps Design and Production active independently and toggles only the tapped sphere", () => {
+  it("keeps Design and Production active independently and toggles only the tapped sphere", async () => {
+    withExistingSketch();
     render(<UnoEggScene locale="ru" />);
+    await waitForUnlockedNodes();
     const svg = screen.getByTestId("unocalc-egg-svg");
     const design = screen.getByTestId("unocalc-design-hit");
     const production = screen.getByTestId("unocalc-production-hit");
@@ -219,8 +249,10 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.queryByTestId("unocalc-active-panels")).not.toBeInTheDocument();
   });
 
-  it("allows all four nodes to be active simultaneously, including the one behind the egg", () => {
+  it("allows all four nodes to be active simultaneously, including the one behind the egg", async () => {
+    withExistingSketch();
     render(<UnoEggScene locale="ru" />);
+    await waitForUnlockedNodes();
     const svg = screen.getByTestId("unocalc-egg-svg");
     const tap = (node: Element, id: number) => {
       fireEvent.pointerDown(node, { pointerId: id, clientX: 380, clientY: 400 });
@@ -247,8 +279,10 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.getByTestId("unocalc-active-panels").querySelectorAll("aside")).toHaveLength(3);
   });
 
-  it("toggles Idea and Matter independently, keeping the four functional nodes selected", () => {
+  it("toggles Idea and Matter independently, keeping the four functional nodes selected", async () => {
+    withExistingSketch();
     render(<UnoEggScene locale="ru" />);
+    await waitForUnlockedNodes();
     const svg = screen.getByTestId("unocalc-egg-svg");
     const tap = (node: Element, id: number) => {
       fireEvent.pointerDown(node, { pointerId: id, clientX: 380, clientY: 400 });
@@ -284,8 +318,10 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.getByTestId("unocalc-active-panels").querySelectorAll("aside")).toHaveLength(4);
   });
 
-  it("does not activate the node when the user drags to rotate", () => {
+  it("does not activate the node when the user drags to rotate", async () => {
+    withExistingSketch();
     render(<UnoEggScene locale="ru" />);
+    await waitForUnlockedNodes();
     const hit = screen.getByTestId("unocalc-retail-hit");
     const svg = screen.getByTestId("unocalc-egg-svg");
     fireEvent.pointerDown(hit, { pointerId: 2, clientX: 380, clientY: 400 });
