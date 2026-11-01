@@ -41,14 +41,19 @@ const qualityLevels: QualityId[] = ["basic", "functional", "field"];
 
 const copy = {
   en: {
-    eyebrow: "Before the project",
-    heroTop: "Form / Quality / Resource",
+    eyebrow: "Educational tool · preliminary model",
+    heroTop: "Explore the resources behind a form.",
     heroBottom: "Resource.",
-    intro: "UNOcalc offers a starting resource reference: spatial scale, intended quality and the balance of four necessary contributions — before a detailed estimate.",
+    intro: "An educational model for exploring resource sufficiency. Enter an object's dimensions, choose an intended quality level and examine the resource structure. This is neither a standard nor a quote.",
     aboutLink: "The principle",
-    example: "Try an example · 10 × 10 × 3 m",
+    example: "Explore a hypothetical example · 10 × 10 × 3 m",
     readTitle: "How to read this reference",
     readInsight: "A reference is a starting point, not an instruction to spend exactly this amount. Below it, ask how savings were achieved; above it, ask which extra conditions justify more resources.",
+    indexMeaning: "An author-defined index based on bounding dimensions and the selected quality level. It does not measure physical energy or establish actual cost.",
+    nextStepTitle: "Make the result useful",
+    nextStep: "Compare it only with a proposal covering the same object and scope. Ask what explains differences: materials, technology, workmanship, durability and production conditions. A close match is not proof of accuracy.",
+    allocationGuide: "Components (40%) form the centre. Design, execution and retail are three adjustable branches (20% each); the fourth, investment, supplies capital without an expense percentage.",
+    educationalNote: "This model invites inquiry rather than requiring a particular budget. Applicable technical and safety standards remain in force.",
     readLimit: "The result does not verify actual quality or account for every construction and production detail.",
     copySummary: "Copy assessment",
     copyLink: "Copy scenario link",
@@ -57,7 +62,7 @@ const copy = {
     copyError: "Copying is unavailable in this browser",
     sharingNote: "A scenario link restores the dimensions, quality, region and balance. No account or server storage.",
     summaryTitle: "Resource reference",
-    summaryAssumptions: "Model assumption: 1 U.E.R. ≈ $1; not a verified project cost or selling price.",
+    summaryAssumptions: "Working assumption: 1 U.E.R. ≈ $1. Not a verified cost or selling price.",
     dimensions: "01 / Overall dimensions",
     dimensionNote: "Enter the object's maximum length, width and height. For irregular forms, this is the bounding volume, not the exact geometric volume.",
     length: "length",
@@ -73,15 +78,15 @@ const copy = {
     selection: "selected quality",
     wireframe: "schematic proportions of the bounding volume",
     wireframeNote: "Proportions only; not a scale drawing.",
-    costReference: "Indicative resource",
-    costBasis: "Based on the working assumption 1 U.E.R. ≈ $1. The final cost is refined during design; this is neither a detailed estimate nor a selling price.",
+    costReference: "Illustrative currency equivalent",
+    costBasis: "The 1 U.E.R. ≈ $1 relationship is an unvalidated author-defined assumption, not a market valuation. An actual budget requires a scoped design and vendor quotes.",
     prompt: "Enter dimensions to see the reference.",
     invalid: "Each dimension must be a positive number greater than zero.",
     outOfRange: "Dimensions are outside the supported calculation range.",
     definition: "unit of energy resonance",
     disclaimer: "U.E.R. is an author-defined index, not a physical energy measurement.",
-    regionalHeading: "Region / cost context",
-    regionalIntro: "The core UNOcalc reference uses an object's overall dimensions and execution quality, regardless of its shape. A city selection adds a separate, indicative comparison with local costs. The comparison is based on limited market benchmarks, not a universal adjustment for every kind of object.",
+    regionalHeading: "Optional / regional comparison",
+    regionalIntro: "UNOcalc computes an index from an object's bounding dimensions and selected quality level. Whether that index is meaningful for a particular product type requires validation. A city adds an optional, limited market comparison — not a universal regional adjustment.",
     regionCountry: "country",
     regionCity: "city",
     noRegion: "No regional adjustment",
@@ -98,11 +103,11 @@ const copy = {
     regionUnknown: "Original UNOcalc reference, without regional adjustment.",
     regionUpdated: "Market reference: 2026. Not a real-time quote. Regional factors have not been validated to ±10%.",
     originalReference: "Original U.E.R.-based reference",
-    officeCostReference: "Office fit-out market benchmark",
+    officeCostReference: "Separate office fit-out comparison",
     unadjustedLabel: "Original UNOcalc index (no European calibration)",
     areaLabel: "Floor area",
     allocationHeading: "04 / Resource distribution",
-    allocationIntro: "The central circle represents components. Four branches surround it: retail, design, execution and incoming investment. Only retail, design, execution and components divide the 100% creation resource: 20 / 20 / 20 / 40.",
+    allocationIntro: "Creation resource: retail 20%, design 20%, execution 20%, central components 40%. Investment may fund these costs but is not a fifth spending share. These percentages are an author's starting model, not a general rule.",
     allocationTotal: "Allocation",
     allocationNames: { retail: "retail", design: "project / design", installation: "installation", components: "components" },
     allocationBalanced: "Balance",
@@ -125,14 +130,19 @@ const copy = {
     },
   },
   ru: {
-    eyebrow: "до начала проекта",
-    heroTop: "Форма / Качество / Ресурс",
+    eyebrow: "Просветительский инструмент · предварительная модель",
+    heroTop: "Исследуйте ресурс за формой.",
     heroBottom: "Ресурс.",
-    intro: "UNOcalc задаёт исходный ресурсный ориентир: масштаб формы, предполагаемая плотность качества и баланс четырёх необходимых сторон — ещё до сметы.",
+    intro: "Просветительская модель ресурсной достаточности. Укажите габариты, выберите предполагаемый уровень качества и исследуйте структуру результата. Это не норматив и не смета.",
     aboutLink: "Принцип UNOcalc",
-    example: "Попробовать пример · 10 × 10 × 3 м",
+    example: "Исследовать условный пример · 10 × 10 × 3 м",
     readTitle: "Как читать ориентир",
     readInsight: "Ориентир — точка отсчёта, а не предписание потратить именно эту сумму. Ниже него — за счёт чего получена экономия? Выше — какие дополнительные условия оправдывают ресурс?",
+    indexMeaning: "Авторский индекс по габаритам и выбранному уровню качества. Он не измеряет физическую энергию и не устанавливает фактическую себестоимость.",
+    nextStepTitle: "Как использовать ориентир",
+    nextStep: "Сравните его с предложением только при одинаковом составе работ. Выясните причины разницы: материалы, технология, мастерство, долговечность, условия производства. Близость чисел не доказывает точность модели.",
+    allocationGuide: "В центре — комплектация (40%). Три регулируемые ветви: проект, реализация и ритейл (по 20%); четвёртая — инвестиция, которая даёт капитал и не имеет расходного процента.",
+    educationalNote: "Модель предлагает вопросы для исследования, а не предписывает бюджет. Действующие технические нормы и требования безопасности она не заменяет.",
     readLimit: "Расчёт не проверяет фактическое качество и не учитывает каждую особенность конструкции и производства.",
     copySummary: "Копировать результат",
     copyLink: "Копировать ссылку на сценарий",
@@ -141,7 +151,7 @@ const copy = {
     copyError: "Не удалось скопировать в этом браузере",
     sharingNote: "Ссылка восстанавливает габариты, уровень, регион и баланс. Без аккаунта и хранения на сервере.",
     summaryTitle: "Ресурсный ориентир",
-    summaryAssumptions: "Допущение модели: 1 U.E.R. ≈ $1; это не подтверждённая себестоимость и не цена продажи.",
+    summaryAssumptions: "Рабочее допущение: 1 U.E.R. ≈ $1. Это не подтверждённая стоимость и не цена продажи.",
     dimensions: "01 / Габариты",
     dimensionNote: "Укажи максимальные длину, ширину и высоту объекта. Для сложной формы используется габаритная оболочка, а не точный геометрический объём.",
     length: "длина",
@@ -157,15 +167,15 @@ const copy = {
     selection: "выбранный уровень",
     wireframe: "схема пропорций габаритного объёма",
     wireframeNote: "Условные пропорции, не масштабный чертёж.",
-    costReference: "Ресурсный ориентир",
-    costBasis: "По рабочему соотношению 1 U.E.R. ≈ $1. Итоговая стоимость уточняется в проекте; это не смета и не цена продажи.",
+    costReference: "Условный денежный эквивалент",
+    costBasis: "Соотношение 1 U.E.R. ≈ $1 — непроверенное авторское допущение, а не рыночная оценка. Реальный бюджет требует проекта с определённым составом работ и предложений исполнителей.",
     prompt: "Введи размеры, чтобы получить ориентир.",
     invalid: "Каждый размер должен быть положительным числом больше нуля.",
     outOfRange: "Размеры выходят за пределы допустимого расчёта.",
     definition: "единица энергетического резонанса",
     disclaimer: "U.E.R. — авторский расчётный индекс, не физическая единица энергии.",
-    regionalHeading: "Регион / ценовой контекст",
-    regionalIntro: "Основной расчёт UNOcalc применим к объектам любой формы: используются габариты и уровень исполнения. Выбор города даёт дополнительный ориентир местной стоимости. Сравнение основано на ограниченных рыночных данных, а не на универсальном коэффициенте для всех объектов.",
+    regionalHeading: "Дополнительно / региональное сравнение",
+    regionalIntro: "UNOcalc рассчитывает индекс по габаритам объекта и выбранному уровню качества. Пригодность результата для конкретного типа объектов ещё требует проверки. Город добавляет необязательное сравнение с ограниченными рыночными данными, а не универсальную поправку.",
     regionCountry: "страна",
     regionCity: "город",
     noRegion: "Без региональной поправки",
@@ -182,11 +192,11 @@ const copy = {
     regionUnknown: "Исходный ориентир UNOcalc без региональной поправки.",
     regionUpdated: "Рыночные данные: 2026 год. Не онлайн-смета. Точность коэффициентов ±10% не подтверждена.",
     originalReference: "Исходный ориентир по U.E.R.",
-    officeCostReference: "Рыночный ориентир офисной отделки",
+    officeCostReference: "Отдельное сравнение: офисная отделка",
     unadjustedLabel: "Исходный индекс UNOcalc (без калибровки для Европы)",
     areaLabel: "Площадь пола",
     allocationHeading: "04 / Распределение ресурса",
-    allocationIntro: "Центральный кружок — комплектация, основание ствола. Четыре ветви — ритейл, проектирование, реализация и инвестиция. В 100% расходного ресурса входят только ритейл, проект, реализация и комплектация: 20 / 20 / 20 / 40.",
+    allocationIntro: "Ресурс созидания: ритейл 20%, проект 20%, реализация 20%, комплектация 40% в центре. Инвестиция обеспечивает капитал, но не является пятой расходной долей. Пропорции — авторская исходная модель, а не отраслевая норма.",
     allocationTotal: "Распределено",
     allocationNames: { retail: "ритейл", design: "проект / дизайн", installation: "монтаж", components: "комплектующие" },
     allocationBalanced: "Равновесие",
@@ -209,14 +219,19 @@ const copy = {
     },
   },
   uk: {
-    eyebrow: "до початку проєкту",
-    heroTop: "Форма / Якість / Ресурс",
+    eyebrow: "Просвітницький інструмент · попередня модель",
+    heroTop: "Досліджуйте ресурс за формою.",
     heroBottom: "Ресурс.",
-    intro: "UNOcalc задає початковий ресурсний орієнтир: масштаб форми, передбачувана щільність якості та баланс чотирьох необхідних сторін — ще до кошторису.",
+    intro: "Просвітницька модель ресурсної достатності. Укажіть габарити, оберіть очікуваний рівень якості й дослідіть структуру результату. Це не норматив і не кошторис.",
     aboutLink: "Принцип UNOcalc",
-    example: "Спробувати приклад · 10 × 10 × 3 м",
+    example: "Дослідити умовний приклад · 10 × 10 × 3 м",
     readTitle: "Як читати орієнтир",
     readInsight: "Орієнтир — початкова точка, а не вимога витратити саме цю суму. Нижче нього — завдяки чому досягнута економія? Вище — які додаткові умови виправдовують ресурс?",
+    indexMeaning: "Авторський індекс за габаритами й обраним рівнем якості. Він не вимірює фізичну енергію і не встановлює фактичну собівартість.",
+    nextStepTitle: "Як використати орієнтир",
+    nextStep: "Порівнюйте його з пропозицією лише за однакового складу робіт. З’ясуйте причини різниці: матеріали, технологія, майстерність, довговічність, умови виробництва. Збіг чисел не доводить точність моделі.",
+    allocationGuide: "У центрі — комплектуючі (40%). Три регульовані гілки: проєкт, реалізація й ритейл (по 20%); четверта — інвестиція, яка надає капітал і не має витратного відсотка.",
+    educationalNote: "Модель пропонує питання для дослідження, а не визначає обов’язковий бюджет. Чинних технічних норм і вимог безпеки вона не замінює.",
     readLimit: "Розрахунок не перевіряє фактичну якість і не враховує кожної особливості конструкції та виробництва.",
     copySummary: "Копіювати результат",
     copyLink: "Копіювати посилання на сценарій",
@@ -225,7 +240,7 @@ const copy = {
     copyError: "Не вдалося скопіювати в цьому браузері",
     sharingNote: "Посилання відновлює габарити, рівень, регіон і баланс. Без облікового запису та зберігання на сервері.",
     summaryTitle: "Ресурсний орієнтир",
-    summaryAssumptions: "Припущення моделі: 1 U.E.R. ≈ $1; це не підтверджена собівартість і не ціна продажу.",
+    summaryAssumptions: "Робоче припущення: 1 U.E.R. ≈ $1. Це не підтверджена вартість і не ціна продажу.",
     dimensions: "01 / Габарити",
     dimensionNote: "Укажи найбільші довжину, ширину та висоту об’єкта. Для складної форми використовується габаритна оболонка, а не точний геометричний об’єм.",
     length: "довжина",
@@ -241,15 +256,15 @@ const copy = {
     selection: "обраний рівень",
     wireframe: "схема пропорцій габаритного об'єму",
     wireframeNote: "Умовні пропорції, не масштабне креслення.",
-    costReference: "Ресурсний орієнтир",
-    costBasis: "За робочим співвідношенням 1 U.E.R. ≈ $1. Остаточна вартість уточнюється у проєкті; це не кошторис і не ціна продажу.",
+    costReference: "Умовний грошовий еквівалент",
+    costBasis: "Співвідношення 1 U.E.R. ≈ $1 — неперевірене авторське припущення, а не ринкова оцінка. Реальний бюджет потребує проєкту з визначеним складом робіт і пропозицій виконавців.",
     prompt: "Введи розміри, щоб отримати орієнтир.",
     invalid: "Кожен розмір має бути додатним числом, більшим за нуль.",
     outOfRange: "Розміри виходять за межі допустимого розрахунку.",
     definition: "одиниця енергетичного резонансу",
     disclaimer: "U.E.R. — авторський розрахунковий індекс, не фізична одиниця енергії.",
-    regionalHeading: "Регіон / ціновий контекст",
-    regionalIntro: "Основний розрахунок UNOcalc застосовний до об’єктів будь-якої форми: враховуються габарити та рівень виконання. Вибір міста додає орієнтир місцевої вартості. Порівняння ґрунтується на обмежених ринкових даних, а не на універсальному коефіцієнті для всіх об’єктів.",
+    regionalHeading: "Додатково / регіональне порівняння",
+    regionalIntro: "UNOcalc розраховує індекс за габаритами об’єкта та обраним рівнем якості. Придатність результату для конкретного типу об’єктів ще потребує перевірки. Місто додає необов’язкове порівняння з обмеженими ринковими даними, а не універсальну поправку.",
     regionCountry: "країна",
     regionCity: "місто",
     noRegion: "Без регіональної поправки",
@@ -266,11 +281,11 @@ const copy = {
     regionUnknown: "Початковий орієнтир UNOcalc без регіональної поправки.",
     regionUpdated: "Ринкові дані: 2026 рік. Не онлайн-кошторис. Точність коефіцієнтів ±10% не підтверджена.",
     originalReference: "Початковий орієнтир за U.E.R.",
-    officeCostReference: "Ринковий орієнтир офісного оздоблення",
+    officeCostReference: "Окреме порівняння: офісне оздоблення",
     unadjustedLabel: "Початковий індекс UNOcalc (без калібрування для Європи)",
     areaLabel: "Площа підлоги",
     allocationHeading: "04 / Розподіл ресурсу",
-    allocationIntro: "Центральне коло — комплектуючі, основа стовбура. Чотири гілки — ритейл, проєктування, реалізація та інвестиція. До 100% витратного ресурсу входять лише ритейл, проєкт, реалізація і комплектуючі: 20 / 20 / 20 / 40.",
+    allocationIntro: "Ресурс створення: ритейл 20%, проєкт 20%, реалізація 20%, комплектуючі 40% у центрі. Інвестиція забезпечує капітал, але не є п’ятою витратною часткою. Пропорції — авторська вихідна модель, а не галузева норма.",
     allocationTotal: "Розподілено",
     allocationNames: { retail: "ритейл", design: "проєкт / дизайн", installation: "монтаж", components: "комплектуючі" },
     allocationBalanced: "Рівновага",
@@ -659,15 +674,20 @@ const UnoCalc = () => {
               <p className="mt-2 text-[11px] text-foreground/75">{t.wireframeNote}</p>
             </div>
             <div className="mt-5 flex items-center justify-between gap-3">
-              <span className="text-[12px] font-medium text-foreground/80">{euroEstimate !== null ? t.officeCostReference : t.costReference}</span>
-              <span className="text-[11px] tracking-[0.12em] text-foreground/75">{euroEstimate !== null ? "EUR" : "USD"}</span>
+              <span className="text-[12px] font-medium text-foreground/80">{t.reference}</span>
+              <span className="text-[11px] tracking-[0.12em] text-foreground/75">U.E.R.</span>
             </div>
             <output
               aria-live="polite"
               className="mt-2 block break-all border-b border-foreground/35 pb-4 text-right text-[clamp(3rem,6vw,4.5rem)] font-extralight leading-[1.1] tracking-[-0.045em] tabular-nums"
             >
-              {formattedAmount}
+              {ready ? formatUer(calculation.energy) : "—"}
             </output>
+            <p className="mt-3 text-[11px] font-light leading-[1.7] text-foreground/70">{t.indexMeaning}</p>
+            <div className="mt-4 flex items-baseline justify-between gap-3 border-t border-border/60 pt-4">
+              <span className="text-[12px] text-foreground/80">{euroEstimate !== null ? t.officeCostReference : t.costReference}</span>
+              <span className="text-[20px] font-light tabular-nums text-foreground/90">{formattedAmount}</span>
+            </div>
             {city?.family === "eu-office" && coefficient !== null && (
               <div className="mt-3 border-b border-border/60 pb-3">
                 <div className="flex items-baseline justify-between gap-3">
@@ -685,12 +705,6 @@ const UnoCalc = () => {
                 </p>
               </div>
             )}
-            <div className="mt-4 flex items-baseline justify-between gap-3">
-              <span className="text-[12px] text-foreground/80">{t.reference}</span>
-              <span className="text-[14px] font-light tabular-nums text-foreground/90">
-                {ready ? formatUer(calculation.energy) : "—"} <span className="text-[11px] text-foreground/75">U.E.R.</span>
-              </span>
-            </div>
             <div className="mt-4 flex justify-between gap-4 border-t border-border/60 pt-4">
               <span className="text-[12px] text-foreground/80">{t.selection}</span>
               <span className="text-right text-[13px] font-normal">{t.levels[quality].label}</span>
@@ -707,7 +721,10 @@ const UnoCalc = () => {
             <aside className="mt-5 border-t border-border/70 pt-4" aria-labelledby="unocalc-reading">
               <h3 id="unocalc-reading" className="text-[12px] font-medium uppercase tracking-[0.13em]">{t.readTitle}</h3>
               <p className="mt-2 text-[12px] font-light leading-[1.75] text-foreground/80">{t.readInsight}</p>
-              <p className="mt-2 text-[11px] font-light leading-[1.7] text-foreground/70">{t.readLimit}</p>
+              <h4 className="mt-4 text-[12px] font-medium">{t.nextStepTitle}</h4>
+              <p className="mt-2 text-[12px] font-light leading-[1.75] text-foreground/80">{t.nextStep}</p>
+              <p className="mt-3 text-[11px] font-light leading-[1.7] text-foreground/70">{t.readLimit}</p>
+              <p className="mt-2 text-[11px] font-light leading-[1.7] text-foreground/70">{t.educationalNote}</p>
               <Link to={aboutPath} className="mt-3 inline-flex min-h-9 items-center border-b border-foreground/35 text-[12px] hover:border-primary hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">{t.aboutLink} →</Link>
             </aside>
             <section aria-labelledby="unocalc-allocation-title" className="mt-8 border-t border-foreground/25 pt-4">
@@ -717,9 +734,8 @@ const UnoCalc = () => {
                 </h3>
                 <span className="text-[12px] tabular-nums text-foreground/80">100%</span>
               </div>
-              <p className="mt-2 text-[12px] font-light leading-[1.65] text-foreground/80">
-                {t.allocationIntro}
-              </p>
+              <p className="mt-2 text-[12px] font-light leading-[1.65] text-foreground/80">{t.allocationIntro}</p>
+              <p className="mt-2 border-l border-foreground/30 pl-3 text-[11px] font-light leading-[1.7] text-foreground/75">{t.allocationGuide}</p>
               <div className="mt-3 flex items-center justify-between gap-3">
                 <span className="text-[12px] font-medium text-foreground/80">
                   {isAdapted ? t.allocationAdapted : t.allocationBalanced}

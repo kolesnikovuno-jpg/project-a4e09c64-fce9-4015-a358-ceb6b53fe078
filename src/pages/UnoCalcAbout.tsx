@@ -1,20 +1,31 @@
 import { Link, useLocation } from "react-router-dom";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import { useLocale } from "@/i18n/useLocale";
+import { calculateUno, formatUer, formatVolume } from "@/lib/unocalc";
 
 const aboutCopy = {
   ru: {
-    eyebrow: "UNOcalc / принцип",
+    eyebrow: "UNOcalc / просветительская модель",
     navApp: "к расчёту",
     navHome: ".uno",
-    title: "Простая мера сложного созидания.",
-    lead: "UNOcalc помогает оценить исходную ресурсную ёмкость объекта — прежде чем выбирать технологию, исполнителя или сравнивать цены. Это система координат для осмысленных решений, а не попытка угадать цену продажи.",
-    statement: "Не ограничить возможности, а увидеть достаточные условия результата.",
+    title: "Не норматив. Система координат.",
+    lead: "UNOcalc помогает исследовать ресурсную достаточность создаваемого объекта. Он не выносит окончательное суждение о цене или качестве, а предлагает простую структуру, с которой можно задавать более точные вопросы.",
+    statement: "Не утверждать единственную меру, а учиться видеть взаимосвязь формы, качества и ресурса.",
+    purposeTitle: "Зачем нужен такой инструмент",
+    purposeLead: "Норматив фиксирует требования в пределах своей области. UNOcalc предлагает другой тип ценности: наблюдать, сравнивать и осознанно обсуждать ресурс, а не принимать число за истину.",
+    purposeParagraphs: ["Модель намеренно проста. Габаритный контейнер, выбранный уровень исполнения и исходный ресурсный баланс дают условную точку отсчёта. Её можно проверять, оспаривать и уточнять.","Просветительский характер не делает формулу фактом: коэффициенты и соответствие денежной стоимости остаются авторскими гипотезами. Требования безопасности, расчёт прочности и применимые нормативы модель не заменяет."],
+    exampleTitle: "Учебный пример, не реальный объект",
+    exampleIntro: "Представим условный объект габаритами 10 × 10 × 3 м на уровне «Базовая форма». UNOcalc рассчитывает индекс по собственному алгоритму; фактическая себестоимость здесь неизвестна.",
+    exampleVolume: "Габаритный объём",
+    exampleIndex: "Индекс модели",
+    exampleQuestion: "Что делать с результатом? Сопоставить его с реальной сметой или предложением только при одинаковом составе работ и зафиксировать, какие различия объясняются конструкцией, технологией и условиями выполнения.",
+    exampleCaution: "Это демонстрация механики формулы, не проверенный рыночный кейс и не доказательство точности UNOcalc.",
+    exampleTry: "Открыть этот пример в калькуляторе",
     stepsTitle: "Три основы модели",
     steps: [
       { n: "01", name: "Контейнер", text: "Длина, ширина и высота задают габаритный пространственный масштаб объекта." },
       { n: "02", name: "Плотность качества", text: "Выбранный уровень исполнения задаёт условную ресурсоёмкость воплощения формы." },
-      { n: "03", name: "Баланс", text: "Ресурс рассматривается как согласованное участие четырёх необходимых сторон." },
+      { n: "03", name: "Баланс", text: "Ресурс созидания распределяется между тремя рабочими ветвями и центральной комплектацией; инвестиция обеспечивает его поступление." },
     ],
     whyTitle: "Что мы пытаемся измерить",
     why: [
@@ -34,7 +45,7 @@ const aboutCopy = {
       { name: "Функциональная архитектура", text: "Более глубокая согласованность функций, конструкции, материалов и деталировки." },
       { name: "Поле силы", text: "Индивидуально настроенная целостность формы, среды и исполнения с повышенными требованиями к соответствию." },
     ],
-    balanceTitle: "Четыре стороны одного результата",
+    balanceTitle: "Основание и четыре ветви",
     balanceLead: "В дереве UNOcalc идея — вершина, комплектация — материальное основание ствола и центральный круг. От центра отходят четыре ветви: проектирование, реализация, ритейл и инвестиция. Инвестиция направляет капитал в систему, а не забирает долю из бюджета созидания.",
     shares: [
       { value: "20%", name: "Ритейл", text: "Выход к потребителю, организация обращения и предоставления результата." },
@@ -74,17 +85,27 @@ const aboutCopy = {
     foot: "UNOcalc — авторская модель предварительной ресурсной достаточности. Геометрия / качество / баланс.",
   },
   en: {
-    eyebrow: "UNOcalc / principle",
+    eyebrow: "UNOcalc / educational model",
     navApp: "calculator",
     navHome: ".uno",
-    title: "A simple measure of complex creation.",
-    lead: "UNOcalc gives an initial reference for an object's resource capacity — before choosing a technology, contractor or price. It is a frame for informed decisions, not a prediction of the selling price.",
-    statement: "Not to limit possibility, but to understand the conditions of a complete result.",
+    title: "Not a standard. A frame of reference.",
+    lead: "UNOcalc invites exploration of the resources involved in making an object. Rather than deciding what something must cost or how good it is, it offers a simple structure for asking more precise questions.",
+    statement: "Not to prescribe one true measure, but to understand the relationship between form, quality and resources.",
+    purposeTitle: "Why this tool exists",
+    purposeLead: "A standard sets requirements within its scope. UNOcalc offers a different kind of value: observing, comparing and discussing resources without treating one number as final truth.",
+    purposeParagraphs: ["The model is deliberately simple. The bounding container, intended execution level and initial resource allocation provide a hypothetical reference point that can be tested, challenged and revised.","An educational purpose does not prove the formula: its coefficients and any currency equivalence remain author-defined hypotheses. UNOcalc cannot replace structural engineering, safety rules or applicable standards."],
+    exampleTitle: "Worked illustration, not a verified project",
+    exampleIntro: "Consider a hypothetical 10 × 10 × 3 m object at the Basic Form level. UNOcalc computes an index using its own equation; the object's actual cost is unknown.",
+    exampleVolume: "Bounding volume",
+    exampleIndex: "Model index",
+    exampleQuestion: "What next? Compare against an actual quote only for an equivalent scope, and investigate how construction, technology, workmanship and local conditions explain differences.",
+    exampleCaution: "This demonstrates how the equation works; it is not a validated market case or evidence that UNOcalc is accurate.",
+    exampleTry: "Open this example in the calculator",
     stepsTitle: "Three foundations",
     steps: [
       { n: "01", name: "Container", text: "Length, width and height define an object's overall spatial scale." },
       { n: "02", name: "Quality density", text: "The selected execution level defines an assumed resource intensity for bringing the form into being." },
-      { n: "03", name: "Balance", text: "Resources are considered through four interdependent contributions." },
+      { n: "03", name: "Balance", text: "The creation resource is allocated between three working branches and central components, while investment supplies funding." },
     ],
     whyTitle: "What we are trying to measure",
     why: [
@@ -104,7 +125,7 @@ const aboutCopy = {
       { name: "Functional architecture", text: "Deeper integration of function, construction, materials and detailing." },
       { name: "Field of strength", text: "Individually tuned coherence of form, environment and execution, with more demanding requirements." },
     ],
-    balanceTitle: "Four contributions to one result",
+    balanceTitle: "The foundation and four branches",
     balanceLead: "In the UNOcalc tree, the idea is the apex; components form the material base of the trunk and the central circle. Four branches surround it: design, execution, retail and investment. Investment brings capital into the system rather than taking a share of the creation budget.",
     shares: [
       { value: "20%", name: "Retail", text: "Connecting the result with the people who use it, distribution and market access." },
@@ -144,17 +165,27 @@ const aboutCopy = {
     foot: "UNOcalc — an author-defined model of preliminary resource sufficiency. Geometry / quality / balance.",
   },
   uk: {
-    eyebrow: "UNOcalc / принцип",
+    eyebrow: "UNOcalc / просвітницька модель",
     navApp: "до розрахунку",
     navHome: ".uno",
-    title: "Проста міра складного творення.",
-    lead: "UNOcalc допомагає оцінити початкову ресурсну місткість об’єкта — перш ніж обирати технологію, виконавця чи порівнювати ціни. Це система координат для свідомих рішень, а не спроба вгадати ціну продажу.",
-    statement: "Не обмежувати можливості, а побачити достатні умови результату.",
+    title: "Не норматив. Система координат.",
+    lead: "UNOcalc допомагає досліджувати ресурсну достатність створюваного об’єкта. Він не виносить остаточного судження про ціну чи якість, а пропонує просту структуру для точніших запитань.",
+    statement: "Не проголошувати єдину міру, а вчитися бачити взаємозв’язок форми, якості та ресурсу.",
+    purposeTitle: "Навіщо потрібен цей інструмент",
+    purposeLead: "Норматив встановлює вимоги у своїй сфері. UNOcalc пропонує іншу цінність: спостерігати, порівнювати й усвідомлено обговорювати ресурс, не сприймаючи число як остаточну істину.",
+    purposeParagraphs: ["Модель навмисно проста. Габаритний контейнер, обраний рівень виконання та вихідний ресурсний баланс дають умовну точку відліку, яку можна перевіряти, ставити під сумнів та уточнювати.","Просвітницький характер не доводить формулу: коефіцієнти та грошовий еквівалент залишаються авторськими гіпотезами. Вимоги безпеки, інженерні розрахунки та чинні нормативи модель не замінює."],
+    exampleTitle: "Навчальний приклад, не реальний об’єкт",
+    exampleIntro: "Уявімо умовний об’єкт габаритами 10 × 10 × 3 м на рівні «Базова форма». UNOcalc обчислює індекс за власним алгоритмом; фактична собівартість тут невідома.",
+    exampleVolume: "Габаритний об’єм",
+    exampleIndex: "Індекс моделі",
+    exampleQuestion: "Що робити з результатом? Порівняти з реальною пропозицією лише за однакового складу робіт і дослідити вплив конструкції, технології, майстерності та умов виконання.",
+    exampleCaution: "Це демонстрація роботи формули, не перевірений ринковий приклад і не доказ точності UNOcalc.",
+    exampleTry: "Відкрити цей приклад у калькуляторі",
     stepsTitle: "Три основи моделі",
     steps: [
       { n: "01", name: "Контейнер", text: "Довжина, ширина й висота задають габаритний просторовий масштаб об’єкта." },
       { n: "02", name: "Щільність якості", text: "Обраний рівень виконання визначає умовну ресурсоємність втілення форми." },
-      { n: "03", name: "Баланс", text: "Ресурс розглядається як узгоджена участь чотирьох необхідних сторін." },
+      { n: "03", name: "Баланс", text: "Ресурс створення розподіляється між трьома робочими гілками та центральними комплектуючими; інвестиція забезпечує його надходження." },
     ],
     whyTitle: "Що ми прагнемо виміряти",
     why: [
@@ -174,7 +205,7 @@ const aboutCopy = {
       { name: "Функціональна архітектура", text: "Глибша узгодженість функції, конструкції, матеріалів і деталей." },
       { name: "Поле сили", text: "Індивідуально налаштована цілісність форми, середовища та виконання з підвищеними вимогами до відповідності." },
     ],
-    balanceTitle: "Чотири сторони одного результату",
+    balanceTitle: "Основа та чотири гілки",
     balanceLead: "У дереві UNOcalc ідея — вершина, комплектуючі — матеріальна основа стовбура й центральне коло. Чотири гілки навколо: проєктування, реалізація, ритейл та інвестиція. Інвестиція спрямовує капітал у систему, а не забирає частку з бюджету створення.",
     shares: [
       { value: "20%", name: "Ритейл", text: "Вихід до споживача, організація обігу та надання результату." },
@@ -220,6 +251,10 @@ export default function UnoCalcAbout() {
   const t = aboutCopy[locale];
   const { search } = useLocation();
   const calculatorPath = localePath("/unocalc") + search;
+  const examplePath = localePath("/unocalc") + "?a=10000&b=10000&c=3000&quality=basic";
+  const example = calculateUno({ a: "10000", b: "10000", c: "3000", q: 108 });
+  const exampleVolume = example.status === "ok" ? formatVolume(example.volume) : "—";
+  const exampleIndex = example.status === "ok" ? formatUer(example.energy) : "—";
   return (
     <div
       className="min-h-screen bg-background font-body text-foreground"
@@ -247,6 +282,13 @@ export default function UnoCalcAbout() {
           <p className="mt-7 max-w-[680px] text-[15px] font-light leading-[1.85] text-foreground/85">{t.lead}</p>
           <p className="mt-8 max-w-[680px] border-l border-foreground/45 pl-5 text-[16px] font-normal leading-[1.6]">{t.statement}</p>
         </section>
+        <section className="border-b border-border/70 py-10 sm:py-12" aria-labelledby="unocalc-purpose">
+          <h2 id="unocalc-purpose" className="text-[23px] font-light tracking-[-0.025em]">{t.purposeTitle}</h2>
+          <p className="mt-4 max-w-[720px] text-[15px] font-light leading-[1.85]">{t.purposeLead}</p>
+          <div className="mt-4 max-w-[720px] space-y-3 text-[13px] leading-[1.85] text-foreground/75">
+            {t.purposeParagraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+          </div>
+        </section>
         <section className="border-b border-border/70 py-10 sm:py-12" aria-labelledby="unocalc-about-steps">
           <h2 id="unocalc-about-steps" className="text-[11px] uppercase tracking-[0.16em] text-foreground/70">{t.stepsTitle}</h2>
           <div className="mt-7 grid gap-7 sm:grid-cols-3 sm:gap-6">
@@ -258,6 +300,27 @@ export default function UnoCalcAbout() {
               </div>
             ))}
           </div>
+        </section>
+        <section className="border-b border-border/70 py-10 sm:py-12" aria-labelledby="unocalc-example">
+          <h2 id="unocalc-example" className="text-[23px] font-light tracking-[-0.025em]">{t.exampleTitle}</h2>
+          <p className="mt-4 max-w-[720px] text-[13px] leading-[1.85] text-foreground/80">{t.exampleIntro}</p>
+          <div className="mt-7 grid gap-4 sm:grid-cols-3">
+            <div className="border-t border-foreground/30 pt-3">
+              <span className="text-[11px] text-foreground/70">A × B × C</span>
+              <p className="mt-4 text-[21px] font-light tabular-nums">10 × 10 × 3 <span className="text-[12px]">m</span></p>
+            </div>
+            <div className="border-t border-foreground/30 pt-3">
+              <span className="text-[11px] text-foreground/70">{t.exampleVolume}</span>
+              <p className="mt-4 text-[21px] font-light tabular-nums">{exampleVolume} <span className="text-[12px]">m³</span></p>
+            </div>
+            <div className="border-t border-foreground/30 pt-3">
+              <span className="text-[11px] text-foreground/70">{t.exampleIndex}</span>
+              <p className="mt-4 text-[21px] font-light tabular-nums">{exampleIndex} <span className="text-[12px]">U.E.R.</span></p>
+            </div>
+          </div>
+          <p className="mt-6 max-w-[720px] text-[13px] leading-[1.85] text-foreground/80">{t.exampleQuestion}</p>
+          <p className="mt-3 max-w-[720px] text-[11px] leading-[1.75] text-foreground/65">{t.exampleCaution}</p>
+          <Link to={examplePath} className="mt-5 inline-flex min-h-10 items-center border-b border-foreground/40 text-[12px] hover:border-primary hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">{t.exampleTry} →</Link>
         </section>
         <ArticleSection id="why" title={t.whyTitle} paragraphs={t.why} />
         <ArticleSection id="geometry" title={t.geometryTitle} paragraphs={t.geometry} />
