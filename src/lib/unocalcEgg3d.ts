@@ -226,9 +226,9 @@ export const eggIdeaLinks = (orientation: EggOrientation, sphereRadius = 10.5) =
 };
 
 /**
- * Two additional structural links:
- * Marketing (lower sphere 06) → Design (principal -X),
- * Legal (lower sphere 08) → Production (principal +X).
+ * Structural links between principal and lower spheres:
+ * Marketing (06) → Design, Legal (08) → Production,
+ * Design → Test Drive (05), Production → Procurement (07).
  * All endpoints are projected from the same 3D egg orientation.
  */
 export const eggSupportLinks = (orientation: EggOrientation, sphereRadius = 10.5) => {
@@ -237,6 +237,8 @@ export const eggSupportLinks = (orientation: EggOrientation, sphereRadius = 10.5
   return [
     { id: "marketing-design", source: lower[1], target: design },
     { id: "legal-production", source: lower[3], target: production },
+    { id: "design-test-drive", source: design, target: lower[0] },
+    { id: "production-procurement", source: production, target: lower[2] },
   ].map(({ id, source, target }) => {
     const dx = target.x - source.x;
     const dy = target.y - source.y;
