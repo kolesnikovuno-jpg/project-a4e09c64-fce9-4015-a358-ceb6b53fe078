@@ -113,3 +113,17 @@
     border-radius: 0 !important;
   }
 }
+
+/* UNOcalc: keep the current compact mobile composition, but let the egg
+   become the main object on landscape tablets and desktop viewports.
+   Reserve 165px of usable viewport height for the header, gesture hint,
+   and page spacing; preserve the SVG's 760:700 aspect ratio. */
+.unocalc-egg-canvas {
+  max-width: min(100%, 68vh, 720px);
+}
+
+@media (min-width: 768px) and (orientation: landscape) {
+  .unocalc-egg-canvas {
+    max-width: min(100%, 88.4dvh, calc((100dvh - 165px) * 1.085714), 936px);
+  }
+}

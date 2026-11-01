@@ -77,7 +77,7 @@ const UnoEggScene = ({ locale }: Props) => {
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-full" data-testid="unocalc-egg-stage">
-      <div className="mx-auto w-full min-w-0" style={{ maxWidth: "min(100%, 68vh, 720px)" }}>
+      <div className="unocalc-egg-canvas mx-auto w-full min-w-0">
         <svg
           data-testid="unocalc-egg-svg"
           viewBox="0 0 760 700"
