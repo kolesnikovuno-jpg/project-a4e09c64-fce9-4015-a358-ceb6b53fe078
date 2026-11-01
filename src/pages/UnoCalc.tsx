@@ -67,7 +67,7 @@ const copy = {
     regionalFactor: "regional coefficient",
     regionalSource: "Data and method",
     uaMethod: "Ukraine, 2026: Kyiv = 1.00. A contractor's apartment labor price midpoints, assuming 50% labor and 50% similar-priced materials. Low confidence: not verified project totals.",
-    euMethod: "Europe, 2026: Warsaw is the reference at each tier. Office fit-out prices per m² from Cushman & Wakefield. UNOcalc levels 108/270/432 are mapped approximately to low/medium/high for comparison; they are not validated as equivalent.",
+    euMethod: "Europe, 2026: Warsaw is the reference for each of the three quality levels. Office fit-out prices per m² from Cushman & Wakefield. The qualitative levels are mapped approximately to low/medium/high market tiers; equivalence is not validated.",
     regionReference: "baseline",
     ukraineBaseline: "Kyiv, Ukraine",
     europeBaseline: "Warsaw, Poland",
@@ -132,7 +132,7 @@ const copy = {
     regionalFactor: "региональный коэффициент",
     regionalSource: "Данные и метод",
     uaMethod: "Украина, 2026: Киев = 1,00. Средние точки диапазонов стоимости работ по квартирам; допущение: 50% работы и 50% материалов по сопоставимой цене. Уверенность низкая: итоговые бюджеты не проверены.",
-    euMethod: "Европа, 2026: Варшава — база для каждого уровня. Стоимость офисной отделки за м² по Cushman & Wakefield. Уровни 108/270/432 условно сопоставлены с low/medium/high; их эквивалентность не проверена.",
+    euMethod: "Европа, 2026: Варшава — база сравнения для каждого из трёх уровней качества. Стоимость офисной отделки за м² по Cushman & Wakefield. Качественные уровни условно сопоставлены с рыночными категориями low/medium/high; эквивалентность не проверена.",
     regionReference: "базовый город",
     ukraineBaseline: "Киев, Украина",
     europeBaseline: "Варшава, Польша",
@@ -197,7 +197,7 @@ const copy = {
     regionalFactor: "регіональний коефіцієнт",
     regionalSource: "Дані та метод",
     uaMethod: "Україна, 2026: Київ = 1,00. Середини діапазонів вартості квартирних робіт; припущення: 50% роботи та 50% матеріалів за співставною ціною. Достовірність низька: повні бюджети не перевірено.",
-    euMethod: "Європа, 2026: Варшава — база для кожного рівня. Вартість офісного оздоблення за м² за Cushman & Wakefield. Рівні 108/270/432 умовно зіставлені з low/medium/high; їх еквівалентність не перевірено.",
+    euMethod: "Європа, 2026: Варшава — база порівняння для кожного з трьох рівнів якості. Вартість офісного оздоблення за м² за Cushman & Wakefield. Якісні рівні умовно зіставлені з ринковими категоріями low/medium/high; еквівалентність не перевірено.",
     regionReference: "базове місто",
     ukraineBaseline: "Київ, Україна",
     europeBaseline: "Варшава, Польща",
@@ -432,10 +432,7 @@ const UnoCalc = () => {
                         onChange={() => setQ(level)}
                         className="sr-only"
                       />
-                      <span className={"ml-2 w-[55px] shrink-0 text-[25px] font-extralight tracking-[-0.035em] tabular-nums sm:w-[64px] " + (active ? "text-foreground" : "text-foreground/75")}>
-                        {level}
-                      </span>
-                      <span className="min-w-0 flex-1 pr-2">
+                      <span className="min-w-0 flex-1 pl-3 pr-2">
                         <span className={"block text-[13px] font-normal leading-[1.4] " + (active ? "text-foreground" : "text-foreground/80")}>{item.label}</span>
                         <span className="mt-0.5 block text-[12px] font-light leading-[1.55] text-foreground/80">{item.hint}</span>
                       </span>
@@ -556,7 +553,7 @@ const UnoCalc = () => {
             </div>
             <div className="mt-4 flex justify-between gap-4 border-t border-border/60 pt-4">
               <span className="text-[12px] text-foreground/80">{t.selection}</span>
-              <span className="text-right text-[13px] font-normal">{q} · {t.levels[q].label}</span>
+              <span className="text-right text-[13px] font-normal">{t.levels[q].label}</span>
             </div>
             <p className="mt-4 text-[12px] font-light leading-[1.65] text-foreground/80">
               {ready
