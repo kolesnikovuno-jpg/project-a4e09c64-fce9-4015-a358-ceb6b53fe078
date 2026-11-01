@@ -80,7 +80,7 @@ const UnoCrystalScene = ({ locale, dimensions, onOpenInputs }: Props) => {
   );
   const raw = dimensions.map(Number);
   const valid = dimensions.every((value) => value.trim() !== "") &&
-    raw.every((value) => Number.isFinite(value) && value > 0 && value <= 100_000_000);
+    raw.every((value) => Number.isFinite(value) && value > 0);
   const largest = valid ? Math.max(...raw) : 1;
   // A = x, B = z, C = y; uniform scale preserves all three ratios.
   const hx = valid ? (raw[0] / largest) * 0.55 : 0;
@@ -176,6 +176,9 @@ const UnoCrystalScene = ({ locale, dimensions, onOpenInputs }: Props) => {
             style={{ transformOrigin: "380px 343px", animation: "uno-crystal-breathe 7s ease-in-out infinite" }}>
             <ellipse cx="380" cy="343" rx="139" ry="84" fill="url(#uno-cloud-fill)" filter="url(#uno-cloud-blur)" />
             <ellipse cx="380" cy="343" rx="97" ry="56" fill="url(#uno-cloud-fill)" opacity=".65" />
+            <ellipse cx="332" cy="339" rx="47" ry="49" fill="url(#uno-cloud-fill)" opacity=".65" />
+            <ellipse cx="427" cy="323" rx="53" ry="40" fill="url(#uno-cloud-fill)" opacity=".52" />
+            <ellipse cx="393" cy="366" rx="67" ry="34" fill="url(#uno-cloud-fill)" opacity=".5" />
           </g>
           {valid && (
             <g aria-label={t.cube}>
@@ -215,7 +218,9 @@ const UnoCrystalScene = ({ locale, dimensions, onOpenInputs }: Props) => {
           ))}
           <button type="button" onClick={onOpenInputs} aria-label={valid ? t.edit : t.cloud}
             className="pointer-events-auto absolute left-1/2 top-[49.7%] flex h-[13%] w-[26%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[50%] text-[11px] text-foreground/85 outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-foreground/50 sm:text-[13px]">
-            <span className="rounded-full border border-foreground/20 bg-background/70 px-3 py-1.5 shadow-sm backdrop-blur-sm">
+            <span className={valid
+              ? "absolute top-[112%] whitespace-nowrap rounded-full border border-foreground/20 bg-background/80 px-3 py-1.5 shadow-sm backdrop-blur-sm"
+              : "rounded-full border border-foreground/20 bg-background/70 px-3 py-1.5 shadow-sm backdrop-blur-sm"}>
               {valid ? t.edit : t.cloud} <span aria-hidden="true">+</span>
             </span>
           </button>
