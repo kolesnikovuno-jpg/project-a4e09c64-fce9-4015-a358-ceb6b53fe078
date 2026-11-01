@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent, type PointerEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent, type MouseEvent, type PointerEvent } from "react";
 import { designCopy, EMPTY_BRIEF, makeSketchPrompt, type DesignBrief } from "@/lib/unocalcDesign";
 import { listSketches, removeStoredSketch, storeSketch, type StoredSketch } from "@/lib/unocalcSketches";
 import {
@@ -33,6 +33,8 @@ const MAX_SKETCH_BYTES = 10 * 1024 * 1024;
 // One shared contour treatment for every functional sphere (four principal,
 // four lower, two poles). The larger central core intentionally stays distinct.
 const NODE_CONTOUR = { radius: 10.5, width: 1.1, idleOpacity: 0.72, activeOpacity: 0.85 } as const;
+const INTERACTIVE_NODES: ReadonlySet<string> = new Set(["retail", "commerce", "design", "production", "marketing", "testDrive", "procurement", "legal", "idea", "matter"]);
+const isInteractiveNode = (value: string | null): value is InteractiveNode => value !== null && INTERACTIVE_NODES.has(value);
 type SketchPreview = StoredSketch & { previewUrl: string; persisted: boolean };
 
 const text = {
@@ -324,6 +326,8 @@ const UnoEggScene = ({ locale }: Props) => {
   const sketchUrls = useRef<string[]>([]);
   const designWorkspace = useRef<HTMLElement>(null);
   const pointer = useRef<{ id: number; x: number; y: number; startX: number; startY: number; moved: boolean; targetNode: string | null } | null>(null);
+  const lastPointerActivation = useRef<{ node: InteractiveNode; time: number } | null>(null);
+  const suppressDragClick = useRef(false);
   const copy = text[locale];
   const workflowCopy = designCopy[locale];
   const nodeDetails: Record<InteractiveNode, NodeDetail> = {
@@ -535,12 +539,14 @@ const UnoEggScene = ({ locale }: Props) => {
   const onPointerDown = (event: PointerEvent<SVGSVGElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
     const target = event.target as Element;
+    lastPointerActivation.current = null;
+    suppressDragClick.current = false;
     pointer.current = {
       id: event.pointerId, x: event.clientX, y: event.clientY,
       startX: event.clientX, startY: event.clientY, moved: false,
-      targetNode: target.getAttribute("data-egg-node"),
+      targetNode: target.closest("[data-egg-node]")?.getAttribute("data-egg-node") ?? null,
     };
-    event.currentTarget.setPointerCapture?.(event.pointerId);
+    try { event.currentTarget.setPointerCapture?.(event.pointerId); } catch { /* SVG pointer capture is not available in every Safari version. */ }
   };
   const onPointerMove = (event: PointerEvent<SVGSVGElement>) => {
     const active = pointer.current;
@@ -557,17 +563,31 @@ const UnoEggScene = ({ locale }: Props) => {
     const active = pointer.current;
     if (!active || active.id !== event.pointerId) return;
     pointer.current = null;
-    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-    if (event.type === "pointerup" && !active.moved &&
-      (active.targetNode === "retail" || active.targetNode === "commerce" ||
-       active.targetNode === "design" || active.targetNode === "production" ||
-       active.targetNode === "marketing" || active.targetNode === "testDrive" ||
-       active.targetNode === "procurement" || active.targetNode === "legal" ||
-       active.targetNode === "idea" || active.targetNode === "matter")) {
+    suppressDragClick.current = active.moved;
+    try {
+      if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+    } catch { /* Safari can release capture automatically. */ }
+    if (event.type === "pointerup" && !active.moved && isInteractiveNode(active.targetNode)) {
+      lastPointerActivation.current = { node: active.targetNode, time: Date.now() };
       activateNode(active.targetNode);
     }
+  };
+  // Fallback for browsers that dispatch a click but lose SVG pointerup/capture.
+  // A click following a handled pointerup is ignored to prevent double toggles.
+  const onSvgClick = (event: MouseEvent<SVGSVGElement>) => {
+    if (suppressDragClick.current) {
+      suppressDragClick.current = false;
+      return;
+    }
+    const target = event.target as Element;
+    const node = target.closest("[data-egg-node]")?.getAttribute("data-egg-node") ?? null;
+    if (!isInteractiveNode(node)) return;
+    const previous = lastPointerActivation.current;
+    lastPointerActivation.current = null;
+    if (previous?.node === node && Date.now() - previous.time < 800) return;
+    activateNode(node);
   };
   const onNodeKeyDown = (event: KeyboardEvent<SVGCircleElement>, node: InteractiveNode) => {
     if (event.key === "Enter" || event.key === " ") {
@@ -609,6 +629,7 @@ const UnoEggScene = ({ locale }: Props) => {
           onPointerMove={onPointerMove}
           onPointerUp={onPointerEnd}
           onPointerCancel={onPointerEnd}
+          onClick={onSvgClick}
           onKeyDown={onKeyDown}
         >
           <defs>
@@ -653,20 +674,20 @@ const UnoEggScene = ({ locale }: Props) => {
             x1={geometry.axis.start.x} y1={geometry.axis.start.y}
             x2={geometry.axis.end.x} y2={geometry.axis.end.y}
             stroke="currentColor" strokeWidth=".65" strokeOpacity=".14"
-            strokeDasharray="4 9" vectorEffect="non-scaling-stroke"
+            strokeDasharray="4 9" vectorEffect="non-scaling-stroke" pointerEvents="none"
           />
           <path data-testid="unocalc-lower-ring-back" d={geometry.lowerRing.back} fill="none"
             stroke="currentColor" strokeWidth=".9" strokeOpacity=".13"
-            strokeDasharray="4 7" vectorEffect="non-scaling-stroke" />
+            strokeDasharray="4 7" vectorEffect="non-scaling-stroke" pointerEvents="none" />
           <path data-testid="unocalc-lower-ring-front" d={geometry.lowerRing.front} fill="none"
             stroke="currentColor" strokeWidth=".9" strokeOpacity=".28"
-            strokeDasharray="4 7" vectorEffect="non-scaling-stroke" />
+            strokeDasharray="4 7" vectorEffect="non-scaling-stroke" pointerEvents="none" />
           <path d={geometry.equator.back} fill="none"
             stroke="currentColor" strokeWidth=".9" strokeOpacity=".18"
-            strokeDasharray="5 6" vectorEffect="non-scaling-stroke" />
+            strokeDasharray="5 6" vectorEffect="non-scaling-stroke" pointerEvents="none" />
           <path d={geometry.equator.front} fill="none"
             stroke="currentColor" strokeWidth=".9" strokeOpacity=".3"
-            vectorEffect="non-scaling-stroke" />
+            vectorEffect="non-scaling-stroke" pointerEvents="none" />
           {/* Two perpendicular 3D diameters in the section plane.
               The four endpoint spheres sit exactly on the egg surface. */}
           {geometry.sectionAxes.map((sectionAxis, index) => (
@@ -682,6 +703,7 @@ const UnoEggScene = ({ locale }: Props) => {
               strokeOpacity=".10"
               strokeDasharray="4 9"
               vectorEffect="non-scaling-stroke"
+              pointerEvents="none"
             />
           ))}
           {/* The unformed object: a quiet, larger sphere inside the shell.
@@ -743,6 +765,7 @@ const UnoEggScene = ({ locale }: Props) => {
                     cy={node.y}
                     r="25"
                     fill="transparent"
+                    pointerEvents="all"
                     stroke="none"
                     role="button"
                     tabIndex={unlocked ? 0 : -1}
@@ -795,6 +818,7 @@ const UnoEggScene = ({ locale }: Props) => {
                     cy={node.y}
                     r="25"
                     fill="transparent"
+                    pointerEvents="all"
                     stroke="none"
                     role="button"
                     tabIndex={0}
@@ -837,6 +861,7 @@ const UnoEggScene = ({ locale }: Props) => {
                   cy={node.y}
                   r="25"
                   fill="transparent"
+                  pointerEvents="all"
                   stroke="none"
                   role="button"
                   tabIndex={unlocked ? 0 : -1}
@@ -858,6 +883,7 @@ const UnoEggScene = ({ locale }: Props) => {
             strokeOpacity=".50"
             strokeLinejoin="round"
             vectorEffect="non-scaling-stroke"
+            pointerEvents="none"
           />
         </svg>
       </div>
