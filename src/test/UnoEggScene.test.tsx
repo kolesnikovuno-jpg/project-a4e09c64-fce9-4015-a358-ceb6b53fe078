@@ -122,14 +122,17 @@ describe("UNOcalc egg-only geometry", () => {
     const { rerender } = render(<UnoEggScene locale="ru" />);
     expect(screen.getAllByTestId("unocalc-lower-sphere")).toHaveLength(2);
     expect(screen.getAllByTestId("unocalc-lower-sphere").every((node) => node.getAttribute("pointer-events") === null)).toBe(true);
-    expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("четыре сферы без назначения");
+    expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("06 — Маркетинг (между Дизайном и Ритейлом)");
+    expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("05, 07, 08 пока без назначения");
+    expect(screen.getAllByTestId("unocalc-lower-sphere").find((node) => node.getAttribute("data-node-id") === "support-2"))
+      .toHaveAttribute("data-node-role", "marketing");
     expect(screen.getAllByRole("button")).toHaveLength(5);
     const svg = screen.getByTestId("unocalc-egg-svg");
     fireEvent.keyDown(svg, { key: "ArrowDown" });
     expect(screen.getAllByTestId("unocalc-lower-sphere")).toHaveLength(4);
     expect(screen.queryByTestId("unocalc-active-panels")).not.toBeInTheDocument();
     rerender(<UnoEggScene locale="uk" />);
-    expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("чотири сфери");
+    expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("06 — Маркетинг");
   });
 
   it("spins horizontally around the upright axis, tilts vertically and resets", () => {
