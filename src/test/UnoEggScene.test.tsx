@@ -31,8 +31,9 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.getAllByTestId("unocalc-section-axis")).toHaveLength(2);
     const core = screen.getByTestId("unocalc-core-sphere");
     expect(core).toHaveAttribute("cx", "380");
-    expect(core).toHaveAttribute("cy", "350");
-    expect(core).toHaveAttribute("r", "30");
+    expect(Number(core.getAttribute("cy"))).toBeCloseTo(350 - 212 * EGG_EQUATOR, 6);
+    expect(core).toHaveAttribute("r", "45");
+    expect(core).toHaveAttribute("stroke-opacity", ".43");
     expect(core).toHaveAttribute("pointer-events", "none");
     expect(core).toHaveAttribute("aria-label", "Центральная сфера — формируемый объект");
     const poles = screen.getAllByTestId("unocalc-pole-sphere");

@@ -3,6 +3,7 @@ import {
   convexOutline,
   eggAxisEndpoints,
   eggEquatorArcs,
+  EGG_EQUATOR,
   eggPoleNodes,
   eggSectionAxes,
   eggSurface,
@@ -230,7 +231,7 @@ const UnoEggScene = ({ locale }: Props) => {
       sectionAxes,
       sectionNodes: visibleEggSectionNodes(sectionAxes),
       poleNodes: eggPoleNodes(orientation),
-      core: projectEggPoint({ x: 0, y: 0, z: 0 }, orientation),
+      core: projectEggPoint({ x: 0, y: EGG_EQUATOR, z: 0 }, orientation),
     };
   }, [orientation]);
 
@@ -309,9 +310,9 @@ const UnoEggScene = ({ locale }: Props) => {
         >
           <defs>
             <radialGradient id="unocalc-core-shading" cx="36%" cy="30%" r="76%">
-              <stop offset="0%" stopColor="#c9b58b" stopOpacity=".34" />
-              <stop offset="68%" stopColor="#b8a076" stopOpacity=".21" />
-              <stop offset="100%" stopColor="#ad9162" stopOpacity=".08" />
+              <stop offset="0%" stopColor="#c9b58b" stopOpacity=".22" />
+              <stop offset="68%" stopColor="#b8a076" stopOpacity=".13" />
+              <stop offset="100%" stopColor="#ad9162" stopOpacity=".035" />
             </radialGradient>
           </defs>
           <line
@@ -350,11 +351,11 @@ const UnoEggScene = ({ locale }: Props) => {
             data-testid="unocalc-core-sphere"
             cx={geometry.core.x}
             cy={geometry.core.y}
-            r="30"
+            r="45"
             fill="url(#unocalc-core-shading)"
             stroke="#aa936d"
-            strokeWidth="1.25"
-            strokeOpacity=".72"
+            strokeWidth="1.05"
+            strokeOpacity=".43"
             vectorEffect="non-scaling-stroke"
             pointerEvents="none"
             role="img"
