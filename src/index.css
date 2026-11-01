@@ -141,3 +141,35 @@
 @media (prefers-reduced-motion: reduce) {
   .unocalc-type-caret { animation: none; }
 }
+
+/* Keep UNOcalc notes within the visible egg stage on landscape iPad.
+   Three or four selected nodes use tighter typography, not a longer page. */
+@media (min-width: 900px) {
+  .unocalc-active-panels {
+    top: 12%;
+    max-height: 84%;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--foreground) / .18) transparent;
+  }
+  .unocalc-active-panels--dense {
+    top: 3%;
+    max-height: 90%;
+    gap: 14px;
+  }
+  .unocalc-active-panels--dense aside > p:first-child {
+    margin-bottom: 4px;
+    font-size: 9px;
+  }
+  .unocalc-active-panels--dense aside > h2 {
+    min-height: 26px;
+    font-size: 21px;
+    line-height: 1.25;
+  }
+  .unocalc-active-panels--dense aside > h2 + p {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.55;
+    letter-spacing: 0;
+  }
+}

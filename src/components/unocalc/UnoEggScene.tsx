@@ -370,7 +370,7 @@ const UnoEggScene = ({ locale }: Props) => {
       {selectedNodes.length > 0 && (
         <div
           data-testid="unocalc-active-panels"
-          className="mx-auto mt-5 flex w-full max-w-[320px] flex-col gap-7 pb-2 min-[900px]:absolute min-[900px]:right-0 min-[900px]:top-[15%] min-[900px]:mt-0 min-[900px]:max-h-[70dvh] min-[900px]:w-[23%] min-[900px]:max-w-[240px] min-[900px]:overflow-y-auto min-[900px]:pr-2"
+          className={`unocalc-active-panels mx-auto mt-5 flex w-full max-w-[320px] flex-col gap-7 pb-2 min-[900px]:absolute min-[900px]:right-0 min-[900px]:mt-0 min-[900px]:w-[23%] min-[900px]:max-w-[240px] min-[900px]:overflow-y-auto min-[900px]:pr-2 ${selectedNodes.length >= 3 ? "unocalc-active-panels--dense" : ""}`}
         >
           {selectedNodes.map((node) => (
             <NodeDescription key={node} node={node} detail={nodeDetails[node]} />

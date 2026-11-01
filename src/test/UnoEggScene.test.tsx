@@ -174,6 +174,7 @@ describe("UNOcalc egg-only geometry", () => {
     tap(screen.getByTestId("unocalc-production-hit"), 32);
     tap(screen.getByTestId("unocalc-retail-hit"), 33);
     expect(screen.getByTestId("unocalc-active-panels").querySelectorAll("aside")).toHaveLength(3);
+    expect(screen.getByTestId("unocalc-active-panels")).toHaveClass("unocalc-active-panels--dense");
     fireEvent.pointerDown(svg, { pointerId: 34, clientX: 100, clientY: 300 });
     fireEvent.pointerMove(svg, { pointerId: 34, clientX: 493, clientY: 300 });
     fireEvent.pointerUp(svg, { pointerId: 34, clientX: 493, clientY: 300 });
@@ -181,6 +182,7 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.getByTestId("unocalc-retail-panel")).toBeInTheDocument();
     tap(screen.getByTestId("unocalc-commerce-hit"), 35);
     expect(screen.getByTestId("unocalc-active-panels").querySelectorAll("aside")).toHaveLength(4);
+    expect(screen.getByTestId("unocalc-active-panels")).toHaveClass("unocalc-active-panels--dense");
     for (const node of ["retail", "commerce", "design", "production"]) {
       expect(screen.getByTestId(`unocalc-${node}-panel`)).toBeInTheDocument();
     }
