@@ -568,12 +568,12 @@ const UnoCalc = () => {
             </div>
             <p className="max-w-[430px] text-[12px] font-light leading-[1.7] text-foreground/70">{t.crystalIntro}</p>
           </div>
-          <UnoCrystalScene locale={locale} dimensions={[a, b, c]} onOpenInputs={openCrystalInputs} />
-          <p className="mx-auto mt-3 max-w-[760px] text-[11px] font-light leading-[1.7] text-foreground/60">{t.crystalFootnote}</p>
-        </section>
-
-        {crystalInputsOpen && (
-          <div ref={crystalInputsRef} className="mx-auto mt-7 max-w-[760px] border-y border-foreground/25 bg-foreground/[0.018] px-4 py-6 sm:px-8" id="unocalc-crystal-inputs">
+          <div className={crystalInputsOpen
+            ? "mt-4 grid items-center gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(315px,0.9fr)]"
+            : "mt-4"}>
+            <UnoCrystalScene locale={locale} dimensions={[a, b, c]} onOpenInputs={openCrystalInputs} />
+            {crystalInputsOpen && (
+          <div ref={crystalInputsRef} className="w-full min-w-0 border-y border-foreground/25 bg-foreground/[0.018] px-4 py-6 sm:px-8 lg:px-5" id="unocalc-crystal-inputs">
             <div className="flex items-center justify-between gap-4">
               <h3 className="text-[12px] font-medium uppercase tracking-[0.13em]">{t.crystalInputs}</h3>
               <button type="button" onClick={() => setCrystalInputsOpen(false)}
@@ -597,7 +597,7 @@ const UnoCalc = () => {
             {feedback && <p role="alert" className="mt-3 text-[12px] text-red-700">{feedback}</p>}
             <fieldset className="mt-6">
               <legend className="text-[12px] font-medium uppercase tracking-[0.1em]">{t.settings}</legend>
-              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+              <div className="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
                 {qualityLevels.map((level) => (
                   <label key={level} className={"flex min-h-11 cursor-pointer items-center gap-2 border px-3 py-2 text-[12px] leading-snug " +
                     (quality === level ? "border-foreground/60 bg-foreground/[0.045]" : "border-border/70")}>
@@ -622,7 +622,10 @@ const UnoCalc = () => {
               {t.crystalDetails} →
             </button>
           </div>
-        )}
+            )}
+          </div>
+          <p className="mx-auto mt-3 max-w-[760px] text-[11px] font-light leading-[1.7] text-foreground/60">{t.crystalFootnote}</p>
+        </section>
 
         <div className="mx-auto mt-8 flex max-w-[760px] justify-center border-t border-border/60 pt-5">
           <button type="button" onClick={() => detailsOpen ? setDetailsOpen(false) : openDetails()}
