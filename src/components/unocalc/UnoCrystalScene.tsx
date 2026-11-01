@@ -53,10 +53,10 @@ const nodes: { id: NodeId; point: Point3; color: string }[] = [
 const top: Point3 = [0, 1.57, 0];
 const bottom: Point3 = [0, -1.57, 0];
 const initialOrbit = { yaw: 0.28, pitch: 0.56 };
-// An actual egg silhouette: widest in the upper third, gradually tapering to
+// An actual egg silhouette: widest around the upper shoulder, continuously tapering to
 // a narrower, rounded base. The enclosing membrane stays stationary while
 // the crystal and its observation plane rotate within it.
-const EGG_PATH = "M 380 39 C 269 29 146 91 112 222 C 78 338 127 457 236 563 C 295 621 351 650 380 655 C 409 650 465 621 524 563 C 633 457 682 338 648 222 C 614 91 491 29 380 39 Z";
+const EGG_PATH = "M 380 66 C 250 66 151 142 145 268 C 139 374 195 488 280 579 C 322 624 355 638 380 640 C 405 638 438 624 480 579 C 565 488 621 374 615 268 C 609 142 510 66 380 66 Z";
 type Projected = { x: number; y: number; depth: number };
 const project = ([x, y, z]: Point3, yaw: number, pitch: number): Projected => {
   const rx = x * Math.cos(yaw) + z * Math.sin(yaw);
