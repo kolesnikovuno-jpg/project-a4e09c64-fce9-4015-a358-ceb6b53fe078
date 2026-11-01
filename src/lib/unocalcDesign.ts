@@ -11,6 +11,8 @@ export const EMPTY_BRIEF: DesignBrief = { concept: "", purpose: "", character: "
 export const designCopy = {
   ru: {
     lockedBeforeIdea: "Сначала опишите идею",
+    continueDesign: "Продолжить → Дизайн",
+    ideaRequired: "Введите описание идеи, чтобы перейти к дизайну.",
     lockedAfterSketch: "Доступно после первого эскиза",
     flowHint: "Идея → Дизайн → Эскиз → Производство / Коммерция / Ритейл / Материя",
     workOpen: "Перейти к дизайн-брифу",
@@ -50,6 +52,8 @@ export const designCopy = {
   },
   uk: {
     lockedBeforeIdea: "Спочатку опишіть ідею",
+    continueDesign: "Продовжити → Дизайн",
+    ideaRequired: "Введіть опис ідеї, щоб перейти до дизайну.",
     lockedAfterSketch: "Доступно після першого ескізу",
     flowHint: "Ідея → Дизайн → Ескіз → Виробництво / Комерція / Ритейл / Матерія",
     workOpen: "Перейти до дизайн-брифу",
@@ -89,6 +93,8 @@ export const designCopy = {
   },
   en: {
     lockedBeforeIdea: "Describe your idea first",
+    continueDesign: "Continue → Design",
+    ideaRequired: "Enter an idea description to continue to Design.",
     lockedAfterSketch: "Available after the first sketch",
     flowHint: "Idea → Design → Sketch → Production / Commerce / Retail / Matter",
     workOpen: "Go to design brief",
