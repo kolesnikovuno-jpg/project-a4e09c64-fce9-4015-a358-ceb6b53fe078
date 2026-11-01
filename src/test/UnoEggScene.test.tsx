@@ -50,11 +50,18 @@ describe("UNOcalc egg-only geometry", () => {
     const axis = screen.getByTestId("unocalc-egg-axis");
     expect(outline).toHaveAttribute("fill", "none");
     expect(outline).toHaveAttribute("stroke-width", ".95");
-    expect(axis).toHaveAttribute("stroke-dasharray", "7 8");
+    expect(axis).toHaveAttribute("stroke-dasharray", "4 9");
+    expect(axis).toHaveAttribute("stroke-width", ".65");
+    expect(axis).toHaveAttribute("stroke-opacity", ".14");
     const spheres = screen.getAllByTestId("unocalc-section-sphere");
     expect(spheres).toHaveLength(3);
     spheres.forEach((sphere) => expect(sphere).toHaveAttribute("fill", "none"));
     expect(screen.getAllByTestId("unocalc-section-axis")).toHaveLength(2);
+    screen.getAllByTestId("unocalc-section-axis").forEach((line) => {
+      expect(line).toHaveAttribute("stroke-width", ".65");
+      expect(line).toHaveAttribute("stroke-opacity", ".10");
+      expect(line).toHaveAttribute("stroke-dasharray", "4 9");
+    });
     const core = screen.getByTestId("unocalc-core-sphere");
     expect(core).toHaveAttribute("cx", "380");
     expect(Number(core.getAttribute("cy"))).toBeCloseTo(350 - 212 * EGG_EQUATOR, 6);
@@ -122,6 +129,12 @@ describe("UNOcalc egg-only geometry", () => {
     const { rerender } = render(<UnoEggScene locale="ru" />);
     expect(screen.getAllByTestId("unocalc-lower-sphere")).toHaveLength(2);
     expect(screen.getAllByTestId("unocalc-lower-sphere").every((node) => node.getAttribute("pointer-events") === "none")).toBe(true);
+    screen.getAllByTestId("unocalc-lower-sphere").forEach((circle) => {
+      expect(circle).toHaveAttribute("fill", "none");
+      expect(circle).toHaveAttribute("stroke-width", "1.1");
+      expect(circle).toHaveAttribute("stroke-opacity", ".72");
+    });
+    expect(screen.getAllByTestId("unocalc-lower-sphere-node").every((group) => group.querySelector("text") === null)).toBe(true);
     expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("05 — Тест-драйв");
     expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("06 — Маркетинг");
     expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("07 — Комплектация");
@@ -134,6 +147,7 @@ describe("UNOcalc egg-only geometry", () => {
     const svg = screen.getByTestId("unocalc-egg-svg");
     fireEvent.keyDown(svg, { key: "ArrowDown" });
     expect(screen.getAllByTestId("unocalc-lower-sphere")).toHaveLength(4);
+    expect(screen.getAllByTestId("unocalc-lower-sphere-node").every((group) => group.querySelector("text") === null)).toBe(true);
     expect(screen.getAllByTestId("unocalc-lower-sphere").find((node) => node.getAttribute("data-node-id") === "support-3"))
       .toHaveAttribute("data-node-role", "procurement");
     expect(screen.getAllByTestId("unocalc-lower-sphere").find((node) => node.getAttribute("data-node-id") === "support-4"))
