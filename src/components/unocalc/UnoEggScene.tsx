@@ -800,36 +800,44 @@ const UnoEggScene = ({ locale }: Props) => {
           {/* Idea links are projected from 3D on every rotation and do not
               intercept clicks. The rear Legal link is subtler in front view. */}
           <g data-testid="unocalc-idea-links" aria-hidden="true" pointerEvents="none">
-            {geometry.ideaLinks.map((link) => (
-              <line
-                key={link.id}
-                data-testid={`unocalc-idea-link-${link.id}`}
-                x1={link.x1} y1={link.y1}
-                x2={link.x2} y2={link.y2}
-                stroke="currentColor"
-                strokeWidth=".75"
-                strokeOpacity={link.depth < 0 ? ".22" : ".38"}
-                vectorEffect="non-scaling-stroke"
-                pointerEvents="none"
-              />
-            ))}
+            {geometry.ideaLinks.map((link) => {
+              const branch = link.id as "marketing" | "legal";
+              const isActive = !!ideaCycle && (ideaCycle.phase === "research" || ideaCycle.phase === "synthesis");
+              const returned = !!ideaCycle?.[`${branch}Returned` as "marketingReturned" | "legalReturned"];
+              return <g key={link.id}>
+                <line data-testid={`unocalc-idea-link-${link.id}`}
+                  x1={link.x1} y1={link.y1} x2={link.x2} y2={link.y2}
+                  stroke={isActive ? "hsl(var(--primary))" : "currentColor"}
+                  strokeWidth={isActive ? "1.6" : ".75"}
+                  strokeOpacity={isActive ? ".8" : link.depth < 0 ? ".22" : ".38"}
+                  vectorEffect="non-scaling-stroke" pointerEvents="none" />
+                {isActive && <circle r="3" fill={returned ? "#c49d65" : "hsl(var(--primary))"} className="unocalc-cycle-pulse">
+                  <animateMotion dur={returned ? "2.4s" : "2s"} repeatCount="indefinite"
+                    path={returned
+                      ? `M ${link.x2} ${link.y2} L ${link.x1} ${link.y1}`
+                      : `M ${link.x1} ${link.y1} L ${link.x2} ${link.y2}`} />
+                </circle>}
+              </g>;
+            })}
           </g>
           {/* Additional structural relationships from the lower spheres to
               Design and Production, drawn behind the clickable nodes. */}
           <g data-testid="unocalc-support-links" aria-hidden="true" pointerEvents="none">
-            {geometry.supportLinks.map((link) => (
-              <line
-                key={link.id}
-                data-testid={`unocalc-support-link-${link.id}`}
-                x1={link.x1} y1={link.y1}
-                x2={link.x2} y2={link.y2}
-                stroke="currentColor"
-                strokeWidth=".75"
-                strokeOpacity={link.depth < 0 ? ".22" : ".38"}
-                vectorEffect="non-scaling-stroke"
-                pointerEvents="none"
-              />
-            ))}
+            {geometry.supportLinks.map((link) => {
+              const active = ideaCycle?.phase === "forwarded" && (link.id === "marketing-design" || link.id === "legal-production");
+              return <g key={link.id}>
+                <line data-testid={`unocalc-support-link-${link.id}`}
+                  x1={link.x1} y1={link.y1} x2={link.x2} y2={link.y2}
+                  stroke={active ? "hsl(var(--primary))" : "currentColor"}
+                  strokeWidth={active ? "1.6" : ".75"}
+                  strokeOpacity={active ? ".8" : link.depth < 0 ? ".22" : ".38"}
+                  vectorEffect="non-scaling-stroke" pointerEvents="none" />
+                {active && <circle r="3" fill="hsl(var(--primary))" className="unocalc-cycle-pulse">
+                  <animateMotion dur="2s" repeatCount="indefinite"
+                    path={`M ${link.x1} ${link.y1} L ${link.x2} ${link.y2}`} />
+                </circle>}
+              </g>;
+            })}
           </g>
           {/* The central core represents the object. Tapping opens the Author panel;
               dragging still rotates the egg without triggering panel activation. */}
@@ -891,12 +899,18 @@ const UnoEggScene = ({ locale }: Props) => {
                   cy={node.y}
                   r={NODE_CONTOUR.radius}
                   fill={active ? "hsl(var(--primary) / 0.22)" : "none"}
-                  stroke={active ? "hsl(var(--primary))" : "currentColor"}
+                  stroke={active ? "hsl(var(--primary))" : signalColor(nodeType ?? "idea")}
                   strokeWidth={NODE_CONTOUR.width}
                   strokeOpacity={active ? NODE_CONTOUR.activeOpacity : NODE_CONTOUR.idleOpacity}
                   vectorEffect="non-scaling-stroke"
                   pointerEvents="none"
                 />
+                {nodeType && cycleSignal(nodeType) !== "idle" && <circle
+                  data-testid={`unocalc-signal-${nodeType}`}
+                  cx={node.x + 9} cy={node.y - 9} r="3.5"
+                  fill={cycleSignal(nodeType) === "attention" ? "#c49d65" : "hsl(var(--primary))"}
+                  pointerEvents="none" />}
+
                 {nodeType && (
                   <circle
                     data-testid={`unocalc-${node.id}-hit`}
@@ -942,12 +956,18 @@ const UnoEggScene = ({ locale }: Props) => {
                   cy={node.y}
                   r={NODE_CONTOUR.radius}
                   fill={active ? "hsl(var(--primary) / 0.22)" : "none"}
-                  stroke={active ? "hsl(var(--primary))" : "currentColor"}
+                  stroke={active ? "hsl(var(--primary))" : signalColor(nodeType ?? "idea")}
                   strokeWidth={NODE_CONTOUR.width}
                   strokeOpacity={active ? NODE_CONTOUR.activeOpacity : NODE_CONTOUR.idleOpacity}
                   vectorEffect="non-scaling-stroke"
                   pointerEvents="none"
                 />
+                {nodeType && cycleSignal(nodeType) !== "idle" && <circle
+                  data-testid={`unocalc-signal-${nodeType}`}
+                  cx={node.x + 9} cy={node.y - 9} r="3.5"
+                  fill={cycleSignal(nodeType) === "attention" ? "#c49d65" : "hsl(var(--primary))"}
+                  pointerEvents="none" />}
+
                 {nodeType && detail && (
                   <circle
                     data-testid={nodeType === "marketing" ? "unocalc-marketing-hit" :
@@ -988,12 +1008,18 @@ const UnoEggScene = ({ locale }: Props) => {
                   cy={node.y}
                   r={NODE_CONTOUR.radius}
                   fill={active ? "hsl(var(--primary) / 0.22)" : "none"}
-                  stroke={active ? "hsl(var(--primary))" : "currentColor"}
+                  stroke={active ? "hsl(var(--primary))" : signalColor(nodeType ?? "idea")}
                   strokeWidth={NODE_CONTOUR.width}
                   strokeOpacity={active ? NODE_CONTOUR.activeOpacity : NODE_CONTOUR.idleOpacity}
                   vectorEffect="non-scaling-stroke"
                   pointerEvents="none"
                 />
+                {nodeType && cycleSignal(nodeType) !== "idle" && <circle
+                  data-testid={`unocalc-signal-${nodeType}`}
+                  cx={node.x + 9} cy={node.y - 9} r="3.5"
+                  fill={cycleSignal(nodeType) === "attention" ? "#c49d65" : "hsl(var(--primary))"}
+                  pointerEvents="none" />}
+
                 <circle
                   data-testid={`unocalc-${nodeType}-hit`}
                   data-egg-node={nodeType}
