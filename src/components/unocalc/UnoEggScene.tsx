@@ -25,6 +25,7 @@ const SURFACE = eggSurface();
 const text = {
   ru: {
     label: "Трёхмерная форма яйца с вертикальной осью. Вращайте жестом или стрелками клавиатуры.",
+    coreLabel: "Центральная сфера — формируемый объект",
     hint: "Вращайте форму жестом или мышью · коснитесь сферы",
     retail: "Ритейл",
     retailLabel: "Открыть описание узла «Ритейл»",
@@ -59,6 +60,7 @@ const text = {
   },
   uk: {
     label: "Тривимірна форма яйця з вертикальною віссю. Обертайте жестом або стрілками клавіатури.",
+    coreLabel: "Центральна сфера — об’єкт, що формується",
     hint: "Обертайте форму жестом або мишею · торкніться сфери",
     retail: "Ритейл",
     retailLabel: "Відкрити опис вузла «Ритейл»",
@@ -93,6 +95,7 @@ const text = {
   },
   en: {
     label: "Three-dimensional egg with a vertical axis. Drag or use arrow keys to rotate.",
+    coreLabel: "Central sphere — the object taking form",
     hint: "Drag to rotate · tap a sphere",
     retail: "Retail",
     retailLabel: "Open the Retail node description",
@@ -227,6 +230,7 @@ const UnoEggScene = ({ locale }: Props) => {
       sectionAxes,
       sectionNodes: visibleEggSectionNodes(sectionAxes),
       poleNodes: eggPoleNodes(orientation),
+      core: projectEggPoint({ x: 0, y: 0, z: 0 }, orientation),
     };
   }, [orientation]);
 
@@ -303,6 +307,13 @@ const UnoEggScene = ({ locale }: Props) => {
           onPointerCancel={onPointerEnd}
           onKeyDown={onKeyDown}
         >
+          <defs>
+            <radialGradient id="unocalc-core-shading" cx="36%" cy="30%" r="76%">
+              <stop offset="0%" stopColor="#c9b58b" stopOpacity=".34" />
+              <stop offset="68%" stopColor="#b8a076" stopOpacity=".21" />
+              <stop offset="100%" stopColor="#ad9162" stopOpacity=".08" />
+            </radialGradient>
+          </defs>
           <line
             data-testid="unocalc-egg-axis"
             x1={geometry.axis.start.x} y1={geometry.axis.start.y}
@@ -333,6 +344,22 @@ const UnoEggScene = ({ locale }: Props) => {
               vectorEffect="non-scaling-stroke"
             />
           ))}
+          {/* The unformed object: a quiet, larger sphere inside the shell.
+              It is not a seventh functional node and does not intercept gestures. */}
+          <circle
+            data-testid="unocalc-core-sphere"
+            cx={geometry.core.x}
+            cy={geometry.core.y}
+            r="30"
+            fill="url(#unocalc-core-shading)"
+            stroke="#aa936d"
+            strokeWidth="1.25"
+            strokeOpacity=".72"
+            vectorEffect="non-scaling-stroke"
+            pointerEvents="none"
+            role="img"
+            aria-label={copy.coreLabel}
+          />
           {geometry.sectionNodes.map((node) => {
             const nodeType: InteractiveNode | null =
               node.id === "retail" || node.id === "commerce" || node.id === "design" || node.id === "production"

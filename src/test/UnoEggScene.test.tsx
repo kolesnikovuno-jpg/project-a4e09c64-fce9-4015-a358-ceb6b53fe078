@@ -29,6 +29,12 @@ describe("UNOcalc egg-only geometry", () => {
     expect(spheres).toHaveLength(3);
     spheres.forEach((sphere) => expect(sphere).toHaveAttribute("fill", "none"));
     expect(screen.getAllByTestId("unocalc-section-axis")).toHaveLength(2);
+    const core = screen.getByTestId("unocalc-core-sphere");
+    expect(core).toHaveAttribute("cx", "380");
+    expect(core).toHaveAttribute("cy", "350");
+    expect(core).toHaveAttribute("r", "30");
+    expect(core).toHaveAttribute("pointer-events", "none");
+    expect(core).toHaveAttribute("aria-label", "Центральная сфера — формируемый объект");
     const poles = screen.getAllByTestId("unocalc-pole-sphere");
     expect(poles).toHaveLength(2);
     poles.forEach((sphere) => {
@@ -77,6 +83,9 @@ describe("UNOcalc egg-only geometry", () => {
     const initialAxisY = axis.getAttribute("y1");
     const firstSideSphere = screen.getAllByTestId("unocalc-section-sphere")[0];
     const initialSphereX = firstSideSphere.getAttribute("cx");
+    const core = screen.getByTestId("unocalc-core-sphere");
+    const initialCoreX = core.getAttribute("cx");
+    const initialCoreY = core.getAttribute("cy");
     fireEvent.keyDown(svg, { key: "ArrowRight" });
     expect(axis.getAttribute("x1")).toBe(initialAxisX);
     expect(axis.getAttribute("y1")).toBe(initialAxisY);
@@ -84,9 +93,23 @@ describe("UNOcalc egg-only geometry", () => {
     fireEvent.keyDown(svg, { key: "ArrowDown" });
     expect(axis.getAttribute("y1")).not.toBe(initialAxisY);
     expect(screen.getAllByTestId("unocalc-section-sphere")).toHaveLength(4);
+    expect(core).toHaveAttribute("cx", initialCoreX);
+    expect(core).toHaveAttribute("cy", initialCoreY);
     fireEvent.keyDown(svg, { key: "Home" });
     expect(axis.getAttribute("y1")).toBe(initialAxisY);
     expect(screen.getAllByTestId("unocalc-section-sphere")).toHaveLength(3);
+  });
+
+  it("keeps the yolk-like core separate from six interactive nodes and preserves locale labels", () => {
+    const { rerender } = render(<UnoEggScene locale="ru" />);
+    const core = screen.getByTestId("unocalc-core-sphere");
+    expect(core).not.toHaveAttribute("role", "button");
+    expect(screen.getAllByRole("button")).toHaveLength(5);
+    expect(screen.queryByTestId("unocalc-active-panels")).not.toBeInTheDocument();
+    rerender(<UnoEggScene locale="uk" />);
+    expect(core).toHaveAttribute("aria-label", "Центральна сфера — об’єкт, що формується");
+    rerender(<UnoEggScene locale="en" />);
+    expect(core).toHaveAttribute("aria-label", "Central sphere — the object taking form");
   });
 
   it("opens the retail explanation only after tapping the central front sphere", () => {
