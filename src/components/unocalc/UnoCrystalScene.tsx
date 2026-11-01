@@ -128,9 +128,17 @@ const UnoCrystalScene = ({ locale, dimensions, onOpenInputs }: Props) => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full min-w-0 max-w-full">
       <style>{"@keyframes uno-crystal-breathe {0%,100%{opacity:.7;transform:translateY(0px) scale(1)}50%{opacity:.95;transform:translateY(-3px) scale(1.035)}} @media (prefers-reduced-motion:reduce){.uno-crystal-cloud{animation:none!important}}"}</style>
-      <div className="relative mx-auto w-full max-w-[760px]">
+      <div
+        data-testid="unocalc-crystal-stage"
+        className="relative mx-auto w-full min-w-0"
+        style={{
+          // The entire six-point field must fit the visible screen, not just
+          // the page width. On short/landscape viewports, height is limiting.
+          maxWidth: "min(100%, 64vh, 700px)",
+        }}
+      >
         <svg viewBox="0 0 760 690" className="block h-auto w-full cursor-grab select-none active:cursor-grabbing"
           style={{ touchAction: "none" }} role="img" aria-label={t.title + ". " + t.hint}
           onPointerDown={onPointerDown} onPointerMove={onPointerMove}

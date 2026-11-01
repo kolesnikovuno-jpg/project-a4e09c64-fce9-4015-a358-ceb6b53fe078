@@ -15,6 +15,16 @@ describe("UNOcalc crystal entry scene", () => {
     expect(onOpenInputs).toHaveBeenCalledOnce();
   });
 
+  it("caps the crystal scene by viewport height so all six nodes stay on screen", () => {
+    const { container } = render(
+      <UnoCrystalScene locale="ru" dimensions={["", "", ""]} onOpenInputs={vi.fn()} />
+    );
+    const stage = screen.getByTestId("unocalc-crystal-stage");
+    expect(stage.style.maxWidth).toContain("64vh");
+    expect(stage.querySelector("svg")).toHaveAttribute("viewBox", "0 0 760 690");
+    expect(container.querySelectorAll("svg > circle")).toHaveLength(4);
+  });
+
   it("shows a proportional 3D cuboid only for valid dimensions", () => {
     const onOpenInputs = vi.fn();
     const { container, rerender } = render(
