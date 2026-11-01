@@ -206,12 +206,12 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.getByTestId("unocalc-marketing-panel")).toBeInTheDocument();
   });
 
-  it("connects all six principal/lower sphere pairs without changing the Idea links", () => {
+  it("connects all seven functional sphere pairs without changing the Idea links", () => {
     const orientation = { yaw: 0, tilt: 0 };
     const links = eggSupportLinks(orientation);
     expect(links.map((link) => link.id)).toEqual([
       "marketing-design", "legal-production", "design-test-drive", "production-procurement",
-      "test-drive-commerce", "procurement-retail",
+      "test-drive-commerce", "procurement-retail", "commerce-retail",
     ]);
     expect(eggIdeaLinks(orientation)).toHaveLength(2);
     const lower = eggLowerSphereNodes(orientation);
@@ -239,7 +239,7 @@ describe("UNOcalc egg-only geometry", () => {
     render(<UnoEggScene locale="ru" />);
     expect(screen.getByTestId("unocalc-idea-links").querySelectorAll("line")).toHaveLength(2);
     const group = screen.getByTestId("unocalc-support-links");
-    expect(group.querySelectorAll("line")).toHaveLength(6);
+    expect(group.querySelectorAll("line")).toHaveLength(7);
     expect(group).toHaveAttribute("pointer-events", "none");
     const marketing = screen.getByTestId("unocalc-support-link-marketing-design");
     const legal = screen.getByTestId("unocalc-support-link-legal-production");
@@ -247,7 +247,8 @@ describe("UNOcalc egg-only geometry", () => {
     const procurement = screen.getByTestId("unocalc-support-link-production-procurement");
     const commerceLink = screen.getByTestId("unocalc-support-link-test-drive-commerce");
     const retailLink = screen.getByTestId("unocalc-support-link-procurement-retail");
-    for (const line of [marketing, legal, testDrive, procurement, commerceLink, retailLink]) {
+    const commerceRetail = screen.getByTestId("unocalc-support-link-commerce-retail");
+    for (const line of [marketing, legal, testDrive, procurement, commerceLink, retailLink, commerceRetail]) {
       expect(line).toHaveAttribute("stroke-width", ".75");
       expect(line).toHaveAttribute("pointer-events", "none");
     }
@@ -257,17 +258,32 @@ describe("UNOcalc egg-only geometry", () => {
     expect(procurement).toHaveAttribute("stroke-opacity", ".22");
     expect(commerceLink).toHaveAttribute("stroke-opacity", ".22");
     expect(retailLink).toHaveAttribute("stroke-opacity", ".38");
+    expect(commerceRetail).toHaveAttribute("stroke-opacity", ".38");
     const before = marketing.getAttribute("x1");
     const beforeTestDrive = testDrive.getAttribute("x2");
     const beforeCommerce = commerceLink.getAttribute("x2");
+    // Commerce and Retail lie opposite each other along the view direction
+    // in the initial elevation, so their link appears after rotating.
+    expect(commerceRetail.getAttribute("x1")).toBe(commerceRetail.getAttribute("x2"));
     fireEvent.keyDown(screen.getByTestId("unocalc-egg-svg"), { key: "ArrowRight" });
     expect(marketing.getAttribute("x1")).not.toBe(before);
     expect(testDrive.getAttribute("x2")).not.toBe(beforeTestDrive);
     expect(commerceLink.getAttribute("x2")).not.toBe(beforeCommerce);
+    expect(commerceRetail.getAttribute("x1")).not.toBe(commerceRetail.getAttribute("x2"));
     fireEvent.click(screen.getByTestId("unocalc-design-hit"));
     expect(screen.getByTestId("unocalc-design-panel")).toBeInTheDocument();
     fireEvent.click(screen.getByTestId("unocalc-test-drive-hit"));
     expect(screen.getByTestId("unocalc-testDrive-panel")).toBeInTheDocument();
+  });
+
+  it("keeps the Commerce–Retail link anchored to both sphere contours in rotated views", () => {
+    const orientation = { yaw: 0.55, tilt: 0.2 };
+    const link = eggSupportLinks(orientation).find((item) => item.id === "commerce-retail");
+    expect(link).toBeDefined();
+    const [commerce, retail] = eggSectionAxes(orientation)[1].nodes;
+    expect(Math.hypot(link!.x1 - commerce.x, link!.y1 - commerce.y)).toBeCloseTo(10.5, 6);
+    expect(Math.hypot(link!.x2 - retail.x, link!.y2 - retail.y)).toBeCloseTo(10.5, 6);
+    expect(Math.hypot(link!.x2 - link!.x1, link!.y2 - link!.y1)).toBeGreaterThan(0);
   });
 
   it("uses identical contours for all visible functional spheres after tilting and when selected", () => {
