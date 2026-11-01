@@ -155,8 +155,8 @@ const UnoEggScene = ({ locale }: Props) => {
             d={geometry.silhouette}
             fill="none"
             stroke="currentColor"
-            strokeWidth="1.3"
-            strokeOpacity=".65"
+            strokeWidth=".95"
+            strokeOpacity=".50"
             strokeLinejoin="round"
             vectorEffect="non-scaling-stroke"
           />
