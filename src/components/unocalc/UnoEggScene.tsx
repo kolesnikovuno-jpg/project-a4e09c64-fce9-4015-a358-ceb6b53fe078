@@ -54,7 +54,7 @@ const text = {
     matter: "Материя",
     matterLabel: "Открыть описание полюса «Материя»",
     matterCloseLabel: "Закрыть описание полюса «Материя»",
-    matterDescription: "Физическое присутствие объекта. Здесь замысел обретает материал, масштаб и ощутимую форму.",
+    matterDescription: "Материальная основа объекта. Материалы, компоненты и комплектующие, из которых формируется его физическая структура.",
     matterNode: "Полюс / 02",
   },
   uk: {
@@ -88,7 +88,7 @@ const text = {
     matter: "Матерія",
     matterLabel: "Відкрити опис полюса «Матерія»",
     matterCloseLabel: "Закрити опис полюса «Матерія»",
-    matterDescription: "Фізична присутність об’єкта. Тут задум набуває матеріалу, масштабу й відчутної форми.",
+    matterDescription: "Матеріальна основа об’єкта. Матеріали, компоненти та комплектувальні вироби, з яких формується його фізична структура.",
     matterNode: "Полюс / 02",
   },
   en: {
@@ -122,7 +122,7 @@ const text = {
     matter: "Matter",
     matterLabel: "Open the Matter pole description",
     matterCloseLabel: "Close the Matter pole description",
-    matterDescription: "The physical presence of an object. Here, the concept gains material, scale, and tangible form.",
+    matterDescription: "The material foundation of an object. Materials, components, and parts from which its physical structure is formed.",
     matterNode: "Pole / 02",
   },
 };
