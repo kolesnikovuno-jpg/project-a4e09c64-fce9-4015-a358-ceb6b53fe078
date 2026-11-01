@@ -85,24 +85,66 @@ export const convexOutline = (points: Point2[]): Point2[] => {
 export const svgOutline = (points: Point2[]): string =>
   points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(" ") + " Z";
 
-/** Back and front semicircles make the cross-section legible in a wireframe. */
-export const eggEquatorArcs = (orientation: EggOrientation, steps = 144) => {
+/**
+ * Four unnamed lower spheres sit on the egg surface, 0.38 R below the
+ * existing equatorial plane and halfway between the four principal nodes
+ * in azimuth. Their functions are deliberately left unassigned.
+ */
+export const LOWER_SPHERE_SECTION_Y = -0.38;
+export const LOWER_SPHERE_Y = LOWER_SPHERE_SECTION_Y - SECTION_CENTER;
+const LOWER_SPHERE_RADIUS = eggRadiusAtSection(LOWER_SPHERE_SECTION_Y);
+
+export const eggLowerSphereNodes = (orientation: EggOrientation) =>
+  Array.from({ length: 4 }, (_, index) => {
+    const angle = Math.PI / 4 + index * Math.PI / 2;
+    return {
+      ...projectEggPoint({
+        x: LOWER_SPHERE_RADIUS * Math.cos(angle),
+        y: LOWER_SPHERE_Y,
+        z: LOWER_SPHERE_RADIUS * Math.sin(angle),
+      }, orientation),
+      id: `support-${index + 1}`,
+      number: index + 5,
+      angle,
+    };
+  });
+
+/** Hide lower spheres that are exactly behind another sphere in projection. */
+export const visibleEggLowerSphereNodes = (orientation: EggOrientation, sphereRadius = 10.5) => {
+  const nodes = eggLowerSphereNodes(orientation).sort((a, b) => b.depth - a.depth);
+  const visible: typeof nodes = [];
+  for (const node of nodes) {
+    if (!visible.some((front) => Math.hypot(node.x - front.x, node.y - front.y) < sphereRadius * 2)) {
+      visible.push(node);
+    }
+  }
+  return visible;
+};
+
+/** Back and front arcs make each 3D latitude legible in a wireframe. */
+const eggLatitudeArcs = (orientation: EggOrientation, radius: number, y: number, steps: number) => {
   const front: string[] = [];
   const back: string[] = [];
   for (let i = 0; i <= steps; i++) {
     const angle = 2 * Math.PI * i / steps;
-    const p = projectEggPoint({ x: Math.cos(angle), y: EGG_EQUATOR, z: Math.sin(angle) }, orientation);
+    const p = projectEggPoint({ x: radius * Math.cos(angle), y, z: radius * Math.sin(angle) }, orientation);
     const point = `${p.x.toFixed(2)} ${p.y.toFixed(2)}`;
     // Independent short segments prevent a spurious bridge when depth changes sign.
     if (i > 0) {
       const previousAngle = 2 * Math.PI * (i - 1) / steps;
-      const prev = projectEggPoint({ x: Math.cos(previousAngle), y: EGG_EQUATOR, z: Math.sin(previousAngle) }, orientation);
+      const prev = projectEggPoint({ x: radius * Math.cos(previousAngle), y, z: radius * Math.sin(previousAngle) }, orientation);
       const segment = `M ${prev.x.toFixed(2)} ${prev.y.toFixed(2)} L ${point}`;
       (p.depth + prev.depth >= 0 ? front : back).push(segment);
     }
   }
   return { front: front.join(" "), back: back.join(" ") };
 };
+
+export const eggEquatorArcs = (orientation: EggOrientation, steps = 144) =>
+  eggLatitudeArcs(orientation, 1, EGG_EQUATOR, steps);
+
+export const eggLowerRingArcs = (orientation: EggOrientation, steps = 144) =>
+  eggLatitudeArcs(orientation, LOWER_SPHERE_RADIUS, LOWER_SPHERE_Y, steps);
 
 /**
  * Two perpendicular diameters of the equatorial plane. Their four nodes lie
