@@ -3,6 +3,8 @@ import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import { useLocale } from "@/i18n/useLocale";
 import UnoEggScene from "@/components/unocalc/UnoEggScene";
 
+const modelLabel = { ru: "Модель объекта", uk: "Модель об’єкта", en: "Object model" };
+
 const UnoCalcEgg = () => {
   const { locale, localePath } = useLocale();
   return (
@@ -21,7 +23,11 @@ const UnoCalcEgg = () => {
           <h1 className="text-[25px] font-extralight leading-none tracking-[-0.04em] text-foreground/85 sm:text-[28px]">
             UNO<span className="font-extralight">calc</span>
           </h1>
-          <nav className="flex items-center gap-5 sm:gap-7">
+          <nav className="flex items-center gap-4 sm:gap-7">
+            <Link to={localePath("/unocalc/model")}
+              className="inline-flex min-h-9 items-center rounded-full border border-foreground/20 px-3 text-[11px] tracking-[0.04em] text-foreground/80 transition-colors hover:border-primary hover:text-primary">
+              {modelLabel[locale]}
+            </Link>
             <Link to={localePath("/")}
               className="inline-flex min-h-9 items-center text-[12px] tracking-[0.12em] text-foreground/80 transition-colors hover:text-primary">
               .uno
