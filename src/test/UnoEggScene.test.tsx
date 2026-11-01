@@ -76,6 +76,14 @@ describe("UNOcalc egg-only geometry", () => {
       expect(sphere.getAttribute("cx")).toBe("380");
     });
     expect(screen.getAllByTestId("unocalc-section-sphere")).toHaveLength(3);
+    const functionalSpheres = [...spheres, ...poles, ...screen.getAllByTestId("unocalc-lower-sphere")];
+    expect(functionalSpheres).toHaveLength(7);
+    functionalSpheres.forEach((sphere) => {
+      expect(sphere).toHaveAttribute("r", "10.5");
+      expect(sphere).toHaveAttribute("stroke-width", "1.1");
+      expect(sphere).toHaveAttribute("stroke-opacity", "0.72");
+      expect(sphere).toHaveAttribute("stroke", "currentColor");
+    });
     const xs = spheres.map((sphere) => Number(sphere.getAttribute("cx"))).sort((a, b) => a - b);
     expect(xs).toEqual([168, 380, 592]);
     const ys = spheres.map((sphere) => Number(sphere.getAttribute("cy")));
@@ -132,13 +140,12 @@ describe("UNOcalc egg-only geometry", () => {
     screen.getAllByTestId("unocalc-lower-sphere").forEach((circle) => {
       expect(circle).toHaveAttribute("fill", "none");
       expect(circle).toHaveAttribute("stroke-width", "1.1");
-      expect(circle).toHaveAttribute("stroke-opacity", ".72");
+      expect(circle).toHaveAttribute("stroke-opacity", "0.72");
     });
     expect(screen.getAllByTestId("unocalc-lower-sphere-node").every((group) => group.querySelector("text") === null)).toBe(true);
-    expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("05 — Тест-драйв");
-    expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("06 — Маркетинг");
-    expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("07 — Комплектация");
-    expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("08 — Право");
+    expect(screen.queryByTestId("unocalc-lower-ring-hint")).not.toBeInTheDocument();
+    expect(screen.queryByText("Идея → Дизайн → Эскиз → Производство / Коммерция / Ритейл / Материя")).not.toBeInTheDocument();
+    expect(screen.getByTestId("unocalc-rotation-hint")).toHaveTextContent("Вращайте форму жестом, мышью или стрелками");
     expect(screen.getAllByTestId("unocalc-lower-sphere").find((node) => node.getAttribute("data-node-id") === "support-1"))
       .toHaveAttribute("data-node-role", "testDrive");
     expect(screen.getAllByTestId("unocalc-lower-sphere").find((node) => node.getAttribute("data-node-id") === "support-2"))
@@ -157,7 +164,32 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.getAllByRole("button")).toHaveLength(10);
     expect(screen.queryByTestId("unocalc-active-panels")).not.toBeInTheDocument();
     rerender(<UnoEggScene locale="uk" />);
-    expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("06 — Маркетинг");
+    expect(screen.getByTestId("unocalc-rotation-hint")).toHaveTextContent("Обертайте форму жестом, мишею або стрілками");
+    rerender(<UnoEggScene locale="en" />);
+    expect(screen.getByTestId("unocalc-rotation-hint")).toHaveTextContent("Drag or use arrow keys to rotate");
+  });
+
+  it("uses identical contours for all visible functional spheres after tilting and when selected", () => {
+    render(<UnoEggScene locale="ru" />);
+    const svg = screen.getByTestId("unocalc-egg-svg");
+    fireEvent.keyDown(svg, { key: "ArrowDown" });
+    const groups = [
+      ...screen.getAllByTestId("unocalc-section-sphere"),
+      ...screen.getAllByTestId("unocalc-lower-sphere"),
+      ...screen.getAllByTestId("unocalc-pole-sphere"),
+    ];
+    expect(groups).toHaveLength(10);
+    groups.forEach((sphere) => {
+      expect(sphere).toHaveAttribute("r", "10.5");
+      expect(sphere).toHaveAttribute("stroke-width", "1.1");
+      expect(sphere).toHaveAttribute("stroke-opacity", "0.72");
+      expect(sphere).toHaveAttribute("stroke", "currentColor");
+    });
+    fireEvent.keyDown(screen.getByTestId("unocalc-marketing-hit"), { key: "Enter" });
+    const selected = screen.getAllByTestId("unocalc-lower-sphere").find((sphere) => sphere.getAttribute("data-node-role") === "marketing");
+    expect(selected).toHaveAttribute("stroke-opacity", "0.85");
+    expect(selected).toHaveAttribute("stroke", "hsl(var(--primary))");
+    expect(selected).toHaveAttribute("stroke-width", "1.1");
   });
 
   it("opens Marketing on tap before an idea or sketch, and closes it on a second tap", () => {
