@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Canvas from "./pages/Canvas";
 import Pricing from "./pages/Pricing";
 import UnoCalcEgg from "./pages/UnoCalcEgg";
+import UnoObjectModel from "./pages/UnoObjectModel";
 import UnoCalcAbout from "./pages/UnoCalcAbout";
 import UnoLab from "./pages/UnoLab";
 import About from "./pages/About";
@@ -71,6 +72,7 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   // Previous landing (architectural research) kept for backward compatibility
   { path: "research", element: <Index /> },
   { path: "unocalc", element: <UnoCalcEgg /> },
+  { path: "unocalc/model", element: <UnoObjectModel /> },
   { path: "unocalc/about", element: <UnoCalcAbout /> },
   { path: "unocalc/lab", element: <UnoLab /> },
   { path: "lyra", element: <Lyra /> },
