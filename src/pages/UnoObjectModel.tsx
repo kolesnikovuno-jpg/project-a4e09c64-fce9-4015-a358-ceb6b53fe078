@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowUpRight, Check, Download, FileText, History, ImagePlus, RotateCcw, Upload, X } from "lucide-react";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
+import UnoObjectCorePanel from "@/components/unocalc/UnoObjectCorePanel";
+import { emptyObjectCore, type ObjectCore } from "@/lib/unocalcObjectCore";
 import { useLocale } from "@/i18n/useLocale";
 import { EMPTY_BRIEF, type DesignBrief } from "@/lib/unocalcDesign";
 import { listSketches, type StoredSketch } from "@/lib/unocalcSketches";
@@ -176,6 +178,7 @@ const UnoObjectModel = () => {
   const volume = useMemo(() => volumeCubicMetres(doc.fields), [doc.fields]);
   const lastRevision = doc.revisions[doc.revisions.length - 1];
   const isDraft = !lastRevision || JSON.stringify(lastRevision.fields) !== JSON.stringify(doc.fields)
+    || JSON.stringify(lastRevision.core ?? emptyObjectCore()) !== JSON.stringify(doc.core)
     || lastRevision.idea !== idea || JSON.stringify(lastRevision.brief) !== JSON.stringify(brief);
   const selectedSketch = sketches.find((item) => item.id === activeSketch) ?? sketches[0];
 
@@ -239,6 +242,10 @@ const UnoObjectModel = () => {
       updatedAt: new Date().toISOString(),
     }));
 
+  const updateCore = (updater: (core: ObjectCore) => ObjectCore) => {
+    setDoc((current) => ({ ...current, core: updater(current.core), updatedAt: new Date().toISOString() }));
+  };
+
   const addProposal = () => {
     const text = proposalText.trim();
     if (!text) return;
@@ -274,7 +281,8 @@ const UnoObjectModel = () => {
   const restoreRevision = (number: number) => {
     const revision = doc.revisions.find((item) => item.number === number);
     if (!revision || !window.confirm(t.restoreConfirm)) return;
-    setDoc((current) => ({ ...current, fields: structuredClone(revision.fields), updatedAt: new Date().toISOString() }));
+    setDoc((current) => ({ ...current, fields: structuredClone(revision.fields),
+      core: structuredClone(revision.core ?? emptyObjectCore()), updatedAt: new Date().toISOString() }));
     setNotice(t.restored);
   };
 
@@ -375,6 +383,8 @@ const UnoObjectModel = () => {
             {storageError ? t.storageError : notice}
           </p>
         )}
+
+        <UnoObjectCorePanel locale={locale} core={doc.core} onUpdate={updateCore} />
 
         <div className="grid items-start gap-4 lg:grid-cols-[minmax(225px,0.95fr)_minmax(360px,1.65fr)_minmax(235px,1fr)]">
           <div className="order-2 space-y-4 lg:order-1">
