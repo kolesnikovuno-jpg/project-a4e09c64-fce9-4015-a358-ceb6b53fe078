@@ -19,7 +19,7 @@ import {
 
 type Locale = "ru" | "uk" | "en";
 type Props = { locale: Locale };
-type InteractiveNode = "retail" | "commerce" | "design" | "production" | "idea" | "matter";
+type InteractiveNode = "retail" | "commerce" | "design" | "production" | "marketing" | "idea" | "matter";
 type NodeDetail = { title: string; description: string; number: string; openLabel: string; closeLabel: string };
 
 // Front elevation: the horizontal diameter has two side nodes, while
@@ -39,6 +39,10 @@ const text = {
     lowerSphereLabel: "Нижняя сфера",
     lowerRingHint: "Нижний пояс: 06 — Маркетинг (между Дизайном и Ритейлом). Сферы 05, 07, 08 пока без назначения.",
     marketing: "Маркетинг",
+    marketingLabel: "Открыть описание узла «Маркетинг»",
+    marketingCloseLabel: "Закрыть описание узла «Маркетинг»",
+    marketingDescription: "Связь между дизайном и ритейлом. Здесь можно исследовать, как будущий объект будет представлен, воспринят и найден своей аудиторией.",
+    marketingNode: "Узел / 06",
     ideaInputLabel: "Описание идеи",
     ideaInputPlaceholder: "Опишите замысел, назначение, свойства будущего объекта…",
     ideaSave: "Сохранить идею",
@@ -83,6 +87,10 @@ const text = {
     lowerSphereLabel: "Нижня сфера",
     lowerRingHint: "Нижній пояс: 06 — Маркетинг (між Дизайном і Ритейлом). Сфери 05, 07, 08 поки без призначення.",
     marketing: "Маркетинг",
+    marketingLabel: "Відкрити опис вузла «Маркетинг»",
+    marketingCloseLabel: "Закрити опис вузла «Маркетинг»",
+    marketingDescription: "Зв’язок між дизайном і ритейлом. Тут можна досліджувати, як майбутній об’єкт буде представлений, сприйнятий і знайдений своєю аудиторією.",
+    marketingNode: "Вузол / 06",
     ideaInputLabel: "Опис ідеї",
     ideaInputPlaceholder: "Опишіть задум, призначення, властивості майбутнього об’єкта…",
     ideaSave: "Зберегти ідею",
@@ -127,6 +135,10 @@ const text = {
     lowerSphereLabel: "Lower sphere",
     lowerRingHint: "Lower ring: 06 — Marketing (between Design and Retail). Spheres 05, 07, 08 remain unassigned.",
     marketing: "Marketing",
+    marketingLabel: "Open the Marketing node description",
+    marketingCloseLabel: "Close the Marketing node description",
+    marketingDescription: "The link between Design and Retail. Explore how the future object might be presented, perceived and discovered by its audience.",
+    marketingNode: "Node / 06",
     ideaInputLabel: "Describe your idea",
     ideaInputPlaceholder: "Describe the intent, purpose, and qualities of the future object…",
     ideaSave: "Save idea",
@@ -239,6 +251,7 @@ const NodeDescription = ({ node, detail }: { node: InteractiveNode; detail: Node
 const UnoEggScene = ({ locale }: Props) => {
   const [orientation, setOrientation] = useState<EggOrientation>(INITIAL);
   const [selectedNodes, setSelectedNodes] = useState<InteractiveNode[]>([]);
+  const [hoveredMarketing, setHoveredMarketing] = useState(false);
   const [ideaDraft, setIdeaDraft] = useState(() => {
     try { return window.localStorage.getItem(IDEA_STORAGE_KEY) ?? ""; }
     catch { return ""; }
@@ -274,13 +287,14 @@ const UnoEggScene = ({ locale }: Props) => {
     commerce: { title: copy.commerce, description: copy.commerceDescription, number: copy.commerceNode, openLabel: copy.commerceLabel, closeLabel: copy.commerceCloseLabel },
     design: { title: copy.design, description: copy.designDescription, number: copy.designNode, openLabel: copy.designLabel, closeLabel: copy.designCloseLabel },
     production: { title: copy.production, description: copy.productionDescription, number: copy.productionNode, openLabel: copy.productionLabel, closeLabel: copy.productionCloseLabel },
+    marketing: { title: copy.marketing, description: copy.marketingDescription, number: copy.marketingNode, openLabel: copy.marketingLabel, closeLabel: copy.marketingCloseLabel },
     idea: { title: copy.idea, description: copy.ideaDescription, number: copy.ideaNode, openLabel: copy.ideaLabel, closeLabel: copy.ideaCloseLabel },
     matter: { title: copy.matter, description: copy.matterDescription, number: copy.matterNode, openLabel: copy.matterLabel, closeLabel: copy.matterCloseLabel },
   };
   const hasIdea = ideaDraft.trim().length > 0;
   const hasSketch = sketches.length > 0;
   const canActivateNode = (node: InteractiveNode) =>
-    node === "idea" || (node === "design" ? hasIdea : hasSketch);
+    node === "idea" || node === "marketing" || (node === "design" ? hasIdea : hasSketch);
   const sketchPrompt = makeSketchPrompt(brief, locale);
 
   useEffect(() => {
@@ -310,7 +324,7 @@ const UnoEggScene = ({ locale }: Props) => {
 
   useEffect(() => {
     if (sketchesLoaded && !hasSketch) {
-      setSelectedNodes((current) => current.filter((node) => node === "idea" || node === "design"));
+      setSelectedNodes((current) => current.filter((node) => node === "idea" || node === "design" || node === "marketing"));
     }
   }, [hasSketch, sketchesLoaded]);
 
@@ -502,7 +516,7 @@ const UnoEggScene = ({ locale }: Props) => {
     if (event.type === "pointerup" && !active.moved &&
       (active.targetNode === "retail" || active.targetNode === "commerce" ||
        active.targetNode === "design" || active.targetNode === "production" ||
-       active.targetNode === "idea" || active.targetNode === "matter")) {
+       active.targetNode === "marketing" || active.targetNode === "idea" || active.targetNode === "matter")) {
       activateNode(active.targetNode);
     }
   };
@@ -529,6 +543,7 @@ const UnoEggScene = ({ locale }: Props) => {
 
   return (
     <div className="relative mx-auto w-full min-w-0 max-w-full" data-testid="unocalc-egg-stage">
+      <span id="unocalc-marketing-description" className="sr-only">{copy.marketing}. {copy.marketingDescription}</span>
       <div className="unocalc-egg-canvas mx-auto w-full min-w-0">
         <svg
           data-testid="unocalc-egg-svg"
@@ -689,43 +704,82 @@ const UnoEggScene = ({ locale }: Props) => {
               </g>
             );
           })}
-          {/* Four lower spheres staggered 45° below the principal nodes.
-              support-2 (06) sits between Design and Retail: Marketing.
-              The others remain unnamed. Activation comes in a later stage. */}
-          {geometry.lowerNodes.map((node) => (
-            <g key={node.id} data-testid="unocalc-lower-sphere-node" pointerEvents="none">
-              <circle
-                data-testid="unocalc-lower-sphere"
-                data-node-id={node.id}
-                data-node-role={node.id === "support-2" ? "marketing" : "unassigned"}
-                cx={node.x}
-                cy={node.y}
-                r="10.5"
-                fill="hsl(var(--primary) / 0.055)"
-                stroke="currentColor"
-                strokeWidth="1.05"
-                strokeOpacity=".48"
-                vectorEffect="non-scaling-stroke"
-                role="img"
-                aria-label={node.id === "support-2"
-                  ? `${copy.lowerSphereLabel} 06 — ${copy.marketing}`
-                  : `${copy.lowerSphereLabel} ${String(node.number).padStart(2, "0")}`}
-              />
-              <text
-                x={node.x}
-                y={node.y}
-                textAnchor="middle"
-                dominantBaseline="central"
-                fontSize="7.2"
-                fontWeight="300"
-                fill="currentColor"
-                fillOpacity=".55"
-                aria-hidden="true"
-              >
-                {String(node.number).padStart(2, "0")}
-              </text>
-            </g>
-          ))}
+          {/* Lower support spheres follow the shell. Marketing (06) is the
+              first interactive support node; the others stay unassigned. */}
+          {geometry.lowerNodes.map((node) => {
+            const isMarketing = node.id === "support-2";
+            const active = isMarketing && selectedNodes.includes("marketing");
+            return (
+              <g key={node.id} data-testid="unocalc-lower-sphere-node">
+                <circle
+                  data-testid="unocalc-lower-sphere"
+                  data-node-id={node.id}
+                  data-node-role={isMarketing ? "marketing" : "unassigned"}
+                  cx={node.x}
+                  cy={node.y}
+                  r="10.5"
+                  fill={active ? "hsl(var(--primary) / 0.22)" : "hsl(var(--primary) / 0.055)"}
+                  stroke={active ? "hsl(var(--primary))" : "currentColor"}
+                  strokeWidth="1.05"
+                  strokeOpacity={active ? ".85" : ".48"}
+                  vectorEffect="non-scaling-stroke"
+                  pointerEvents="none"
+                  role="img"
+                  aria-label={isMarketing
+                    ? `${copy.lowerSphereLabel} 06 — ${copy.marketing}`
+                    : `${copy.lowerSphereLabel} ${String(node.number).padStart(2, "0")}`}
+                />
+                <text
+                  x={node.x}
+                  y={node.y}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize="7.2"
+                  fontWeight="300"
+                  fill="currentColor"
+                  fillOpacity=".55"
+                  pointerEvents="none"
+                  aria-hidden="true"
+                >
+                  {String(node.number).padStart(2, "0")}
+                </text>
+                {isMarketing && (
+                  <circle
+                    data-testid="unocalc-marketing-hit"
+                    data-egg-node="marketing"
+                    cx={node.x}
+                    cy={node.y}
+                    r="25"
+                    fill="transparent"
+                    stroke="none"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={active ? copy.marketingCloseLabel : copy.marketingLabel}
+                    aria-pressed={active}
+                    aria-describedby="unocalc-marketing-description"
+                    className="cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
+                    onPointerEnter={() => setHoveredMarketing(true)}
+                    onPointerLeave={() => setHoveredMarketing(false)}
+                    onFocus={() => setHoveredMarketing(true)}
+                    onBlur={() => setHoveredMarketing(false)}
+                    onKeyDown={(event) => onNodeKeyDown(event, "marketing")}
+                  />
+                )}
+              </g>
+            );
+          })}
+          {/* The tooltip is visible on hover and keyboard focus. On touch,
+              the Marketing panel opens directly after tapping the sphere. */}
+          {geometry.lowerNodes.filter((node) => node.id === "support-2").map((node) =>
+            hoveredMarketing ? (
+              <g key="marketing-tooltip" data-testid="unocalc-marketing-tooltip" pointerEvents="none" aria-hidden="true">
+                <rect x={node.x - 57} y={node.y - 53} width="114" height="29" rx="9"
+                  fill="hsl(var(--background))" stroke="currentColor" strokeOpacity=".28" />
+                <text x={node.x} y={node.y - 34} textAnchor="middle" fontSize="12"
+                  fill="currentColor" fontWeight="400">{copy.marketing}</text>
+              </g>
+            ) : null
+          )}
           {geometry.poleNodes.map((node, index) => {
             const nodeType: InteractiveNode = index === 0 ? "idea" : "matter";
             const active = selectedNodes.includes(nodeType);
