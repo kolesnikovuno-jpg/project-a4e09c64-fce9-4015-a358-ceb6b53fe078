@@ -14,6 +14,7 @@ import {
 
 type Locale = "ru" | "uk" | "en";
 type Props = { locale: Locale };
+type InteractiveNode = "retail" | "commerce";
 
 // Front elevation: the horizontal diameter has two side nodes, while
 // the nearer node of the depth diameter hides the fourth node behind it.
@@ -23,30 +24,45 @@ const SURFACE = eggSurface();
 const text = {
   ru: {
     label: "Трёхмерная форма яйца с вертикальной осью. Вращайте жестом или стрелками клавиатуры.",
-    hint: "Вращайте форму жестом или мышью · коснитесь центральной сферы",
+    hint: "Вращайте форму жестом или мышью · коснитесь сферы",
     retail: "Ритейл",
     retailLabel: "Открыть описание узла «Ритейл»",
     retailCloseLabel: "Закрыть описание узла «Ритейл»",
     retailDescription: "Точка встречи объекта и человека. Здесь созданная форма получает представление, контекст и путь к своему пользователю.",
+    commerce: "Коммерция",
+    commerceLabel: "Открыть описание узла «Коммерция»",
+    commerceCloseLabel: "Закрыть описание узла «Коммерция»",
+    commerceDescription: "Экономическая сторона проекта. Здесь определяется, как созданная ценность превращается в устойчивый обмен и обеспечивает развитие.",
     node: "Узел / 01",
+    commerceNode: "Узел / 02",
   },
   uk: {
     label: "Тривимірна форма яйця з вертикальною віссю. Обертайте жестом або стрілками клавіатури.",
-    hint: "Обертайте форму жестом або мишею · торкніться центральної сфери",
+    hint: "Обертайте форму жестом або мишею · торкніться сфери",
     retail: "Ритейл",
     retailLabel: "Відкрити опис вузла «Ритейл»",
     retailCloseLabel: "Закрити опис вузла «Ритейл»",
     retailDescription: "Точка зустрічі об’єкта й людини. Тут створена форма отримує представлення, контекст і шлях до свого користувача.",
+    commerce: "Комерція",
+    commerceLabel: "Відкрити опис вузла «Комерція»",
+    commerceCloseLabel: "Закрити опис вузла «Комерція»",
+    commerceDescription: "Економічний бік проєкту. Тут визначається, як створена цінність перетворюється на сталий обмін і забезпечує розвиток.",
     node: "Вузол / 01",
+    commerceNode: "Вузол / 02",
   },
   en: {
     label: "Three-dimensional egg with a vertical axis. Drag or use arrow keys to rotate.",
-    hint: "Drag to rotate · tap the central sphere",
+    hint: "Drag to rotate · tap a sphere",
     retail: "Retail",
     retailLabel: "Open the Retail node description",
     retailCloseLabel: "Close the Retail node description",
     retailDescription: "Where the object meets the person. Here, a created form gains its presentation, context, and a path to its user.",
+    commerce: "Commerce",
+    commerceLabel: "Open the Commerce node description",
+    commerceCloseLabel: "Close the Commerce node description",
+    commerceDescription: "The economic side of a project. Here, created value becomes sustainable exchange and supports further development.",
     node: "Node / 01",
+    commerceNode: "Node / 02",
   },
 };
 
@@ -80,14 +96,19 @@ const giveNodeFeedback = () => {
 
 const UnoEggScene = ({ locale }: Props) => {
   const [orientation, setOrientation] = useState<EggOrientation>(INITIAL);
-  const [retailOpen, setRetailOpen] = useState(false);
+  const [selectedNode, setSelectedNode] = useState<InteractiveNode | null>(null);
   const [typedLength, setTypedLength] = useState(0);
   const pointer = useRef<{ id: number; x: number; y: number; startX: number; startY: number; moved: boolean; targetNode: string | null } | null>(null);
-  const retailCopy = text[locale];
-  const fullCopy = retailCopy.retail + "\n" + retailCopy.retailDescription;
+  const copy = text[locale];
+  const activeCopy = selectedNode === "retail"
+    ? { title: copy.retail, description: copy.retailDescription, number: copy.node }
+    : selectedNode === "commerce"
+      ? { title: copy.commerce, description: copy.commerceDescription, number: copy.commerceNode }
+      : null;
+  const fullCopy = activeCopy ? activeCopy.title + "\n" + activeCopy.description : "";
 
   useEffect(() => {
-    if (!retailOpen) {
+    if (!selectedNode) {
       setTypedLength(0);
       return;
     }
@@ -103,12 +124,11 @@ const UnoEggScene = ({ locale }: Props) => {
       if (index === fullCopy.length) window.clearInterval(interval);
     }, 26);
     return () => window.clearInterval(interval);
-  }, [retailOpen, fullCopy]);
+  }, [selectedNode, fullCopy]);
 
-  const activateRetail = () => {
-    // A second tap returns the node to its original unselected state.
-    // The same state controls both the sphere fill and the explanatory panel.
-    setRetailOpen((open) => !open);
+  const activateNode = (node: InteractiveNode) => {
+    // One active sphere at a time; tapping it again removes both the highlight and the note.
+    setSelectedNode((current) => current === node ? null : node);
     giveNodeFeedback();
     playNodeClick();
   };
@@ -153,15 +173,16 @@ const UnoEggScene = ({ locale }: Props) => {
     if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
-    if (event.type === "pointerup" && !active.moved && active.targetNode === "retail") {
-      activateRetail();
+    if (event.type === "pointerup" && !active.moved &&
+      (active.targetNode === "retail" || active.targetNode === "commerce")) {
+      activateNode(active.targetNode);
     }
   };
-  const onRetailKeyDown = (event: KeyboardEvent<SVGCircleElement>) => {
+  const onNodeKeyDown = (event: KeyboardEvent<SVGCircleElement>, node: InteractiveNode) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       event.stopPropagation();
-      activateRetail();
+      activateNode(node);
     }
   };
 
@@ -225,39 +246,47 @@ const UnoEggScene = ({ locale }: Props) => {
               vectorEffect="non-scaling-stroke"
             />
           ))}
-          {geometry.sectionNodes.map((node) => (
-            <g key={`section-sphere-${node.id}`}>
-              <circle
-                data-testid="unocalc-section-sphere"
-                cx={node.x}
-                cy={node.y}
-                r="10.5"
-                fill={node.id === "retail" && retailOpen ? "hsl(var(--primary) / 0.22)" : "none"}
-                stroke={node.id === "retail" && retailOpen ? "hsl(var(--primary))" : "currentColor"}
-                strokeWidth="1.1"
-                strokeOpacity={node.id === "retail" && retailOpen ? ".85" : ".72"}
-                vectorEffect="non-scaling-stroke"
-                pointerEvents="none"
-              />
-              {node.id === "retail" && (
+          {geometry.sectionNodes.map((node) => {
+            const nodeType: InteractiveNode | null = node.id === "retail" || node.id === "commerce" ? node.id : null;
+            const active = nodeType !== null && selectedNode === nodeType;
+            const label = node.id === "retail"
+              ? (active ? copy.retailCloseLabel : copy.retailLabel)
+              : (active ? copy.commerceCloseLabel : copy.commerceLabel);
+            return (
+              <g key={`section-sphere-${node.id}`}>
                 <circle
-                  data-testid="unocalc-retail-hit"
-                  data-egg-node="retail"
+                  data-testid="unocalc-section-sphere"
+                  data-node-id={node.id}
                   cx={node.x}
                   cy={node.y}
-                  r="25"
-                  fill="transparent"
-                  stroke="none"
-                  role="button"
-                  tabIndex={0}
-                  aria-label={retailOpen ? retailCopy.retailCloseLabel : retailCopy.retailLabel}
-                  aria-pressed={retailOpen}
-                  className="cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
-                  onKeyDown={onRetailKeyDown}
+                  r="10.5"
+                  fill={active ? "hsl(var(--primary) / 0.22)" : "none"}
+                  stroke={active ? "hsl(var(--primary))" : "currentColor"}
+                  strokeWidth="1.1"
+                  strokeOpacity={active ? ".85" : ".72"}
+                  vectorEffect="non-scaling-stroke"
+                  pointerEvents="none"
                 />
-              )}
-            </g>
-          ))}
+                {nodeType && (
+                  <circle
+                    data-testid={`unocalc-${node.id}-hit`}
+                    data-egg-node={node.id}
+                    cx={node.x}
+                    cy={node.y}
+                    r="25"
+                    fill="transparent"
+                    stroke="none"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={label}
+                    aria-pressed={active}
+                    className="cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
+                    onKeyDown={(event) => onNodeKeyDown(event, nodeType)}
+                  />
+                )}
+              </g>
+            );
+          })}
           {geometry.poleNodes.map((node, index) => (
             <circle
               key={`pole-sphere-${index}`}
@@ -284,23 +313,23 @@ const UnoEggScene = ({ locale }: Props) => {
           />
         </svg>
       </div>
-      {retailOpen && (
+      {activeCopy && (
         <aside
-          data-testid="unocalc-retail-panel"
+          data-testid={`unocalc-${selectedNode}-panel`}
           className="mx-auto mt-4 w-full max-w-[320px] min-h-[100px] text-left min-[900px]:absolute min-[900px]:right-0 min-[900px]:top-[43%] min-[900px]:mt-0 min-[900px]:w-[23%] min-[900px]:max-w-[240px]"
-          aria-label={retailCopy.retail}
+          aria-label={activeCopy.title}
         >
-          <p className="mb-4 text-[10px] font-light tracking-[0.16em] text-foreground/40 uppercase">{retailCopy.node}</p>
+          <p className="mb-4 text-[10px] font-light tracking-[0.16em] text-foreground/40 uppercase">{activeCopy.number}</p>
           <h2 className="min-h-[32px] text-[24px] font-extralight leading-tight tracking-[-0.03em] text-foreground/85" aria-hidden="true">
-            {fullCopy.slice(0, Math.min(typedLength, retailCopy.retail.length))}
+            {fullCopy.slice(0, Math.min(typedLength, activeCopy.title.length))}
           </h2>
           <p className="mt-3 text-[13px] font-light leading-[1.8] tracking-[0.01em] text-foreground/65" aria-hidden="true">
-            {fullCopy.slice(retailCopy.retail.length + 1, typedLength)}
-            {typedLength < fullCopy.length && typedLength > retailCopy.retail.length && (
+            {fullCopy.slice(activeCopy.title.length + 1, typedLength)}
+            {typedLength < fullCopy.length && typedLength > activeCopy.title.length && (
               <span className="unocalc-type-caret" aria-hidden="true">▍</span>
             )}
           </p>
-          <span className="sr-only" role="status">{retailCopy.retail}. {retailCopy.retailDescription}</span>
+          <span className="sr-only" role="status">{activeCopy.title}. {activeCopy.description}</span>
         </aside>
       )}
       <p className="mt-1 text-center text-[11px] font-light tracking-[0.025em] text-foreground/50">

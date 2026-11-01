@@ -51,6 +51,11 @@ describe("UNOcalc egg-only geometry", () => {
     expect(front[1].nodes[0].y).toBeCloseTo(front[1].nodes[1].y, 6);
     expect(front[1].nodes[0].depth).toBeLessThan(front[1].nodes[1].depth);
     expect(visibleEggSectionNodes(front)).toHaveLength(3);
+    expect(visibleEggSectionNodes(front).map((node) => node.id)).toContain("retail");
+    expect(visibleEggSectionNodes(front).map((node) => node.id)).not.toContain("commerce");
+    const opposite = visibleEggSectionNodes(eggSectionAxes({ yaw: Math.PI, tilt: 0 }));
+    expect(opposite.map((node) => node.id)).toContain("commerce");
+    expect(opposite.map((node) => node.id)).not.toContain("retail");
 
     const tilted = eggSectionAxes({ yaw: 0, tilt: 0.2 });
     expect(visibleEggSectionNodes(tilted)).toHaveLength(4);
@@ -99,6 +104,29 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.getAllByTestId("unocalc-section-sphere").find((sphere) => sphere.getAttribute("cx") === "380")).toHaveAttribute("fill", "none");
     fireEvent.keyDown(hit, { key: "Enter" });
     expect(screen.getByTestId("unocalc-retail-panel")).toBeInTheDocument();
+  });
+
+  it("opens Commerce after turning the egg around, and closes it on the second tap", () => {
+    render(<UnoEggScene locale="ru" />);
+    const svg = screen.getByTestId("unocalc-egg-svg");
+    expect(screen.queryByTestId("unocalc-commerce-hit")).not.toBeInTheDocument();
+    fireEvent.pointerDown(svg, { pointerId: 10, clientX: 100, clientY: 300 });
+    fireEvent.pointerMove(svg, { pointerId: 10, clientX: 493, clientY: 300 });
+    fireEvent.pointerUp(svg, { pointerId: 10, clientX: 493, clientY: 300 });
+    const hit = screen.getByTestId("unocalc-commerce-hit");
+    expect(screen.queryByTestId("unocalc-retail-hit")).not.toBeInTheDocument();
+    expect(hit).toHaveAttribute("aria-label", "Открыть описание узла «Коммерция»");
+    fireEvent.pointerDown(hit, { pointerId: 11, clientX: 380, clientY: 400 });
+    fireEvent.pointerUp(svg, { pointerId: 11, clientX: 380, clientY: 400 });
+    expect(screen.getByTestId("unocalc-commerce-panel")).toBeInTheDocument();
+    expect(hit).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByTestId("unocalc-commerce-panel")).toHaveAttribute("aria-label", "Коммерция");
+    expect(screen.getAllByTestId("unocalc-section-sphere").find((sphere) => sphere.getAttribute("data-node-id") === "commerce")).toHaveAttribute("fill", "hsl(var(--primary) / 0.22)");
+    fireEvent.pointerDown(hit, { pointerId: 12, clientX: 380, clientY: 400 });
+    fireEvent.pointerUp(svg, { pointerId: 12, clientX: 380, clientY: 400 });
+    expect(screen.queryByTestId("unocalc-commerce-panel")).not.toBeInTheDocument();
+    expect(hit).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getAllByTestId("unocalc-section-sphere").find((sphere) => sphere.getAttribute("data-node-id") === "commerce")).toHaveAttribute("fill", "none");
   });
 
   it("does not activate the node when the user drags to rotate", () => {
