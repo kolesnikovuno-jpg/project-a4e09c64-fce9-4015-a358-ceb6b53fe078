@@ -43,6 +43,20 @@ const aboutCopy = {
       { value: "40%", name: "Комплектующие", text: "Материалы, элементы, оборудование и снабжение." },
     ],
     balanceNote: "20 / 20 / 20 / 40 — исходная авторская пропорция, а не обязательная структура фактических затрат любого производства. В приложении доли можно немного перераспределять, сохраняя 100%.",
+    investmentTitle: "Что получает инвестор от UNOcalc",
+    investmentLead: "Инвестиция — дающая сторона: источник капитала, а не пятая статья расходов. Она обеспечивает ресурс созидания, который уже распределяется между проектированием, реализацией, ритейлом и комплектующими. Повторно включать инвестицию в эти 100% означало бы дважды учесть один ресурс.",
+    investmentFlow: [
+      { title: "Инвестиция", text: "Поступление капитала. Источник обеспечения, а не расходная доля." },
+      { title: "Созидание · 100%", text: "20% ритейл · 20% проект · 20% реализация · 40% комплектующие. Исходный баланс модели." },
+      { title: "Продукт", text: "Результат, для которого требуется обеспечить пользу, прочность и красоту." },
+    ],
+    investmentWhyTitle: "Практическая польза для инвестора",
+    investmentWhy: [
+      "До вложения средств инвестор видит не только идею, но и условную ёмкость её воплощения: масштаб, требуемый уровень исполнения и четыре направления обеспечения. Это основа для предметного разговора с автором и производством.",
+      "Когда появляются типовое производство, отработанная технология и устойчивый сбыт, некоторые повторные затраты могут снижаться. Экономия способна высвободить ресурс для возврата капитала и последующего дохода, но не гарантирует его.",
+      "UNOcalc не прогнозирует прибыль, сроки окупаемости, дивиденды или долю инвестора. Эти условия определяются фактической экономикой проекта и соглашениями сторон. Денежный ориентир U.E.R. пока остаётся гипотезой.",
+    ],
+    investmentNote: "Инвестор финансирует возможность созидания — он не обязан получать отдельную долю первоначального распределения. Его возможное вознаграждение возникает из результатов деятельности и отдельного соглашения, а не из арифметики UNOcalc.",
     treeTitle: "Принцип дерева",
     tree: [
       "Ветер отклоняет ветви, но дерево сохраняет несущую структуру. Так и мастер может менять технологию, конструкцию, последовательность и способ организации работ, не отказываясь от требований к результату.",
@@ -99,6 +113,20 @@ const aboutCopy = {
       { value: "40%", name: "Components", text: "Materials, parts, equipment and supply." },
     ],
     balanceNote: "20 / 20 / 20 / 40 is an initial author-defined proportion, not a universal breakdown of actual costs. The app allows limited redistribution while keeping the sum at 100%.",
+    investmentTitle: "What UNOcalc offers an investor",
+    investmentLead: "Investment is an incoming source of capital, not a fifth expense category. It enables the creative resource that is then allocated between design, production, retail and components. Adding investment again to the 100% allocation would count the same resource twice.",
+    investmentFlow: [
+      { title: "Investment", text: "Capital supplied to make the project possible; a funding source, not an expense share." },
+      { title: "Creation · 100%", text: "20% retail · 20% design · 20% execution · 40% components. The model's initial allocation." },
+      { title: "Product", text: "The result, which must fulfil utility, strength and beauty." },
+    ],
+    investmentWhyTitle: "Why it may be useful to an investor",
+    investmentWhy: [
+      "Before committing funds, an investor can see more than an idea: an indicative resource envelope, execution level and four areas of support. It gives the author, manufacturer and investor a shared starting point.",
+      "Repeat production, established methods and stable distribution can reduce some recurring costs. Savings may create room for capital recovery and eventual returns, but do not guarantee them.",
+      "UNOcalc does not forecast profits, payback periods, dividends or equity shares. These depend on actual project economics and separate agreements. The currency interpretation of U.E.R. remains an unvalidated assumption.",
+    ],
+    investmentNote: "An investor finances the possibility of creation, without claiming a new share of the initial production allocation. Any return comes from subsequent results and a separate agreement — not from UNOcalc arithmetic.",
     treeTitle: "The tree principle",
     tree: [
       "Wind moves the branches while the tree retains its supporting structure. A craftsperson may likewise change the method, construction, sequence or organisation without abandoning the required outcome.",
@@ -155,6 +183,20 @@ const aboutCopy = {
       { value: "40%", name: "Комплектуючі", text: "Матеріали, елементи, обладнання та постачання." },
     ],
     balanceNote: "20 / 20 / 20 / 40 — початкова авторська пропорція, а не обов’язкова структура фактичних витрат будь-якого виробництва. У застосунку частки можна трохи перерозподіляти, зберігаючи 100%.",
+    investmentTitle: "Що UNOcalc дає інвестору",
+    investmentLead: "Інвестиція — сторона, що надає капітал, а не п’ята стаття витрат. Вона забезпечує ресурс створення, який уже розподіляється між проєктуванням, реалізацією, ритейлом і комплектуючими. Додавання інвестиції до цих 100% вдруге означало б подвійний облік.",
+    investmentFlow: [
+      { title: "Інвестиція", text: "Надходження капіталу: джерело забезпечення, а не частка витрат." },
+      { title: "Створення · 100%", text: "20% ритейл · 20% проєкт · 20% реалізація · 40% комплектуючі. Вихідний баланс моделі." },
+      { title: "Продукт", text: "Результат, у якому необхідно забезпечити користь, міцність і красу." },
+    ],
+    investmentWhyTitle: "Практична користь для інвестора",
+    investmentWhy: [
+      "До вкладення коштів інвестор бачить не лише ідею, а й умовну ресурсну місткість її втілення: масштаб, рівень виконання та чотири напрями забезпечення. Це основа для розмови з автором і виробництвом.",
+      "Повторюване виробництво, відпрацьована технологія і стабільний збут можуть зменшувати частину повторних витрат. Економія може створювати можливість повернення капіталу й доходу, але не гарантує їх.",
+      "UNOcalc не прогнозує прибуток, окупність, дивіденди або частку інвестора. Ці умови визначаються фактичною економікою проєкту й окремими угодами. Грошовий еквівалент U.E.R. залишається неперевіреним припущенням.",
+    ],
+    investmentNote: "Інвестор фінансує можливість створення, але не отримує нову частку початкового розподілу витрат. Можлива винагорода виникає з подальших результатів діяльності та окремої домовленості, а не з арифметики UNOcalc.",
     treeTitle: "Принцип дерева",
     tree: [
       "Вітер відхиляє гілки, але дерево зберігає несучу структуру. Так само майстер може змінити технологію, конструкцію, послідовність і спосіб організації, не відмовляючись від вимог до результату.",
@@ -247,6 +289,25 @@ export default function UnoCalcAbout() {
             ))}
           </div>
           <p className="mt-7 text-[12px] leading-[1.85] text-foreground/70">{t.balanceNote}</p>
+        </section>
+
+        <section id="investment" className="scroll-mt-10 border-b border-border/70 py-10 sm:py-12" aria-labelledby="about-investment">
+          <h2 id="about-investment" className="text-[23px] font-light tracking-[-0.025em]">{t.investmentTitle}</h2>
+          <p className="mt-4 max-w-[720px] text-[14px] leading-[1.9] text-foreground/80">{t.investmentLead}</p>
+          <div className="mt-8 grid items-stretch gap-2 sm:grid-cols-3">
+            {t.investmentFlow.map((part, index) => (
+              <div key={part.title} className="relative border border-border/80 p-4 sm:min-h-[154px]">
+                <span className="text-[11px] tabular-nums text-foreground/50">0{index + 1}</span>
+                <h3 className="mt-4 text-[17px] font-light">{part.title}</h3>
+                <p className="mt-2 text-[12px] leading-[1.7] text-foreground/75">{part.text}</p>
+              </div>
+            ))}
+          </div>
+          <h3 className="mt-9 text-[13px] font-medium">{t.investmentWhyTitle}</h3>
+          <div className="mt-3 max-w-[720px] space-y-4 text-[13px] leading-[1.8] text-foreground/80">
+            {t.investmentWhy.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+          </div>
+          <p className="mt-6 max-w-[720px] border-l border-foreground/40 pl-4 text-[12px] leading-[1.8] text-foreground/75">{t.investmentNote}</p>
         </section>
         <ArticleSection id="tree" title={t.treeTitle} paragraphs={t.tree} />
         <section className="border-b border-border/70 py-10 sm:py-12" aria-labelledby="about-reading">

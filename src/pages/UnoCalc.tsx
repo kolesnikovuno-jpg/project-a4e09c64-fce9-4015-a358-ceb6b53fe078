@@ -109,6 +109,9 @@ const copy = {
     allocationAdapted: "Adaptation",
     allocationFlexibility: "Fixed: the four shares always total 100%. Flexible: each may vary by ±2.5 percentage points; the others compensate automatically.",
     allocationBeyond: "If real requirements exceed this range, reconsider the total project resource rather than forcing the shares.",
+    investorTitle: "For an investor",
+    investorNote: "Investment supplies the capital that enables this 100% allocation. It is not a fifth expense share. The model helps discuss resource sufficiency before funding; it does not forecast returns or dividends.",
+    investorLink: "Investment and resource capacity",
     allocationReset: "Reset",
     allocationAdjust: "Adjust share",
     allocationDragHint: "Move a circle outward to increase its share, inward to reduce it. Use arrow keys when a circle is focused.",
@@ -187,6 +190,9 @@ const copy = {
     allocationAdapted: "Адаптация",
     allocationFlexibility: "Жёсткость: сумма долей всегда 100%. Гибкость: каждая доля может отклоняться на ±2,5 п.п.; остальные автоматически компенсируют изменение.",
     allocationBeyond: "Если реальные потребности выходят за допуск, следует пересмотреть общую ресурсную ёмкость, а не подгонять проценты.",
+    investorTitle: "Для инвестора",
+    investorNote: "Инвестиция обеспечивает капитал для этих 100%, но не является пятой долей расходов. Расчёт помогает обсудить достаточность ресурса до финансирования, а не обещает доход или дивиденды.",
+    investorLink: "Инвестиции и ресурсная ёмкость",
     allocationReset: "Сбросить",
     allocationAdjust: "Изменить долю",
     allocationDragHint: "Тяни кружки наружу, чтобы увеличить долю, и к центру — чтобы уменьшить. С клавиатуры работают стрелки.",
@@ -205,7 +211,7 @@ const copy = {
     example: "Спробувати приклад · 10 × 10 × 3 м",
     readTitle: "Як читати орієнтир",
     readInsight: "Орієнтир — початкова точка, а не вимога витратити саме цю суму. Нижче нього — завдяки чому досягнута економія? Вище — які додаткові умови виправдовують ресурс?",
-    readLimit: "Розрахунок не перевіряє фактичтичну якість і не враховує кожної особливості конструкції та виробництва.",
+    readLimit: "Розрахунок не перевіряє фактичну якість і не враховує кожної особливості конструкції та виробництва.",
     copySummary: "Копіювати результат",
     copyLink: "Копіювати посилання на сценарій",
     copiedSummary: "Результат скопійовано",
@@ -265,6 +271,9 @@ const copy = {
     allocationAdapted: "Адаптація",
     allocationFlexibility: "Жорсткість: сума часток завжди 100%. Гнучкість: кожна частка може відхилятися на ±2,5 в.п.; інші автоматично компенсують зміну.",
     allocationBeyond: "Якщо реальні потреби виходять за межі допуску, слід переглянути загальну ресурсну місткість, а не підганяти відсотки.",
+    investorTitle: "Для інвестора",
+    investorNote: "Інвестиція забезпечує капітал для цих 100%, але не є п’ятою часткою витрат. Розрахунок допомагає обговорити достатність ресурсу до фінансування, а не обіцяє дохід чи дивіденди.",
+    investorLink: "Інвестиції та ресурсна місткість",
     allocationReset: "Скинути",
     allocationAdjust: "Змінити частку",
     allocationDragHint: "Тягни кружечки назовні, щоб збільшити частку, та до центру — щоб зменшити. На клавіатурі працюють стрілки.",
@@ -762,6 +771,13 @@ const UnoCalc = () => {
               <p className="mt-3 text-[11px] font-light leading-[1.65] text-foreground/75">
                 {t.allocationBeyond}
               </p>
+              <aside className="mt-6 border-t border-border/70 pt-4" aria-labelledby="unocalc-investor">
+                <h4 id="unocalc-investor" className="text-[12px] font-medium uppercase tracking-[0.13em]">{t.investorTitle}</h4>
+                <p className="mt-2 text-[12px] font-light leading-[1.75] text-foreground/80">{t.investorNote}</p>
+                <Link to={aboutPath + "#investment"} className="mt-3 inline-flex min-h-9 items-center border-b border-foreground/35 text-[12px] hover:border-primary hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                  {t.investorLink} →
+                </Link>
+              </aside>
             </section>
             <div className="mt-7 border-t border-border/70 pt-4">
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
