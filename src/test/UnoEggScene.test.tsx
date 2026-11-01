@@ -12,7 +12,7 @@ vi.mock("@/lib/unocalcSketches", () => ({
   },
 }));
 import UnoEggScene from "@/components/unocalc/UnoEggScene";
-import { EGG_BOTTOM, EGG_TOP, EGG_EQUATOR, eggRadiusAtSection, eggPoleNodes, eggSectionAxes, visibleEggSectionNodes, eggSurface, projectEggPoint, convexOutline } from "@/lib/unocalcEgg3d";
+import { EGG_BOTTOM, EGG_TOP, EGG_EQUATOR, LOWER_SPHERE_SECTION_Y, LOWER_SPHERE_Y, eggLowerSphereNodes, visibleEggLowerSphereNodes, eggLowerRingArcs, eggRadiusAtSection, eggPoleNodes, eggSectionAxes, visibleEggSectionNodes, eggSurface, projectEggPoint, convexOutline } from "@/lib/unocalcEgg3d";
 
 describe("UNOcalc egg-only geometry", () => {
   beforeEach(() => {
@@ -100,6 +100,36 @@ describe("UNOcalc egg-only geometry", () => {
     const projectedCenter = 350 - 212 * EGG_EQUATOR * Math.cos(0.2);
     expect(tilted[1].nodes[0].y).toBeLessThan(projectedCenter);
     expect(tilted[1].nodes[1].y).toBeGreaterThan(projectedCenter);
+  });
+
+  it("adds exactly four unnamed spheres on a lower staggered latitude without activating them", () => {
+    const orientation = { yaw: 0, tilt: 0 };
+    const lower = eggLowerSphereNodes(orientation);
+    expect(lower).toHaveLength(4);
+    expect(lower.map((node) => node.id)).toEqual(["support-1", "support-2", "support-3", "support-4"]);
+    expect(lower.map((node) => node.number)).toEqual([5, 6, 7, 8]);
+    expect(LOWER_SPHERE_Y).toBeLessThan(EGG_EQUATOR);
+    const radius = eggRadiusAtSection(LOWER_SPHERE_SECTION_Y);
+    lower.forEach((node, index) => {
+      expect(node.angle).toBeCloseTo(Math.PI / 4 + index * Math.PI / 2, 8);
+      expect(Math.hypot((node.x - 380) / 212, node.depth)).toBeCloseTo(radius, 8);
+      expect(node.y).toBeCloseTo(350 - 212 * LOWER_SPHERE_Y, 8);
+    });
+    expect(visibleEggLowerSphereNodes(orientation)).toHaveLength(2);
+    expect(visibleEggLowerSphereNodes({ yaw: 0, tilt: 0.2 })).toHaveLength(4);
+    expect(eggLowerRingArcs(orientation).front).toContain("M ");
+
+    const { rerender } = render(<UnoEggScene locale="ru" />);
+    expect(screen.getAllByTestId("unocalc-lower-sphere")).toHaveLength(2);
+    expect(screen.getAllByTestId("unocalc-lower-sphere").every((node) => node.getAttribute("pointer-events") === null)).toBe(true);
+    expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("четыре сферы без назначения");
+    expect(screen.getAllByRole("button")).toHaveLength(5);
+    const svg = screen.getByTestId("unocalc-egg-svg");
+    fireEvent.keyDown(svg, { key: "ArrowDown" });
+    expect(screen.getAllByTestId("unocalc-lower-sphere")).toHaveLength(4);
+    expect(screen.queryByTestId("unocalc-active-panels")).not.toBeInTheDocument();
+    rerender(<UnoEggScene locale="uk" />);
+    expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("чотири сфери");
   });
 
   it("spins horizontally around the upright axis, tilts vertically and resets", () => {
