@@ -47,6 +47,9 @@ const copy = {
     intro: "An educational model for exploring resource sufficiency. Enter an object's dimensions, choose an intended quality level and examine the resource structure. This is neither a standard nor a quote.",
     aboutLink: "The principle",
     example: "Explore a hypothetical example · 10 × 10 × 3 m",
+    corridorWorking: "Working corridor · ±10%",
+    corridorOuter: "Outer corridor · ±20%",
+    corridorNote: "Beyond ±20%: reconsider the intended quality level, scope and production assumptions. These are professional heuristic thresholds, not a measured error margin.",
     readTitle: "How to read this reference",
     readInsight: "A reference is a starting point, not an instruction to spend exactly this amount. Below it, ask how savings were achieved; above it, ask which extra conditions justify more resources.",
     indexMeaning: "An author-defined index based on bounding dimensions and the selected quality level. It does not measure physical energy or establish actual cost.",
@@ -136,6 +139,9 @@ const copy = {
     intro: "Просветительская модель ресурсной достаточности. Укажите габариты, выберите предполагаемый уровень качества и исследуйте структуру результата. Это не норматив и не смета.",
     aboutLink: "Принцип UNOcalc",
     example: "Исследовать условный пример · 10 × 10 × 3 м",
+    corridorWorking: "Рабочий коридор · ±10%",
+    corridorOuter: "Предельный коридор · ±20%",
+    corridorNote: "За пределами ±20%: пересмотрите уровень качества, состав работ и технологические предпосылки. Это экспертные ориентиры, а не статистически доказанная погрешность.",
     readTitle: "Как читать ориентир",
     readInsight: "Ориентир — точка отсчёта, а не предписание потратить именно эту сумму. Ниже него — за счёт чего получена экономия? Выше — какие дополнительные условия оправдывают ресурс?",
     indexMeaning: "Авторский индекс по габаритам и выбранному уровню качества. Он не измеряет физическую энергию и не устанавливает фактическую себестоимость.",
@@ -225,6 +231,9 @@ const copy = {
     intro: "Просвітницька модель ресурсної достатності. Укажіть габарити, оберіть очікуваний рівень якості й дослідіть структуру результату. Це не норматив і не кошторис.",
     aboutLink: "Принцип UNOcalc",
     example: "Дослідити умовний приклад · 10 × 10 × 3 м",
+    corridorWorking: "Робочий коридор · ±10%",
+    corridorOuter: "Граничний коридор · ±20%",
+    corridorNote: "За межами ±20%: перегляньте рівень якості, склад робіт і технологічні припущення. Це експертні орієнтири, а не статистично доведена похибка.",
     readTitle: "Як читати орієнтир",
     readInsight: "Орієнтир — початкова точка, а не вимога витратити саме цю суму. Нижче нього — завдяки чому досягнута економія? Вище — які додаткові умови виправдовують ресурс?",
     indexMeaning: "Авторський індекс за габаритами й обраним рівнем якості. Він не вимірює фізичну енергію і не встановлює фактичну собівартість.",
@@ -718,6 +727,32 @@ const UnoCalc = () => {
                     : t.costBasis
                 : feedback ?? t.prompt}
             </p>
+            {ready && (
+              <section aria-labelledby="unocalc-corridor" className="mt-6 border-t border-border/70 pt-4">
+                <h3 id="unocalc-corridor" className="text-[12px] font-medium uppercase tracking-[0.13em]">{t.corridorWorking}</h3>
+                <div className="mt-4 flex h-3 overflow-hidden rounded-sm" role="img" aria-label={t.corridorWorking + "; " + t.corridorOuter}>
+                  <div className="w-1/4 bg-foreground/15" />
+                  <div className="w-1/2 bg-foreground/35" />
+                  <div className="w-1/4 bg-foreground/15" />
+                </div>
+                <div className="mt-2 grid grid-cols-5 gap-1 text-center text-[11px] tabular-nums text-foreground/75">
+                  {[-20, -10, 0, 10, 20].map((delta) => (
+                    <span key={delta}>{delta > 0 ? "+" : ""}{delta}%</span>
+                  ))}
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-4 text-[12px]">
+                  <div>
+                    <p className="text-foreground/75">{t.corridorWorking}</p>
+                    <p className="mt-1 tabular-nums">{formatUer(calculation.energy * 0.9)} – {formatUer(calculation.energy * 1.1)} U.E.R.</p>
+                  </div>
+                  <div>
+                    <p className="text-foreground/75">{t.corridorOuter}</p>
+                    <p className="mt-1 tabular-nums">{formatUer(calculation.energy * 0.8)} – {formatUer(calculation.energy * 1.2)} U.E.R.</p>
+                  </div>
+                </div>
+                <p className="mt-3 text-[11px] font-light leading-[1.7] text-foreground/70">{t.corridorNote}</p>
+              </section>
+            )}
             <aside className="mt-5 border-t border-border/70 pt-4" aria-labelledby="unocalc-reading">
               <h3 id="unocalc-reading" className="text-[12px] font-medium uppercase tracking-[0.13em]">{t.readTitle}</h3>
               <p className="mt-2 text-[12px] font-light leading-[1.75] text-foreground/80">{t.readInsight}</p>
