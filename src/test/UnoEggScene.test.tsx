@@ -50,6 +50,7 @@ describe("UNOcalc egg-only geometry", () => {
     const axis = screen.getByTestId("unocalc-egg-axis");
     expect(outline).toHaveAttribute("fill", "none");
     expect(outline).toHaveAttribute("stroke-width", ".95");
+    expect(outline).toHaveAttribute("pointer-events", "none");
     expect(axis).toHaveAttribute("stroke-dasharray", "4 9");
     expect(axis).toHaveAttribute("stroke-width", ".65");
     expect(axis).toHaveAttribute("stroke-opacity", ".14");
@@ -190,6 +191,39 @@ describe("UNOcalc egg-only geometry", () => {
     expect(selected).toHaveAttribute("stroke-opacity", "0.85");
     expect(selected).toHaveAttribute("stroke", "hsl(var(--primary))");
     expect(selected).toHaveAttribute("stroke-width", "1.1");
+  });
+
+  it("lets clicks reach visible spheres even when the shell outline overlaps their centers", () => {
+    render(<UnoEggScene locale="ru" />);
+    expect(screen.getByTestId("unocalc-egg-outline")).toHaveAttribute("pointer-events", "none");
+    const marketing = screen.getByTestId("unocalc-marketing-hit");
+    const testDrive = screen.getByTestId("unocalc-test-drive-hit");
+    const idea = screen.getByTestId("unocalc-idea-hit");
+    for (const target of [marketing, testDrive, idea]) {
+      expect(target).toHaveAttribute("pointer-events", "all");
+      fireEvent.click(target);
+    }
+    expect(screen.getByTestId("unocalc-marketing-panel")).toBeInTheDocument();
+    expect(screen.getByTestId("unocalc-testDrive-panel")).toBeInTheDocument();
+    expect(screen.getByTestId("unocalc-idea-panel")).toBeInTheDocument();
+    fireEvent.click(marketing);
+    expect(screen.queryByTestId("unocalc-marketing-panel")).not.toBeInTheDocument();
+  });
+
+  it("does not double-toggle a sphere when a pointer tap also generates a click", () => {
+    render(<UnoEggScene locale="ru" />);
+    const svg = screen.getByTestId("unocalc-egg-svg");
+    const hit = screen.getByTestId("unocalc-marketing-hit");
+    fireEvent.pointerDown(hit, { pointerId: 101, clientX: 250, clientY: 430 });
+    fireEvent.pointerUp(svg, { pointerId: 101, clientX: 250, clientY: 430 });
+    expect(screen.getByTestId("unocalc-marketing-panel")).toBeInTheDocument();
+    fireEvent.click(hit);
+    expect(screen.getByTestId("unocalc-marketing-panel")).toBeInTheDocument();
+    fireEvent.pointerDown(hit, { pointerId: 102, clientX: 250, clientY: 430 });
+    fireEvent.pointerMove(svg, { pointerId: 102, clientX: 300, clientY: 430 });
+    fireEvent.pointerUp(svg, { pointerId: 102, clientX: 300, clientY: 430 });
+    fireEvent.click(hit);
+    expect(screen.getByTestId("unocalc-marketing-panel")).toBeInTheDocument();
   });
 
   it("opens Marketing on tap before an idea or sketch, and closes it on a second tap", () => {
