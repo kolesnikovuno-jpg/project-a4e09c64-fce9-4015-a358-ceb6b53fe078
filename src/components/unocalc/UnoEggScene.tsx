@@ -11,6 +11,7 @@ import {
   eggPoleNodes,
   eggSectionAxes,
   eggSurface,
+  eggIdeaLinks,
   projectEggPoint,
   svgOutline,
   visibleEggSectionNodes,
@@ -474,6 +475,7 @@ const UnoEggScene = ({ locale }: Props) => {
       equator: eggEquatorArcs(orientation),
       lowerRing: eggLowerRingArcs(orientation),
       lowerNodes: visibleEggLowerSphereNodes(orientation),
+      ideaLinks: eggIdeaLinks(orientation),
       axis: eggAxisEndpoints(orientation),
       sectionAxes,
       sectionNodes: visibleEggSectionNodes(sectionAxes),
@@ -698,6 +700,23 @@ const UnoEggScene = ({ locale }: Props) => {
               pointerEvents="none"
             />
           ))}
+          {/* Idea links are projected from 3D on every rotation and do not
+              intercept clicks. The rear Legal link is subtler in front view. */}
+          <g data-testid="unocalc-idea-links" aria-hidden="true" pointerEvents="none">
+            {geometry.ideaLinks.map((link) => (
+              <line
+                key={link.id}
+                data-testid={`unocalc-idea-link-${link.id}`}
+                x1={link.x1} y1={link.y1}
+                x2={link.x2} y2={link.y2}
+                stroke="currentColor"
+                strokeWidth=".75"
+                strokeOpacity={link.depth < 0 ? ".22" : ".38"}
+                vectorEffect="non-scaling-stroke"
+                pointerEvents="none"
+              />
+            ))}
+          </g>
           {/* The unformed object: a quiet, larger sphere inside the shell.
               It is not a seventh functional node and does not intercept gestures. */}
           <circle
