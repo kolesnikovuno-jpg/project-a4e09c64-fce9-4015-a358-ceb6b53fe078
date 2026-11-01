@@ -19,7 +19,7 @@ import {
 
 type Locale = "ru" | "uk" | "en";
 type Props = { locale: Locale };
-type InteractiveNode = "retail" | "commerce" | "design" | "production" | "marketing" | "testDrive" | "idea" | "matter";
+type InteractiveNode = "retail" | "commerce" | "design" | "production" | "marketing" | "testDrive" | "procurement" | "legal" | "idea" | "matter";
 type NodeDetail = { title: string; description: string; number: string; openLabel: string; closeLabel: string };
 
 // Front elevation: the horizontal diameter has two side nodes, while
@@ -37,7 +37,7 @@ const text = {
     label: "Трёхмерная форма яйца с вертикальной осью. Вращайте жестом или стрелками клавиатуры.",
     coreLabel: "Центральная сфера — формируемый объект",
     lowerSphereLabel: "Нижняя сфера",
-    lowerRingHint: "Нижний пояс: 05 — Тест-драйв (между Производством и Ритейлом); 06 — Маркетинг. Сферы 07 и 08 пока без назначения.",
+    lowerRingHint: "Нижний пояс: 05 — Тест-драйв, 06 — Маркетинг, 07 — Комплектация, 08 — Право.",
     marketing: "Маркетинг",
     marketingLabel: "Открыть описание узла «Маркетинг»",
     marketingCloseLabel: "Закрыть описание узла «Маркетинг»",
@@ -48,6 +48,16 @@ const text = {
     testDriveCloseLabel: "Закрыть описание узла «Тест-драйв»",
     testDriveDescription: "Проба объекта в использовании и проверка его свойств перед выходом в ритейл. Название рабочее — назначение можно уточнить.",
     testDriveNode: "Узел / 05",
+    procurement: "Комплектация",
+    procurementLabel: "Открыть описание узла «Комплектация»",
+    procurementCloseLabel: "Закрыть описание узла «Комплектация»",
+    procurementDescription: "Подбор и согласование материалов, комплектующих и изделий, необходимых для реализации объекта. Связующее звено между дизайном и экономикой проекта.",
+    procurementNode: "Узел / 07",
+    legal: "Право",
+    legalLabel: "Открыть описание узла «Право»",
+    legalCloseLabel: "Закрыть описание узла «Право»",
+    legalDescription: "Правовые условия воплощения и обращения объекта: авторство, договорённости, права и ответственность участников. Связь производства с коммерцией.",
+    legalNode: "Узел / 08",
     ideaInputLabel: "Описание идеи",
     ideaInputPlaceholder: "Опишите замысел, назначение, свойства будущего объекта…",
     ideaSave: "Сохранить идею",
@@ -90,7 +100,7 @@ const text = {
     label: "Тривимірна форма яйця з вертикальною віссю. Обертайте жестом або стрілками клавіатури.",
     coreLabel: "Центральна сфера — об’єкт, що формується",
     lowerSphereLabel: "Нижня сфера",
-    lowerRingHint: "Нижній пояс: 05 — Тест-драйв (між Виробництвом і Ритейлом); 06 — Маркетинг. Сфери 07 і 08 поки без призначення.",
+    lowerRingHint: "Нижній пояс: 05 — Тест-драйв, 06 — Маркетинг, 07 — Комплектація, 08 — Право.",
     marketing: "Маркетинг",
     marketingLabel: "Відкрити опис вузла «Маркетинг»",
     marketingCloseLabel: "Закрити опис вузла «Маркетинг»",
@@ -101,6 +111,16 @@ const text = {
     testDriveCloseLabel: "Закрити опис вузла «Тест-драйв»",
     testDriveDescription: "Проба об’єкта у використанні та перевірка його властивостей перед виходом у ритейл. Назва робоча — призначення можна уточнити.",
     testDriveNode: "Вузол / 05",
+    procurement: "Комплектація",
+    procurementLabel: "Відкрити опис вузла «Комплектація»",
+    procurementCloseLabel: "Закрити опис вузла «Комплектація»",
+    procurementDescription: "Добір і узгодження матеріалів, комплектувальних виробів та елементів, потрібних для реалізації об’єкта. Зв’язок між дизайном та економікою проєкту.",
+    procurementNode: "Вузол / 07",
+    legal: "Право",
+    legalLabel: "Відкрити опис вузла «Право»",
+    legalCloseLabel: "Закрити опис вузла «Право»",
+    legalDescription: "Правові умови втілення та обігу об’єкта: авторство, домовленості, права й відповідальність учасників. Зв’язок виробництва з комерцією.",
+    legalNode: "Вузол / 08",
     ideaInputLabel: "Опис ідеї",
     ideaInputPlaceholder: "Опишіть задум, призначення, властивості майбутнього об’єкта…",
     ideaSave: "Зберегти ідею",
@@ -143,7 +163,7 @@ const text = {
     label: "Three-dimensional egg with a vertical axis. Drag or use arrow keys to rotate.",
     coreLabel: "Central sphere — the object taking form",
     lowerSphereLabel: "Lower sphere",
-    lowerRingHint: "Lower ring: 05 — Test drive (between Production and Retail); 06 — Marketing. Spheres 07 and 08 remain unassigned.",
+    lowerRingHint: "Lower ring: 05 — Test drive, 06 — Marketing, 07 — Procurement, 08 — Legal.",
     marketing: "Marketing",
     marketingLabel: "Open the Marketing node description",
     marketingCloseLabel: "Close the Marketing node description",
@@ -154,6 +174,16 @@ const text = {
     testDriveCloseLabel: "Close the Test drive node description",
     testDriveDescription: "Try the object in use and verify its properties before it reaches retail. The name is provisional and can be refined.",
     testDriveNode: "Node / 05",
+    procurement: "Procurement",
+    procurementLabel: "Open the Procurement node description",
+    procurementCloseLabel: "Close the Procurement node description",
+    procurementDescription: "Selection and coordination of materials, components and products needed to realize the object. Connecting design with the project's economics.",
+    procurementNode: "Node / 07",
+    legal: "Legal",
+    legalLabel: "Open the Legal node description",
+    legalCloseLabel: "Close the Legal node description",
+    legalDescription: "Legal conditions for making and distributing the object: authorship, agreements, rights and responsibilities. Connecting production with commerce.",
+    legalNode: "Node / 08",
     ideaInputLabel: "Describe your idea",
     ideaInputPlaceholder: "Describe the intent, purpose, and qualities of the future object…",
     ideaSave: "Save idea",
@@ -303,13 +333,15 @@ const UnoEggScene = ({ locale }: Props) => {
     production: { title: copy.production, description: copy.productionDescription, number: copy.productionNode, openLabel: copy.productionLabel, closeLabel: copy.productionCloseLabel },
     marketing: { title: copy.marketing, description: copy.marketingDescription, number: copy.marketingNode, openLabel: copy.marketingLabel, closeLabel: copy.marketingCloseLabel },
     testDrive: { title: copy.testDrive, description: copy.testDriveDescription, number: copy.testDriveNode, openLabel: copy.testDriveLabel, closeLabel: copy.testDriveCloseLabel },
+    procurement: { title: copy.procurement, description: copy.procurementDescription, number: copy.procurementNode, openLabel: copy.procurementLabel, closeLabel: copy.procurementCloseLabel },
+    legal: { title: copy.legal, description: copy.legalDescription, number: copy.legalNode, openLabel: copy.legalLabel, closeLabel: copy.legalCloseLabel },
     idea: { title: copy.idea, description: copy.ideaDescription, number: copy.ideaNode, openLabel: copy.ideaLabel, closeLabel: copy.ideaCloseLabel },
     matter: { title: copy.matter, description: copy.matterDescription, number: copy.matterNode, openLabel: copy.matterLabel, closeLabel: copy.matterCloseLabel },
   };
   const hasIdea = ideaDraft.trim().length > 0;
   const hasSketch = sketches.length > 0;
   const canActivateNode = (node: InteractiveNode) =>
-    node === "idea" || node === "marketing" || node === "testDrive" || (node === "design" ? hasIdea : hasSketch);
+    node === "idea" || node === "marketing" || node === "testDrive" || node === "procurement" || node === "legal" || (node === "design" ? hasIdea : hasSketch);
   const sketchPrompt = makeSketchPrompt(brief, locale);
 
   useEffect(() => {
@@ -339,7 +371,7 @@ const UnoEggScene = ({ locale }: Props) => {
 
   useEffect(() => {
     if (sketchesLoaded && !hasSketch) {
-      setSelectedNodes((current) => current.filter((node) => node === "idea" || node === "design" || node === "marketing" || node === "testDrive"));
+      setSelectedNodes((current) => current.filter((node) => node === "idea" || node === "design" || node === "marketing" || node === "testDrive" || node === "procurement" || node === "legal"));
     }
   }, [hasSketch, sketchesLoaded]);
 
@@ -531,7 +563,9 @@ const UnoEggScene = ({ locale }: Props) => {
     if (event.type === "pointerup" && !active.moved &&
       (active.targetNode === "retail" || active.targetNode === "commerce" ||
        active.targetNode === "design" || active.targetNode === "production" ||
-       active.targetNode === "marketing" || active.targetNode === "testDrive" || active.targetNode === "idea" || active.targetNode === "matter")) {
+       active.targetNode === "marketing" || active.targetNode === "testDrive" ||
+       active.targetNode === "procurement" || active.targetNode === "legal" ||
+       active.targetNode === "idea" || active.targetNode === "matter")) {
       activateNode(active.targetNode);
     }
   };
@@ -560,6 +594,8 @@ const UnoEggScene = ({ locale }: Props) => {
     <div className="relative mx-auto w-full min-w-0 max-w-full" data-testid="unocalc-egg-stage">
       <span id="unocalc-marketing-description" className="sr-only">{copy.marketing}. {copy.marketingDescription}</span>
       <span id="unocalc-test-drive-description" className="sr-only">{copy.testDrive}. {copy.testDriveDescription}</span>
+      <span id="unocalc-procurement-description" className="sr-only">{copy.procurement}. {copy.procurementDescription}</span>
+      <span id="unocalc-legal-description" className="sr-only">{copy.legal}. {copy.legalDescription}</span>
       <div className="unocalc-egg-canvas mx-auto w-full min-w-0">
         <svg
           data-testid="unocalc-egg-svg"
@@ -720,14 +756,17 @@ const UnoEggScene = ({ locale }: Props) => {
               </g>
             );
           })}
-          {/* The two lower nodes assigned so far are independently clickable.
-              05: Test drive, between Production (+X) and Retail (+Z).
-              06: Marketing, between Retail (+Z) and Design (-X).
-              07 and 08 remain unassigned; no floating tooltips. */}
+          {/* Four independently clickable lower nodes, no floating tooltips:
+              05: Test drive, Production (+X) — Retail (+Z)
+              06: Marketing, Retail (+Z) — Design (-X)
+              07: Procurement, Design (-X) — Commerce (-Z)
+              08: Legal, Commerce (-Z) — Production (+X). */}
           {geometry.lowerNodes.map((node) => {
-            const nodeType: "testDrive" | "marketing" | null =
+            const nodeType: "testDrive" | "marketing" | "procurement" | "legal" | null =
               node.id === "support-1" ? "testDrive" :
-              node.id === "support-2" ? "marketing" : null;
+              node.id === "support-2" ? "marketing" :
+              node.id === "support-3" ? "procurement" :
+              node.id === "support-4" ? "legal" : null;
             const active = nodeType !== null && selectedNodes.includes(nodeType);
             const detail = nodeType === null ? null : nodeDetails[nodeType];
             return (
@@ -766,7 +805,9 @@ const UnoEggScene = ({ locale }: Props) => {
                 </text>
                 {nodeType && detail && (
                   <circle
-                    data-testid={nodeType === "marketing" ? "unocalc-marketing-hit" : "unocalc-test-drive-hit"}
+                    data-testid={nodeType === "marketing" ? "unocalc-marketing-hit" :
+                      nodeType === "testDrive" ? "unocalc-test-drive-hit" :
+                      nodeType === "procurement" ? "unocalc-procurement-hit" : "unocalc-legal-hit"}
                     data-egg-node={nodeType}
                     cx={node.x}
                     cy={node.y}
@@ -777,7 +818,7 @@ const UnoEggScene = ({ locale }: Props) => {
                     tabIndex={0}
                     aria-label={active ? detail.closeLabel : detail.openLabel}
                     aria-pressed={active}
-                    aria-describedby={nodeType === "marketing" ? "unocalc-marketing-description" : "unocalc-test-drive-description"}
+                    aria-describedby={`unocalc-${nodeType === "testDrive" ? "test-drive" : nodeType}-description`}
                     className="cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
                     onKeyDown={(event) => onNodeKeyDown(event, nodeType)}
                   />
