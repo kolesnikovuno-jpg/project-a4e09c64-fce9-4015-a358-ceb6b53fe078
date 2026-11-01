@@ -572,20 +572,34 @@ const UnoEggScene = ({ locale }: Props) => {
             cy={geometry.core.y}
             r="45"
             fill="url(#unocalc-core-shading)"
-            stroke="#aa936d"
+            stroke={hasSketch ? "hsl(var(--primary))" : "#aa936d"}
             strokeWidth="1.05"
-            strokeOpacity=".43"
+            strokeOpacity={hasSketch ? ".62" : ".43"}
             vectorEffect="non-scaling-stroke"
             pointerEvents="none"
             role="img"
             aria-label={copy.coreLabel}
           />
+          {hasSketch && (
+            <circle
+              data-testid="unocalc-core-progress"
+              cx={geometry.core.x} cy={geometry.core.y} r="51"
+              fill="none" stroke="hsl(var(--primary))" strokeOpacity=".25"
+              strokeWidth="1" strokeDasharray="3 7" pointerEvents="none"
+              aria-hidden="true"
+            />
+          )}
           {geometry.sectionNodes.map((node) => {
             const nodeType: InteractiveNode | null =
               node.id === "retail" || node.id === "commerce" || node.id === "design" || node.id === "production"
                 ? node.id : null;
             const active = nodeType !== null && selectedNodes.includes(nodeType);
-            const label = nodeType ? (active ? nodeDetails[nodeType].closeLabel : nodeDetails[nodeType].openLabel) : "";
+            const unlocked = nodeType !== null && canActivateNode(nodeType);
+            const label = nodeType
+              ? (unlocked
+                ? (active ? nodeDetails[nodeType].closeLabel : nodeDetails[nodeType].openLabel)
+                : nodeDetails[nodeType].title + " — " + (nodeType === "design" ? workflowCopy.lockedBeforeIdea : workflowCopy.lockedAfterSketch))
+              : "";
             return (
               <g key={`section-sphere-${node.id}`}>
                 <circle
@@ -597,7 +611,7 @@ const UnoEggScene = ({ locale }: Props) => {
                   fill={active ? "hsl(var(--primary) / 0.22)" : "none"}
                   stroke={active ? "hsl(var(--primary))" : "currentColor"}
                   strokeWidth="1.1"
-                  strokeOpacity={active ? ".85" : ".72"}
+                  strokeOpacity={active ? ".85" : unlocked ? ".72" : ".22"}
                   vectorEffect="non-scaling-stroke"
                   pointerEvents="none"
                 />
@@ -611,10 +625,11 @@ const UnoEggScene = ({ locale }: Props) => {
                     fill="transparent"
                     stroke="none"
                     role="button"
-                    tabIndex={0}
+                    tabIndex={unlocked ? 0 : -1}
                     aria-label={label}
                     aria-pressed={active}
-                    className="cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
+                    aria-disabled={!unlocked}
+                    className={unlocked ? "cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]" : "cursor-not-allowed"}
                     onKeyDown={(event) => onNodeKeyDown(event, nodeType)}
                   />
                 )}
@@ -624,7 +639,10 @@ const UnoEggScene = ({ locale }: Props) => {
           {geometry.poleNodes.map((node, index) => {
             const nodeType: InteractiveNode = index === 0 ? "idea" : "matter";
             const active = selectedNodes.includes(nodeType);
-            const label = active ? nodeDetails[nodeType].closeLabel : nodeDetails[nodeType].openLabel;
+            const unlocked = canActivateNode(nodeType);
+            const label = unlocked
+              ? (active ? nodeDetails[nodeType].closeLabel : nodeDetails[nodeType].openLabel)
+              : nodeDetails[nodeType].title + " — " + workflowCopy.lockedAfterSketch;
             return (
               <g key={`pole-sphere-${nodeType}`}>
                 <circle
@@ -636,7 +654,7 @@ const UnoEggScene = ({ locale }: Props) => {
                   fill={active ? "hsl(var(--primary) / 0.22)" : "none"}
                   stroke={active ? "hsl(var(--primary))" : "currentColor"}
                   strokeWidth="1.1"
-                  strokeOpacity={active ? ".85" : ".72"}
+                  strokeOpacity={active ? ".85" : unlocked ? ".72" : ".22"}
                   vectorEffect="non-scaling-stroke"
                   pointerEvents="none"
                 />
@@ -649,10 +667,11 @@ const UnoEggScene = ({ locale }: Props) => {
                   fill="transparent"
                   stroke="none"
                   role="button"
-                  tabIndex={0}
+                  tabIndex={unlocked ? 0 : -1}
                   aria-label={label}
                   aria-pressed={active}
-                  className="cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
+                  aria-disabled={!unlocked}
+                  className={unlocked ? "cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]" : "cursor-not-allowed"}
                   onKeyDown={(event) => onNodeKeyDown(event, nodeType)}
                 />
               </g>
@@ -678,6 +697,15 @@ const UnoEggScene = ({ locale }: Props) => {
           {selectedNodes.map((node) => (
             <div key={node} className="flex min-w-0 flex-col gap-4">
               <NodeDescription node={node} detail={nodeDetails[node]} />
+              {node === "design" && (
+                <button
+                  type="button"
+                  onClick={() => designWorkspace.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                  className="self-start border-b border-foreground/35 pb-1 text-left text-[11px] font-light text-foreground/75 hover:text-foreground"
+                >
+                  {workflowCopy.workOpen}
+                </button>
+              )}
               {node === "idea" && (
                 <form
                   data-testid="unocalc-idea-editor"
