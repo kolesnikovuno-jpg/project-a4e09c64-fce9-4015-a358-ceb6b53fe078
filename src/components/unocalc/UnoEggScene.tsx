@@ -743,6 +743,103 @@ const UnoEggScene = ({ locale }: Props) => {
           ))}
         </div>
       )}
+      <p className="mt-2 px-3 text-center text-[10px] font-light leading-relaxed tracking-[0.02em] text-foreground/50">
+        {workflowCopy.flowHint}
+      </p>
+      {selectedNodes.includes("design") && (
+        <section
+          ref={designWorkspace}
+          data-testid="unocalc-design-workspace"
+          className="mx-auto mt-10 w-full max-w-[700px] scroll-mt-8 border-t border-foreground/15 px-3 pt-7 text-left"
+        >
+          <p className="text-[10px] font-light uppercase tracking-[0.16em] text-foreground/45">{copy.designNode}</p>
+          <h2 className="mt-2 text-[24px] font-extralight tracking-[-0.025em] text-foreground/85">{workflowCopy.workTitle}</h2>
+          <p className="mt-3 text-[13px] font-light leading-relaxed text-foreground/65">{workflowCopy.workIntro}</p>
+          <p className="mt-1 text-[11px] font-light leading-relaxed text-foreground/45">{workflowCopy.workCaveat}</p>
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {([
+              ["concept", workflowCopy.workConcept],
+              ["purpose", workflowCopy.workPurpose],
+              ["character", workflowCopy.workCharacter],
+              ["constraints", workflowCopy.workConstraints],
+            ] as const).map(([field, label]) => (
+              <label key={field} className="flex min-w-0 flex-col gap-2 text-[11px] font-light text-foreground/65">
+                {label}
+                <textarea
+                  data-testid={"unocalc-brief-" + field}
+                  value={brief[field]}
+                  onChange={(event) => updateBrief(field, event.target.value)}
+                  rows={field === "concept" ? 5 : 3}
+                  maxLength={3000}
+                  placeholder={workflowCopy.workOptional}
+                  className="min-h-[100px] w-full resize-y rounded-md border border-foreground/20 bg-transparent p-3 text-[13px] font-light leading-relaxed text-foreground/85 outline-none placeholder:text-foreground/35 focus-visible:border-primary"
+                />
+              </label>
+            ))}
+          </div>
+          {brief.ideaSnapshot !== ideaDraft && (
+            <p role="status" className="mt-4 text-[11px] font-light leading-relaxed text-foreground/60">{workflowCopy.workChanged}</p>
+          )}
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button type="button" onClick={refreshBriefIdea}
+              className="rounded-md border border-foreground/25 px-4 py-2 text-[12px] font-light text-foreground/75 hover:border-foreground/55">
+              {workflowCopy.workRefresh}
+            </button>
+            <button type="button" onClick={saveBrief}
+              className="rounded-md border border-foreground/25 px-4 py-2 text-[12px] font-light text-foreground/75 hover:border-foreground/55">
+              {workflowCopy.workSave}
+            </button>
+          </div>
+          <p role="status" className="mt-2 text-[11px] font-light text-foreground/55">
+            {briefStatus === "saved" ? workflowCopy.workSaved : briefStatus === "error" ? workflowCopy.workSaveError : ""}
+          </p>
+          <div className="mt-7 border-t border-foreground/10 pt-6">
+            <label htmlFor="unocalc-sketch-prompt" className="text-[13px] font-light text-foreground/80">{workflowCopy.workPrompt}</label>
+            <textarea
+              id="unocalc-sketch-prompt"
+              data-testid="unocalc-sketch-prompt"
+              value={sketchPrompt}
+              readOnly
+              rows={8}
+              className="mt-3 w-full resize-y rounded-md border border-foreground/15 bg-foreground/[0.025] p-4 text-[12px] font-light leading-[1.8] text-foreground/75 outline-none"
+            />
+            <button type="button" onClick={() => { void copyPrompt(); }}
+              className="mt-3 rounded-md border border-foreground/25 px-4 py-2 text-[12px] font-light text-foreground/75 hover:border-foreground/55">
+              {workflowCopy.workCopy}
+            </button>
+            <p role="status" className="mt-2 text-[11px] font-light text-foreground/55">
+              {copyStatus === "copied" ? workflowCopy.workCopied : copyStatus === "error" ? workflowCopy.workCopyError : ""}
+            </p>
+          </div>
+          <div className="mt-8 border-t border-foreground/10 pt-6">
+            <h3 className="text-[17px] font-extralight text-foreground/85">{workflowCopy.sketchTitle}</h3>
+            <p className="mt-2 text-[11px] font-light text-foreground/50">{workflowCopy.sketchLimit}</p>
+            <label className="mt-4 inline-flex cursor-pointer rounded-md border border-foreground/25 px-4 py-2 text-[12px] font-light text-foreground/80 hover:border-foreground/60 focus-within:outline focus-within:outline-2 focus-within:outline-primary">
+              {workflowCopy.sketchAdd}
+              <input data-testid="unocalc-sketch-upload" type="file" accept="image/*" multiple
+                className="sr-only" onChange={(event) => { void addSketches(event); }} />
+            </label>
+            <p role="status" className="mt-3 text-[11px] font-light leading-relaxed text-foreground/55">
+              {sketchNotice || (hasSketch ? workflowCopy.sketchReady : workflowCopy.sketchEmpty)}
+            </p>
+            {sketches.length > 0 && (
+              <div data-testid="unocalc-sketch-gallery" className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
+                {sketches.map((sketch) => (
+                  <div key={sketch.id} className="min-w-0">
+                    <img src={sketch.previewUrl} alt={sketch.name} className="aspect-square w-full rounded-md border border-foreground/10 object-contain" />
+                    <p className="mt-1 truncate text-[10px] font-light text-foreground/60" title={sketch.name}>{sketch.name}</p>
+                    <button type="button" onClick={() => { void deleteSketch(sketch); }}
+                      className="mt-1 border-b border-foreground/30 text-[11px] font-light text-foreground/65 hover:text-foreground">
+                      {workflowCopy.sketchRemove}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="mt-4 text-[10px] font-light leading-relaxed text-foreground/45">{workflowCopy.sketchLocal}</p>
+          </div>
+        </section>
+      )}
       <p className="mt-1 text-center text-[11px] font-light tracking-[0.025em] text-foreground/50">
         {text[locale].hint}
       </p>
