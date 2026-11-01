@@ -14,7 +14,7 @@ import {
 
 type Locale = "ru" | "uk" | "en";
 type Props = { locale: Locale };
-type InteractiveNode = "retail" | "commerce" | "design" | "production";
+type InteractiveNode = "retail" | "commerce" | "design" | "production" | "idea" | "matter";
 type NodeDetail = { title: string; description: string; number: string; openLabel: string; closeLabel: string };
 
 // Front elevation: the horizontal diameter has two side nodes, while
@@ -46,6 +46,16 @@ const text = {
     productionCloseLabel: "Закрыть описание узла «Производство»",
     productionDescription: "Материальное воплощение замысла. Технологии, материалы и процессы превращают проект в реальный объект.",
     productionNode: "Узел / 04",
+    idea: "Идея",
+    ideaLabel: "Открыть описание полюса «Идея»",
+    ideaCloseLabel: "Закрыть описание полюса «Идея»",
+    ideaDescription: "Исходный замысел объекта. Здесь возникает смысл, определяющий, зачем он должен существовать и что стремится воплотить.",
+    ideaNode: "Полюс / 01",
+    matter: "Материя",
+    matterLabel: "Открыть описание полюса «Материя»",
+    matterCloseLabel: "Закрыть описание полюса «Материя»",
+    matterDescription: "Физическое присутствие объекта. Здесь замысел обретает материал, масштаб и ощутимую форму.",
+    matterNode: "Полюс / 02",
   },
   uk: {
     label: "Тривимірна форма яйця з вертикальною віссю. Обертайте жестом або стрілками клавіатури.",
@@ -70,6 +80,16 @@ const text = {
     productionCloseLabel: "Закрити опис вузла «Виробництво»",
     productionDescription: "Матеріальне втілення задуму. Технології, матеріали й процеси перетворюють проєкт на реальний об’єкт.",
     productionNode: "Вузол / 04",
+    idea: "Ідея",
+    ideaLabel: "Відкрити опис полюса «Ідея»",
+    ideaCloseLabel: "Закрити опис полюса «Ідея»",
+    ideaDescription: "Початковий задум об’єкта. Тут виникає сенс, який визначає, навіщо він має існувати та що прагне втілити.",
+    ideaNode: "Полюс / 01",
+    matter: "Матерія",
+    matterLabel: "Відкрити опис полюса «Матерія»",
+    matterCloseLabel: "Закрити опис полюса «Матерія»",
+    matterDescription: "Фізична присутність об’єкта. Тут задум набуває матеріалу, масштабу й відчутної форми.",
+    matterNode: "Полюс / 02",
   },
   en: {
     label: "Three-dimensional egg with a vertical axis. Drag or use arrow keys to rotate.",
@@ -94,6 +114,16 @@ const text = {
     productionCloseLabel: "Close the Production node description",
     productionDescription: "Bringing the concept into material form. Technologies, materials, and processes turn the project into a real object.",
     productionNode: "Node / 04",
+    idea: "Idea",
+    ideaLabel: "Open the Idea pole description",
+    ideaCloseLabel: "Close the Idea pole description",
+    ideaDescription: "The originating concept of an object. Here, meaning emerges: why it should exist and what it seeks to embody.",
+    ideaNode: "Pole / 01",
+    matter: "Matter",
+    matterLabel: "Open the Matter pole description",
+    matterCloseLabel: "Close the Matter pole description",
+    matterDescription: "The physical presence of an object. Here, the concept gains material, scale, and tangible form.",
+    matterNode: "Pole / 02",
   },
 };
 
@@ -176,9 +206,11 @@ const UnoEggScene = ({ locale }: Props) => {
     commerce: { title: copy.commerce, description: copy.commerceDescription, number: copy.commerceNode, openLabel: copy.commerceLabel, closeLabel: copy.commerceCloseLabel },
     design: { title: copy.design, description: copy.designDescription, number: copy.designNode, openLabel: copy.designLabel, closeLabel: copy.designCloseLabel },
     production: { title: copy.production, description: copy.productionDescription, number: copy.productionNode, openLabel: copy.productionLabel, closeLabel: copy.productionCloseLabel },
+    idea: { title: copy.idea, description: copy.ideaDescription, number: copy.ideaNode, openLabel: copy.ideaLabel, closeLabel: copy.ideaCloseLabel },
+    matter: { title: copy.matter, description: copy.matterDescription, number: copy.matterNode, openLabel: copy.matterLabel, closeLabel: copy.matterCloseLabel },
   };
   const activateNode = (node: InteractiveNode) => {
-    // Independent toggles: any combination of the four nodes can remain active.
+    // Independent toggles: any combination of the six nodes and poles can remain active.
     setSelectedNodes((current) =>
       current.includes(node) ? current.filter((selected) => selected !== node) : [...current, node]
     );
@@ -228,7 +260,8 @@ const UnoEggScene = ({ locale }: Props) => {
     }
     if (event.type === "pointerup" && !active.moved &&
       (active.targetNode === "retail" || active.targetNode === "commerce" ||
-       active.targetNode === "design" || active.targetNode === "production")) {
+       active.targetNode === "design" || active.targetNode === "production" ||
+       active.targetNode === "idea" || active.targetNode === "matter")) {
       activateNode(active.targetNode);
     }
   };
@@ -341,20 +374,43 @@ const UnoEggScene = ({ locale }: Props) => {
               </g>
             );
           })}
-          {geometry.poleNodes.map((node, index) => (
-            <circle
-              key={`pole-sphere-${index}`}
-              data-testid="unocalc-pole-sphere"
-              cx={node.x}
-              cy={node.y}
-              r="10.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.1"
-              strokeOpacity=".72"
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
+          {geometry.poleNodes.map((node, index) => {
+            const nodeType: InteractiveNode = index === 0 ? "idea" : "matter";
+            const active = selectedNodes.includes(nodeType);
+            const label = active ? nodeDetails[nodeType].closeLabel : nodeDetails[nodeType].openLabel;
+            return (
+              <g key={`pole-sphere-${nodeType}`}>
+                <circle
+                  data-testid="unocalc-pole-sphere"
+                  data-node-id={nodeType}
+                  cx={node.x}
+                  cy={node.y}
+                  r="10.5"
+                  fill={active ? "hsl(var(--primary) / 0.22)" : "none"}
+                  stroke={active ? "hsl(var(--primary))" : "currentColor"}
+                  strokeWidth="1.1"
+                  strokeOpacity={active ? ".85" : ".72"}
+                  vectorEffect="non-scaling-stroke"
+                  pointerEvents="none"
+                />
+                <circle
+                  data-testid={`unocalc-${nodeType}-hit`}
+                  data-egg-node={nodeType}
+                  cx={node.x}
+                  cy={node.y}
+                  r="25"
+                  fill="transparent"
+                  stroke="none"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={label}
+                  aria-pressed={active}
+                  className="cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
+                  onKeyDown={(event) => onNodeKeyDown(event, nodeType)}
+                />
+              </g>
+            );
+          })}
           <path
             data-testid="unocalc-egg-outline"
             d={geometry.silhouette}

@@ -43,6 +43,8 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.getByRole("button", { name: "Открыть описание узла «Ритейл»" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Открыть описание узла «Дизайн»" })).toHaveAttribute("cx", "168");
     expect(screen.getByRole("button", { name: "Открыть описание узла «Производство»" })).toHaveAttribute("cx", "592");
+    expect(screen.getByRole("button", { name: "Открыть описание полюса «Идея»" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Открыть описание полюса «Материя»" })).toBeInTheDocument();
   });
 
   it("places two nodes at the sides and two in depth, with the rear node occluded in front view", () => {
@@ -189,6 +191,43 @@ describe("UNOcalc egg-only geometry", () => {
     tap(screen.getByTestId("unocalc-commerce-hit"), 36);
     expect(screen.queryByTestId("unocalc-commerce-panel")).not.toBeInTheDocument();
     expect(screen.getByTestId("unocalc-active-panels").querySelectorAll("aside")).toHaveLength(3);
+  });
+
+  it("toggles Idea and Matter independently, keeping the four functional nodes selected", () => {
+    render(<UnoEggScene locale="ru" />);
+    const svg = screen.getByTestId("unocalc-egg-svg");
+    const tap = (node: Element, id: number) => {
+      fireEvent.pointerDown(node, { pointerId: id, clientX: 380, clientY: 400 });
+      fireEvent.pointerUp(svg, { pointerId: id, clientX: 380, clientY: 400 });
+    };
+    tap(screen.getByTestId("unocalc-retail-hit"), 41);
+    tap(screen.getByTestId("unocalc-design-hit"), 42);
+    tap(screen.getByTestId("unocalc-production-hit"), 43);
+    fireEvent.pointerDown(svg, { pointerId: 44, clientX: 100, clientY: 300 });
+    fireEvent.pointerMove(svg, { pointerId: 44, clientX: 493, clientY: 300 });
+    fireEvent.pointerUp(svg, { pointerId: 44, clientX: 493, clientY: 300 });
+    tap(screen.getByTestId("unocalc-commerce-hit"), 45);
+    const idea = screen.getByTestId("unocalc-idea-hit");
+    const matter = screen.getByTestId("unocalc-matter-hit");
+    expect(idea).toHaveAttribute("aria-pressed", "false");
+    expect(matter).toHaveAttribute("aria-pressed", "false");
+    tap(idea, 46);
+    tap(matter, 47);
+    expect(screen.getByTestId("unocalc-idea-panel")).toHaveAttribute("aria-label", "Идея");
+    expect(screen.getByTestId("unocalc-matter-panel")).toHaveAttribute("aria-label", "Материя");
+    expect(screen.getByTestId("unocalc-active-panels").querySelectorAll("aside")).toHaveLength(6);
+    expect(idea).toHaveAttribute("aria-pressed", "true");
+    expect(matter).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getAllByTestId("unocalc-pole-sphere").every((sphere) => sphere.getAttribute("fill") === "hsl(var(--primary) / 0.22)")).toBe(true);
+    tap(idea, 48);
+    expect(screen.queryByTestId("unocalc-idea-panel")).not.toBeInTheDocument();
+    expect(screen.getByTestId("unocalc-matter-panel")).toBeInTheDocument();
+    expect(screen.getByTestId("unocalc-retail-panel")).toBeInTheDocument();
+    expect(screen.getByTestId("unocalc-active-panels").querySelectorAll("aside")).toHaveLength(5);
+    expect(idea).toHaveAttribute("aria-pressed", "false");
+    fireEvent.keyDown(matter, { key: "Enter" });
+    expect(screen.queryByTestId("unocalc-matter-panel")).not.toBeInTheDocument();
+    expect(screen.getByTestId("unocalc-active-panels").querySelectorAll("aside")).toHaveLength(4);
   });
 
   it("does not activate the node when the user drags to rotate", () => {
