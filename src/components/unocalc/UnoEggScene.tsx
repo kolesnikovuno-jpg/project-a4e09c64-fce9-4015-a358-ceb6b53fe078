@@ -22,11 +22,18 @@ type NodeDetail = { title: string; description: string; number: string; openLabe
 // the nearer node of the depth diameter hides the fourth node behind it.
 const INITIAL: EggOrientation = { yaw: 0, tilt: 0 };
 const SURFACE = eggSurface();
+const IDEA_STORAGE_KEY = "unocalc.idea.v1";
 
 const text = {
   ru: {
     label: "Трёхмерная форма яйца с вертикальной осью. Вращайте жестом или стрелками клавиатуры.",
     coreLabel: "Центральная сфера — формируемый объект",
+    ideaInputLabel: "Описание идеи",
+    ideaInputPlaceholder: "Опишите замысел, назначение, свойства будущего объекта…",
+    ideaSave: "Сохранить идею",
+    ideaSaved: "Идея сохранена в этом браузере.",
+    ideaSaveError: "Не удалось сохранить. Текст остаётся в текущем сеансе.",
+    ideaStorageNote: "Поле откликается на текст. Данные хранятся только в этом браузере после сохранения.",
     hint: "Вращайте форму жестом или мышью · коснитесь сферы",
     retail: "Ритейл",
     retailLabel: "Открыть описание узла «Ритейл»",
@@ -62,6 +69,12 @@ const text = {
   uk: {
     label: "Тривимірна форма яйця з вертикальною віссю. Обертайте жестом або стрілками клавіатури.",
     coreLabel: "Центральна сфера — об’єкт, що формується",
+    ideaInputLabel: "Опис ідеї",
+    ideaInputPlaceholder: "Опишіть задум, призначення, властивості майбутнього об’єкта…",
+    ideaSave: "Зберегти ідею",
+    ideaSaved: "Ідею збережено в цьому браузері.",
+    ideaSaveError: "Не вдалося зберегти. Текст залишається в поточному сеансі.",
+    ideaStorageNote: "Поле реагує на текст. Дані зберігаються лише в цьому браузері після збереження.",
     hint: "Обертайте форму жестом або мишею · торкніться сфери",
     retail: "Ритейл",
     retailLabel: "Відкрити опис вузла «Ритейл»",
@@ -97,6 +110,12 @@ const text = {
   en: {
     label: "Three-dimensional egg with a vertical axis. Drag or use arrow keys to rotate.",
     coreLabel: "Central sphere — the object taking form",
+    ideaInputLabel: "Describe your idea",
+    ideaInputPlaceholder: "Describe the intent, purpose, and qualities of the future object…",
+    ideaSave: "Save idea",
+    ideaSaved: "Idea saved in this browser.",
+    ideaSaveError: "Unable to save. Your text remains in this session.",
+    ideaStorageNote: "The field responds to your text. Data is stored only in this browser when saved.",
     hint: "Drag to rotate · tap a sphere",
     retail: "Retail",
     retailLabel: "Open the Retail node description",
@@ -203,6 +222,11 @@ const NodeDescription = ({ node, detail }: { node: InteractiveNode; detail: Node
 const UnoEggScene = ({ locale }: Props) => {
   const [orientation, setOrientation] = useState<EggOrientation>(INITIAL);
   const [selectedNodes, setSelectedNodes] = useState<InteractiveNode[]>([]);
+  const [ideaDraft, setIdeaDraft] = useState(() => {
+    try { return window.localStorage.getItem(IDEA_STORAGE_KEY) ?? ""; }
+    catch { return ""; }
+  });
+  const [ideaSaveStatus, setIdeaSaveStatus] = useState<"idle" | "saved" | "error">("idle");
   const pointer = useRef<{ id: number; x: number; y: number; startX: number; startY: number; moved: boolean; targetNode: string | null } | null>(null);
   const copy = text[locale];
   const nodeDetails: Record<InteractiveNode, NodeDetail> = {
@@ -234,6 +258,42 @@ const UnoEggScene = ({ locale }: Props) => {
       core: projectEggPoint({ x: 0, y: EGG_EQUATOR, z: 0 }, orientation),
     };
   }, [orientation]);
+
+  // Prototype only: a deterministic, content-dependent field, not a measure
+  // of meaning, creative quality or physical energy. The central form is independent.
+  const ideaField = useMemo(() => {
+    const source = ideaDraft.trim();
+    if (!source) return null;
+    let hash = 2166136261;
+    for (const character of source) {
+      hash = Math.imul(hash ^ (character.codePointAt(0) ?? 0), 16777619) >>> 0;
+    }
+    const words = source.split(/\s+/u).filter(Boolean).length;
+    const strength = Math.min(0.9, 0.3 + Math.log2(words + 1) * 0.12);
+    const lobes = Array.from({ length: 4 }, (_, index) => {
+      const seed = (hash ^ Math.imul(index + 1, 0x9e3779b1)) >>> 0;
+      const x = (((seed & 255) / 255) - 0.5) * 0.85;
+      const y = ((((seed >>> 8) & 255) / 255) - 0.5) * 1.5;
+      const z = ((((seed >>> 16) & 255) / 255) - 0.5) * 0.8;
+      const position = projectEggPoint({ x, y, z }, orientation);
+      return {
+        ...position,
+        rx: 102 + ((seed >>> 24) & 255) / 255 * 55,
+        ry: 120 + ((seed >>> 20) & 255) / 255 * 65,
+      };
+    });
+    return { hash, strength, lobes };
+  }, [ideaDraft, orientation]);
+
+  const saveIdea = () => {
+    try {
+      if (ideaDraft.trim()) window.localStorage.setItem(IDEA_STORAGE_KEY, ideaDraft);
+      else window.localStorage.removeItem(IDEA_STORAGE_KEY);
+      setIdeaSaveStatus("saved");
+    } catch {
+      setIdeaSaveStatus("error");
+    }
+  };
 
   const onPointerDown = (event: PointerEvent<SVGSVGElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
@@ -314,7 +374,37 @@ const UnoEggScene = ({ locale }: Props) => {
               <stop offset="68%" stopColor="#b8a076" stopOpacity=".13" />
               <stop offset="100%" stopColor="#ad9162" stopOpacity=".035" />
             </radialGradient>
+            <radialGradient id="unocalc-idea-field-gradient">
+              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity=".28" />
+              <stop offset="54%" stopColor="hsl(var(--primary))" stopOpacity=".10" />
+              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+            </radialGradient>
+            <clipPath id="unocalc-idea-field-clip">
+              <path d={geometry.silhouette} />
+            </clipPath>
           </defs>
+          {ideaField && (
+            <g
+              data-testid="unocalc-idea-field"
+              data-field-signature={ideaField.hash}
+              clipPath="url(#unocalc-idea-field-clip)"
+              pointerEvents="none"
+              aria-hidden="true"
+            >
+              <path d={geometry.silhouette} fill="hsl(var(--primary))" fillOpacity=".025" />
+              {ideaField.lobes.map((lobe, index) => (
+                <ellipse
+                  key={index}
+                  cx={lobe.x}
+                  cy={lobe.y}
+                  rx={lobe.rx}
+                  ry={lobe.ry}
+                  fill="url(#unocalc-idea-field-gradient)"
+                  opacity={ideaField.strength}
+                />
+              ))}
+            </g>
+          )}
           <line
             data-testid="unocalc-egg-axis"
             x1={geometry.axis.start.x} y1={geometry.axis.start.y}
@@ -457,7 +547,42 @@ const UnoEggScene = ({ locale }: Props) => {
           className={`unocalc-active-panels mx-auto mt-5 flex w-full max-w-[320px] flex-col gap-7 pb-2 min-[900px]:absolute min-[900px]:right-0 min-[900px]:mt-0 min-[900px]:w-[23%] min-[900px]:max-w-[240px] min-[900px]:overflow-y-auto min-[900px]:pr-2 ${selectedNodes.length >= 3 ? "unocalc-active-panels--dense" : ""}`}
         >
           {selectedNodes.map((node) => (
-            <NodeDescription key={node} node={node} detail={nodeDetails[node]} />
+            <div key={node} className="flex min-w-0 flex-col gap-4">
+              <NodeDescription node={node} detail={nodeDetails[node]} />
+              {node === "idea" && (
+                <form
+                  data-testid="unocalc-idea-editor"
+                  className="flex min-w-0 flex-col gap-3"
+                  onSubmit={(event) => { event.preventDefault(); saveIdea(); }}
+                >
+                  <label htmlFor="unocalc-idea-input" className="text-[11px] font-light tracking-[0.03em] text-foreground/65">
+                    {copy.ideaInputLabel}
+                  </label>
+                  <textarea
+                    id="unocalc-idea-input"
+                    data-testid="unocalc-idea-input"
+                    value={ideaDraft}
+                    onChange={(event) => {
+                      setIdeaDraft(event.target.value);
+                      setIdeaSaveStatus("idle");
+                    }}
+                    maxLength={2000}
+                    rows={5}
+                    placeholder={copy.ideaInputPlaceholder}
+                    className="w-full min-w-0 resize-y rounded-md border border-foreground/20 bg-transparent p-3 text-[13px] font-light leading-relaxed text-foreground/85 outline-none placeholder:text-foreground/35 focus-visible:border-primary"
+                  />
+                  <button
+                    type="submit"
+                    className="self-start rounded-md border border-foreground/25 px-4 py-2 text-[12px] font-light text-foreground/80 transition-colors hover:border-foreground/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                  >
+                    {copy.ideaSave}
+                  </button>
+                  <p role="status" className="text-[10px] font-light leading-relaxed text-foreground/50">
+                    {ideaSaveStatus === "saved" ? copy.ideaSaved : ideaSaveStatus === "error" ? copy.ideaSaveError : copy.ideaStorageNote}
+                  </p>
+                </form>
+              )}
+            </div>
           ))}
         </div>
       )}

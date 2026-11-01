@@ -1,9 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import UnoEggScene from "@/components/unocalc/UnoEggScene";
 import { EGG_BOTTOM, EGG_TOP, EGG_EQUATOR, eggRadiusAtSection, eggPoleNodes, eggSectionAxes, visibleEggSectionNodes, eggSurface, projectEggPoint, convexOutline } from "@/lib/unocalcEgg3d";
 
 describe("UNOcalc egg-only geometry", () => {
+  beforeEach(() => window.localStorage.removeItem("unocalc.idea.v1"));
   it("builds a closed 3D ovoid of revolution with a narrow upper pole and broad lower pole", () => {
     expect(eggRadiusAtSection(-1)).toBe(0);
     expect(eggRadiusAtSection(0)).toBe(1);
@@ -111,6 +112,35 @@ describe("UNOcalc egg-only geometry", () => {
     expect(core).toHaveAttribute("aria-label", "Центральна сфера — об’єкт, що формується");
     rerender(<UnoEggScene locale="en" />);
     expect(core).toHaveAttribute("aria-label", "Central sphere — the object taking form");
+  });
+
+  it("lets the Idea pole edit a local idea and previews a changing field without deforming the core", () => {
+    const { unmount } = render(<UnoEggScene locale="ru" />);
+    const idea = screen.getByTestId("unocalc-idea-hit");
+    expect(screen.queryByTestId("unocalc-idea-editor")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("unocalc-idea-field")).not.toBeInTheDocument();
+    fireEvent.keyDown(idea, { key: "Enter" });
+    const input = screen.getByRole("textbox", { name: "Описание идеи" });
+    const core = screen.getByTestId("unocalc-core-sphere");
+    const initialCore = { x: core.getAttribute("cx"), y: core.getAttribute("cy"), r: core.getAttribute("r") };
+    fireEvent.change(input, { target: { value: "Кресло для чтения из гибких материалов" } });
+    const field = screen.getByTestId("unocalc-idea-field");
+    expect(field.querySelectorAll("ellipse")).toHaveLength(4);
+    const signature = field.getAttribute("data-field-signature");
+    fireEvent.change(input, { target: { value: "Светильник для чтения из гибких материалов" } });
+    expect(field.getAttribute("data-field-signature")).not.toBe(signature);
+    expect(core).toHaveAttribute("cx", initialCore.x);
+    expect(core).toHaveAttribute("cy", initialCore.y);
+    expect(core).toHaveAttribute("r", initialCore.r);
+    expect(window.localStorage.getItem("unocalc.idea.v1")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить идею" }));
+    expect(window.localStorage.getItem("unocalc.idea.v1")).toBe("Светильник для чтения из гибких материалов");
+    expect(screen.getByTestId("unocalc-idea-editor").querySelector('[role="status"]')).toHaveTextContent("Идея сохранена в этом браузере.");
+    unmount();
+    render(<UnoEggScene locale="ru" />);
+    expect(screen.getByTestId("unocalc-idea-field")).toBeInTheDocument();
+    fireEvent.keyDown(screen.getByTestId("unocalc-idea-hit"), { key: "Enter" });
+    expect(screen.getByRole("textbox", { name: "Описание идеи" })).toHaveValue("Светильник для чтения из гибких материалов");
   });
 
   it("opens the retail explanation only after tapping the central front sphere", () => {
