@@ -300,7 +300,8 @@ const NodeDescription = ({ node, detail }: { node: InteractiveNode; detail: Node
 const UnoEggScene = ({ locale }: Props) => {
   const [orientation, setOrientation] = useState<EggOrientation>(INITIAL);
   const [selectedNodes, setSelectedNodes] = useState<InteractiveNode[]>([]);
-  const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const [workspaceNode, setWorkspaceNode] = useState<InteractiveNode | null>(null);
+  const workspaceOpen = workspaceNode !== null;
   const [workspaceExpanded, setWorkspaceExpanded] = useState(false);
   const [workspaceVisible, setWorkspaceVisible] = useState(false);
   const [ideaDraft, setIdeaDraft] = useState(() => {
@@ -401,7 +402,7 @@ const UnoEggScene = ({ locale }: Props) => {
   useEffect(() => {
     if (!workspaceOpen) return;
     const onEscape = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") { setWorkspaceOpen(false); setWorkspaceExpanded(false); }
+      if (event.key === "Escape") { setWorkspaceNode(null); setWorkspaceExpanded(false); }
     };
     window.addEventListener("keydown", onEscape);
     return () => window.removeEventListener("keydown", onEscape);
@@ -947,8 +948,8 @@ const UnoEggScene = ({ locale }: Props) => {
           {selectedNodes.map((node) => (
             <div key={node} className="flex min-w-0 flex-col gap-4">
               <NodeDescription node={node} detail={nodeDetails[node]} />
-              {node === "procurement" && (
-                <button type="button" data-testid="unocalc-procurement-open" onClick={() => setWorkspaceOpen(true)}
+              {node !== "idea" && node !== "matter" && (
+                <button type="button" data-testid={`unocalc-${node}-open`} onClick={() => setWorkspaceNode(node)}
                   className="self-start border-b border-foreground/35 pb-1 text-left text-[11px] font-light text-foreground/75 hover:text-foreground">
                   {locale === "ru" ? "Открыть рабочее пространство" : locale === "uk" ? "Відкрити робочий простір" : "Open workspace"}
                 </button>
@@ -1012,22 +1013,22 @@ const UnoEggScene = ({ locale }: Props) => {
         </div>
       )}
       {workspaceOpen && (
-        <div data-testid="unocalc-procurement-workspace" className="fixed inset-0 z-[90] flex items-stretch justify-end" role="presentation">
+        <div data-testid="unocalc-sphere-workspace" className="fixed inset-0 z-[90] flex items-stretch justify-end" role="presentation">
           <button type="button" aria-label={locale === "ru" ? "Закрыть панель" : locale === "uk" ? "Закрити панель" : "Close panel"}
             className={`absolute inset-0 bg-black/35 transition-opacity duration-500 ease-out motion-reduce:transition-none ${workspaceVisible ? "opacity-100" : "opacity-0"}`} onClick={() => { setWorkspaceOpen(false); setWorkspaceExpanded(false); }} />
-          <section role="dialog" aria-modal="true" aria-labelledby="unocalc-procurement-workspace-title"
+          <section role="dialog" aria-modal="true" aria-labelledby="unocalc-sphere-workspace-title"
             className={`relative z-10 flex h-full flex-col overflow-hidden border-l border-foreground/15 bg-background shadow-2xl transition-[width,transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${workspaceVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-95"} ${workspaceExpanded ? "w-full" : "w-full sm:w-[min(520px,60vw)]"}`}>
             <header className="flex items-start justify-between gap-4 border-b border-foreground/10 px-6 py-6 sm:px-8">
               <div>
-                <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-foreground/45">UNO / EGG / 07</p>
-                <h2 id="unocalc-procurement-workspace-title" className="text-[26px] font-extralight tracking-[-0.035em]">{nodeDetails.procurement.title}</h2>
+                <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-foreground/45">UNO / EGG / {workspaceNode ? nodeDetails[workspaceNode].number : ""}</p>
+                <h2 id="unocalc-sphere-workspace-title" className="text-[26px] font-extralight tracking-[-0.035em]">{workspaceNode ? nodeDetails[workspaceNode].title : ""}</h2>
               </div>
               <div className="flex gap-2">
-                <button type="button" data-testid="unocalc-procurement-expand" onClick={() => setWorkspaceExpanded((value) => !value)}
+                <button type="button" data-testid="unocalc-sphere-expand" onClick={() => setWorkspaceExpanded((value) => !value)}
                   className="rounded-full border border-foreground/20 px-3 py-2 text-[11px] text-foreground/70">
                   {workspaceExpanded ? (locale === "ru" ? "Свернуть" : locale === "uk" ? "Згорнути" : "Collapse") : (locale === "ru" ? "Развернуть" : locale === "uk" ? "Розгорнути" : "Expand")}
                 </button>
-                <button type="button" data-testid="unocalc-procurement-close" onClick={() => { setWorkspaceOpen(false); setWorkspaceExpanded(false); }}
+                <button type="button" data-testid="unocalc-sphere-close" onClick={() => { setWorkspaceOpen(false); setWorkspaceExpanded(false); }}
                   className="rounded-full border border-foreground/20 px-3 py-2 text-[11px] text-foreground/70">
                   {locale === "ru" ? "Закрыть" : locale === "uk" ? "Закрити" : "Close"}
                 </button>
