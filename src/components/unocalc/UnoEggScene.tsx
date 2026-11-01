@@ -1158,6 +1158,7 @@ const UnoEggScene = ({ locale }: Props) => {
                 <UnoEggIdeaCyclePanel
                   locale={locale} node={workspaceNode} draft={ideaDraft} onDraft={setIdeaDraft}
                   cycle={ideaCycle} setCycle={setIdeaCycle} onSetSeed={placeSeedInCore}
+                  onNavigate={openWorkspace}
                 />
               ) : (
                 <p className="max-w-[260px] text-[12px] font-light leading-[1.8] text-foreground/40">
