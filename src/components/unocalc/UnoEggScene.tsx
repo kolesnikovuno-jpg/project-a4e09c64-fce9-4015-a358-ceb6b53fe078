@@ -30,6 +30,9 @@ const IDEA_STORAGE_KEY = "unocalc.idea.v1";
 const DESIGN_STORAGE_KEY = "unocalc.design.v1";
 const MAX_SKETCHES = 6;
 const MAX_SKETCH_BYTES = 10 * 1024 * 1024;
+// One shared contour treatment for every functional sphere (four principal,
+// four lower, two poles). The larger central core intentionally stays distinct.
+const NODE_CONTOUR = { radius: 10.5, width: 1.1, idleOpacity: 0.72, activeOpacity: 0.85 } as const;
 type SketchPreview = StoredSketch & { previewUrl: string; persisted: boolean };
 
 const text = {
@@ -37,7 +40,6 @@ const text = {
     label: "Трёхмерная форма яйца с вертикальной осью. Вращайте жестом или стрелками клавиатуры.",
     coreLabel: "Центральная сфера — формируемый объект",
     lowerSphereLabel: "Нижняя сфера",
-    lowerRingHint: "Нижний пояс: 05 — Тест-драйв, 06 — Маркетинг, 07 — Комплектация, 08 — Право.",
     marketing: "Маркетинг",
     marketingLabel: "Открыть описание узла «Маркетинг»",
     marketingCloseLabel: "Закрыть описание узла «Маркетинг»",
@@ -64,7 +66,7 @@ const text = {
     ideaSaved: "Идея сохранена в этом браузере.",
     ideaSaveError: "Не удалось сохранить. Текст остаётся в текущем сеансе.",
     ideaStorageNote: "Поле откликается на текст. Данные хранятся только в этом браузере после сохранения.",
-    hint: "Вращайте форму жестом или мышью · коснитесь сферы",
+    hint: "Вращайте форму жестом, мышью или стрелками",
     retail: "Ритейл",
     retailLabel: "Открыть описание узла «Ритейл»",
     retailCloseLabel: "Закрыть описание узла «Ритейл»",
@@ -100,7 +102,6 @@ const text = {
     label: "Тривимірна форма яйця з вертикальною віссю. Обертайте жестом або стрілками клавіатури.",
     coreLabel: "Центральна сфера — об’єкт, що формується",
     lowerSphereLabel: "Нижня сфера",
-    lowerRingHint: "Нижній пояс: 05 — Тест-драйв, 06 — Маркетинг, 07 — Комплектація, 08 — Право.",
     marketing: "Маркетинг",
     marketingLabel: "Відкрити опис вузла «Маркетинг»",
     marketingCloseLabel: "Закрити опис вузла «Маркетинг»",
@@ -127,7 +128,7 @@ const text = {
     ideaSaved: "Ідею збережено в цьому браузері.",
     ideaSaveError: "Не вдалося зберегти. Текст залишається в поточному сеансі.",
     ideaStorageNote: "Поле реагує на текст. Дані зберігаються лише в цьому браузері після збереження.",
-    hint: "Обертайте форму жестом або мишею · торкніться сфери",
+    hint: "Обертайте форму жестом, мишею або стрілками",
     retail: "Ритейл",
     retailLabel: "Відкрити опис вузла «Ритейл»",
     retailCloseLabel: "Закрити опис вузла «Ритейл»",
@@ -163,7 +164,6 @@ const text = {
     label: "Three-dimensional egg with a vertical axis. Drag or use arrow keys to rotate.",
     coreLabel: "Central sphere — the object taking form",
     lowerSphereLabel: "Lower sphere",
-    lowerRingHint: "Lower ring: 05 — Test drive, 06 — Marketing, 07 — Procurement, 08 — Legal.",
     marketing: "Marketing",
     marketingLabel: "Open the Marketing node description",
     marketingCloseLabel: "Close the Marketing node description",
@@ -190,7 +190,7 @@ const text = {
     ideaSaved: "Idea saved in this browser.",
     ideaSaveError: "Unable to save. Your text remains in this session.",
     ideaStorageNote: "The field responds to your text. Data is stored only in this browser when saved.",
-    hint: "Drag to rotate · tap a sphere",
+    hint: "Drag or use arrow keys to rotate",
     retail: "Retail",
     retailLabel: "Open the Retail node description",
     retailCloseLabel: "Close the Retail node description",
@@ -727,11 +727,11 @@ const UnoEggScene = ({ locale }: Props) => {
                   data-node-id={node.id}
                   cx={node.x}
                   cy={node.y}
-                  r="10.5"
+                  r={NODE_CONTOUR.radius}
                   fill={active ? "hsl(var(--primary) / 0.22)" : "none"}
                   stroke={active ? "hsl(var(--primary))" : "currentColor"}
-                  strokeWidth="1.1"
-                  strokeOpacity={active ? ".85" : unlocked ? ".72" : ".22"}
+                  strokeWidth={NODE_CONTOUR.width}
+                  strokeOpacity={active ? NODE_CONTOUR.activeOpacity : NODE_CONTOUR.idleOpacity}
                   vectorEffect="non-scaling-stroke"
                   pointerEvents="none"
                 />
@@ -777,11 +777,11 @@ const UnoEggScene = ({ locale }: Props) => {
                   data-node-role={nodeType ?? "unassigned"}
                   cx={node.x}
                   cy={node.y}
-                  r="10.5"
+                  r={NODE_CONTOUR.radius}
                   fill={active ? "hsl(var(--primary) / 0.22)" : "none"}
                   stroke={active ? "hsl(var(--primary))" : "currentColor"}
-                  strokeWidth="1.1"
-                  strokeOpacity={active ? ".85" : ".72"}
+                  strokeWidth={NODE_CONTOUR.width}
+                  strokeOpacity={active ? NODE_CONTOUR.activeOpacity : NODE_CONTOUR.idleOpacity}
                   vectorEffect="non-scaling-stroke"
                   pointerEvents="none"
                 />
@@ -822,11 +822,11 @@ const UnoEggScene = ({ locale }: Props) => {
                   data-node-id={nodeType}
                   cx={node.x}
                   cy={node.y}
-                  r="10.5"
+                  r={NODE_CONTOUR.radius}
                   fill={active ? "hsl(var(--primary) / 0.22)" : "none"}
                   stroke={active ? "hsl(var(--primary))" : "currentColor"}
-                  strokeWidth="1.1"
-                  strokeOpacity={active ? ".85" : unlocked ? ".72" : ".22"}
+                  strokeWidth={NODE_CONTOUR.width}
+                  strokeOpacity={active ? NODE_CONTOUR.activeOpacity : NODE_CONTOUR.idleOpacity}
                   vectorEffect="non-scaling-stroke"
                   pointerEvents="none"
                 />
@@ -861,6 +861,10 @@ const UnoEggScene = ({ locale }: Props) => {
           />
         </svg>
       </div>
+      <p data-testid="unocalc-rotation-hint"
+        className="mt-1 px-3 text-center text-[11px] font-light tracking-[0.025em] text-foreground/50">
+        {copy.hint}
+      </p>
       {selectedNodes.length > 0 && (
         <div
           data-testid="unocalc-active-panels"
@@ -927,13 +931,6 @@ const UnoEggScene = ({ locale }: Props) => {
           </button>
         </div>
       )}
-      <p className="mt-2 px-3 text-center text-[10px] font-light leading-relaxed tracking-[0.02em] text-foreground/50">
-        {workflowCopy.flowHint}
-      </p>
-      <p data-testid="unocalc-lower-ring-hint"
-        className="mt-1 px-3 text-center text-[10px] font-light leading-relaxed tracking-[0.02em] text-foreground/45">
-        {copy.lowerRingHint}
-      </p>
       {selectedNodes.includes("design") && (
         <section
           ref={designWorkspace}
@@ -1028,9 +1025,6 @@ const UnoEggScene = ({ locale }: Props) => {
           </div>
         </section>
       )}
-      <p className="mt-1 text-center text-[11px] font-light tracking-[0.025em] text-foreground/50">
-        {text[locale].hint}
-      </p>
     </div>
   );
 };
