@@ -232,7 +232,7 @@ const UnoEggScene = ({ locale }: Props) => {
     try { return window.localStorage.getItem(IDEA_STORAGE_KEY) ?? ""; }
     catch { return ""; }
   });
-  const [ideaSaveStatus, setIdeaSaveStatus] = useState<"idle" | "saved" | "error">("idle");
+  const [ideaSaveStatus, setIdeaSaveStatus] = useState<"idle" | "saved" | "error" | "empty">("idle");
   const [brief, setBrief] = useState<DesignBrief>(() => {
     try {
       const raw = window.localStorage.getItem(DESIGN_STORAGE_KEY);
@@ -252,8 +252,9 @@ const UnoEggScene = ({ locale }: Props) => {
   const [sketches, setSketches] = useState<SketchPreview[]>([]);
   const [sketchNotice, setSketchNotice] = useState("");
   const [sketchesLoaded, setSketchesLoaded] = useState(false);
+  const [designNavigation, setDesignNavigation] = useState(0);
   const sketchUrls = useRef<string[]>([]);
-  const designWorkspace = useRef<HTMLDivElement>(null);
+  const designWorkspace = useRef<HTMLElement>(null);
   const pointer = useRef<{ id: number; x: number; y: number; startX: number; startY: number; moved: boolean; targetNode: string | null } | null>(null);
   const copy = text[locale];
   const workflowCopy = designCopy[locale];
@@ -306,10 +307,29 @@ const UnoEggScene = ({ locale }: Props) => {
     if (!hasIdea) setSelectedNodes((current) => current.filter((node) => node !== "design"));
   }, [hasIdea]);
 
+  const openDesignWorkspace = () => {
+    if (!hasIdea) return;
+    setBrief((current) => current.concept.trim()
+      ? current
+      : { ...current, concept: ideaDraft.trim(), ideaSnapshot: ideaDraft });
+    setSelectedNodes((current) => current.includes("design") ? current : [...current, "design"]);
+    setDesignNavigation((current) => current + 1);
+  };
+
+  useEffect(() => {
+    if (designNavigation === 0 || !selectedNodes.includes("design")) return;
+    // The workspace is rendered below the egg. Make the next step visible
+    // without requiring users to find and tap the Design sphere.
+    designWorkspace.current?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+  }, [designNavigation, selectedNodes]);
+
   const activateNode = (node: InteractiveNode) => {
     if (!canActivateNode(node)) return;
-    if (node === "design" && !brief.concept.trim()) {
-      setBrief((current) => ({ ...current, concept: ideaDraft.trim(), ideaSnapshot: ideaDraft }));
+    if (node === "design") {
+      if (!brief.concept.trim()) {
+        setBrief((current) => ({ ...current, concept: ideaDraft.trim(), ideaSnapshot: ideaDraft }));
+      }
+      if (!selectedNodes.includes("design")) setDesignNavigation((current) => current + 1);
     }
     setSelectedNodes((current) =>
       current.includes(node) ? current.filter((selected) => selected !== node) : [...current, node]
@@ -423,13 +443,19 @@ const UnoEggScene = ({ locale }: Props) => {
   }, [ideaDraft, orientation]);
 
   const saveIdea = () => {
+    if (!hasIdea) {
+      setIdeaSaveStatus("empty");
+      return;
+    }
     try {
-      if (ideaDraft.trim()) window.localStorage.setItem(IDEA_STORAGE_KEY, ideaDraft);
-      else window.localStorage.removeItem(IDEA_STORAGE_KEY);
+      window.localStorage.setItem(IDEA_STORAGE_KEY, ideaDraft);
       setIdeaSaveStatus("saved");
     } catch {
       setIdeaSaveStatus("error");
     }
+    // Saving the idea is the transition to Design, not a dead end.
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    openDesignWorkspace();
   };
 
   const onPointerDown = (event: PointerEvent<SVGSVGElement>) => {
@@ -708,7 +734,7 @@ const UnoEggScene = ({ locale }: Props) => {
               {node === "design" && (
                 <button
                   type="button"
-                  onClick={() => designWorkspace.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                  onClick={openDesignWorkspace}
                   className="self-start border-b border-foreground/35 pb-1 text-left text-[11px] font-light text-foreground/75 hover:text-foreground"
                 >
                   {workflowCopy.workOpen}
@@ -743,12 +769,24 @@ const UnoEggScene = ({ locale }: Props) => {
                     {copy.ideaSave}
                   </button>
                   <p role="status" className="text-[10px] font-light leading-relaxed text-foreground/50">
-                    {ideaSaveStatus === "saved" ? copy.ideaSaved : ideaSaveStatus === "error" ? copy.ideaSaveError : copy.ideaStorageNote}
+                    {ideaSaveStatus === "saved" ? copy.ideaSaved : ideaSaveStatus === "error" ? copy.ideaSaveError : ideaSaveStatus === "empty" ? workflowCopy.ideaRequired : copy.ideaStorageNote}
                   </p>
                 </form>
               )}
             </div>
           ))}
+        </div>
+      )}
+      {hasIdea && (
+        <div className="mt-4 flex justify-center px-3">
+          <button
+            data-testid="unocalc-continue-design"
+            type="button"
+            onClick={saveIdea}
+            className="rounded-md border border-foreground/35 px-5 py-3 text-[13px] font-light tracking-[0.015em] text-foreground/85 transition-colors hover:border-foreground/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          >
+            {workflowCopy.continueDesign}
+          </button>
         </div>
       )}
       <p className="mt-2 px-3 text-center text-[10px] font-light leading-relaxed tracking-[0.02em] text-foreground/50">
