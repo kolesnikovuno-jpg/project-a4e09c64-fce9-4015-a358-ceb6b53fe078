@@ -652,8 +652,8 @@ const UnoEggScene = ({ locale }: Props) => {
             data-testid="unocalc-egg-axis"
             x1={geometry.axis.start.x} y1={geometry.axis.start.y}
             x2={geometry.axis.end.x} y2={geometry.axis.end.y}
-            stroke="currentColor" strokeWidth="1.05" strokeOpacity=".43"
-            strokeDasharray="7 8" vectorEffect="non-scaling-stroke"
+            stroke="currentColor" strokeWidth=".65" strokeOpacity=".14"
+            strokeDasharray="4 9" vectorEffect="non-scaling-stroke"
           />
           <path data-testid="unocalc-lower-ring-back" d={geometry.lowerRing.back} fill="none"
             stroke="currentColor" strokeWidth=".9" strokeOpacity=".13"
@@ -678,9 +678,9 @@ const UnoEggScene = ({ locale }: Props) => {
               x2={sectionAxis.end.x}
               y2={sectionAxis.end.y}
               stroke="currentColor"
-              strokeWidth="1.05"
-              strokeOpacity=".42"
-              strokeDasharray="7 8"
+              strokeWidth=".65"
+              strokeOpacity=".10"
+              strokeDasharray="4 9"
               vectorEffect="non-scaling-stroke"
             />
           ))}
@@ -778,31 +778,13 @@ const UnoEggScene = ({ locale }: Props) => {
                   cx={node.x}
                   cy={node.y}
                   r="10.5"
-                  fill={active ? "hsl(var(--primary) / 0.22)" : "hsl(var(--primary) / 0.055)"}
+                  fill={active ? "hsl(var(--primary) / 0.22)" : "none"}
                   stroke={active ? "hsl(var(--primary))" : "currentColor"}
-                  strokeWidth="1.05"
-                  strokeOpacity={active ? ".85" : ".48"}
+                  strokeWidth="1.1"
+                  strokeOpacity={active ? ".85" : ".72"}
                   vectorEffect="non-scaling-stroke"
                   pointerEvents="none"
-                  role="img"
-                  aria-label={detail
-                    ? `${copy.lowerSphereLabel} ${String(node.number).padStart(2, "0")} — ${detail.title}`
-                    : `${copy.lowerSphereLabel} ${String(node.number).padStart(2, "0")}`}
                 />
-                <text
-                  x={node.x}
-                  y={node.y}
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  fontSize="7.2"
-                  fontWeight="300"
-                  fill="currentColor"
-                  fillOpacity=".55"
-                  pointerEvents="none"
-                  aria-hidden="true"
-                >
-                  {String(node.number).padStart(2, "0")}
-                </text>
                 {nodeType && detail && (
                   <circle
                     data-testid={nodeType === "marketing" ? "unocalc-marketing-hit" :
