@@ -1,30 +1,43 @@
 /**
- * Axisymmetric ovoid section, broad end up.
- * t = -1 at the broad pole, +1 at the narrow pole.
- * The factor (1 - asymmetry * t) moves the maximum width above the midpoint.
- * Unlike an ellipse, the two halves have different widths at equal heights.
+ * Moss's egg: a compass-and-straightedge ovoid composed of four
+ * tangent circular arcs. We orient the large semicircle at the top.
+ *
+ * Construction: broad semicircle R; two side arcs 2R; lower arc
+ * (2 - sqrt(2))R. Every join is tangent, including the narrow pole.
+ * The section can later be revolved around its vertical symmetry axis.
+ * https://en.wikipedia.org/wiki/Moss%27s_egg
  */
-export const eggHalfWidthAtHeight = (t: number, radius = 238, asymmetry = 0.3): number => {
-  if (t < -1 || t > 1) return 0;
-  return radius * Math.sqrt(Math.max(0, 1 - t * t)) * (1 - asymmetry * t);
+export const getEggConstruction = (
+  cx = 380,
+  topY = 72,
+  radius = 222,
+) => {
+  const equatorY = topY + radius;
+  const joinOffsetX = radius * (Math.SQRT2 - 1);
+  const joinY = equatorY + radius * Math.SQRT2;
+  const sideRadius = radius * 2;
+  const lowerRadius = radius * (2 - Math.SQRT2);
+  const bottomY = equatorY + radius + lowerRadius;
+
+  return { cx, topY, radius, equatorY, joinOffsetX, joinY, sideRadius, lowerRadius, bottomY };
 };
 
 export const buildEggOutline = (
   cx = 380,
-  cy = 352,
-  halfHeight = 286,
-  radius = 238,
-  asymmetry = 0.3,
-  steps = 96,
+  topY = 72,
+  radius = 222,
 ): string => {
-  const right: string[] = [];
-  const left: string[] = [];
-  for (let i = 0; i <= steps; i++) {
-    const t = -1 + (2 * i) / steps;
-    const y = cy + t * halfHeight;
-    const width = eggHalfWidthAtHeight(t, radius, asymmetry);
-    right.push(`${(cx + width).toFixed(2)} ${y.toFixed(2)}`);
-    left.push(`${(cx - width).toFixed(2)} ${y.toFixed(2)}`);
-  }
-  return `M ${right[0]} L ${right.slice(1).join(" L ")} L ${left.reverse().slice(1).join(" L ")} Z`;
+  const g = getEggConstruction(cx, topY, radius);
+  const n = (value: number) => value.toFixed(2);
+  return [
+    `M ${n(cx - radius)} ${n(g.equatorY)}`,
+    // Broad upper semicircle, from left shoulder to right shoulder.
+    `A ${n(radius)} ${n(radius)} 0 0 1 ${n(cx + radius)} ${n(g.equatorY)}`,
+    // Right shoulder and side, with a common tangent at the shoulder.
+    `A ${n(g.sideRadius)} ${n(g.sideRadius)} 0 0 1 ${n(cx + g.joinOffsetX)} ${n(g.joinY)}`,
+    // Narrow but rounded lower pole.
+    `A ${n(g.lowerRadius)} ${n(g.lowerRadius)} 0 0 1 ${n(cx - g.joinOffsetX)} ${n(g.joinY)}`,
+    // Left side back to the broad shoulder.
+    `A ${n(g.sideRadius)} ${n(g.sideRadius)} 0 0 1 ${n(cx - radius)} ${n(g.equatorY)} Z`,
+  ].join(" ");
 };

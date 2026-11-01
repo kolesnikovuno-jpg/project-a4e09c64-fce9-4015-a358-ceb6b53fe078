@@ -54,8 +54,8 @@ const nodes: { id: NodeId; point: Point3; color: string }[] = [
 const top: Point3 = [0, 1.57, 0];
 const bottom: Point3 = [0, -1.57, 0];
 const initialOrbit = { yaw: 0.28, pitch: 0.56 };
-// The shell uses a mathematically constructed asymmetric ovoid, not a
-// manually approximated ellipse. Broad pole up; narrow pole down.
+// Four tangent circular arcs construct a real geometric egg section:
+// broad semicircular crown, narrower rounded base, no pointed end.
 const EGG_PATH = buildEggOutline();
 type Projected = { x: number; y: number; depth: number };
 const project = ([x, y, z]: Point3, yaw: number, pitch: number): Projected => {
