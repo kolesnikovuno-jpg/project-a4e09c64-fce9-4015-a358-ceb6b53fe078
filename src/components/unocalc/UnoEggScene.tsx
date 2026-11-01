@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent, type MouseEvent, type PointerEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent, type MouseEvent, type PointerEvent } from "react";
+import { createPortal } from "react-dom";
 import { designCopy, EMPTY_BRIEF, makeSketchPrompt, type DesignBrief } from "@/lib/unocalcDesign";
 import { listSketches, removeStoredSketch, storeSketch, type StoredSketch } from "@/lib/unocalcSketches";
 import {
@@ -305,6 +306,7 @@ const UnoEggScene = ({ locale }: Props) => {
   const workspaceOpen = workspaceNode !== null;
   const [workspaceExpanded, setWorkspaceExpanded] = useState(false);
   const [workspaceVisible, setWorkspaceVisible] = useState(false);
+  const workspaceExitTimer = useRef<number | null>(null);
   const [ideaDraft, setIdeaDraft] = useState(() => {
     try { return window.localStorage.getItem(IDEA_STORAGE_KEY) ?? ""; }
     catch { return ""; }
@@ -394,6 +396,31 @@ const UnoEggScene = ({ locale }: Props) => {
     designWorkspace.current?.scrollIntoView?.({ behavior: "smooth", block: "start" });
   }, [designNavigation, selectedNodes]);
 
+  const closeWorkspace = useCallback(() => {
+    if (workspaceExitTimer.current !== null) window.clearTimeout(workspaceExitTimer.current);
+    setWorkspaceVisible(false);
+    setWorkspaceExpanded(false);
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
+    if (reducedMotion) {
+      setWorkspaceNode(null);
+      return;
+    }
+    workspaceExitTimer.current = window.setTimeout(() => {
+      workspaceExitTimer.current = null;
+      setWorkspaceNode(null);
+    }, 420);
+  }, []);
+
+  const openWorkspace = (node: EggHitNode) => {
+    if (workspaceExitTimer.current !== null) {
+      window.clearTimeout(workspaceExitTimer.current);
+      workspaceExitTimer.current = null;
+    }
+    setWorkspaceExpanded(false);
+    setWorkspaceNode(node);
+    if (workspaceOpen) window.requestAnimationFrame(() => setWorkspaceVisible(true));
+  };
+
   useEffect(() => {
     if (!workspaceOpen) { setWorkspaceVisible(false); return; }
     const frame = window.requestAnimationFrame(() => setWorkspaceVisible(true));
@@ -402,16 +429,26 @@ const UnoEggScene = ({ locale }: Props) => {
 
   useEffect(() => {
     if (!workspaceOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [workspaceOpen]);
+
+  useEffect(() => () => {
+    if (workspaceExitTimer.current !== null) window.clearTimeout(workspaceExitTimer.current);
+  }, []);
+
+  useEffect(() => {
+    if (!workspaceOpen) return;
     const onEscape = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") { setWorkspaceNode(null); setWorkspaceExpanded(false); }
+      if (event.key === "Escape") closeWorkspace();
     };
     window.addEventListener("keydown", onEscape);
     return () => window.removeEventListener("keydown", onEscape);
-  }, [workspaceOpen]);
+  }, [workspaceOpen, closeWorkspace]);
 
   const activateAuthor = () => {
-    setWorkspaceExpanded(false);
-    setWorkspaceNode("author");
+    openWorkspace("author");
     giveNodeFeedback();
   };
 
@@ -974,7 +1011,7 @@ const UnoEggScene = ({ locale }: Props) => {
             <div key={node} className="flex min-w-0 flex-col gap-4">
               <NodeDescription node={node} detail={nodeDetails[node]} />
               {(
-                <button type="button" data-testid={`unocalc-${node}-open`} onClick={() => setWorkspaceNode(node)}
+                <button type="button" data-testid={`unocalc-${node}-open`} onClick={() => openWorkspace(node)}
                   className="self-start border-b border-foreground/35 pb-1 text-left text-[11px] font-light text-foreground/75 hover:text-foreground">
                   {locale === "ru" ? "Открыть рабочее пространство" : locale === "uk" ? "Відкрити робочий простір" : "Open workspace"}
                 </button>
@@ -1037,29 +1074,30 @@ const UnoEggScene = ({ locale }: Props) => {
           </button>
         </div>
       )}
-      {workspaceOpen && (
-        <div data-testid="unocalc-sphere-workspace" className="fixed inset-0 z-[90] flex items-stretch justify-end" role="presentation">
+      {workspaceOpen && createPortal(
+        <div data-testid="unocalc-sphere-workspace" className="unocalc-workspace-overlay fixed inset-0 z-[90] flex items-stretch justify-end" role="presentation">
           <button type="button" aria-label={locale === "ru" ? "Закрыть панель" : locale === "uk" ? "Закрити панель" : "Close panel"}
-            className={`absolute inset-0 bg-black/35 transition-opacity duration-500 ease-out motion-reduce:transition-none ${workspaceVisible ? "opacity-100" : "opacity-0"}`} onClick={() => { setWorkspaceNode(null); setWorkspaceExpanded(false); }} />
+            className={`absolute inset-0 bg-black/35 transition-opacity duration-[420ms] ease-out motion-reduce:transition-none ${workspaceVisible ? "opacity-100" : "opacity-0"}`} onClick={closeWorkspace} />
           <section role="dialog" aria-modal="true" aria-labelledby="unocalc-sphere-workspace-title"
-            className={`relative z-10 flex h-full flex-col overflow-hidden border-l border-foreground/15 bg-background shadow-2xl transition-[width,transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${workspaceVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-95"} ${workspaceExpanded ? "w-full" : "w-full sm:w-[min(520px,60vw)]"}`}>
-            <header className="flex items-start justify-between gap-4 border-b border-foreground/10 px-6 py-6 sm:px-8">
-              <div>
+            className={`unocalc-workspace-dialog relative z-10 flex h-full min-h-0 flex-col overflow-hidden border-l border-foreground/15 bg-background shadow-2xl transition-[width,transform,opacity] duration-[420ms] ease-out motion-reduce:transition-none ${workspaceVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-95"} ${workspaceExpanded ? "w-full" : "w-full min-[1100px]:w-[min(520px,60vw)]"}`}>
+            <header className="unocalc-workspace-header flex shrink-0 items-start justify-between gap-3 border-b border-foreground/10 pb-4 min-[1100px]:pb-6">
+              <div className="min-w-0 flex-1">
                 <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-foreground/45">UNO / EGG / {workspaceNode === "author" ? (locale === "en" ? "CORE" : "ЯДРО") : workspaceNode ? nodeDetails[workspaceNode].number : ""}</p>
-                <h2 id="unocalc-sphere-workspace-title" className="text-[26px] font-extralight tracking-[-0.035em]">{workspaceNode === "author" ? (locale === "en" ? "Author" : "Автор") : workspaceNode ? nodeDetails[workspaceNode].title : ""}</h2>
+                <h2 id="unocalc-sphere-workspace-title" className="break-words text-[22px] leading-snug font-extralight tracking-[-0.035em] sm:text-[26px]">{workspaceNode === "author" ? (locale === "en" ? "Author" : "Автор") : workspaceNode ? nodeDetails[workspaceNode].title : ""}</h2>
               </div>
-              <div className="flex gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 <button type="button" data-testid="unocalc-sphere-expand" onClick={() => setWorkspaceExpanded((value) => !value)}
-                  className="rounded-full border border-foreground/20 px-3 py-2 text-[11px] text-foreground/70">
+                  className="hidden min-[1100px]:inline-flex min-h-11 items-center rounded-full border border-foreground/20 px-4 py-2 text-[12px] text-foreground/70 hover:border-foreground/40">
                   {workspaceExpanded ? (locale === "ru" ? "Свернуть" : locale === "uk" ? "Згорнути" : "Collapse") : (locale === "ru" ? "Развернуть" : locale === "uk" ? "Розгорнути" : "Expand")}
                 </button>
-                <button type="button" data-testid="unocalc-sphere-close" onClick={() => { setWorkspaceNode(null); setWorkspaceExpanded(false); }}
-                  className="rounded-full border border-foreground/20 px-3 py-2 text-[11px] text-foreground/70">
-                  {locale === "ru" ? "Закрыть" : locale === "uk" ? "Закрити" : "Close"}
+                <button type="button" data-testid="unocalc-sphere-close" onClick={closeWorkspace}
+                  aria-label={locale === "ru" ? "Закрыть панель" : locale === "uk" ? "Закрити панель" : "Close panel"}
+                  className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-foreground/20 text-foreground/70 hover:border-foreground/40 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                  <span aria-hidden="true" className="text-[24px] font-extralight leading-none">×</span>
                 </button>
               </div>
             </header>
-            <div className="flex flex-1 items-center justify-center px-6 text-center">
+            <div className="unocalc-workspace-body flex min-h-0 flex-1 items-center justify-center overflow-y-auto overscroll-contain px-5 py-8 text-center sm:px-8">
               {workspaceNode === "author" ? (
                 <div data-testid="unocalc-author-workspace-content" className="max-w-[310px] space-y-5 text-left">
                   <div>
@@ -1081,12 +1119,13 @@ const UnoEggScene = ({ locale }: Props) => {
                 </div>
               ) : (
                 <p className="max-w-[260px] text-[12px] font-light leading-[1.8] text-foreground/40">
-                  {locale === "ru" ? "Пустое рабочее пространство. Проверяем открытие, закрытие и разворачивание панели." : locale === "uk" ? "Порожній робочий простір. Перевіряємо відкриття, закриття та розгортання панелі." : "Empty workspace. Testing open, close and expand interactions."}
+                  {locale === "ru" ? "Пустое рабочее пространство. Проверяем открытие и закрытие панели." : locale === "uk" ? "Порожній робочий простір. Перевіряємо відкриття та закриття панелі." : "Empty workspace. Testing panel opening and closing."}
                 </p>
               )}
             </div>
           </section>
-        </div>
+        </div>,
+        document.body
       )}
       {selectedNodes.includes("design") && hasIdea && (
         <section
