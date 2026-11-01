@@ -102,7 +102,7 @@ describe("UNOcalc egg-only geometry", () => {
     expect(tilted[1].nodes[1].y).toBeGreaterThan(projectedCenter);
   });
 
-  it("adds exactly four unnamed spheres on a lower staggered latitude without activating them", () => {
+  it("positions four lower spheres and assigns the Design–Retail position to Marketing", () => {
     const orientation = { yaw: 0, tilt: 0 };
     const lower = eggLowerSphereNodes(orientation);
     expect(lower).toHaveLength(4);
@@ -121,18 +121,69 @@ describe("UNOcalc egg-only geometry", () => {
 
     const { rerender } = render(<UnoEggScene locale="ru" />);
     expect(screen.getAllByTestId("unocalc-lower-sphere")).toHaveLength(2);
-    expect(screen.getAllByTestId("unocalc-lower-sphere").every((node) => node.getAttribute("pointer-events") === null)).toBe(true);
+    expect(screen.getAllByTestId("unocalc-lower-sphere").every((node) => node.getAttribute("pointer-events") === "none")).toBe(true);
     expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("06 — Маркетинг (между Дизайном и Ритейлом)");
     expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("05, 07, 08 пока без назначения");
     expect(screen.getAllByTestId("unocalc-lower-sphere").find((node) => node.getAttribute("data-node-id") === "support-2"))
       .toHaveAttribute("data-node-role", "marketing");
-    expect(screen.getAllByRole("button")).toHaveLength(5);
+    expect(screen.getAllByRole("button")).toHaveLength(6);
     const svg = screen.getByTestId("unocalc-egg-svg");
     fireEvent.keyDown(svg, { key: "ArrowDown" });
     expect(screen.getAllByTestId("unocalc-lower-sphere")).toHaveLength(4);
     expect(screen.queryByTestId("unocalc-active-panels")).not.toBeInTheDocument();
     rerender(<UnoEggScene locale="uk" />);
     expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("06 — Маркетинг");
+  });
+
+  it("opens Marketing on tap before an idea or sketch, and closes it on a second tap", () => {
+    render(<UnoEggScene locale="ru" />);
+    const hit = screen.getByTestId("unocalc-marketing-hit");
+    const svg = screen.getByTestId("unocalc-egg-svg");
+    expect(hit).toHaveAttribute("aria-label", "Открыть описание узла «Маркетинг»");
+    expect(hit).toHaveAttribute("aria-pressed", "false");
+    expect(hit).toHaveAttribute("tabindex", "0");
+    expect(hit).not.toHaveAttribute("aria-disabled", "true");
+    expect(screen.queryByTestId("unocalc-marketing-panel")).not.toBeInTheDocument();
+
+    fireEvent.pointerDown(hit, { pointerId: 70, clientX: 240, clientY: 430 });
+    fireEvent.pointerUp(svg, { pointerId: 70, clientX: 240, clientY: 430 });
+    expect(screen.getByTestId("unocalc-marketing-panel")).toHaveAttribute("aria-label", "Маркетинг");
+    expect(screen.getByTestId("unocalc-marketing-panel")).toHaveTextContent("Узел / 06");
+    expect(hit).toHaveAttribute("aria-pressed", "true");
+    expect(hit).toHaveAttribute("aria-label", "Закрыть описание узла «Маркетинг»");
+
+    fireEvent.pointerDown(hit, { pointerId: 71, clientX: 240, clientY: 430 });
+    fireEvent.pointerUp(svg, { pointerId: 71, clientX: 240, clientY: 430 });
+    expect(screen.queryByTestId("unocalc-marketing-panel")).not.toBeInTheDocument();
+    expect(hit).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("shows a Marketing tooltip on hover and focus, with keyboard activation", () => {
+    const { rerender } = render(<UnoEggScene locale="ru" />);
+    const hit = screen.getByTestId("unocalc-marketing-hit");
+    expect(screen.queryByTestId("unocalc-marketing-tooltip")).not.toBeInTheDocument();
+    fireEvent.pointerEnter(hit);
+    expect(screen.getByTestId("unocalc-marketing-tooltip")).toHaveTextContent("Маркетинг");
+    fireEvent.pointerLeave(hit);
+    expect(screen.queryByTestId("unocalc-marketing-tooltip")).not.toBeInTheDocument();
+    fireEvent.focus(hit);
+    expect(screen.getByTestId("unocalc-marketing-tooltip")).toBeInTheDocument();
+    fireEvent.keyDown(hit, { key: "Enter" });
+    expect(screen.getByTestId("unocalc-marketing-panel")).toBeInTheDocument();
+    fireEvent.blur(hit);
+    expect(screen.queryByTestId("unocalc-marketing-tooltip")).not.toBeInTheDocument();
+    rerender(<UnoEggScene locale="en" />);
+    expect(screen.getByTestId("unocalc-marketing-panel")).toHaveAttribute("aria-label", "Marketing");
+  });
+
+  it("does not select Marketing when dragging its sphere to rotate the egg", () => {
+    render(<UnoEggScene locale="ru" />);
+    const hit = screen.getByTestId("unocalc-marketing-hit");
+    const svg = screen.getByTestId("unocalc-egg-svg");
+    fireEvent.pointerDown(hit, { pointerId: 80, clientX: 240, clientY: 430 });
+    fireEvent.pointerMove(svg, { pointerId: 80, clientX: 270, clientY: 430 });
+    fireEvent.pointerUp(svg, { pointerId: 80, clientX: 270, clientY: 430 });
+    expect(screen.queryByTestId("unocalc-marketing-panel")).not.toBeInTheDocument();
   });
 
   it("spins horizontally around the upright axis, tilts vertically and resets", () => {
@@ -164,7 +215,7 @@ describe("UNOcalc egg-only geometry", () => {
     const { rerender } = render(<UnoEggScene locale="ru" />);
     const core = screen.getByTestId("unocalc-core-sphere");
     expect(core).not.toHaveAttribute("role", "button");
-    expect(screen.getAllByRole("button")).toHaveLength(5);
+    expect(screen.getAllByRole("button")).toHaveLength(6);
     expect(screen.queryByTestId("unocalc-active-panels")).not.toBeInTheDocument();
     rerender(<UnoEggScene locale="uk" />);
     expect(core).toHaveAttribute("aria-label", "Центральна сфера — об’єкт, що формується");
