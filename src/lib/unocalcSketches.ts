@@ -26,12 +26,13 @@ const openSketchDatabase = (): Promise<IDBDatabase> => new Promise((resolve, rej
 export const listSketches = async (): Promise<StoredSketch[]> => {
   const db = await openSketchDatabase();
   return new Promise((resolve, reject) => {
-    const request = db.transaction(STORE, "readonly").objectStore(STORE).getAll();
+    const transaction = db.transaction(STORE, "readonly");
+    const request = transaction.objectStore(STORE).getAll();
     request.onsuccess = () => resolve((request.result as StoredSketch[]).sort((a, b) => a.createdAt - b.createdAt));
     request.onerror = () => reject(request.error ?? new Error("Unable to read sketches"));
     db.onversionchange = () => db.close();
-    request.transaction.oncomplete = () => db.close();
-    request.transaction.onerror = () => db.close();
+    transaction.oncomplete = () => db.close();
+    transaction.onerror = () => db.close();
   });
 };
 
