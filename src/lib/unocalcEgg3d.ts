@@ -225,6 +225,36 @@ export const eggIdeaLinks = (orientation: EggOrientation, sphereRadius = 10.5) =
   });
 };
 
+/**
+ * Two additional structural links:
+ * Marketing (lower sphere 06) → Design (principal -X),
+ * Legal (lower sphere 08) → Production (principal +X).
+ * All endpoints are projected from the same 3D egg orientation.
+ */
+export const eggSupportLinks = (orientation: EggOrientation, sphereRadius = 10.5) => {
+  const lower = eggLowerSphereNodes(orientation);
+  const [design, production] = eggSectionAxes(orientation)[0].nodes;
+  return [
+    { id: "marketing-design", source: lower[1], target: design },
+    { id: "legal-production", source: lower[3], target: production },
+  ].map(({ id, source, target }) => {
+    const dx = target.x - source.x;
+    const dy = target.y - source.y;
+    const distance = Math.hypot(dx, dy);
+    const trim = Math.min(sphereRadius, distance / 2);
+    const ux = distance > 0 ? dx / distance : 0;
+    const uy = distance > 0 ? dy / distance : 0;
+    return {
+      id,
+      x1: source.x + ux * trim,
+      y1: source.y + uy * trim,
+      x2: target.x - ux * trim,
+      y2: target.y - uy * trim,
+      depth: (source.depth + target.depth) / 2,
+    };
+  });
+};
+
 export const eggAxisEndpoints = (orientation: EggOrientation) => ({
   start: projectEggPoint({ x: 0, y: EGG_TOP + 0.25, z: 0 }, orientation),
   end: projectEggPoint({ x: 0, y: EGG_BOTTOM - 0.25, z: 0 }, orientation),
