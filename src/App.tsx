@@ -6,7 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index";
 import Canvas from "./pages/Canvas";
 import Pricing from "./pages/Pricing";
-import UnoCalc from "./pages/UnoCalc";
+import UnoCalcEgg from "./pages/UnoCalcEgg";
 import UnoCalcAbout from "./pages/UnoCalcAbout";
 import UnoLab from "./pages/UnoLab";
 import About from "./pages/About";
@@ -70,7 +70,7 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   { path: "start", element: <StudioStart /> },
   // Previous landing (architectural research) kept for backward compatibility
   { path: "research", element: <Index /> },
-  { path: "unocalc", element: <UnoCalc /> },
+  { path: "unocalc", element: <UnoCalcEgg /> },
   { path: "unocalc/about", element: <UnoCalcAbout /> },
   { path: "unocalc/lab", element: <UnoLab /> },
   { path: "lyra", element: <Lyra /> },
