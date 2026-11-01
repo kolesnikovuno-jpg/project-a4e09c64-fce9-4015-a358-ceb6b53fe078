@@ -121,8 +121,8 @@ export const eggSectionAxes = (orientation: EggOrientation) => {
       start: projectEggPoint(atRadius(-1.15), orientation),
       end: projectEggPoint(atRadius(1.15), orientation),
       nodes: [
-        { ...projectEggPoint(atRadius(-1), orientation), id: angle === 0 ? "side-a" : "commerce" },
-        { ...projectEggPoint(atRadius(1), orientation), id: angle === 0 ? "side-b" : "retail" },
+        { ...projectEggPoint(atRadius(-1), orientation), id: angle === 0 ? "design" : "commerce" },
+        { ...projectEggPoint(atRadius(1), orientation), id: angle === 0 ? "production" : "retail" },
       ],
     };
   });

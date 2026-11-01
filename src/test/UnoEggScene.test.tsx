@@ -41,12 +41,15 @@ describe("UNOcalc egg-only geometry", () => {
     const ys = spheres.map((sphere) => Number(sphere.getAttribute("cy")));
     expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(0, 5);
     expect(screen.getByRole("button", { name: "Открыть описание узла «Ритейл»" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Открыть описание узла «Дизайн»" })).toHaveAttribute("cx", "168");
+    expect(screen.getByRole("button", { name: "Открыть описание узла «Производство»" })).toHaveAttribute("cx", "592");
   });
 
   it("places two nodes at the sides and two in depth, with the rear node occluded in front view", () => {
     const front = eggSectionAxes({ yaw: 0, tilt: 0 });
     expect(front).toHaveLength(2);
     expect(front[0].nodes.map((p) => p.x)).toEqual([168, 592]);
+    expect(front[0].nodes.map((p) => p.id)).toEqual(["design", "production"]);
     expect(front[1].nodes.every((p) => Math.abs(p.x - 380) < 0.001)).toBe(true);
     expect(front[1].nodes[0].y).toBeCloseTo(front[1].nodes[1].y, 6);
     expect(front[1].nodes[0].depth).toBeLessThan(front[1].nodes[1].depth);
@@ -127,6 +130,34 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.queryByTestId("unocalc-commerce-panel")).not.toBeInTheDocument();
     expect(hit).toHaveAttribute("aria-pressed", "false");
     expect(screen.getAllByTestId("unocalc-section-sphere").find((sphere) => sphere.getAttribute("data-node-id") === "commerce")).toHaveAttribute("fill", "none");
+  });
+
+  it("opens Design on the left, switches to Production on the right, and toggles off", () => {
+    render(<UnoEggScene locale="ru" />);
+    const svg = screen.getByTestId("unocalc-egg-svg");
+    const design = screen.getByTestId("unocalc-design-hit");
+    const production = screen.getByTestId("unocalc-production-hit");
+    expect(design).toHaveAttribute("cx", "168");
+    expect(production).toHaveAttribute("cx", "592");
+    fireEvent.pointerDown(design, { pointerId: 20, clientX: 168, clientY: 400 });
+    fireEvent.pointerUp(svg, { pointerId: 20, clientX: 168, clientY: 400 });
+    expect(screen.getByTestId("unocalc-design-panel")).toHaveAttribute("aria-label", "Дизайн");
+    expect(design).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getAllByTestId("unocalc-section-sphere").find((sphere) => sphere.getAttribute("data-node-id") === "design")).toHaveAttribute("fill", "hsl(var(--primary) / 0.22)");
+    fireEvent.pointerDown(production, { pointerId: 21, clientX: 592, clientY: 400 });
+    fireEvent.pointerUp(svg, { pointerId: 21, clientX: 592, clientY: 400 });
+    expect(screen.queryByTestId("unocalc-design-panel")).not.toBeInTheDocument();
+    expect(screen.getByTestId("unocalc-production-panel")).toHaveAttribute("aria-label", "Производство");
+    expect(design).toHaveAttribute("aria-pressed", "false");
+    expect(production).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getAllByTestId("unocalc-section-sphere").find((sphere) => sphere.getAttribute("data-node-id") === "design")).toHaveAttribute("fill", "none");
+    fireEvent.pointerDown(production, { pointerId: 22, clientX: 592, clientY: 400 });
+    fireEvent.pointerUp(svg, { pointerId: 22, clientX: 592, clientY: 400 });
+    expect(screen.queryByTestId("unocalc-production-panel")).not.toBeInTheDocument();
+    expect(production).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getAllByTestId("unocalc-section-sphere").find((sphere) => sphere.getAttribute("data-node-id") === "production")).toHaveAttribute("fill", "none");
+    fireEvent.keyDown(design, { key: "Enter" });
+    expect(screen.getByTestId("unocalc-design-panel")).toBeInTheDocument();
   });
 
   it("does not activate the node when the user drags to rotate", () => {

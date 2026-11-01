@@ -14,7 +14,7 @@ import {
 
 type Locale = "ru" | "uk" | "en";
 type Props = { locale: Locale };
-type InteractiveNode = "retail" | "commerce";
+type InteractiveNode = "retail" | "commerce" | "design" | "production";
 
 // Front elevation: the horizontal diameter has two side nodes, while
 // the nearer node of the depth diameter hides the fourth node behind it.
@@ -35,6 +35,16 @@ const text = {
     commerceDescription: "Экономическая сторона проекта. Здесь определяется, как созданная ценность превращается в устойчивый обмен и обеспечивает развитие.",
     node: "Узел / 01",
     commerceNode: "Узел / 02",
+    design: "Дизайн",
+    designLabel: "Открыть описание узла «Дизайн»",
+    designCloseLabel: "Закрыть описание узла «Дизайн»",
+    designDescription: "Формирование замысла. Здесь потребности и идеи превращаются в структуру, пропорции и форму будущего объекта.",
+    designNode: "Узел / 03",
+    production: "Производство",
+    productionLabel: "Открыть описание узла «Производство»",
+    productionCloseLabel: "Закрыть описание узла «Производство»",
+    productionDescription: "Материальное воплощение замысла. Технологии, материалы и процессы превращают проект в реальный объект.",
+    productionNode: "Узел / 04",
   },
   uk: {
     label: "Тривимірна форма яйця з вертикальною віссю. Обертайте жестом або стрілками клавіатури.",
@@ -49,6 +59,16 @@ const text = {
     commerceDescription: "Економічний бік проєкту. Тут визначається, як створена цінність перетворюється на сталий обмін і забезпечує розвиток.",
     node: "Вузол / 01",
     commerceNode: "Вузол / 02",
+    design: "Дизайн",
+    designLabel: "Відкрити опис вузла «Дизайн»",
+    designCloseLabel: "Закрити опис вузла «Дизайн»",
+    designDescription: "Формування задуму. Тут потреби та ідеї перетворюються на структуру, пропорції та форму майбутнього об’єкта.",
+    designNode: "Вузол / 03",
+    production: "Виробництво",
+    productionLabel: "Відкрити опис вузла «Виробництво»",
+    productionCloseLabel: "Закрити опис вузла «Виробництво»",
+    productionDescription: "Матеріальне втілення задуму. Технології, матеріали й процеси перетворюють проєкт на реальний об’єкт.",
+    productionNode: "Вузол / 04",
   },
   en: {
     label: "Three-dimensional egg with a vertical axis. Drag or use arrow keys to rotate.",
@@ -63,6 +83,16 @@ const text = {
     commerceDescription: "The economic side of a project. Here, created value becomes sustainable exchange and supports further development.",
     node: "Node / 01",
     commerceNode: "Node / 02",
+    design: "Design",
+    designLabel: "Open the Design node description",
+    designCloseLabel: "Close the Design node description",
+    designDescription: "Shaping the concept. Here, needs and ideas become the structure, proportions, and form of a future object.",
+    designNode: "Node / 03",
+    production: "Production",
+    productionLabel: "Open the Production node description",
+    productionCloseLabel: "Close the Production node description",
+    productionDescription: "Bringing the concept into material form. Technologies, materials, and processes turn the project into a real object.",
+    productionNode: "Node / 04",
   },
 };
 
@@ -100,11 +130,13 @@ const UnoEggScene = ({ locale }: Props) => {
   const [typedLength, setTypedLength] = useState(0);
   const pointer = useRef<{ id: number; x: number; y: number; startX: number; startY: number; moved: boolean; targetNode: string | null } | null>(null);
   const copy = text[locale];
-  const activeCopy = selectedNode === "retail"
-    ? { title: copy.retail, description: copy.retailDescription, number: copy.node }
-    : selectedNode === "commerce"
-      ? { title: copy.commerce, description: copy.commerceDescription, number: copy.commerceNode }
-      : null;
+  const nodeDetails: Record<InteractiveNode, { title: string; description: string; number: string; openLabel: string; closeLabel: string }> = {
+    retail: { title: copy.retail, description: copy.retailDescription, number: copy.node, openLabel: copy.retailLabel, closeLabel: copy.retailCloseLabel },
+    commerce: { title: copy.commerce, description: copy.commerceDescription, number: copy.commerceNode, openLabel: copy.commerceLabel, closeLabel: copy.commerceCloseLabel },
+    design: { title: copy.design, description: copy.designDescription, number: copy.designNode, openLabel: copy.designLabel, closeLabel: copy.designCloseLabel },
+    production: { title: copy.production, description: copy.productionDescription, number: copy.productionNode, openLabel: copy.productionLabel, closeLabel: copy.productionCloseLabel },
+  };
+  const activeCopy = selectedNode ? nodeDetails[selectedNode] : null;
   const fullCopy = activeCopy ? activeCopy.title + "\n" + activeCopy.description : "";
 
   useEffect(() => {
@@ -174,7 +206,8 @@ const UnoEggScene = ({ locale }: Props) => {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
     if (event.type === "pointerup" && !active.moved &&
-      (active.targetNode === "retail" || active.targetNode === "commerce")) {
+      (active.targetNode === "retail" || active.targetNode === "commerce" ||
+       active.targetNode === "design" || active.targetNode === "production")) {
       activateNode(active.targetNode);
     }
   };
@@ -247,11 +280,11 @@ const UnoEggScene = ({ locale }: Props) => {
             />
           ))}
           {geometry.sectionNodes.map((node) => {
-            const nodeType: InteractiveNode | null = node.id === "retail" || node.id === "commerce" ? node.id : null;
+            const nodeType: InteractiveNode | null =
+              node.id === "retail" || node.id === "commerce" || node.id === "design" || node.id === "production"
+                ? node.id : null;
             const active = nodeType !== null && selectedNode === nodeType;
-            const label = node.id === "retail"
-              ? (active ? copy.retailCloseLabel : copy.retailLabel)
-              : (active ? copy.commerceCloseLabel : copy.commerceLabel);
+            const label = nodeType ? (active ? nodeDetails[nodeType].closeLabel : nodeDetails[nodeType].openLabel) : "";
             return (
               <g key={`section-sphere-${node.id}`}>
                 <circle
