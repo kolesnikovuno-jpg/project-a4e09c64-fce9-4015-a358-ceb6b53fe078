@@ -344,8 +344,9 @@ const UnoEggScene = ({ locale }: Props) => {
   };
   const hasIdea = ideaDraft.trim().length > 0;
   const hasSketch = sketches.length > 0;
-  const canActivateNode = (node: InteractiveNode) =>
-    node === "idea" || node === "marketing" || node === "testDrive" || node === "procurement" || node === "legal" || (node === "design" ? hasIdea : hasSketch);
+  // Every sphere can be inspected at any time. Only the actual Design
+  // workspace is gated by an idea; creating a sketch remains a later step.
+  const canActivateNode = (_node: InteractiveNode) => true;
   const sketchPrompt = makeSketchPrompt(brief, locale);
 
   useEffect(() => {
@@ -373,16 +374,6 @@ const UnoEggScene = ({ locale }: Props) => {
     };
   }, []);
 
-  useEffect(() => {
-    if (sketchesLoaded && !hasSketch) {
-      setSelectedNodes((current) => current.filter((node) => node === "idea" || node === "design" || node === "marketing" || node === "testDrive" || node === "procurement" || node === "legal"));
-    }
-  }, [hasSketch, sketchesLoaded]);
-
-  useEffect(() => {
-    if (!hasIdea) setSelectedNodes((current) => current.filter((node) => node !== "design"));
-  }, [hasIdea]);
-
   const openDesignWorkspace = () => {
     if (!hasIdea) return;
     setBrief((current) => current.concept.trim()
@@ -401,7 +392,7 @@ const UnoEggScene = ({ locale }: Props) => {
 
   const activateNode = (node: InteractiveNode) => {
     if (!canActivateNode(node)) return;
-    if (node === "design") {
+    if (node === "design" && hasIdea) {
       if (!brief.concept.trim()) {
         setBrief((current) => ({ ...current, concept: ideaDraft.trim(), ideaSnapshot: ideaDraft }));
       }
@@ -546,7 +537,6 @@ const UnoEggScene = ({ locale }: Props) => {
       startX: event.clientX, startY: event.clientY, moved: false,
       targetNode: target.closest("[data-egg-node]")?.getAttribute("data-egg-node") ?? null,
     };
-    try { event.currentTarget.setPointerCapture?.(event.pointerId); } catch { /* SVG pointer capture is not available in every Safari version. */ }
   };
   const onPointerMove = (event: PointerEvent<SVGSVGElement>) => {
     const active = pointer.current;
@@ -556,6 +546,11 @@ const UnoEggScene = ({ locale }: Props) => {
     const moved = active.moved || Math.hypot(event.clientX - active.startX, event.clientY - active.startY) > 7;
     pointer.current = { ...active, x: event.clientX, y: event.clientY, moved };
     if (moved) {
+      // Capture only after a real drag. Capturing immediately on pointerdown
+      // retargets the synthesized click to the SVG in Safari/iPadOS.
+      if (!active.moved) {
+        try { event.currentTarget.setPointerCapture?.(event.pointerId); } catch { /* optional */ }
+      }
       setOrientation((current) => ({ yaw: current.yaw + dx * 0.008, tilt: current.tilt + dy * 0.008 }));
     }
   };
@@ -899,7 +894,7 @@ const UnoEggScene = ({ locale }: Props) => {
           {selectedNodes.map((node) => (
             <div key={node} className="flex min-w-0 flex-col gap-4">
               <NodeDescription node={node} detail={nodeDetails[node]} />
-              {node === "design" && (
+              {node === "design" && hasIdea && (
                 <button
                   type="button"
                   onClick={openDesignWorkspace}
@@ -957,7 +952,7 @@ const UnoEggScene = ({ locale }: Props) => {
           </button>
         </div>
       )}
-      {selectedNodes.includes("design") && (
+      {selectedNodes.includes("design") && hasIdea && (
         <section
           ref={designWorkspace}
           data-testid="unocalc-design-workspace"
