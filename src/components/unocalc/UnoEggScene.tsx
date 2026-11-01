@@ -28,7 +28,7 @@ const IDEA_STORAGE_KEY = "unocalc.idea.v1";
 const DESIGN_STORAGE_KEY = "unocalc.design.v1";
 const MAX_SKETCHES = 6;
 const MAX_SKETCH_BYTES = 10 * 1024 * 1024;
-type SketchPreview = StoredSketch & { previewUrl: string };
+type SketchPreview = StoredSketch & { previewUrl: string; persisted: boolean };
 
 const text = {
   ru: {
@@ -280,7 +280,7 @@ const UnoEggScene = ({ locale }: Props) => {
         const restored = stored.filter((item) => !known.has(item.id)).map((item) => {
           const previewUrl = URL.createObjectURL(item.blob);
           sketchUrls.current.push(previewUrl);
-          return { ...item, previewUrl };
+          return { ...item, previewUrl, persisted: true };
         });
         return [...restored, ...current];
       });
@@ -301,6 +301,10 @@ const UnoEggScene = ({ locale }: Props) => {
       setSelectedNodes((current) => current.filter((node) => node === "idea" || node === "design"));
     }
   }, [hasSketch, sketchesLoaded]);
+
+  useEffect(() => {
+    if (!hasIdea) setSelectedNodes((current) => current.filter((node) => node !== "design"));
+  }, [hasIdea]);
 
   const activateNode = (node: InteractiveNode) => {
     if (!canActivateNode(node)) return;
@@ -350,25 +354,29 @@ const UnoEggScene = ({ locale }: Props) => {
         blob: file,
         createdAt: Date.now(),
       };
+      let persisted = false;
       try {
         await storeSketch(sketch);
+        persisted = true;
         setSketchNotice("");
       } catch {
         setSketchNotice(workflowCopy.sketchStorageError);
       }
       const previewUrl = URL.createObjectURL(file);
       sketchUrls.current.push(previewUrl);
-      setSketches((current) => [...current, { ...sketch, previewUrl }]);
+      setSketches((current) => [...current, { ...sketch, previewUrl, persisted }]);
       count++;
     }
   };
   const deleteSketch = async (sketch: SketchPreview) => {
-    try {
-      await removeStoredSketch(sketch.id);
-      setSketchNotice("");
-    } catch {
-      setSketchNotice(workflowCopy.sketchDeleteError);
-      return;
+    if (sketch.persisted) {
+      try {
+        await removeStoredSketch(sketch.id);
+        setSketchNotice("");
+      } catch {
+        setSketchNotice(workflowCopy.sketchDeleteError);
+        return;
+      }
     }
     setSketches((current) => current.filter((item) => item.id !== sketch.id));
     URL.revokeObjectURL(sketch.previewUrl);
