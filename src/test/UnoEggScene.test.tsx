@@ -183,13 +183,15 @@ describe("UNOcalc egg-only geometry", () => {
     }
     expect(links[0].depth).toBeGreaterThan(0);
     expect(links[1].depth).toBeLessThan(0);
+    expect(links[2].depth).toBeGreaterThan(0);
+    expect(links[3].depth).toBeLessThan(0);
     const rotated = eggIdeaLinks({ yaw: 0.35, tilt: 0.18 });
     expect(rotated[0].x2).not.toBeCloseTo(links[0].x2, 4);
     expect(rotated[1].y2).not.toBeCloseTo(links[1].y2, 4);
 
     render(<UnoEggScene locale="ru" />);
     const group = screen.getByTestId("unocalc-idea-links");
-    expect(group.querySelectorAll("line")).toHaveLength(2);
+    expect(group.querySelectorAll("line")).toHaveLength(4);
     expect(group).toHaveAttribute("pointer-events", "none");
     const marketing = screen.getByTestId("unocalc-idea-link-marketing");
     const legal = screen.getByTestId("unocalc-idea-link-legal");
@@ -206,16 +208,20 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.getByTestId("unocalc-marketing-panel")).toBeInTheDocument();
   });
 
-  it("connects Marketing to Design and Legal to Production without changing the Idea links", () => {
+  it("connects four principal/lower sphere pairs without changing the Idea links", () => {
     const orientation = { yaw: 0, tilt: 0 };
     const links = eggSupportLinks(orientation);
-    expect(links.map((link) => link.id)).toEqual(["marketing-design", "legal-production"]);
+    expect(links.map((link) => link.id)).toEqual([
+      "marketing-design", "legal-production", "design-test-drive", "production-procurement",
+    ]);
     expect(eggIdeaLinks(orientation)).toHaveLength(2);
     const lower = eggLowerSphereNodes(orientation);
     const [design, production] = eggSectionAxes(orientation)[0].nodes;
     for (const [index, source, target] of [
       [0, lower[1], design],
       [1, lower[3], production],
+      [2, design, lower[0]],
+      [3, production, lower[2]],
     ] as const) {
       const link = links[index];
       expect(Math.hypot(link.x1 - source.x, link.y1 - source.y)).toBeCloseTo(10.5, 6);
@@ -234,17 +240,25 @@ describe("UNOcalc egg-only geometry", () => {
     expect(group).toHaveAttribute("pointer-events", "none");
     const marketing = screen.getByTestId("unocalc-support-link-marketing-design");
     const legal = screen.getByTestId("unocalc-support-link-legal-production");
-    for (const line of [marketing, legal]) {
+    const testDrive = screen.getByTestId("unocalc-support-link-design-test-drive");
+    const procurement = screen.getByTestId("unocalc-support-link-production-procurement");
+    for (const line of [marketing, legal, testDrive, procurement]) {
       expect(line).toHaveAttribute("stroke-width", ".75");
       expect(line).toHaveAttribute("pointer-events", "none");
     }
     expect(marketing).toHaveAttribute("stroke-opacity", ".38");
     expect(legal).toHaveAttribute("stroke-opacity", ".22");
+    expect(testDrive).toHaveAttribute("stroke-opacity", ".38");
+    expect(procurement).toHaveAttribute("stroke-opacity", ".22");
     const before = marketing.getAttribute("x1");
+    const beforeTestDrive = testDrive.getAttribute("x2");
     fireEvent.keyDown(screen.getByTestId("unocalc-egg-svg"), { key: "ArrowRight" });
     expect(marketing.getAttribute("x1")).not.toBe(before);
+    expect(testDrive.getAttribute("x2")).not.toBe(beforeTestDrive);
     fireEvent.click(screen.getByTestId("unocalc-design-hit"));
     expect(screen.getByTestId("unocalc-design-panel")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("unocalc-test-drive-hit"));
+    expect(screen.getByTestId("unocalc-testDrive-panel")).toBeInTheDocument();
   });
 
   it("uses identical contours for all visible functional spheres after tilting and when selected", () => {
