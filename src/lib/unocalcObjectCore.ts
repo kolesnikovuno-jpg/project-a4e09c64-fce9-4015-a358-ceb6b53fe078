@@ -108,13 +108,17 @@ export const setTextileProperty = (
   ...core,
   elements: core.elements.map((element) => {
     if (element.id !== id || element.properties[field] === value) return element;
+    const properties = { ...element.properties, [field]: value };
     const pendingChecks = { ...element.pendingChecks };
-    for (const sphere of DEPENDENTS[field]) {
+    const affected = new Set(DEPENDENTS[field]);
+    // A physical width conflict also returns to Design: the shape may need rethinking.
+    if (calculateTextileCut(properties).status === "does_not_fit") affected.add("design");
+    for (const sphere of affected) {
       pendingChecks[sphere] = [...new Set([...(pendingChecks[sphere] ?? []), field])];
     }
     return {
       ...element,
-      properties: { ...element.properties, [field]: value },
+      properties,
       pendingChecks,
       events: appendEvent(element, {
         id: uid(), at, actor, kind: "property", detail: field,
