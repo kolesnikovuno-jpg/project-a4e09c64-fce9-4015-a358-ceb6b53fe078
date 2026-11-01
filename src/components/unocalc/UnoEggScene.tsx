@@ -12,6 +12,7 @@ import {
   eggSectionAxes,
   eggSurface,
   eggIdeaLinks,
+  eggSupportLinks,
   projectEggPoint,
   svgOutline,
   visibleEggSectionNodes,
@@ -476,6 +477,7 @@ const UnoEggScene = ({ locale }: Props) => {
       lowerRing: eggLowerRingArcs(orientation),
       lowerNodes: visibleEggLowerSphereNodes(orientation),
       ideaLinks: eggIdeaLinks(orientation),
+      supportLinks: eggSupportLinks(orientation),
       axis: eggAxisEndpoints(orientation),
       sectionAxes,
       sectionNodes: visibleEggSectionNodes(sectionAxes),
@@ -707,6 +709,23 @@ const UnoEggScene = ({ locale }: Props) => {
               <line
                 key={link.id}
                 data-testid={`unocalc-idea-link-${link.id}`}
+                x1={link.x1} y1={link.y1}
+                x2={link.x2} y2={link.y2}
+                stroke="currentColor"
+                strokeWidth=".75"
+                strokeOpacity={link.depth < 0 ? ".22" : ".38"}
+                vectorEffect="non-scaling-stroke"
+                pointerEvents="none"
+              />
+            ))}
+          </g>
+          {/* Additional structural relationships from the lower spheres to
+              Design and Production, drawn behind the clickable nodes. */}
+          <g data-testid="unocalc-support-links" aria-hidden="true" pointerEvents="none">
+            {geometry.supportLinks.map((link) => (
+              <line
+                key={link.id}
+                data-testid={`unocalc-support-link-${link.id}`}
                 x1={link.x1} y1={link.y1}
                 x2={link.x2} y2={link.y2}
                 stroke="currentColor"
