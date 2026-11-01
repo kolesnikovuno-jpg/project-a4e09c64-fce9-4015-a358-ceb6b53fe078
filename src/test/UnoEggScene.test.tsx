@@ -102,7 +102,7 @@ describe("UNOcalc egg-only geometry", () => {
     expect(tilted[1].nodes[1].y).toBeGreaterThan(projectedCenter);
   });
 
-  it("positions four lower spheres and assigns Test drive and Marketing to their correct quadrants", () => {
+  it("positions all four lower spheres between their designated principal nodes", () => {
     const orientation = { yaw: 0, tilt: 0 };
     const lower = eggLowerSphereNodes(orientation);
     expect(lower).toHaveLength(4);
@@ -122,9 +122,10 @@ describe("UNOcalc egg-only geometry", () => {
     const { rerender } = render(<UnoEggScene locale="ru" />);
     expect(screen.getAllByTestId("unocalc-lower-sphere")).toHaveLength(2);
     expect(screen.getAllByTestId("unocalc-lower-sphere").every((node) => node.getAttribute("pointer-events") === "none")).toBe(true);
-    expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("05 — Тест-драйв (между Производством и Ритейлом)");
+    expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("05 — Тест-драйв");
     expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("06 — Маркетинг");
-    expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("07 и 08 пока без назначения");
+    expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("07 — Комплектация");
+    expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("08 — Право");
     expect(screen.getAllByTestId("unocalc-lower-sphere").find((node) => node.getAttribute("data-node-id") === "support-1"))
       .toHaveAttribute("data-node-role", "testDrive");
     expect(screen.getAllByTestId("unocalc-lower-sphere").find((node) => node.getAttribute("data-node-id") === "support-2"))
@@ -133,6 +134,13 @@ describe("UNOcalc egg-only geometry", () => {
     const svg = screen.getByTestId("unocalc-egg-svg");
     fireEvent.keyDown(svg, { key: "ArrowDown" });
     expect(screen.getAllByTestId("unocalc-lower-sphere")).toHaveLength(4);
+    expect(screen.getAllByTestId("unocalc-lower-sphere").find((node) => node.getAttribute("data-node-id") === "support-3"))
+      .toHaveAttribute("data-node-role", "procurement");
+    expect(screen.getAllByTestId("unocalc-lower-sphere").find((node) => node.getAttribute("data-node-id") === "support-4"))
+      .toHaveAttribute("data-node-role", "legal");
+    expect(screen.getByTestId("unocalc-procurement-hit")).toHaveAttribute("aria-label", "Открыть описание узла «Комплектация»");
+    expect(screen.getByTestId("unocalc-legal-hit")).toHaveAttribute("aria-label", "Открыть описание узла «Право»");
+    expect(screen.getAllByRole("button")).toHaveLength(10);
     expect(screen.queryByTestId("unocalc-active-panels")).not.toBeInTheDocument();
     rerender(<UnoEggScene locale="uk" />);
     expect(screen.getByTestId("unocalc-lower-ring-hint")).toHaveTextContent("06 — Маркетинг");
@@ -198,6 +206,60 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.getByTestId("unocalc-testDrive-panel")).toHaveAttribute("aria-label", "Тест-драйв");
     rerender(<UnoEggScene locale="en" />);
     expect(screen.getByTestId("unocalc-testDrive-panel")).toHaveAttribute("aria-label", "Test drive");
+  });
+
+  it("opens Procurement 07 and Legal 08 independently with no idea, sketch or floating tooltip", () => {
+    render(<UnoEggScene locale="ru" />);
+    const svg = screen.getByTestId("unocalc-egg-svg");
+    fireEvent.keyDown(svg, { key: "ArrowDown" });
+    const procurement = screen.getByTestId("unocalc-procurement-hit");
+    const legal = screen.getByTestId("unocalc-legal-hit");
+    expect(procurement).toHaveAttribute("aria-pressed", "false");
+    expect(legal).toHaveAttribute("aria-pressed", "false");
+    expect(procurement).toHaveAttribute("tabindex", "0");
+    expect(legal).toHaveAttribute("tabindex", "0");
+
+    fireEvent.pointerDown(procurement, { pointerId: 90, clientX: 260, clientY: 430 });
+    fireEvent.pointerUp(svg, { pointerId: 90, clientX: 260, clientY: 430 });
+    expect(screen.getByTestId("unocalc-procurement-panel")).toHaveAttribute("aria-label", "Комплектация");
+    expect(screen.getByTestId("unocalc-procurement-panel")).toHaveTextContent("Узел / 07");
+    expect(procurement).toHaveAttribute("aria-pressed", "true");
+    expect(legal).toHaveAttribute("aria-pressed", "false");
+
+    fireEvent.keyDown(legal, { key: "Enter" });
+    expect(screen.getByTestId("unocalc-legal-panel")).toHaveAttribute("aria-label", "Право");
+    expect(screen.getByTestId("unocalc-legal-panel")).toHaveTextContent("Узел / 08");
+    expect(screen.getByTestId("unocalc-procurement-panel")).toBeInTheDocument();
+    expect(screen.queryByTestId("unocalc-procurement-tooltip")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("unocalc-legal-tooltip")).not.toBeInTheDocument();
+
+    fireEvent.pointerDown(procurement, { pointerId: 91, clientX: 260, clientY: 430 });
+    fireEvent.pointerUp(svg, { pointerId: 91, clientX: 260, clientY: 430 });
+    expect(screen.queryByTestId("unocalc-procurement-panel")).not.toBeInTheDocument();
+    expect(screen.getByTestId("unocalc-legal-panel")).toBeInTheDocument();
+    fireEvent.keyDown(legal, { key: " " });
+    expect(screen.queryByTestId("unocalc-legal-panel")).not.toBeInTheDocument();
+  });
+
+  it("localizes Procurement and Legal, and dragging their spheres does not open panels", () => {
+    const { rerender } = render(<UnoEggScene locale="ru" />);
+    const svg = screen.getByTestId("unocalc-egg-svg");
+    fireEvent.keyDown(svg, { key: "ArrowDown" });
+    const legal = screen.getByTestId("unocalc-legal-hit");
+    fireEvent.pointerDown(legal, { pointerId: 92, clientX: 260, clientY: 430 });
+    fireEvent.pointerMove(svg, { pointerId: 92, clientX: 290, clientY: 430 });
+    fireEvent.pointerUp(svg, { pointerId: 92, clientX: 290, clientY: 430 });
+    expect(screen.queryByTestId("unocalc-legal-panel")).not.toBeInTheDocument();
+    fireEvent.keyDown(svg, { key: "Home" });
+    fireEvent.keyDown(svg, { key: "ArrowDown" });
+    fireEvent.keyDown(screen.getByTestId("unocalc-procurement-hit"), { key: "Enter" });
+    fireEvent.keyDown(screen.getByTestId("unocalc-legal-hit"), { key: "Enter" });
+    rerender(<UnoEggScene locale="uk" />);
+    expect(screen.getByTestId("unocalc-procurement-panel")).toHaveAttribute("aria-label", "Комплектація");
+    expect(screen.getByTestId("unocalc-legal-panel")).toHaveAttribute("aria-label", "Право");
+    rerender(<UnoEggScene locale="en" />);
+    expect(screen.getByTestId("unocalc-procurement-panel")).toHaveAttribute("aria-label", "Procurement");
+    expect(screen.getByTestId("unocalc-legal-panel")).toHaveAttribute("aria-label", "Legal");
   });
 
   it("keeps the view clear on hover and focus while allowing keyboard activation", () => {
