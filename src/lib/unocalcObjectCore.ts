@@ -177,13 +177,13 @@ export type TextileCutResult =
 export const calculateTextileCut = (properties: TextileElement["properties"]): TextileCutResult => {
   const required: TextileField[] = ["rollWidthMm", "finishedWidthMm", "finishedLengthMm", "seamAllowanceMm", "quantity"];
   const values = Object.fromEntries(required.map((field) => [field, numeric(properties[field])])) as Record<TextileField, number | null>;
-  const missing = required.filter((field) => values[field] === null);
+  const missing = required.filter((field) => !properties[field].trim());
   if (missing.length) return { status: "incomplete", missing };
-  const invalid = required.filter((field) => field === "seamAllowanceMm"
-    ? values[field]! < 0 : values[field]! <= 0);
+  const invalid = required.filter((field) => values[field] === null ||
+    (field === "seamAllowanceMm" ? values[field]! < 0 : values[field]! <= 0));
   if (!Number.isInteger(values.quantity!)) invalid.push("quantity");
   const price = numeric(properties.pricePerMetre);
-  if (price !== null && price < 0) invalid.push("pricePerMetre");
+  if (properties.pricePerMetre.trim() && (price === null || price < 0)) invalid.push("pricePerMetre");
   if (invalid.length) return { status: "invalid", fields: [...new Set(invalid)] };
   const cutWidthMm = values.finishedWidthMm! + 2 * values.seamAllowanceMm!;
   const cutLengthMm = values.finishedLengthMm! + 2 * values.seamAllowanceMm!;
