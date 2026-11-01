@@ -65,10 +65,13 @@ type Props = {
   cycle: IdeaCycle | null;
   setCycle: Dispatch<SetStateAction<IdeaCycle | null>>;
   onSetSeed: () => void;
+  onNavigate: (node: "author" | "idea" | "marketing" | "legal" | "design" | "production") => void;
 };
 
 const messages = {
   ru: {
+    toIdea: "Открыть Идею", toMarketing: "Открыть Маркетинг", toLegal: "Открыть Право",
+    toDesign: "Открыть Дизайн", toProduction: "Открыть Производство",
     prototype: "Проверка маршрута · ручной прототип",
     note: "Исследования ИИ здесь ещё не выполняются. Вы сами вводите условные заключения, чтобы проверить механизм.",
     seed: "Зерно смысла",
@@ -107,6 +110,8 @@ const messages = {
     example: "Можно вводить условные результаты. Они сохраняются только в этом браузере.",
   },
   uk: {
+    toIdea: "Відкрити Ідею", toMarketing: "Відкрити Маркетинг", toLegal: "Відкрити Право",
+    toDesign: "Відкрити Дизайн", toProduction: "Відкрити Виробництво",
     prototype: "Перевірка маршруту · ручний прототип", note: "Дослідження ШІ ще не виконуються. Ви вводите умовні висновки для перевірки механізму.",
     seed: "Зерно сенсу", noSeed: "Зерно ще не внесено в Ядро. Відкрийте панель Автора.",
     seedHelp: "Вставте задум, сформований у діалозі. Це вихідний запис циклу.",
@@ -127,6 +132,8 @@ const messages = {
     status: "Стан контуру", source: "Джерело: Автор · початковий задум", example: "Умовні результати залишаються лише в браузері.",
   },
   en: {
+    toIdea: "Open Idea", toMarketing: "Open Marketing", toLegal: "Open Legal",
+    toDesign: "Open Design", toProduction: "Open Production",
     prototype: "Routing experiment · manual prototype", note: "No AI research runs here yet. Enter provisional findings to test the workflow.",
     seed: "Seed of meaning", noSeed: "No seed in the Core yet. Open the Author panel.",
     seedHelp: "Paste the concept developed in conversation. It becomes the source record.",
@@ -155,7 +162,7 @@ const shellClass = "w-full space-y-5 text-left";
 const sectionClass = "rounded-xl border border-foreground/15 p-4";
 const statusClass = "text-[11px] font-light leading-[1.6] text-foreground/55";
 
-export const UnoEggIdeaCyclePanel = ({ locale, node, draft, onDraft, cycle, setCycle, onSetSeed }: Props) => {
+export const UnoEggIdeaCyclePanel = ({ locale, node, draft, onDraft, cycle, setCycle, onSetSeed, onNavigate }: Props) => {
   const m = messages[locale];
   const hasCycle = !!cycle?.seed.trim();
   const started = hasCycle && cycle.phase !== "seed";
@@ -176,7 +183,11 @@ export const UnoEggIdeaCyclePanel = ({ locale, node, draft, onDraft, cycle, setC
         <button type="button" data-testid="unocalc-cycle-set-seed" className={actionClass + " mt-3"}
           disabled={!draft.trim() || (cycle?.seed === draft.trim() && cycle.phase !== "forwarded")}
           onClick={onSetSeed}>{hasCycle ? m.replaceSeed : m.setSeed}</button>
-        {hasCycle && <p role="status" className={statusClass + " mt-2"}>{m.seedRecorded}</p>}
+        {hasCycle && <>
+          <p role="status" className={statusClass + " mt-2"}>{m.seedRecorded}</p>
+          <button type="button" data-testid="unocalc-cycle-go-idea" className={actionClass + " mt-3"}
+            onClick={() => onNavigate("idea")}>{m.toIdea}</button>
+        </>}
       </div>
       {hasCycle && <div className={sectionClass}>
         <p className={statusClass}>{m.status}</p>
@@ -194,6 +205,10 @@ export const UnoEggIdeaCyclePanel = ({ locale, node, draft, onDraft, cycle, setC
           <button type="button" data-testid="unocalc-cycle-launch" className={actionClass + " mt-3"}
             onClick={() => setCycle((prev) => prev?.phase === "seed" ? {...prev, phase:"research"} : prev)}>{m.launch}</button>
         </div> : <>
+          {cycle.phase === "research" && <div className="flex flex-wrap gap-2">
+            {!cycle.marketingReturned && <button type="button" className={actionClass} onClick={() => onNavigate("marketing")}>{m.toMarketing}</button>}
+            {!cycle.legalReturned && <button type="button" className={actionClass} onClick={() => onNavigate("legal")}>{m.toLegal}</button>}
+          </div>}
           <div className={sectionClass}>
             <p className="text-[12px] font-medium">{m.status}</p>
             <div className="mt-3 space-y-2">
@@ -217,7 +232,13 @@ export const UnoEggIdeaCyclePanel = ({ locale, node, draft, onDraft, cycle, setC
             <button type="button" data-testid="unocalc-cycle-forward" className={actionClass + " mt-3"}
               onClick={() => setCycle((prev) => prev?.phase === "layered" ? {...prev, phase:"forwarded"} : prev)}>{m.next}</button>
           </div>}
-          {isForwarded && <p className={statusClass} role="status">{m.forwarded}</p>}
+          {isForwarded && <>
+            <p className={statusClass} role="status">{m.forwarded}</p>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" className={actionClass} onClick={() => onNavigate("design")}>{m.toDesign}</button>
+              <button type="button" className={actionClass} onClick={() => onNavigate("production")}>{m.toProduction}</button>
+            </div>
+          </>}
         </>}
       </>}
     </>}
@@ -233,7 +254,10 @@ export const UnoEggIdeaCyclePanel = ({ locale, node, draft, onDraft, cycle, setC
           <textarea data-testid={`unocalc-cycle-${reportNode}-report`} disabled={!!isReturned} value={cycle?.[reportNode] ?? ""}
             onChange={(e) => setCycle((prev) => prev?.phase === "research" ? {...prev, [reportNode]:e.target.value} : prev)}
             placeholder={m.responsePlaceholder} rows={6} className={fieldClass} />
-          {isReturned ? <p className={statusClass + " mt-2"} role="status">{m.returned}</p> :
+          {isReturned ? <div className="mt-3">
+            <p className={statusClass} role="status">{m.returned}</p>
+            <button type="button" className={actionClass + " mt-3"} onClick={() => onNavigate("idea")}>{m.toIdea}</button>
+          </div> :
             <button type="button" data-testid={`unocalc-cycle-${reportNode}-return`} className={actionClass + " mt-3"}
               disabled={!cycle?.[reportNode]?.trim() || cycle?.phase !== "research"}
               onClick={() => setCycle((prev) => prev ? returnIdeaReport(prev, reportNode) : prev)}>{m.return}</button>}
