@@ -42,6 +42,17 @@ describe("Egg object core and cross-sphere dependencies", () => {
     expect(changed.elements[0].pendingChecks.testing).toContain("composition");
   });
 
+  it("returns a non-fitting cutting pattern to Design as a cross-sphere contradiction", () => {
+    let core = initial();
+    core = setTextileProperty(core, "seat-1", "finishedWidthMm", "900");
+    core = setTextileProperty(core, "seat-1", "finishedLengthMm", "1000");
+    core = setTextileProperty(core, "seat-1", "rollWidthMm", "500");
+    const element = core.elements[0];
+    expect(calculateTextileCut(element.properties).status).toBe("does_not_fit");
+    expect(element.pendingChecks.design).toContain("rollWidthMm");
+    expect(element.pendingChecks.production).toContain("rollWidthMm");
+  });
+
   it("does not accept a verified conclusion without a source", () => {
     const core = initial();
     expect(recordSphereAssessment(core, "seat-1", {
