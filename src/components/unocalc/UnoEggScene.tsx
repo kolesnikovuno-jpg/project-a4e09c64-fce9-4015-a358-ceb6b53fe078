@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent, type PointerEvent } from "react";
+import { designCopy, EMPTY_BRIEF, makeSketchPrompt, type DesignBrief } from "@/lib/unocalcDesign";
+import { listSketches, removeStoredSketch, storeSketch, type StoredSketch } from "@/lib/unocalcSketches";
 import {
   convexOutline,
   eggAxisEndpoints,
@@ -23,6 +25,10 @@ type NodeDetail = { title: string; description: string; number: string; openLabe
 const INITIAL: EggOrientation = { yaw: 0, tilt: 0 };
 const SURFACE = eggSurface();
 const IDEA_STORAGE_KEY = "unocalc.idea.v1";
+const DESIGN_STORAGE_KEY = "unocalc.design.v1";
+const MAX_SKETCHES = 6;
+const MAX_SKETCH_BYTES = 10 * 1024 * 1024;
+type SketchPreview = StoredSketch & { previewUrl: string };
 
 const text = {
   ru: {
@@ -227,8 +233,30 @@ const UnoEggScene = ({ locale }: Props) => {
     catch { return ""; }
   });
   const [ideaSaveStatus, setIdeaSaveStatus] = useState<"idle" | "saved" | "error">("idle");
+  const [brief, setBrief] = useState<DesignBrief>(() => {
+    try {
+      const raw = window.localStorage.getItem(DESIGN_STORAGE_KEY);
+      if (!raw) return { ...EMPTY_BRIEF };
+      const parsed = JSON.parse(raw) as Partial<DesignBrief>;
+      return {
+        concept: typeof parsed.concept === "string" ? parsed.concept : "",
+        purpose: typeof parsed.purpose === "string" ? parsed.purpose : "",
+        character: typeof parsed.character === "string" ? parsed.character : "",
+        constraints: typeof parsed.constraints === "string" ? parsed.constraints : "",
+        ideaSnapshot: typeof parsed.ideaSnapshot === "string" ? parsed.ideaSnapshot : "",
+      };
+    } catch { return { ...EMPTY_BRIEF }; }
+  });
+  const [briefStatus, setBriefStatus] = useState<"idle" | "saved" | "error">("idle");
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
+  const [sketches, setSketches] = useState<SketchPreview[]>([]);
+  const [sketchNotice, setSketchNotice] = useState("");
+  const [sketchesLoaded, setSketchesLoaded] = useState(false);
+  const sketchUrls = useRef<string[]>([]);
+  const designWorkspace = useRef<HTMLDivElement>(null);
   const pointer = useRef<{ id: number; x: number; y: number; startX: number; startY: number; moved: boolean; targetNode: string | null } | null>(null);
   const copy = text[locale];
+  const workflowCopy = designCopy[locale];
   const nodeDetails: Record<InteractiveNode, NodeDetail> = {
     retail: { title: copy.retail, description: copy.retailDescription, number: copy.node, openLabel: copy.retailLabel, closeLabel: copy.retailCloseLabel },
     commerce: { title: copy.commerce, description: copy.commerceDescription, number: copy.commerceNode, openLabel: copy.commerceLabel, closeLabel: copy.commerceCloseLabel },
@@ -237,13 +265,114 @@ const UnoEggScene = ({ locale }: Props) => {
     idea: { title: copy.idea, description: copy.ideaDescription, number: copy.ideaNode, openLabel: copy.ideaLabel, closeLabel: copy.ideaCloseLabel },
     matter: { title: copy.matter, description: copy.matterDescription, number: copy.matterNode, openLabel: copy.matterLabel, closeLabel: copy.matterCloseLabel },
   };
+  const hasIdea = ideaDraft.trim().length > 0;
+  const hasSketch = sketches.length > 0;
+  const canActivateNode = (node: InteractiveNode) =>
+    node === "idea" || (node === "design" ? hasIdea : hasSketch);
+  const sketchPrompt = makeSketchPrompt(brief, locale);
+
+  useEffect(() => {
+    let cancelled = false;
+    void listSketches().then((stored) => {
+      if (cancelled) return;
+      setSketches((current) => {
+        const known = new Set(current.map((item) => item.id));
+        const restored = stored.filter((item) => !known.has(item.id)).map((item) => {
+          const previewUrl = URL.createObjectURL(item.blob);
+          sketchUrls.current.push(previewUrl);
+          return { ...item, previewUrl };
+        });
+        return [...restored, ...current];
+      });
+    }).catch(() => {
+      if (!cancelled) setSketchNotice(designCopy[locale].sketchStorageError);
+    }).finally(() => {
+      if (!cancelled) setSketchesLoaded(true);
+    });
+    return () => {
+      cancelled = true;
+      sketchUrls.current.forEach((url) => URL.revokeObjectURL(url));
+      sketchUrls.current = [];
+    };
+  }, []);
+
+  useEffect(() => {
+    if (sketchesLoaded && !hasSketch) {
+      setSelectedNodes((current) => current.filter((node) => node === "idea" || node === "design"));
+    }
+  }, [hasSketch, sketchesLoaded]);
+
   const activateNode = (node: InteractiveNode) => {
-    // Independent toggles: any combination of the six nodes and poles can remain active.
+    if (!canActivateNode(node)) return;
+    if (node === "design" && !brief.concept.trim()) {
+      setBrief((current) => ({ ...current, concept: ideaDraft.trim(), ideaSnapshot: ideaDraft }));
+    }
     setSelectedNodes((current) =>
       current.includes(node) ? current.filter((selected) => selected !== node) : [...current, node]
     );
     giveNodeFeedback();
     playNodeClick();
+  };
+
+  const updateBrief = (field: "concept" | "purpose" | "character" | "constraints", value: string) => {
+    setBrief((current) => ({ ...current, [field]: value }));
+    setBriefStatus("idle");
+    setCopyStatus("idle");
+  };
+  const refreshBriefIdea = () => {
+    setBrief((current) => ({ ...current, concept: ideaDraft.trim(), ideaSnapshot: ideaDraft }));
+    setBriefStatus("idle");
+  };
+  const saveBrief = () => {
+    try {
+      window.localStorage.setItem(DESIGN_STORAGE_KEY, JSON.stringify(brief));
+      setBriefStatus("saved");
+    } catch { setBriefStatus("error"); }
+  };
+  const copyPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(sketchPrompt);
+      setCopyStatus("copied");
+    } catch { setCopyStatus("error"); }
+  };
+  const addSketches = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.currentTarget.files ?? []);
+    event.currentTarget.value = "";
+    let count = sketches.length;
+    for (const file of files) {
+      if (count >= MAX_SKETCHES || !file.type.startsWith("image/") || file.size > MAX_SKETCH_BYTES) {
+        setSketchNotice(workflowCopy.sketchInvalid);
+        continue;
+      }
+      const sketch: StoredSketch = {
+        id: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random(),
+        name: file.name,
+        blob: file,
+        createdAt: Date.now(),
+      };
+      try {
+        await storeSketch(sketch);
+        setSketchNotice("");
+      } catch {
+        setSketchNotice(workflowCopy.sketchStorageError);
+      }
+      const previewUrl = URL.createObjectURL(file);
+      sketchUrls.current.push(previewUrl);
+      setSketches((current) => [...current, { ...sketch, previewUrl }]);
+      count++;
+    }
+  };
+  const deleteSketch = async (sketch: SketchPreview) => {
+    try {
+      await removeStoredSketch(sketch.id);
+      setSketchNotice("");
+    } catch {
+      setSketchNotice(workflowCopy.sketchDeleteError);
+      return;
+    }
+    setSketches((current) => current.filter((item) => item.id !== sketch.id));
+    URL.revokeObjectURL(sketch.previewUrl);
+    sketchUrls.current = sketchUrls.current.filter((url) => url !== sketch.previewUrl);
   };
   const geometry = useMemo(() => {
     const points = SURFACE.map((point) => projectEggPoint(point, orientation));
@@ -259,8 +388,8 @@ const UnoEggScene = ({ locale }: Props) => {
     };
   }, [orientation]);
 
-  // Prototype only: a deterministic, content-dependent field, not a measure
-  // of meaning, creative quality or physical energy. The central form is independent.
+  // Prototype only: a deterministic field, not a semantic or physical measure.
+  // A first sketch adds a visual stage marker to the central sphere.
   const ideaField = useMemo(() => {
     const source = ideaDraft.trim();
     if (!source) return null;
