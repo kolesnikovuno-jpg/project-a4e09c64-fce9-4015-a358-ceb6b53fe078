@@ -37,7 +37,8 @@ const text = {
     label: "Трёхмерная форма яйца с вертикальной осью. Вращайте жестом или стрелками клавиатуры.",
     coreLabel: "Центральная сфера — формируемый объект",
     lowerSphereLabel: "Нижняя сфера",
-    lowerRingHint: "Нижний пояс: четыре сферы без назначения. Поверните яйцо, чтобы увидеть все.",
+    lowerRingHint: "Нижний пояс: 06 — Маркетинг (между Дизайном и Ритейлом). Сферы 05, 07, 08 пока без назначения.",
+    marketing: "Маркетинг",
     ideaInputLabel: "Описание идеи",
     ideaInputPlaceholder: "Опишите замысел, назначение, свойства будущего объекта…",
     ideaSave: "Сохранить идею",
@@ -80,7 +81,8 @@ const text = {
     label: "Тривимірна форма яйця з вертикальною віссю. Обертайте жестом або стрілками клавіатури.",
     coreLabel: "Центральна сфера — об’єкт, що формується",
     lowerSphereLabel: "Нижня сфера",
-    lowerRingHint: "Нижній пояс: чотири сфери без призначення. Обертайте яйце, щоб побачити всі.",
+    lowerRingHint: "Нижній пояс: 06 — Маркетинг (між Дизайном і Ритейлом). Сфери 05, 07, 08 поки без призначення.",
+    marketing: "Маркетинг",
     ideaInputLabel: "Опис ідеї",
     ideaInputPlaceholder: "Опишіть задум, призначення, властивості майбутнього об’єкта…",
     ideaSave: "Зберегти ідею",
@@ -123,7 +125,8 @@ const text = {
     label: "Three-dimensional egg with a vertical axis. Drag or use arrow keys to rotate.",
     coreLabel: "Central sphere — the object taking form",
     lowerSphereLabel: "Lower sphere",
-    lowerRingHint: "Lower ring: four unassigned spheres. Rotate the egg to see all four.",
+    lowerRingHint: "Lower ring: 06 — Marketing (between Design and Retail). Spheres 05, 07, 08 remain unassigned.",
+    marketing: "Marketing",
     ideaInputLabel: "Describe your idea",
     ideaInputPlaceholder: "Describe the intent, purpose, and qualities of the future object…",
     ideaSave: "Save idea",
@@ -686,14 +689,15 @@ const UnoEggScene = ({ locale }: Props) => {
               </g>
             );
           })}
-          {/* Four provisional lower spheres, rotated 45° between the principal
-              nodes and placed on the shell below their plane. They are not
-              interactive until their functions are defined by the author. */}
+          {/* Four lower spheres staggered 45° below the principal nodes.
+              support-2 (06) sits between Design and Retail: Marketing.
+              The others remain unnamed. Activation comes in a later stage. */}
           {geometry.lowerNodes.map((node) => (
             <g key={node.id} data-testid="unocalc-lower-sphere-node" pointerEvents="none">
               <circle
                 data-testid="unocalc-lower-sphere"
                 data-node-id={node.id}
+                data-node-role={node.id === "support-2" ? "marketing" : "unassigned"}
                 cx={node.x}
                 cy={node.y}
                 r="10.5"
@@ -703,7 +707,9 @@ const UnoEggScene = ({ locale }: Props) => {
                 strokeOpacity=".48"
                 vectorEffect="non-scaling-stroke"
                 role="img"
-                aria-label={`${copy.lowerSphereLabel} ${String(node.number).padStart(2, "0")}`}
+                aria-label={node.id === "support-2"
+                  ? `${copy.lowerSphereLabel} 06 — ${copy.marketing}`
+                  : `${copy.lowerSphereLabel} ${String(node.number).padStart(2, "0")}`}
               />
               <text
                 x={node.x}
