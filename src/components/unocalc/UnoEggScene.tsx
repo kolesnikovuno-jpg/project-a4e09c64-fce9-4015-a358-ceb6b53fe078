@@ -300,6 +300,8 @@ const NodeDescription = ({ node, detail }: { node: InteractiveNode; detail: Node
 const UnoEggScene = ({ locale }: Props) => {
   const [orientation, setOrientation] = useState<EggOrientation>(INITIAL);
   const [selectedNodes, setSelectedNodes] = useState<InteractiveNode[]>([]);
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const [workspaceExpanded, setWorkspaceExpanded] = useState(false);
   const [ideaDraft, setIdeaDraft] = useState(() => {
     try { return window.localStorage.getItem(IDEA_STORAGE_KEY) ?? ""; }
     catch { return ""; }
@@ -388,6 +390,15 @@ const UnoEggScene = ({ locale }: Props) => {
     // without requiring users to find and tap the Design sphere.
     designWorkspace.current?.scrollIntoView?.({ behavior: "smooth", block: "start" });
   }, [designNavigation, selectedNodes]);
+
+  useEffect(() => {
+    if (!workspaceOpen) return;
+    const onEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") { setWorkspaceOpen(false); setWorkspaceExpanded(false); }
+    };
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [workspaceOpen]);
 
   const activateNode = (node: InteractiveNode) => {
     if (!canActivateNode(node)) return;
@@ -929,6 +940,12 @@ const UnoEggScene = ({ locale }: Props) => {
           {selectedNodes.map((node) => (
             <div key={node} className="flex min-w-0 flex-col gap-4">
               <NodeDescription node={node} detail={nodeDetails[node]} />
+              {node === "procurement" && (
+                <button type="button" data-testid="unocalc-procurement-open" onClick={() => setWorkspaceOpen(true)}
+                  className="self-start border-b border-foreground/35 pb-1 text-left text-[11px] font-light text-foreground/75 hover:text-foreground">
+                  {locale === "ru" ? "Открыть рабочее пространство" : locale === "uk" ? "Відкрити робочий простір" : "Open workspace"}
+                </button>
+              )}
               {node === "design" && hasIdea && (
                 <button
                   type="button"
@@ -985,6 +1002,36 @@ const UnoEggScene = ({ locale }: Props) => {
           >
             {workflowCopy.continueDesign}
           </button>
+        </div>
+      )}
+      {workspaceOpen && (
+        <div data-testid="unocalc-procurement-workspace" className="fixed inset-0 z-[90] flex items-stretch justify-end" role="presentation">
+          <button type="button" aria-label={locale === "ru" ? "Закрыть панель" : locale === "uk" ? "Закрити панель" : "Close panel"}
+            className="absolute inset-0 bg-black/35" onClick={() => { setWorkspaceOpen(false); setWorkspaceExpanded(false); }} />
+          <section role="dialog" aria-modal="true" aria-labelledby="unocalc-procurement-workspace-title"
+            className={`relative z-10 flex h-full flex-col overflow-hidden border-l border-foreground/15 bg-background shadow-2xl transition-[width] duration-300 ${workspaceExpanded ? "w-full" : "w-full sm:w-[min(520px,60vw)]"}`}>
+            <header className="flex items-start justify-between gap-4 border-b border-foreground/10 px-6 py-6 sm:px-8">
+              <div>
+                <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-foreground/45">UNO / EGG / 07</p>
+                <h2 id="unocalc-procurement-workspace-title" className="text-[26px] font-extralight tracking-[-0.035em]">{nodeDetails.procurement.title}</h2>
+              </div>
+              <div className="flex gap-2">
+                <button type="button" data-testid="unocalc-procurement-expand" onClick={() => setWorkspaceExpanded((value) => !value)}
+                  className="rounded-full border border-foreground/20 px-3 py-2 text-[11px] text-foreground/70">
+                  {workspaceExpanded ? (locale === "ru" ? "Свернуть" : locale === "uk" ? "Згорнути" : "Collapse") : (locale === "ru" ? "Развернуть" : locale === "uk" ? "Розгорнути" : "Expand")}
+                </button>
+                <button type="button" data-testid="unocalc-procurement-close" onClick={() => { setWorkspaceOpen(false); setWorkspaceExpanded(false); }}
+                  className="rounded-full border border-foreground/20 px-3 py-2 text-[11px] text-foreground/70">
+                  {locale === "ru" ? "Закрыть" : locale === "uk" ? "Закрити" : "Close"}
+                </button>
+              </div>
+            </header>
+            <div className="flex flex-1 items-center justify-center px-6 text-center">
+              <p className="max-w-[260px] text-[12px] font-light leading-[1.8] text-foreground/40">
+                {locale === "ru" ? "Пустое рабочее пространство. Проверяем открытие, закрытие и разворачивание панели." : locale === "uk" ? "Порожній робочий простір. Перевіряємо відкриття, закриття та розгортання панелі." : "Empty workspace. Testing open, close and expand interactions."}
+              </p>
+            </div>
+          </section>
         </div>
       )}
       {selectedNodes.includes("design") && hasIdea && (
