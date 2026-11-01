@@ -149,6 +149,7 @@ describe("UNOcalc egg-only geometry", () => {
     fireEvent.pointerUp(svg, { pointerId: 70, clientX: 240, clientY: 430 });
     expect(screen.getByTestId("unocalc-marketing-panel")).toHaveAttribute("aria-label", "Маркетинг");
     expect(screen.getByTestId("unocalc-marketing-panel")).toHaveTextContent("Узел / 06");
+    expect(screen.getByTestId("unocalc-marketing-tooltip")).toHaveTextContent("Маркетинг");
     expect(hit).toHaveAttribute("aria-pressed", "true");
     expect(hit).toHaveAttribute("aria-label", "Закрыть описание узла «Маркетинг»");
 
