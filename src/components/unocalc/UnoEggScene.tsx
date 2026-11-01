@@ -26,6 +26,7 @@ const text = {
     hint: "Вращайте форму жестом или мышью · коснитесь центральной сферы",
     retail: "Ритейл",
     retailLabel: "Открыть описание узла «Ритейл»",
+    retailCloseLabel: "Закрыть описание узла «Ритейл»",
     retailDescription: "Точка встречи объекта и человека. Здесь созданная форма получает представление, контекст и путь к своему пользователю.",
     node: "Узел / 01",
   },
@@ -34,6 +35,7 @@ const text = {
     hint: "Обертайте форму жестом або мишею · торкніться центральної сфери",
     retail: "Ритейл",
     retailLabel: "Відкрити опис вузла «Ритейл»",
+    retailCloseLabel: "Закрити опис вузла «Ритейл»",
     retailDescription: "Точка зустрічі об’єкта й людини. Тут створена форма отримує представлення, контекст і шлях до свого користувача.",
     node: "Вузол / 01",
   },
@@ -42,6 +44,7 @@ const text = {
     hint: "Drag to rotate · tap the central sphere",
     retail: "Retail",
     retailLabel: "Open the Retail node description",
+    retailCloseLabel: "Close the Retail node description",
     retailDescription: "Where the object meets the person. Here, a created form gains its presentation, context, and a path to its user.",
     node: "Node / 01",
   },
@@ -103,6 +106,8 @@ const UnoEggScene = ({ locale }: Props) => {
   }, [retailOpen, fullCopy]);
 
   const activateRetail = () => {
+    // A second tap returns the node to its original unselected state.
+    // The same state controls both the sphere fill and the explanatory panel.
     setRetailOpen((open) => !open);
     giveNodeFeedback();
     playNodeClick();
@@ -245,7 +250,7 @@ const UnoEggScene = ({ locale }: Props) => {
                   stroke="none"
                   role="button"
                   tabIndex={0}
-                  aria-label={retailCopy.retailLabel}
+                  aria-label={retailOpen ? retailCopy.retailCloseLabel : retailCopy.retailLabel}
                   aria-pressed={retailOpen}
                   className="cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
                   onKeyDown={onRetailKeyDown}

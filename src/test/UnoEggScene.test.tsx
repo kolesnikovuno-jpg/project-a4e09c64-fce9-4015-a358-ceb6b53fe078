@@ -90,8 +90,15 @@ describe("UNOcalc egg-only geometry", () => {
     expect(screen.getByTestId("unocalc-retail-panel")).toBeInTheDocument();
     expect(hit).toHaveAttribute("aria-pressed", "true");
     expect(screen.getAllByTestId("unocalc-section-sphere").find((sphere) => sphere.getAttribute("cx") === "380")).toHaveAttribute("fill", "hsl(var(--primary) / 0.22)");
-    fireEvent.keyDown(hit, { key: "Enter" });
+    expect(hit).toHaveAttribute("aria-label", "Закрыть описание узла «Ритейл»");
+    fireEvent.pointerDown(hit, { pointerId: 3, clientX: 380, clientY: 400 });
+    fireEvent.pointerUp(svg, { pointerId: 3, clientX: 380, clientY: 400 });
     expect(screen.queryByTestId("unocalc-retail-panel")).not.toBeInTheDocument();
+    expect(hit).toHaveAttribute("aria-pressed", "false");
+    expect(hit).toHaveAttribute("aria-label", "Открыть описание узла «Ритейл»");
+    expect(screen.getAllByTestId("unocalc-section-sphere").find((sphere) => sphere.getAttribute("cx") === "380")).toHaveAttribute("fill", "none");
+    fireEvent.keyDown(hit, { key: "Enter" });
+    expect(screen.getByTestId("unocalc-retail-panel")).toBeInTheDocument();
   });
 
   it("does not activate the node when the user drags to rotate", () => {
