@@ -1015,7 +1015,7 @@ const UnoEggScene = ({ locale }: Props) => {
       {workspaceOpen && (
         <div data-testid="unocalc-sphere-workspace" className="fixed inset-0 z-[90] flex items-stretch justify-end" role="presentation">
           <button type="button" aria-label={locale === "ru" ? "Закрыть панель" : locale === "uk" ? "Закрити панель" : "Close panel"}
-            className={`absolute inset-0 bg-black/35 transition-opacity duration-500 ease-out motion-reduce:transition-none ${workspaceVisible ? "opacity-100" : "opacity-0"}`} onClick={() => { setWorkspaceOpen(false); setWorkspaceExpanded(false); }} />
+            className={`absolute inset-0 bg-black/35 transition-opacity duration-500 ease-out motion-reduce:transition-none ${workspaceVisible ? "opacity-100" : "opacity-0"}`} onClick={() => { setWorkspaceNode(null); setWorkspaceExpanded(false); }} />
           <section role="dialog" aria-modal="true" aria-labelledby="unocalc-sphere-workspace-title"
             className={`relative z-10 flex h-full flex-col overflow-hidden border-l border-foreground/15 bg-background shadow-2xl transition-[width,transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${workspaceVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-95"} ${workspaceExpanded ? "w-full" : "w-full sm:w-[min(520px,60vw)]"}`}>
             <header className="flex items-start justify-between gap-4 border-b border-foreground/10 px-6 py-6 sm:px-8">
@@ -1028,7 +1028,7 @@ const UnoEggScene = ({ locale }: Props) => {
                   className="rounded-full border border-foreground/20 px-3 py-2 text-[11px] text-foreground/70">
                   {workspaceExpanded ? (locale === "ru" ? "Свернуть" : locale === "uk" ? "Згорнути" : "Collapse") : (locale === "ru" ? "Развернуть" : locale === "uk" ? "Розгорнути" : "Expand")}
                 </button>
-                <button type="button" data-testid="unocalc-sphere-close" onClick={() => { setWorkspaceOpen(false); setWorkspaceExpanded(false); }}
+                <button type="button" data-testid="unocalc-sphere-close" onClick={() => { setWorkspaceNode(null); setWorkspaceExpanded(false); }}
                   className="rounded-full border border-foreground/20 px-3 py-2 text-[11px] text-foreground/70">
                   {locale === "ru" ? "Закрыть" : locale === "uk" ? "Закрити" : "Close"}
                 </button>
