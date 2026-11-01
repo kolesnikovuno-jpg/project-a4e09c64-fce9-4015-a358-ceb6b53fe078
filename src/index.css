@@ -127,3 +127,17 @@
     max-width: min(100%, 88.4dvh, calc((100dvh - 165px) * 1.085714), 936px);
   }
 }
+
+/* Quiet typewriter caret for the first interactive UNOcalc node. */
+.unocalc-type-caret {
+  display: inline-block;
+  margin-left: 2px;
+  opacity: .6;
+  animation: unocalc-caret-blink 900ms steps(1, end) infinite;
+}
+@keyframes unocalc-caret-blink {
+  50% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .unocalc-type-caret { animation: none; }
+}

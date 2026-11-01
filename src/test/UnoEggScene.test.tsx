@@ -23,7 +23,7 @@ describe("UNOcalc egg-only geometry", () => {
     const outline = screen.getByTestId("unocalc-egg-outline");
     const axis = screen.getByTestId("unocalc-egg-axis");
     expect(outline).toHaveAttribute("fill", "none");
-    expect(outline).toHaveAttribute("stroke-width", "1.3");
+    expect(outline).toHaveAttribute("stroke-width", ".95");
     expect(axis).toHaveAttribute("stroke-dasharray", "7 8");
     const spheres = screen.getAllByTestId("unocalc-section-sphere");
     expect(spheres).toHaveLength(3);
@@ -35,12 +35,12 @@ describe("UNOcalc egg-only geometry", () => {
       expect(sphere).toHaveAttribute("fill", "none");
       expect(sphere.getAttribute("cx")).toBe("380");
     });
-    expect(screen.getByTestId("unocalc-egg-svg").querySelectorAll("circle")).toHaveLength(5);
+    expect(screen.getAllByTestId("unocalc-section-sphere")).toHaveLength(3);
     const xs = spheres.map((sphere) => Number(sphere.getAttribute("cx"))).sort((a, b) => a - b);
     expect(xs).toEqual([168, 380, 592]);
     const ys = spheres.map((sphere) => Number(sphere.getAttribute("cy")));
     expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(0, 5);
-    expect(screen.queryByRole("button", { name: "дизайн" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Открыть описание узла «Ритейл»" })).toBeInTheDocument();
   });
 
   it("places two nodes at the sides and two in depth, with the rear node occluded in front view", () => {
@@ -77,6 +77,31 @@ describe("UNOcalc egg-only geometry", () => {
     fireEvent.keyDown(svg, { key: "Home" });
     expect(axis.getAttribute("y1")).toBe(initialAxisY);
     expect(screen.getAllByTestId("unocalc-section-sphere")).toHaveLength(3);
+  });
+
+  it("opens the retail explanation only after tapping the central front sphere", () => {
+    render(<UnoEggScene locale="ru" />);
+    const hit = screen.getByTestId("unocalc-retail-hit");
+    const svg = screen.getByTestId("unocalc-egg-svg");
+    expect(hit).toHaveAttribute("cx", "380");
+    expect(screen.queryByTestId("unocalc-retail-panel")).not.toBeInTheDocument();
+    fireEvent.pointerDown(hit, { pointerId: 1, clientX: 380, clientY: 400 });
+    fireEvent.pointerUp(svg, { pointerId: 1, clientX: 380, clientY: 400 });
+    expect(screen.getByTestId("unocalc-retail-panel")).toBeInTheDocument();
+    expect(hit).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getAllByTestId("unocalc-section-sphere").find((sphere) => sphere.getAttribute("cx") === "380")).toHaveAttribute("fill", "hsl(var(--primary) / 0.22)");
+    fireEvent.keyDown(hit, { key: "Enter" });
+    expect(screen.queryByTestId("unocalc-retail-panel")).not.toBeInTheDocument();
+  });
+
+  it("does not activate the node when the user drags to rotate", () => {
+    render(<UnoEggScene locale="ru" />);
+    const hit = screen.getByTestId("unocalc-retail-hit");
+    const svg = screen.getByTestId("unocalc-egg-svg");
+    fireEvent.pointerDown(hit, { pointerId: 2, clientX: 380, clientY: 400 });
+    fireEvent.pointerMove(svg, { pointerId: 2, clientX: 410, clientY: 400 });
+    fireEvent.pointerUp(svg, { pointerId: 2, clientX: 410, clientY: 400 });
+    expect(screen.queryByTestId("unocalc-retail-panel")).not.toBeInTheDocument();
   });
 
   it("puts both pole spheres at the egg's axial endpoints", () => {
