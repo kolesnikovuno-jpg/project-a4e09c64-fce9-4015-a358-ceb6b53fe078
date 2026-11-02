@@ -60,6 +60,7 @@ export const eggMutationSchema = z.discriminatedUnion("command", [
     collectionKey: z.string().trim().min(1).max(80),
     webUrl: z.string().url().max(1200).optional(),
     taskId: identifier.optional(),
+    sphere: sphere.optional(),
   }).strict(),
   shared.extend({
     command: z.literal("confirm_file"),
@@ -119,7 +120,7 @@ export const runEggMutation = (
       return registerDriveReference(state, {
         actor, at, fileId: mutation.fileId, title: mutation.title,
         mimeType: mutation.mimeType, collectionKey: mutation.collectionKey,
-        webUrl: mutation.webUrl, taskId: mutation.taskId,
+        webUrl: mutation.webUrl, taskId: mutation.taskId, sphere: mutation.sphere,
       });
     case "confirm_file":
       return confirmDriveReference(state, {
