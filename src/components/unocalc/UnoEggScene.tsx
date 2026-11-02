@@ -613,6 +613,7 @@ const UnoEggScene = ({ locale }: Props) => {
   const geometry = useMemo(() => {
     const points = SURFACE.map((point) => projectEggPoint(point, orientation));
     const sectionAxes = eggSectionAxes(orientation);
+    const poleNodes = eggPoleNodes(orientation);
     return {
       silhouette: svgOutline(convexOutline(points)),
       equator: eggEquatorArcs(orientation),
@@ -623,7 +624,13 @@ const UnoEggScene = ({ locale }: Props) => {
       axis: eggAxisEndpoints(orientation),
       sectionAxes,
       sectionNodes: visibleEggSectionNodes(sectionAxes),
-      poleNodes: eggPoleNodes(orientation),
+      poleNodes,
+      stageNodes: EGG_STAGES.map((level) => ({
+        index: level.index,
+        x: poleNodes[0].x + (poleNodes[1].x - poleNodes[0].x) * level.index / 6,
+        y: poleNodes[0].y + (poleNodes[1].y - poleNodes[0].y) * level.index / 6,
+        depth: poleNodes[0].depth + (poleNodes[1].depth - poleNodes[0].depth) * level.index / 6,
+      })),
       core: projectEggPoint({ x: 0, y: EGG_EQUATOR, z: 0 }, orientation),
     };
   }, [orientation]);
@@ -977,6 +984,34 @@ const UnoEggScene = ({ locale }: Props) => {
               aria-hidden="true"
             />
           )}
+          {/* The five stages are actual positions on the polar axis, as in
+              the approved sketch: violet Idea · 5 stages · red Matter.
+              The concentric yolk shows the same maturity as layered depth. */}
+          <g data-testid="unocalc-axis-stages" aria-hidden="true" pointerEvents="none">
+            {geometry.stageNodes.map((point) => {
+              const level = EGG_STAGES[point.index - 1];
+              const status = eggStageState(maturity, level.index);
+              const isCurrent = status === "current";
+              const isCompleted = status === "completed";
+              const baseR = isCurrent ? 8.7 : isCompleted ? 7.3 : 5.9;
+              return <g key={level.index}
+                data-testid={`unocalc-axis-stage-${level.index}`} data-state={status}>
+                {isCurrent && <>
+                  <circle cx={point.x} cy={point.y} r="17.5"
+                    fill={level.color} fillOpacity=".14" />
+                  <circle cx={point.x} cy={point.y} r="13.2"
+                    fill="none" stroke={level.color} strokeWidth="1.35"
+                    strokeOpacity=".84" vectorEffect="non-scaling-stroke" />
+                </>}
+                <circle cx={point.x} cy={point.y} r={baseR}
+                  fill={level.color}
+                  fillOpacity={isCurrent ? ".98" : isCompleted ? ".86" : ".16"}
+                  stroke={level.color}
+                  strokeOpacity={isCurrent ? ".98" : isCompleted ? ".85" : ".38"}
+                  strokeWidth=".8" vectorEffect="non-scaling-stroke" />
+              </g>;
+            })}
+          </g>
           {geometry.sectionNodes.map((node) => {
             const nodeType: InteractiveNode | null =
               node.id === "retail" || node.id === "commerce" || node.id === "design" || node.id === "production"
