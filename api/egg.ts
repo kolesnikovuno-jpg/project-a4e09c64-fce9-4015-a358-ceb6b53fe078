@@ -12,6 +12,7 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { getEggStorageConfig } from "./_eggStorageConfig.js";
 import { ZodError } from "zod";
 import { exportEggManifest } from "../src/lib/eggArtifacts.js";
 import { createEggProject, EggEngineError, type EggProject } from "../src/lib/eggEngine.js";
@@ -75,13 +76,6 @@ const apiError = (res: Response, status: number, code: string): void =>
   respond(res, status, { ok: false, error: code });
 const uuid = (value: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
-const configured = () => {
-  const url = process.env.EGG_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const publishableKey = process.env.EGG_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !publishableKey || !serviceKey) return null;
-  return { url, publishableKey, serviceKey };
-};
 const makeDb = (url: string, key: string): ServerDb =>
   createClient<EggDatabase>(url, key, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
@@ -189,7 +183,7 @@ export default async function handler(req: Request, res: Response) {
     apiError(res, 405, "method_not_allowed");
     return;
   }
-  const config = configured();
+  const config = getEggStorageConfig(process.env);
   if (!config) {
     apiError(res, 503, "egg_engine_not_configured");
     return;
