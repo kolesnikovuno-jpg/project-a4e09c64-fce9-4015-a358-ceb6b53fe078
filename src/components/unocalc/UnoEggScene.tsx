@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, ty
 import { createPortal } from "react-dom";
 import { IDEA_CYCLE_KEY, newIdeaCycle, restoreIdeaCycle, UnoEggIdeaCyclePanel, type IdeaCycle } from "./UnoEggIdeaCyclePanel";
 import { UnoEggDesignLoopPanel } from "./UnoEggDesignLoopPanel";
+import { UnoEggFilePanel } from "./UnoEggFilePanel";
+import { startLocalEggProject } from "@/lib/eggLocalPreview";
 import { DESIGN_LOOP_STORAGE, createDesignLoop, restoreDesignLoop, latestDesignSubmission, type DesignLoop } from "@/lib/unocalcEggDesignLoop";
 import { clearEggDesignAssets } from "@/lib/unocalcEggDesignAssets";
 import { EGG_POLES, EGG_STAGES, EGG_STAGE_KEY, NEW_EGG_MATURITY, eggStageState, nextEggIteration, restoreEggMaturity, setEggStage, type EggStageNumber } from "@/lib/unocalcEggStages";
@@ -429,6 +431,9 @@ const UnoEggScene = ({ locale }: Props) => {
   const placeSeedInCore = () => {
     if (!ideaDraft.trim()) return;
     setIdeaCycle(newIdeaCycle(ideaDraft));
+    // New Author cycle: keep old preview projects in the browser archive,
+    // and start a fresh local file registry for this seed.
+    startLocalEggProject(ideaDraft.trim(), new Date().toISOString());
     setMaturity({ ...NEW_EGG_MATURITY });
     setDesignLoop(null);
     void clearEggDesignAssets().catch(() => { /* browser may prevent storage cleanup */ });
@@ -1180,6 +1185,11 @@ const UnoEggScene = ({ locale }: Props) => {
               {stageLabels.manual}
             </p>
           </div>
+                  )}
+                  {workspaceNode === "author" && (
+                    <UnoEggFilePanel locale={locale} seed={ideaCycle?.seed ?? ""}
+                      maturity={maturity} ideaCycle={ideaCycle} designLoop={designLoop}
+                      brief={brief} sketches={sketches.map(item => ({ id: item.id, name: item.name }))} />
                   )}
                 </div>
               ) : (
