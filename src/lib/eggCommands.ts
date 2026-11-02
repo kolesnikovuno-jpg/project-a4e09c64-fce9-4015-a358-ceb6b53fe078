@@ -54,6 +54,7 @@ export const eggMutationSchema = z.discriminatedUnion("command", [
   shared.extend({
     command: z.literal("register_file"),
     provider: z.literal("google_drive"),
+    operationId: z.string().regex(/^[A-Za-z0-9_-]{8,100}$/).optional(),
     fileId: z.string().regex(/^[a-zA-Z0-9_-]{10,256}$/),
     title: z.string().trim().min(1).max(250),
     mimeType: z.string().trim().min(1).max(140),
@@ -118,7 +119,8 @@ export const runEggMutation = (
       return nextIteration(state, { actor, at, reason: mutation.reason });
     case "register_file":
       return registerDriveReference(state, {
-        actor, at, fileId: mutation.fileId, title: mutation.title,
+        actor, at, operationId: mutation.operationId,
+        fileId: mutation.fileId, title: mutation.title,
         mimeType: mutation.mimeType, collectionKey: mutation.collectionKey,
         webUrl: mutation.webUrl, taskId: mutation.taskId, sphere: mutation.sphere,
       });
