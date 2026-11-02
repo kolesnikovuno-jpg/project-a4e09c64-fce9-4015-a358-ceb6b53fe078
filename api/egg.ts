@@ -13,6 +13,7 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { ZodError } from "zod";
+import { exportEggManifest } from "../src/lib/eggArtifacts.js";
 import { createEggProject, EggEngineError, type EggProject } from "../src/lib/eggEngine.js";
 import {
   eggCommandSchema, eggMutationSchema, mayAccessEgg, readEggState,
@@ -200,10 +201,22 @@ export default async function handler(req: Request, res: Response) {
     if (req.method === "GET") {
       const url = new URL(req.url || "/", "https://local.invalid");
       const projectId = url.searchParams.get("projectId") || "";
-      const project = await checkedProject(db, projectId, identity, "read");
-      respond(res, 200, {
-        ok: true, revision: project.revision, project: readEggState(project.document),
-      });
+      const format = url.searchParams.get("format") || "state";
+      if (format !== "state" && format !== "manifest")
+        throw new RequestFailure(400, "invalid_export_format");
+      const project = await checkedProject(db, projectId, identity,
+        format === "manifest" ? "author" : "read");
+      if (format === "manifest") {
+        res.setHeader("Content-Disposition", `attachment; filename="egg-project-${projectId}.json"`);
+        respond(res, 200, {
+          ok: true, revision: project.revision,
+          export: exportEggManifest(project.document, new Date().toISOString()),
+        });
+      } else {
+        respond(res, 200, {
+          ok: true, revision: project.revision, project: readEggState(project.document),
+        });
+      }
       return;
     }
 
@@ -263,7 +276,8 @@ export default async function handler(req: Request, res: Response) {
     const mutation = eggMutationSchema.parse(input);
     const project = await checkedProject(db, mutation.projectId, identity,
       mutation.command === "decide" || mutation.command === "set_level" ||
-      mutation.command === "next_iteration" ? "author" : "contribute");
+      mutation.command === "next_iteration" || mutation.command === "confirm_file"
+        ? "author" : "contribute");
     if (mutation.expectedRevision !== project.revision)
       throw new RequestFailure(409, "revision_conflict");
     const next = runEggMutation(project.document, mutation, identity, project.owner_id, at);
