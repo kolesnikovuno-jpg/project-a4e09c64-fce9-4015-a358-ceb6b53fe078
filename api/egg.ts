@@ -13,11 +13,11 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { ZodError } from "zod";
-import { createEggProject, EggEngineError, type EggProject } from "../src/lib/eggEngine";
+import { createEggProject, EggEngineError, type EggProject } from "../src/lib/eggEngine.js";
 import {
   eggCommandSchema, eggMutationSchema, mayAccessEgg, readEggState,
   runEggMutation, type EggPermission,
-} from "../src/lib/eggCommands";
+} from "../src/lib/eggCommands.js";
 
 type Request = IncomingMessage & { body?: unknown };
 type Response = ServerResponse;
