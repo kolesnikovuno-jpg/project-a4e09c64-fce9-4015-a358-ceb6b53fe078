@@ -15,6 +15,7 @@ import {
   visibleEggLowerSphereNodes,
   EGG_EQUATOR,
   eggPoleNodes,
+  eggFormationStageNodes,
   eggSectionAxes,
   eggSurface,
   eggIdeaLinks,
@@ -625,12 +626,7 @@ const UnoEggScene = ({ locale }: Props) => {
       sectionAxes,
       sectionNodes: visibleEggSectionNodes(sectionAxes),
       poleNodes,
-      stageNodes: EGG_STAGES.map((level) => ({
-        index: level.index,
-        x: poleNodes[0].x + (poleNodes[1].x - poleNodes[0].x) * level.index / 6,
-        y: poleNodes[0].y + (poleNodes[1].y - poleNodes[0].y) * level.index / 6,
-        depth: poleNodes[0].depth + (poleNodes[1].depth - poleNodes[0].depth) * level.index / 6,
-      })),
+      stageNodes: eggFormationStageNodes(orientation),
       core: projectEggPoint({ x: 0, y: EGG_EQUATOR, z: 0 }, orientation),
     };
   }, [orientation]);
