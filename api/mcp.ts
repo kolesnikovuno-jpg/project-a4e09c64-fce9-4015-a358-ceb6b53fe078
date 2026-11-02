@@ -146,11 +146,25 @@ export default async function handler(req: Incoming, res: ServerResponse) {
       },
       registerDriveFile: async (args) => {
         const row = await getProject(args.projectId, "contribute");
-        if (args.expectedRevision !== row.revision)
-          throw new ServiceError("revision_conflict", 409);
         const parsed = eggMutationSchema.parse({
           command: "register_file", provider: "google_drive", ...args,
         });
+        // A successful write may be followed by a lost HTTP response.
+        // Before rejecting a stale revision, check whether this is a repeat
+        // of exactly the same operation (no new event, no new version).
+        const existing = row.document.artifacts?.find(item => item.operationId === args.operationId);
+        if (existing) {
+          try {
+            const repeat = runEggMutation(row.document, parsed, agent, row.owner_id, new Date().toISOString());
+            if (repeat !== row.document) throw new Error("Duplicate did not resolve");
+          } catch {
+            throw new ServiceError("invalid_state_transition", 400);
+          }
+          return { ok: true, revision: row.revision, artifact: existing,
+            idempotentReplay: true, note: "Reference already registered; Author confirmation required" };
+        }
+        if (args.expectedRevision !== row.revision)
+          throw new ServiceError("revision_conflict", 409);
         let next: EggProject;
         try {
           next = runEggMutation(row.document, parsed, agent, row.owner_id, new Date().toISOString());
