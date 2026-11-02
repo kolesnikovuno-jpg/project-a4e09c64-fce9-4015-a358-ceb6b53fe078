@@ -11,7 +11,7 @@
  */
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { ZodError } from "zod";
 import { createEggProject, EggEngineError, type EggProject } from "../src/lib/eggEngine";
 import {
@@ -26,7 +26,42 @@ type KeyRow = {
   project_id: string; owner_id: string; scopes: Array<"read" | "contribute">;
   expires_at: string; revoked_at: string | null;
 };
-type ServerDb = ReturnType<typeof createClient>;
+type EggDatabase = {
+  public: {
+    Tables: {
+      egg_engine_projects: {
+        Row: ProjectRow & { created_at: string; updated_at: string };
+        Insert: { id: string; owner_id: string; document: EggProject; revision?: number };
+        Update: { document?: EggProject; revision?: number; updated_at?: string };
+        Relationships: [];
+      };
+      egg_engine_access_keys: {
+        Row: KeyRow & {
+          id: string; key_hash: string; label: string; created_at: string;
+        };
+        Insert: {
+          project_id: string; owner_id: string; key_hash: string; label: string;
+          scopes: Array<"read" | "contribute">; expires_at: string;
+        };
+        Update: { revoked_at?: string | null };
+        Relationships: [];
+      };
+    };
+    Views: {};
+    Functions: {
+      egg_engine_cas_update: {
+        Args: {
+          p_project_id: string; p_owner_id: string;
+          p_expected_revision: number; p_document: EggProject;
+        };
+        Returns: Array<{ new_revision: number }>;
+      };
+    };
+    Enums: {};
+    CompositeTypes: {};
+  };
+};
+type ServerDb = SupabaseClient<EggDatabase>;
 
 const respond = (res: Response, status: number, data: unknown): void => {
   res.statusCode = status;
@@ -47,7 +82,7 @@ const configured = () => {
   return { url, publishableKey, serviceKey };
 };
 const makeDb = (url: string, key: string): ServerDb =>
-  createClient(url, key, {
+  createClient<EggDatabase>(url, key, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
 
