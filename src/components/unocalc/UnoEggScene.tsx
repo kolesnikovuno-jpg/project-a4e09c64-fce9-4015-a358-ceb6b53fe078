@@ -1008,11 +1008,11 @@ const UnoEggScene = ({ locale }: Props) => {
                   data-node-id={nodeType}
                   cx={node.x}
                   cy={node.y}
-                  r={NODE_CONTOUR.radius}
-                  fill={active ? "hsl(var(--primary) / 0.22)" : "none"}
-                  stroke={active ? "hsl(var(--primary))" : signalColor(nodeType ?? "idea")}
-                  strokeWidth={NODE_CONTOUR.width}
-                  strokeOpacity={active ? NODE_CONTOUR.activeOpacity : NODE_CONTOUR.idleOpacity}
+                  r={12.2}
+                  fill={`url(#unocalc-${nodeType === "idea" ? "idea" : "matter"}-pole-light)`}
+                  stroke={EGG_POLES[nodeType === "idea" ? "idea" : "matter"].color}
+                  strokeWidth={active ? "1.8" : "1.15"}
+                  strokeOpacity={active ? "1" : ".9"}
                   vectorEffect="non-scaling-stroke"
                   pointerEvents="none"
                 />
