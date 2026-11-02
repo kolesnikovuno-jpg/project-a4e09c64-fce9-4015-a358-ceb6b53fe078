@@ -9,12 +9,12 @@
 import { createHash } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createClient } from "@supabase/supabase-js";
+import { getEggStorageConfig } from "./_eggStorageConfig.js";
 import type { EggProject } from "../src/lib/eggEngine.js";
 import { eggMutationSchema, mayAccessEgg, readEggState, runEggMutation, type EggPermission } from "../src/lib/eggCommands.js";
 import { processEggMcp } from "../src/lib/eggMcpProtocol.js";
 
 type Incoming = IncomingMessage & { body?: unknown };
-type ServerConfig = { url: string; serviceKey: string };
 type ProjectRow = { id: string; owner_id: string; revision: number; document: EggProject };
 type McpDb = {
   public: {
@@ -53,11 +53,6 @@ type KeyRow = {
 class ServiceError extends Error {
   constructor(public readonly code: string, public readonly status: number) { super(code); }
 }
-const configured = (): ServerConfig | null => {
-  const url = process.env.EGG_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  return url && serviceKey ? { url, serviceKey } : null;
-};
 const uuid = (value: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 const send = (res: ServerResponse, status: number, body?: unknown) => {
@@ -95,7 +90,7 @@ export default async function handler(req: Incoming, res: ServerResponse) {
   // no CORS wildcard, no browser-visible service tokens.
   if (req.headers.origin) { send(res, 403, { error: "origin_not_permitted" }); return; }
   if (req.method !== "POST") { send(res, 405, { error: "method_not_allowed" }); return; }
-  const config = configured();
+  const config = getEggStorageConfig(process.env);
   if (!config) { send(res, 503, { error: "egg_engine_not_configured" }); return; }
   const authHeader = req.headers.authorization;
   const match = typeof authHeader === "string"
