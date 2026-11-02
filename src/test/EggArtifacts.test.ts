@@ -62,7 +62,8 @@ describe("Bring-your-own-Drive artifact registry", () => {
     expect(second.artifacts?.map(item => item.version)).toEqual([1, 2]);
     expect(() => registerDriveReference(first, { ...input, title: "Different document" }))
       .toThrow(/different artifact/);
-    expect(() => registerDriveReference(first, { ...input, fileId: "a-different-file-ID-1234" }))
+    expect(() => registerDriveReference(first, { ...input, fileId: "a-different-file-ID-1234",
+      webUrl: "https://drive.google.com/file/d/a-different-file-ID-1234/view" }))
       .toThrow(/different artifact/);
   });
 
