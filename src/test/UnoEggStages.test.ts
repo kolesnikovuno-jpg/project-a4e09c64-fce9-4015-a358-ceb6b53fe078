@@ -7,47 +7,54 @@ import {
 
 afterEach(() => window.localStorage.clear());
 
-describe("Egg rainbow axis: five levels numbered from Matter toward Idea", () => {
-  it("has permanent poles and descending 5→1 stage numbers from Idea to Matter", () => {
+describe("Egg axis: bottom-up numbering and start at orange stage 1", () => {
+  it("displays violet Idea and red Matter poles around five spectrum stages", () => {
     expect(EGG_POLES.idea.ru).toBe("Идея");
     expect(EGG_POLES.matter.ru).toBe("Материя");
     expect(EGG_STAGES).toHaveLength(5);
+    // Rendering order: top -> bottom; stage numbering: bottom -> top.
     expect(EGG_STAGES.map(s => s.index)).toEqual([5, 4, 3, 2, 1]);
     expect(EGG_STAGES.map(s => s.ru)).toEqual([
-      "Замысел", "Концепт", "Проект", "Тестовый образец", "Промышленный образец",
+      "Промышленный образец", "Тестовый образец", "Проект", "Концепт", "Замысел",
+    ]);
+    const fromBottom = EGG_STAGES.slice().reverse();
+    expect(fromBottom.map(s => s.index)).toEqual([1, 2, 3, 4, 5]);
+    expect(fromBottom.map(s => s.color)).toEqual([
+      "#E79438", "#DFC44F", "#35AF79", "#20AAC9", "#5369CE",
     ]);
     expect(new Set([EGG_POLES.idea.color, ...EGG_STAGES.map(s => s.color), EGG_POLES.matter.color]).size).toBe(7);
   });
 
-  it("starts at blue level five; previously traversed higher levels are completed", () => {
-    expect(NEW_EGG_MATURITY).toEqual({ stage: 5, iteration: 1 });
+  it("starts with orange level 1 active, all later levels future", () => {
+    expect(NEW_EGG_MATURITY).toEqual({ stage: 1, iteration: 1 });
     expect(EGG_STAGES.map(level => eggStageState(NEW_EGG_MATURITY, level.index))).toEqual([
-      "current", "future", "future", "future", "future",
+      "future", "future", "future", "future", "current",
     ]);
-    const project = { stage: 3 as const, iteration: 4 };
-    expect(EGG_STAGES.map(level => eggStageState(project, level.index))).toEqual([
-      "completed", "completed", "current", "future", "future",
+    const progress = { stage: 3 as const, iteration: 4 };
+    expect(EGG_STAGES.map(level => eggStageState(progress, level.index))).toEqual([
+      "future", "future", "current", "completed", "completed",
     ]);
   });
 
-  it("repeats iterations without changing stage and changes stage only on selection", () => {
+  it("increments iterations within stage, not stage itself", () => {
     const start = NEW_EGG_MATURITY;
     const third = nextEggIteration(nextEggIteration(start));
-    expect(third).toEqual({ stage: 5, iteration: 3 });
-    expect(setEggStage(third, 5)).toBe(third);
-    expect(setEggStage(third, 4)).toEqual({ stage: 4, iteration: 1 });
-    expect(setEggStage({ stage: 2, iteration: 8 }, 3)).toEqual({ stage: 3, iteration: 1 });
-    expect(nextEggIteration({ stage: 1, iteration: 999 })).toEqual({ stage: 1, iteration: 999 });
+    expect(third).toEqual({ stage: 1, iteration: 3 });
+    expect(setEggStage(third, 1)).toBe(third);
+    expect(setEggStage(third, 2)).toEqual({ stage: 2, iteration: 1 });
+    expect(setEggStage({ stage: 3, iteration: 8 }, 4)).toEqual({ stage: 4, iteration: 1 });
+    expect(nextEggIteration({ stage: 5, iteration: 999 })).toEqual({ stage: 5, iteration: 999 });
   });
 
-  it("migrates the prior top-down position without losing the iteration", () => {
-    window.localStorage.setItem("unocalc.egg.maturity.v1", JSON.stringify({ stage: 2, iteration: 7 }));
-    expect(restoreEggMaturity()).toEqual({ stage: 4, iteration: 7 });
+  it("ignores outdated stage keys but keeps valid v3 stage selection", () => {
+    window.localStorage.setItem("unocalc.egg.maturity.v1", JSON.stringify({ stage: 5, iteration: 8 }));
+    window.localStorage.setItem("unocalc.egg.maturity.v2", JSON.stringify({ stage: 5, iteration: 4 }));
+    expect(restoreEggMaturity()).toEqual(NEW_EGG_MATURITY);
     window.localStorage.setItem(EGG_STAGE_KEY, JSON.stringify({ stage: 3, iteration: 9 }));
     expect(restoreEggMaturity()).toEqual({ stage: 3, iteration: 9 });
   });
 
-  it("falls back to the blue starting level for missing or malformed saved data", () => {
+  it("defaults to orange level for missing or corrupted stage data", () => {
     expect(restoreEggMaturity()).toEqual(NEW_EGG_MATURITY);
     window.localStorage.setItem(EGG_STAGE_KEY, JSON.stringify({ stage: 0, iteration: 1 }));
     expect(restoreEggMaturity()).toEqual(NEW_EGG_MATURITY);
