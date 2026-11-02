@@ -394,7 +394,7 @@ const UnoEggScene = ({ locale }: Props) => {
     completed: "Completed", current: "Current", future: "Upcoming",
     axis: "Idea → five stages → Matter", guide: "Violet and red mark the permanent poles",
   };
-  const currentStage = EGG_STAGES[maturity.stage - 1];
+  const currentStage = EGG_STAGES.find((level) => level.index === maturity.stage) ?? EGG_STAGES[0];
   const hasSketch = sketches.length > 0 || !!designLoop?.submissions.length;
   // Every sphere can be inspected at any time. Only the actual Design
   // workspace is gated by an idea; creating a sketch remains a later step.
