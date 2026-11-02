@@ -28,7 +28,7 @@
 1. Добавлен серверный модуль \`src/server/eggStorageConfig.ts\` с **обязательными отдельными** переменными:
    - \`EGG_SUPABASE_URL\`
    - \`EGG_SUPABASE_PUBLISHABLE_KEY\`
-   - \`EGG_SUPABASE_SERVICE_ROLE_KEY\`
+   - \`EGG_SUPABASE_SECRET_KEY\`
 2. Удалены fallback на \`VITE_SUPABASE_URL\`, \`VITE_SUPABASE_PUBLISHABLE_KEY\` и глобальный \`SUPABASE_SERVICE_ROLE_KEY\`. Если три Egg значения не указаны, API **закрыт** с 503.
 3. Добавлена предупредительная проверка: явный URL Egg не может указывать на ту же Supabase-hostname, что \`VITE_SUPABASE_URL\`. Дополнительно при реальном подключении нужно независимо проверить фактическую базу, особенно если проект использует alias/custom-domain.
 4. Миграция движка перенесена из \`supabase/migrations/\` сайта в **\`egg-server/migrations/\`**. Автоматическая миграция сайта больше не должна подхватить эти таблицы.
