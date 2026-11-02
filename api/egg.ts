@@ -12,7 +12,7 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { getEggStorageConfig } from "./_eggStorageConfig.js";
+import { getEggStorageConfig } from "../src/server/eggStorageConfig.js";
 import { ZodError } from "zod";
 import { exportEggManifest } from "../src/lib/eggArtifacts.js";
 import { createEggProject, EggEngineError, type EggProject } from "../src/lib/eggEngine.js";
