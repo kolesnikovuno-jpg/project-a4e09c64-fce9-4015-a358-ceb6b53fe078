@@ -25,12 +25,13 @@ export const eggMcpTools = [
   {
     name: "egg_register_drive_file",
     title: "Register a Google Drive file",
-    description: "After your Google Drive connector ACTUALLY returns a file ID, register only its reference in the Egg project. This does NOT upload the file or independently verify it. The Author reviews it separately. Read state first to obtain expectedRevision; on revision conflict read again, then retry.",
+    description: "After your Google Drive connector ACTUALLY returns a file ID, register only its reference in the Egg project. This does NOT upload the file or independently verify it. The Author reviews it separately. Read state first to obtain expectedRevision. Generate a stable operationId once for the file-save action, and reuse it on retries. On revision conflict, read the latest revision and retry with the SAME operationId.",
     inputSchema: {
       type: "object",
       properties: {
         projectId: { type: "string", format: "uuid", description: "Egg project UUID" },
         expectedRevision: { type: "integer", minimum: 1, description: "Revision returned by egg_get_project_state" },
+        operationId: { type: "string", minLength: 8, maxLength: 100, description: "Stable ID for this save action. MUST reuse on retries; never reuse for a different file." },
         fileId: { type: "string", minLength: 10, maxLength: 256, description: "Actual Drive file ID returned by Google Drive, never invent a value" },
         title: { type: "string", minLength: 1, maxLength: 250 },
         mimeType: { type: "string", minLength: 1, maxLength: 140, description: "MIME type returned by Google Drive" },
@@ -39,16 +40,17 @@ export const eggMcpTools = [
         taskId: { type: "string", minLength: 1, maxLength: 100 },
         webUrl: { type: "string", format: "uri", description: "Optional URL returned by Drive and pointing to the same file ID" },
       },
-      required: ["projectId", "expectedRevision", "fileId", "title", "mimeType", "collectionKey"],
+      required: ["projectId", "expectedRevision", "operationId", "fileId", "title", "mimeType", "collectionKey"],
       additionalProperties: false,
     },
-    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
 ] as const;
 
 const baseParams = z.object({ projectId: z.string().uuid() }).strict();
 const registerParams = baseParams.extend({
   expectedRevision: z.number().int().positive(),
+  operationId: z.string().regex(/^[A-Za-z0-9_-]{8,100}$/),
   fileId: z.string().regex(/^[a-zA-Z0-9_-]{10,256}$/),
   title: z.string().trim().min(1).max(250),
   mimeType: z.string().trim().min(1).max(140),
