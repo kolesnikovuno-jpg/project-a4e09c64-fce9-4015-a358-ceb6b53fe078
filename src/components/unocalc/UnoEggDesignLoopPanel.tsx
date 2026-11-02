@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
 import {
-  canMarkDesignReady, canSendDesign, hasMarketingReturn, hasTestReturn, latestDesignSubmission,
+  canMarkDesignReady, canSendDesign, hasMarketingReturn, hasTestReturn, latestDesignSubmission, createDesignSketchPrompt,
   markDesignReady, returnDesignFeedback, sendDesign, type DesignLoop, type DesignDestination,
   type ReviewEvidence,
 } from "@/lib/unocalcEggDesignLoop";
@@ -23,6 +23,7 @@ const copy = {
     scope: "Это ручная проверка процесса. Маркетинг не исследует рынок автоматически, а Тест-драйв не проводит физических испытаний по эскизам.",
     design: "Дизайн", marketing: "Маркетинг", testDrive: "Тест-драйв",
     source: "Полученная концепция · слой 1", initialMarket: "Вывод первого цикла Маркетинга",
+    prompt: "Задание для первых эскизов", promptNote: "Задание можно скопировать в чат с генерацией изображений, а результат загрузить обратно в Дизайн.", copyPrompt: "Копировать задание", copied: "Задание скопировано", copyFail: "Копирование недоступно. Выделите текст задания вручную.",
     work: "Проектная версия", desc: "Описание формы, пропорций и замысла",
     descHint: "Опишите первый вариант или изменения после обратной связи. Прикреплённые эскизы сохраняются с версией.",
     descPlaceholder: "Эскизная идея, посадка, пропорции, характер формы…",
@@ -65,6 +66,7 @@ const copy = {
     scope: "Це ручна перевірка процесу. Маркетинг не досліджує ринок автоматично, а Тест-драйв не проводить фізичних випробувань за ескізами.",
     design: "Дизайн", marketing: "Маркетинг", testDrive: "Тест-драйв",
     source: "Отримана концепція · шар 1", initialMarket: "Висновок першого циклу Маркетингу",
+    prompt: "Завдання для перших ескізів", promptNote: "Скопіюйте завдання до чату з генерацією зображень, а результат завантажте у Дизайн.", copyPrompt: "Копіювати завдання", copied: "Завдання скопійовано", copyFail: "Копіювання недоступне. Виділіть текст вручну.",
     work: "Проєктна версія", desc: "Опис форми, пропорцій і задуму",
     descHint: "Опишіть варіант або зміни після зворотного зв'язку. Ескізи зберігаються разом із версією.",
     descPlaceholder: "Ескізний задум, посадка, пропорції, характер форми…",
@@ -97,6 +99,7 @@ const copy = {
     scope: "This manually tests the workflow. Marketing does not research the market automatically, and Test Drive cannot physically validate a sketch.",
     design: "Design", marketing: "Marketing", testDrive: "Test Drive",
     source: "Received concept · layer 1", initialMarket: "First-cycle Marketing conclusion",
+    prompt: "Sketch generation brief", promptNote: "Copy the task to an image-generation chat, then upload sketches back into Design.", copyPrompt: "Copy sketch task", copied: "Task copied", copyFail: "Copy unavailable. Select the text manually.",
     work: "Design version", desc: "Form, proportions and design intention",
     descHint: "Describe your first form or revisions after feedback. Attached sketches are stored with each version.",
     descPlaceholder: "Sketch concept, seating, proportions and character…",
@@ -136,6 +139,7 @@ export const UnoEggDesignLoopPanel = ({ locale, node, loop, setLoop, originalMar
   const m = copy[locale];
   const [images, setImages] = useState<Preview[]>([]);
   const [imageError, setImageError] = useState("");
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
   const [imagesReady, setImagesReady] = useState(false);
   const previews = useRef<string[]>([]);
   useEffect(() => {
@@ -246,6 +250,20 @@ export const UnoEggDesignLoopPanel = ({ locale, node, loop, setLoop, originalMar
           className={textAreaClass + " min-h-[70px]"} value={loop.changeNote}
           onChange={(event) => setField({ changeNote: event.target.value })} rows={2} maxLength={1000}
           placeholder={m.changesPlaceholder} />
+        <div className="mt-4 border-t border-foreground/10 pt-4">
+          <p className="text-[13px] font-light">{m.prompt}</p>
+          <p className={mutedClass + " mt-2"}>{m.promptNote}</p>
+          <textarea data-testid="unocalc-design-sketch-prompt" readOnly rows={5}
+            className={textAreaClass + " bg-foreground/[0.02]"} value={createDesignSketchPrompt(loop, locale)} />
+          <button type="button" data-testid="unocalc-design-copy-sketch-prompt"
+            className={buttonClass + " mt-2"} onClick={() => {
+              void (async () => {
+                try { await navigator.clipboard.writeText(createDesignSketchPrompt(loop, locale)); setCopyStatus("copied"); }
+                catch { setCopyStatus("failed"); }
+              })();
+            }}>{m.copyPrompt}</button>
+          <p role="status" className={mutedClass + " mt-2"}>{copyStatus === "copied" ? m.copied : copyStatus === "failed" ? m.copyFail : ""}</p>
+        </div>
         <div className="mt-4 border-t border-foreground/10 pt-4">
           <label className="inline-flex min-h-11 cursor-pointer items-center rounded-full border border-foreground/30 px-4 py-2 text-[12px] text-foreground/85">
             {m.files}
