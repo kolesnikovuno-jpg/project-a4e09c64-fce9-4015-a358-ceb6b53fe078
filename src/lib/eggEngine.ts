@@ -5,6 +5,8 @@
  *
  * Pilot rules; not an automated legal/technical/commercial certification.
  */
+import type { EggArtifact } from "./eggArtifacts.js";
+
 export const EGG_SPHERES = {
   marketing: {
     purpose: "Потребность, аудитория, позиционирование",
@@ -111,7 +113,8 @@ export type EggTask = {
 };
 export type EggEventKind =
   | "seed_recorded" | "question_routed" | "work_started"
-  | "finding_returned" | "author_decision" | "level_changed" | "iteration_started";
+  | "finding_returned" | "author_decision" | "level_changed" | "iteration_started"
+  | "artifact_registered" | "artifact_confirmed";
 export type EggEvent = {
   id: string;
   kind: EggEventKind;
@@ -127,6 +130,8 @@ export type EggProject = {
   level: EggLevel;
   iteration: number;
   tasks: EggTask[];
+  /** External file references. Optional for projects created before v0.3. */
+  artifacts?: EggArtifact[];
   events: EggEvent[];
   nextSequence: number;
 };
@@ -159,7 +164,7 @@ export const createEggProject = (params: { id: string; seed: string; at: string 
   const project: EggProject = {
     schema: "egg.engine/0.1", id,
     seed: { text: seed, source: "author", createdAt: at },
-    level: 1, iteration: 1, tasks: [], events: [], nextSequence: 1,
+    level: 1, iteration: 1, tasks: [], artifacts: [], events: [], nextSequence: 1,
   };
   return pushEvent(project, { kind: "seed_recorded", actor: "author", at, detail: "Original author seed recorded" });
 };
