@@ -4,6 +4,7 @@ import { IDEA_CYCLE_KEY, newIdeaCycle, restoreIdeaCycle, UnoEggIdeaCyclePanel, t
 import { UnoEggDesignLoopPanel } from "./UnoEggDesignLoopPanel";
 import { DESIGN_LOOP_STORAGE, createDesignLoop, restoreDesignLoop, latestDesignSubmission, type DesignLoop } from "@/lib/unocalcEggDesignLoop";
 import { clearEggDesignAssets } from "@/lib/unocalcEggDesignAssets";
+import { EGG_STAGES, EGG_STAGE_KEY, NEW_EGG_MATURITY, nextEggIteration, restoreEggMaturity, setEggStage, type EggStageNumber } from "@/lib/unocalcEggStages";
 import { designCopy, EMPTY_BRIEF, makeSketchPrompt, type DesignBrief } from "@/lib/unocalcDesign";
 import { listSketches, removeStoredSketch, storeSketch, type StoredSketch } from "@/lib/unocalcSketches";
 import {
@@ -318,6 +319,7 @@ const UnoEggScene = ({ locale }: Props) => {
   const [ideaSaveStatus, setIdeaSaveStatus] = useState<"idle" | "saved" | "error" | "empty">("idle");
   const [ideaCycle, setIdeaCycle] = useState<IdeaCycle | null>(restoreIdeaCycle);
   const [designLoop, setDesignLoop] = useState<DesignLoop | null>(restoreDesignLoop);
+  const [maturity, setMaturity] = useState(restoreEggMaturity);
   const [brief, setBrief] = useState<DesignBrief>(() => {
     try {
       const raw = window.localStorage.getItem(DESIGN_STORAGE_KEY);
@@ -378,6 +380,14 @@ const UnoEggScene = ({ locale }: Props) => {
   const signalColor = (node: InteractiveNode) => cycleSignal(node) === "attention" ? "#c49d65" :
     cycleSignal(node) !== "idle" ? "hsl(var(--primary))" : "currentColor";
   const hasSketch = sketches.length > 0 || !!designLoop?.submissions.length;
+  const stageLabels = locale === "ru" ? {
+    stage: "Стадия", iteration: "итерация", newIteration: "Новая итерация", manual: "Стадия и итерация выбираются вручную"
+  } : locale === "uk" ? {
+    stage: "Стадія", iteration: "ітерація", newIteration: "Нова ітерація", manual: "Стадія та ітерація обираються вручну"
+  } : {
+    stage: "Stage", iteration: "iteration", newIteration: "New iteration", manual: "Stage and iteration are selected manually"
+  };
+  const currentStage = EGG_STAGES[maturity.stage - 1];
   // Every sphere can be inspected at any time. Only the actual Design
   // workspace is gated by an idea; creating a sketch remains a later step.
   const canActivateNode = (_node: InteractiveNode) => true;
@@ -403,9 +413,15 @@ const UnoEggScene = ({ locale }: Props) => {
     } catch { /* local-only prototype */ }
   }, [designLoop]);
 
+  useEffect(() => {
+    try { window.localStorage.setItem(EGG_STAGE_KEY, JSON.stringify(maturity)); }
+    catch { /* presentation remains usable without local persistence */ }
+  }, [maturity]);
+
   const placeSeedInCore = () => {
     if (!ideaDraft.trim()) return;
     setIdeaCycle(newIdeaCycle(ideaDraft));
+    setMaturity({ ...NEW_EGG_MATURITY });
     setDesignLoop(null);
     void clearEggDesignAssets().catch(() => { /* browser may prevent storage cleanup */ });
     try { window.localStorage.setItem(IDEA_STORAGE_KEY, ideaDraft); } catch { /* local-only */ }
@@ -749,11 +765,13 @@ const UnoEggScene = ({ locale }: Props) => {
           onKeyDown={onKeyDown}
         >
           <defs>
-            <radialGradient id="unocalc-core-shading" cx="36%" cy="30%" r="76%">
-              <stop offset="0%" stopColor="#c9b58b" stopOpacity=".22" />
-              <stop offset="68%" stopColor="#b8a076" stopOpacity=".13" />
-              <stop offset="100%" stopColor="#ad9162" stopOpacity=".035" />
-            </radialGradient>
+            {EGG_STAGES.map((level) => (
+              <radialGradient key={level.index} id={`unocalc-core-stage-${level.index}`} cx="38%" cy="30%" r="78%">
+                <stop offset="0%" stopColor={level.color} stopOpacity=".45" />
+                <stop offset="62%" stopColor={level.color} stopOpacity=".28" />
+                <stop offset="100%" stopColor={level.color} stopOpacity=".09" />
+              </radialGradient>
+            ))}
             <radialGradient id="unocalc-idea-field-gradient">
               <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity=".28" />
               <stop offset="54%" stopColor="hsl(var(--primary))" stopOpacity=".10" />
@@ -876,20 +894,36 @@ const UnoEggScene = ({ locale }: Props) => {
           </g>
           {/* The central core represents the object. Tapping opens the Author panel;
               dragging still rotates the egg without triggering panel activation. */}
-          <circle
-            data-testid="unocalc-core-sphere"
-            cx={geometry.core.x}
-            cy={geometry.core.y}
-            r="45"
-            fill="url(#unocalc-core-shading)"
-            stroke={hasSketch ? "hsl(var(--primary))" : "#aa936d"}
-            strokeWidth="1.05"
-            strokeOpacity={hasSketch ? ".62" : ".43"}
-            vectorEffect="non-scaling-stroke"
-            pointerEvents="none"
-            role="img"
-            aria-label={copy.coreLabel}
-          />
+          {/* Five translucent nested maturity shells. New stages wrap the previous ones
+              rather than replacing the original seed at the center. Stage changes are
+              manual and never inferred from superficial activity or sketch counts. */}
+          <g data-testid="unocalc-core-matryoshka" data-stage={maturity.stage} data-iteration={maturity.iteration}
+             role="img" aria-label={`${copy.coreLabel}. ${stageLabels.stage} ${maturity.stage}: ${currentStage[locale]}. ${stageLabels.iteration} ${maturity.iteration}`}
+             pointerEvents="none">
+            {EGG_STAGES.slice().reverse().map((level) => {
+              const reached = level.index <= maturity.stage;
+              return <circle key={level.index}
+                data-testid={`unocalc-core-level-${level.index}`}
+                data-active={reached ? "true" : "false"}
+                cx={geometry.core.x} cy={geometry.core.y}
+                r={level.radius}
+                fill={`url(#unocalc-core-stage-${level.index})`}
+                fillOpacity={reached ? (level.index === 1 ? ".86" : ".78") : ".12"}
+                stroke={level.color}
+                strokeWidth={level.index === maturity.stage ? "1.25" : ".65"}
+                strokeOpacity={reached ? level.index === maturity.stage ? ".75" : ".42" : ".22"}
+                vectorEffect="non-scaling-stroke" />;
+            })}
+            <ellipse cx={geometry.core.x - 9} cy={geometry.core.y - 12}
+              rx="15" ry="13" fill="#fff" fillOpacity=".045" />
+            <circle data-testid="unocalc-core-sphere"
+              cx={geometry.core.x} cy={geometry.core.y}
+              r="45" fill="none"
+              stroke={currentStage.color}
+              strokeWidth="1"
+              strokeOpacity=".30"
+              vectorEffect="non-scaling-stroke" />
+          </g>
           <circle
             data-testid="unocalc-author-hit"
             data-egg-node="author"
@@ -1087,6 +1121,33 @@ const UnoEggScene = ({ locale }: Props) => {
             pointerEvents="none"
           />
         </svg>
+      </div>
+      <div data-testid="unocalc-maturity-controls" className="mx-auto mt-2 flex w-full max-w-[520px] flex-col items-center gap-2 px-3">
+        <p data-testid="unocalc-maturity-status" className="text-center text-[12px] font-light tracking-[0.025em] text-foreground/75">
+          {stageLabels.stage} {String(maturity.stage).padStart(2, "0")} / 05 · {currentStage[locale]} · {stageLabels.iteration} {maturity.iteration}
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-2" role="group"
+          aria-label={stageLabels.manual}>
+          {EGG_STAGES.map((level) => (
+            <button key={level.index} type="button"
+              data-testid={`unocalc-maturity-select-${level.index}`}
+              onClick={() => setMaturity((prev) => setEggStage(prev, level.index as EggStageNumber))}
+              title={level[locale]}
+              aria-label={`${stageLabels.stage} ${level.index}: ${level[locale]}`}
+              aria-pressed={maturity.stage === level.index}
+              className={`flex h-11 w-11 items-center justify-center gap-1 rounded-full border text-[12px] font-light transition-colors hover:border-foreground/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${maturity.stage === level.index ? "border-foreground/45 text-foreground" : "border-foreground/15 text-foreground/50"}`}>
+              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: level.color, opacity: level.index <= maturity.stage ? 0.95 : 0.35 }} />
+              {level.index}
+            </button>
+          ))}
+          <button data-testid="unocalc-maturity-new-iteration" type="button"
+            onClick={() => setMaturity((prev) => nextEggIteration(prev))}
+            aria-label={stageLabels.newIteration}
+            title={stageLabels.newIteration}
+            className="flex h-11 min-w-11 items-center justify-center rounded-full border border-foreground/15 px-3 text-[11px] font-light text-foreground/65 hover:border-foreground/50">
+            +1
+          </button>
+        </div>
       </div>
       <p data-testid="unocalc-rotation-hint"
         className="mt-1 px-3 text-center text-[11px] font-light tracking-[0.025em] text-foreground/50">
