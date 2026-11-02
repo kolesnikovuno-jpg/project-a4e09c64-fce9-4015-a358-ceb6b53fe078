@@ -8,7 +8,7 @@
 export type EggStorageEnv = {
   EGG_SUPABASE_URL?: string;
   EGG_SUPABASE_PUBLISHABLE_KEY?: string;
-  EGG_SUPABASE_SERVICE_ROLE_KEY?: string;
+  EGG_SUPABASE_SECRET_KEY?: string;
   VITE_SUPABASE_URL?: string; // Used ONLY for accidental shared-DB detection.
 };
 
@@ -21,9 +21,10 @@ export type EggStorageConfig = {
 export const getEggStorageConfig = (env: EggStorageEnv): EggStorageConfig | null => {
   const url = env.EGG_SUPABASE_URL?.trim();
   const publishableKey = env.EGG_SUPABASE_PUBLISHABLE_KEY?.trim();
-  const serviceKey = env.EGG_SUPABASE_SERVICE_ROLE_KEY?.trim();
+  const serviceKey = env.EGG_SUPABASE_SECRET_KEY?.trim();
 
-  if (!url || !publishableKey || !serviceKey || publishableKey === serviceKey) return null;
+  if (!url || !publishableKey || !serviceKey || publishableKey === serviceKey ||
+      !serviceKey.startsWith("sb_secret_")) return null;
 
   try {
     const parsed = new URL(url);
