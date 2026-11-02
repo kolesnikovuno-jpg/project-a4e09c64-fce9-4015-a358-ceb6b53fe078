@@ -68,11 +68,11 @@ export const mayAccessEgg = (
 };
 
 export const runEggMutation = (
-  state: EggProject, mutation: EggMutation, identity: EggPermission, at: string,
+  state: EggProject, mutation: EggMutation, identity: EggPermission, projectOwnerId: string, at: string,
 ): EggProject => {
   const actor: EggActor = identity.kind === "author" ? "author" : "ai";
   if (mutation.projectId !== state.id ||
-      !mayAccessEgg(identity, state.id, identity.ownerId,
+      !mayAccessEgg(identity, state.id, projectOwnerId,
         isAuthorCommand(mutation.command) ? "author" : "contribute")) {
     throw new Error("Forbidden");
   }
