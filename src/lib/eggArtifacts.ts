@@ -11,6 +11,8 @@ import {
 
 export type EggArtifact = {
   id: string;
+  /** Stable ID of the save operation; retries must reuse it. Older records may omit. */
+  operationId?: string;
   provider: "google_drive";
   fileId: string;
   title: string;
@@ -29,6 +31,7 @@ export type EggProjectArtifact = EggProject & { artifacts?: EggArtifact[] };
 
 export type RegisterDriveReference = {
   actor: EggActor;
+  operationId?: string;
   fileId: string;
   title: string;
   mimeType: string;
@@ -92,6 +95,19 @@ export const registerDriveReference = (
   if (input.taskId && !project.tasks.some(task => task.id === input.taskId))
     throw new EggEngineError("Artifact must reference a task in the same project");
   const artifacts = project.artifacts ?? [];
+  const operationId = input.operationId;
+  if (operationId !== undefined) {
+    if (!/^[A-Za-z0-9_-]{8,100}$/.test(operationId)) throw new EggEngineError("Invalid operation ID");
+    const previous = artifacts.find(item => item.operationId === operationId);
+    if (previous) {
+      if (previous.fileId !== input.fileId || previous.collectionKey !== collectionKey ||
+          previous.title !== title || previous.mimeType !== mimeType ||
+          previous.webUrl !== input.webUrl || previous.taskId !== input.taskId ||
+          previous.sphere !== (input.sphere ?? project.tasks.find(item => item.id === input.taskId)?.sphere))
+        throw new EggEngineError("Operation ID already used for a different artifact");
+      return project;
+    }
+  }
   const version = artifacts.filter(item => item.collectionKey === collectionKey).length + 1;
   const task = project.tasks.find(item => item.id === input.taskId);
   if (input.sphere && task && input.sphere !== task.sphere)
@@ -99,6 +115,7 @@ export const registerDriveReference = (
   const sphere = task?.sphere ?? input.sphere;
   const artifact: EggArtifact = {
     id: "artifact-" + project.nextSequence,
+    ...(operationId ? { operationId } : {}),
     provider: "google_drive",
     fileId: input.fileId,
     title,
