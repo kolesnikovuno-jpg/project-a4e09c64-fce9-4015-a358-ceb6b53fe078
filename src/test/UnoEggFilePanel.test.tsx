@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { newIdeaCycle, IDEA_CYCLE_KEY } from "../components/unocalc/UnoEggIdeaCyclePanel";
 import UnoEggScene from "../components/unocalc/UnoEggScene";
@@ -12,6 +12,7 @@ const link = "https://docs.google.com/document/d/" + fileId + "/edit?usp=sharing
 afterEach(() => {
   cleanup();
   localStorage.clear();
+  vi.restoreAllMocks();
 });
 
 describe("Author file workflow in existing Egg UI", () => {
@@ -51,4 +52,30 @@ describe("Author file workflow in existing Egg UI", () => {
     expect(screen.getByTestId("unocalc-file-notice").textContent).toContain("действительная ссылка");
     expect(loadLocalEggProject(seed)?.artifacts).toEqual([]);
   });
+
+  it("starts a JSON download with a real filename for the browser export", () => {
+    localStorage.setItem(IDEA_CYCLE_KEY, JSON.stringify(newIdeaCycle(seed)));
+    const fakeCreateUrl = vi.fn(() => "blob:egg-export-test");
+    Object.defineProperty(URL, "createObjectURL", {
+      value: fakeCreateUrl, configurable: true, writable: true,
+    });
+    Object.defineProperty(URL, "revokeObjectURL", {
+      value: vi.fn(), configurable: true, writable: true,
+    });
+    let downloadName = "";
+    let destination = "";
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (this: HTMLAnchorElement) {
+      downloadName = this.download;
+      destination = this.href;
+    });
+    render(<UnoEggScene locale="ru" />);
+    fireEvent.click(screen.getByTestId("unocalc-author-hit"));
+    fireEvent.click(screen.getByTestId("unocalc-file-export"));
+    expect(fakeCreateUrl).toHaveBeenCalledOnce();
+    expect(fakeCreateUrl.mock.calls[0].length).toBe(1);
+    expect(downloadName).toMatch(/^egg-project-.*\.json$/);
+    expect(destination).toBe("blob:egg-export-test");
+    expect(screen.getByTestId("unocalc-file-notice").textContent).toContain("Экспорт");
+  });
+
 });
