@@ -1,0 +1,139 @@
+/**
+ * Egg v0.5: small stateless MCP JSON-RPC adapter for external AI clients.
+ * The protocol layer knows NOTHING about secrets, Drive files or databases.
+ * It delegates two safe scoped operations to authenticated server handlers.
+ *
+ * The "register" tool only stores a Drive reference. It cannot upload files,
+ * prove that an upload succeeded, confirm an Author's decision, or grant access.
+ */
+import { z } from "zod";
+
+export const eggMcpTools = [
+  {
+    name: "egg_get_project_state",
+    title: "Read Egg project",
+    description: "Read the Author's Egg project state, sphere work, registered files and current revision. Requires a project-scoped Egg access key.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        projectId: { type: "string", format: "uuid", description: "Egg project UUID provided by the Author" },
+      },
+      required: ["projectId"], additionalProperties: false,
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  {
+    name: "egg_register_drive_file",
+    title: "Register a Google Drive file",
+    description: "After your Google Drive connector ACTUALLY returns a file ID, register only its reference in the Egg project. This does NOT upload the file or independently verify it. The Author reviews it separately. Read state first to obtain expectedRevision; on revision conflict read again, then retry.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        projectId: { type: "string", format: "uuid", description: "Egg project UUID" },
+        expectedRevision: { type: "integer", minimum: 1, description: "Revision returned by egg_get_project_state" },
+        fileId: { type: "string", minLength: 10, maxLength: 256, description: "Actual Drive file ID returned by Google Drive, never invent a value" },
+        title: { type: "string", minLength: 1, maxLength: 250 },
+        mimeType: { type: "string", minLength: 1, maxLength: 140, description: "MIME type returned by Google Drive" },
+        collectionKey: { type: "string", minLength: 1, maxLength: 80, description: "Stable material group, e.g. design/sketches" },
+        sphere: { type: "string", enum: ["marketing", "legal", "design", "production", "testDrive", "procurement", "commerce", "retail"] },
+        taskId: { type: "string", minLength: 1, maxLength: 100 },
+        webUrl: { type: "string", format: "uri", description: "Optional URL returned by Drive and pointing to the same file ID" },
+      },
+      required: ["projectId", "expectedRevision", "fileId", "title", "mimeType", "collectionKey"],
+      additionalProperties: false,
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  },
+] as const;
+
+const baseParams = z.object({ projectId: z.string().uuid() }).strict();
+const registerParams = baseParams.extend({
+  expectedRevision: z.number().int().positive(),
+  fileId: z.string().regex(/^[a-zA-Z0-9_-]{10,256}$/),
+  title: z.string().trim().min(1).max(250),
+  mimeType: z.string().trim().min(1).max(140),
+  collectionKey: z.string().trim().min(1).max(80),
+  sphere: z.enum(["marketing", "legal", "design", "production", "testDrive",
+    "procurement", "commerce", "retail"]).optional(),
+  taskId: z.string().min(1).max(100).optional(),
+  webUrl: z.string().url().max(1200).optional(),
+}).strict();
+
+export type EggMcpOperations = {
+  getState: (projectId: string) => Promise<unknown>;
+  registerDriveFile: (args: z.infer<typeof registerParams>) => Promise<unknown>;
+};
+
+const jsonError = (id: unknown, code: number, message: string) => ({
+  jsonrpc: "2.0", id: id ?? null, error: { code, message },
+});
+const response = (id: unknown, result: unknown) => ({ jsonrpc: "2.0", id, result });
+const toolResponse = (value: unknown, error = false) => ({
+  content: [{ type: "text", text: JSON.stringify(value) }],
+  isError: error,
+});
+
+export const processEggMcp = async (
+  incoming: unknown, operations: EggMcpOperations,
+): Promise<{ status: number; body?: unknown }> => {
+  if (!incoming || typeof incoming !== "object" || Array.isArray(incoming)) {
+    return { status: 400, body: jsonError(null, -32600, "Invalid request") };
+  }
+  const msg = incoming as Record<string, unknown>;
+  const { id, method, params } = msg;
+  if (msg.jsonrpc !== "2.0" || typeof method !== "string" ||
+      (id !== undefined && !(typeof id === "number" || typeof id === "string"))) {
+    return { status: 400, body: jsonError(null, -32600, "Invalid request") };
+  }
+  // MCP client initialized notification contains no id and needs no response.
+  if (id === undefined) {
+    if (method === "notifications/initialized" || method === "notifications/cancelled")
+      return { status: 202 };
+    return { status: 400, body: jsonError(null, -32600, "Unexpected notification") };
+  }
+  if (method === "initialize") {
+    return {
+      status: 200,
+      body: response(id, {
+        protocolVersion: "2025-06-18",
+        capabilities: { tools: { listChanged: false } },
+        serverInfo: { name: "egg-engine", version: "0.5.0" },
+        instructions: "Use this server only for a project explicitly authorized by the Author. Upload or create documents with a separate, authorized Google Drive tool BEFORE registering their real file IDs here. Never infer that a registered link is verified.",
+      }),
+    };
+  }
+  if (method === "ping") return { status: 200, body: response(id, {}) };
+  if (method === "tools/list") {
+    return { status: 200, body: response(id, { tools: eggMcpTools }) };
+  }
+  if (method !== "tools/call") return { status: 200, body: jsonError(id, -32601, "Method not found") };
+  const invocation = z.object({
+    name: z.enum(["egg_get_project_state", "egg_register_drive_file"]),
+    arguments: z.unknown().optional(),
+  }).strict().safeParse(params);
+  if (!invocation.success) return { status: 200, body: jsonError(id, -32602, "Invalid tool call") };
+
+  const { name, arguments: args } = invocation.data;
+  const validation = name === "egg_get_project_state"
+    ? baseParams.safeParse(args)
+    : registerParams.safeParse(args);
+  if (!validation.success) return { status: 200, body: jsonError(id, -32602, "Invalid tool arguments") };
+
+  try {
+    const value = name === "egg_get_project_state"
+      ? await operations.getState((validation.data as { projectId: string }).projectId)
+      : await operations.registerDriveFile(validation.data as z.infer<typeof registerParams>);
+    return { status: 200, body: response(id, toolResponse(value)) };
+  } catch (error) {
+    // Tool errors are tool results (not protocol failures). Avoid stack traces,
+    // secrets, arbitrary user material, server internals or raw error text.
+    const code = typeof error === "object" && error !== null && "code" in error &&
+      typeof (error as { code: unknown }).code === "string"
+      ? (error as { code: string }).code : "operation_failed";
+    const safe = [
+      "forbidden", "project_not_found", "revision_conflict", "database_unavailable",
+      "invalid_state_transition", "invalid_project_id",
+    ].includes(code) ? code : "operation_failed";
+    return { status: 200, body: response(id, toolResponse({ ok: false, error: safe }, true)) };
+  }
+};
