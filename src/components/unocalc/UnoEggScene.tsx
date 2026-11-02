@@ -13,14 +13,12 @@ import {
   eggEquatorArcs,
   eggLowerRingArcs,
   visibleEggLowerSphereNodes,
-  EGG_EQUATOR,
   eggPoleNodes,
   eggFormationStageNodes,
   eggSectionAxes,
   eggSurface,
   eggIdeaLinks,
   eggSupportLinks,
-  projectEggPoint,
   svgOutline,
   visibleEggSectionNodes,
   type EggOrientation,
@@ -380,7 +378,6 @@ const UnoEggScene = ({ locale }: Props) => {
   };
   const signalColor = (node: InteractiveNode) => cycleSignal(node) === "attention" ? "#c49d65" :
     cycleSignal(node) !== "idle" ? "hsl(var(--primary))" : "currentColor";
-  const hasSketch = sketches.length > 0 || !!designLoop?.submissions.length;
   const stageLabels = locale === "ru" ? {
     stage: "Стадия", iteration: "итерация", newIteration: "Новая итерация",
     manual: "Выбор стадии и итерации вручную — не подтверждение готовности",
@@ -435,6 +432,7 @@ const UnoEggScene = ({ locale }: Props) => {
     setDesignLoop(null);
     void clearEggDesignAssets().catch(() => { /* browser may prevent storage cleanup */ });
     try { window.localStorage.setItem(IDEA_STORAGE_KEY, ideaDraft); } catch { /* local-only */ }
+    openWorkspace("idea");
   };
 
   useEffect(() => {
@@ -627,35 +625,8 @@ const UnoEggScene = ({ locale }: Props) => {
       sectionNodes: visibleEggSectionNodes(sectionAxes),
       poleNodes,
       stageNodes: eggFormationStageNodes(orientation),
-      core: projectEggPoint({ x: 0, y: EGG_EQUATOR, z: 0 }, orientation),
     };
   }, [orientation]);
-
-  // Prototype only: a deterministic field, not a semantic or physical measure.
-  // A first sketch adds a visual stage marker to the central sphere.
-  const ideaField = useMemo(() => {
-    const source = ideaDraft.trim();
-    if (!source) return null;
-    let hash = 2166136261;
-    for (const character of source) {
-      hash = Math.imul(hash ^ (character.codePointAt(0) ?? 0), 16777619) >>> 0;
-    }
-    const words = source.split(/\s+/u).filter(Boolean).length;
-    const strength = Math.min(0.9, 0.3 + Math.log2(words + 1) * 0.12);
-    const lobes = Array.from({ length: 4 }, (_, index) => {
-      const seed = (hash ^ Math.imul(index + 1, 0x9e3779b1)) >>> 0;
-      const x = (((seed & 255) / 255) - 0.5) * 0.85;
-      const y = ((((seed >>> 8) & 255) / 255) - 0.5) * 1.5;
-      const z = ((((seed >>> 16) & 255) / 255) - 0.5) * 0.8;
-      const position = projectEggPoint({ x, y, z }, orientation);
-      return {
-        ...position,
-        rx: 102 + ((seed >>> 24) & 255) / 255 * 55,
-        ry: 120 + ((seed >>> 20) & 255) / 255 * 65,
-      };
-    });
-    return { hash, strength, lobes };
-  }, [ideaDraft, orientation]);
 
   const saveIdea = () => {
     if (!hasIdea) {
@@ -777,13 +748,6 @@ const UnoEggScene = ({ locale }: Props) => {
           onKeyDown={onKeyDown}
         >
           <defs>
-            {EGG_STAGES.map((level) => (
-              <radialGradient key={level.index} id={`unocalc-core-stage-${level.index}`} cx="37%" cy="28%" r="82%">
-                <stop offset="0%" stopColor={level.color} stopOpacity=".70" />
-                <stop offset="53%" stopColor={level.color} stopOpacity=".40" />
-                <stop offset="100%" stopColor={level.color} stopOpacity=".17" />
-              </radialGradient>
-            ))}
             <radialGradient id="unocalc-idea-pole-light" cx="35%" cy="25%" r="75%">
               <stop offset="0%" stopColor={EGG_POLES.idea.color} stopOpacity=".60" />
               <stop offset="100%" stopColor={EGG_POLES.idea.color} stopOpacity=".10" />
@@ -792,37 +756,7 @@ const UnoEggScene = ({ locale }: Props) => {
               <stop offset="0%" stopColor={EGG_POLES.matter.color} stopOpacity=".60" />
               <stop offset="100%" stopColor={EGG_POLES.matter.color} stopOpacity=".10" />
             </radialGradient>
-            <radialGradient id="unocalc-idea-field-gradient">
-              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity=".28" />
-              <stop offset="54%" stopColor="hsl(var(--primary))" stopOpacity=".10" />
-              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
-            </radialGradient>
-            <clipPath id="unocalc-idea-field-clip">
-              <path d={geometry.silhouette} />
-            </clipPath>
           </defs>
-          {ideaField && (
-            <g
-              data-testid="unocalc-idea-field"
-              data-field-signature={ideaField.hash}
-              clipPath="url(#unocalc-idea-field-clip)"
-              pointerEvents="none"
-              aria-hidden="true"
-            >
-              <path d={geometry.silhouette} fill="hsl(var(--primary))" fillOpacity=".025" />
-              {ideaField.lobes.map((lobe, index) => (
-                <ellipse
-                  key={index}
-                  cx={lobe.x}
-                  cy={lobe.y}
-                  rx={lobe.rx}
-                  ry={lobe.ry}
-                  fill="url(#unocalc-idea-field-gradient)"
-                  opacity={ideaField.strength}
-                />
-              ))}
-            </g>
-          )}
           <line
             data-testid="unocalc-egg-axis"
             x1={geometry.axis.start.x} y1={geometry.axis.start.y}
@@ -912,77 +846,32 @@ const UnoEggScene = ({ locale }: Props) => {
               </g>;
             })}
           </g>
-          {/* The central core represents the object. Tapping opens the Author panel;
-              dragging still rotates the egg without triggering panel activation. */}
-          {/* The outer radius of each new stage encloses every earlier layer.
-              Completed shells remain coloured; the current shell receives a
-              soft halo and bright rim, while future shells stay translucent. */}
-          <g data-testid="unocalc-core-matryoshka"
-             data-stage={maturity.stage} data-iteration={maturity.iteration}
-             role="img"
-             aria-label={`${copy.coreLabel}. ${stageLabels.stage} ${maturity.stage}: ${currentStage[locale]}. ${stageLabels.iteration} ${maturity.iteration}`}
-             pointerEvents="none">
+          {/* The Author is an external source and operator, ABOVE the egg,
+              not a functional sphere or part of any of the five stages.
+              Original seed lives in the Author page and is sent into Idea. */}
+          <g data-testid="unocalc-author-source">
+            <line x1="380" y1="45" x2="380" y2="61"
+              stroke="currentColor" strokeWidth=".75" strokeOpacity=".27"
+              strokeDasharray="2 4" pointerEvents="none" />
+            <circle cx="380" cy="29" r="12.5"
+              fill="hsl(var(--background))" stroke="currentColor"
+              strokeWidth="1.15" strokeOpacity=".70" pointerEvents="none" />
+            <circle cx="380" cy="29" r="4.4"
+              fill="currentColor" fillOpacity={ideaCycle?.seed ? ".6" : ".16"} pointerEvents="none" />
+            <text x="403" y="33.5" fontSize="12" fontWeight="300"
+              letterSpacing="1.25" fill="currentColor" opacity=".60"
+              pointerEvents="none">{locale === "ru" ? "АВТОР" : locale === "uk" ? "АВТОР" : "AUTHOR"}</text>
             <circle
-              data-testid="unocalc-current-stage-halo"
-              cx={geometry.core.x} cy={geometry.core.y}
-              r={currentStage.radius + 3.5}
-              fill="none" stroke={currentStage.color} strokeWidth="7"
-              strokeOpacity=".12" vectorEffect="non-scaling-stroke"
-            />
-            {EGG_STAGES.slice().reverse().map((level) => {
-              const status = eggStageState(maturity, level.index);
-              const current = status === "current";
-              const completed = status === "completed";
-              return <circle key={level.index}
-                data-testid={`unocalc-core-level-${level.index}`}
-                data-active={status === "future" ? "false" : "true"}
-                data-state={status}
-                cx={geometry.core.x} cy={geometry.core.y}
-                r={level.radius}
-                fill={`url(#unocalc-core-stage-${level.index})`}
-                fillOpacity={current ? ".93" : completed ? ".76" : ".075"}
-                stroke={level.color}
-                strokeWidth={current ? "1.9" : completed ? ".95" : ".65"}
-                strokeOpacity={current ? ".98" : completed ? ".70" : ".22"}
-                vectorEffect="non-scaling-stroke"
-              />;
-            })}
-            <ellipse cx={geometry.core.x - 9} cy={geometry.core.y - 12}
-              rx="15" ry="13" fill="#fff" fillOpacity=".045" />
-            <circle data-testid="unocalc-core-sphere"
-              cx={geometry.core.x} cy={geometry.core.y}
-              r="45" fill="none"
-              stroke={maturity.stage === 5 ? currentStage.color : "currentColor"}
-              strokeWidth=".8" strokeOpacity=".19"
-              vectorEffect="non-scaling-stroke" />
+              data-testid="unocalc-author-hit" data-egg-node="author"
+              cx="380" cy="29" r="25"
+              fill="transparent" pointerEvents="all" stroke="none"
+              role="button" tabIndex={0}
+              aria-label={locale === "ru" ? "Открыть страницу Автора" : locale === "uk" ? "Відкрити сторінку Автора" : "Open Author page"}
+              className="cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
+              onKeyDown={(event) => onNodeKeyDown(event, "author")} />
           </g>
-          <circle
-            data-testid="unocalc-author-hit"
-            data-egg-node="author"
-            cx={geometry.core.x}
-            cy={geometry.core.y}
-            r="45"
-            fill="transparent"
-            pointerEvents="all"
-            stroke="none"
-            role="button"
-            tabIndex={0}
-            aria-label={locale === "ru" ? "Открыть панель Автора" : locale === "uk" ? "Відкрити панель Автора" : "Open Author panel"}
-            className="cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
-            onKeyDown={(event) => onNodeKeyDown(event, "author")}
-          />
-          {hasSketch && (
-            <circle
-              data-testid="unocalc-core-progress"
-              cx={geometry.core.x} cy={geometry.core.y} r="51"
-              fill="none" stroke="hsl(var(--primary))" strokeOpacity=".25"
-              strokeWidth="1" strokeDasharray="3 7" pointerEvents="none"
-              aria-hidden="true"
-            />
-          )}
-          {/* The five stages are actual positions on the polar axis, as in
-              the approved sketch: violet Idea · 5 stages · red Matter.
-              The concentric yolk shows the same maturity as layered depth. */}
+          {/* Five formation stages sit along the Idea-to-Matter axis.
+              Colour and glow convey progress; no central yolk is drawn. */}
           <g data-testid="unocalc-axis-stages" aria-hidden="true" pointerEvents="none">
             {geometry.stageNodes.map((point) => {
               const level = EGG_STAGES[point.index - 1];
@@ -1314,7 +1203,7 @@ const UnoEggScene = ({ locale }: Props) => {
             className={`unocalc-workspace-dialog relative z-10 flex h-full min-h-0 flex-col overflow-hidden border-l border-foreground/15 bg-background shadow-2xl transition-[width,transform,opacity] duration-[420ms] ease-out motion-reduce:transition-none ${workspaceVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-95"} ${workspaceExpanded ? "w-full" : "w-full min-[1100px]:w-[min(520px,60vw)]"}`}>
             <header className="unocalc-workspace-header flex shrink-0 items-start justify-between gap-3 border-b border-foreground/10 pb-4 min-[1100px]:pb-6">
               <div className="min-w-0 flex-1">
-                <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-foreground/45">UNO / EGG / {workspaceNode === "author" ? (locale === "en" ? "CORE" : "ЯДРО") : workspaceNode ? nodeDetails[workspaceNode].number : ""}</p>
+                <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-foreground/45">UNO / EGG / {workspaceNode === "author" ? (locale === "en" ? "AUTHOR" : "АВТОР") : workspaceNode ? nodeDetails[workspaceNode].number : ""}</p>
                 <h2 id="unocalc-sphere-workspace-title" className="break-words text-[22px] leading-snug font-extralight tracking-[-0.035em] sm:text-[26px]">{workspaceNode === "author" ? (locale === "en" ? "Author" : "Автор") : workspaceNode ? nodeDetails[workspaceNode].title : ""}</h2>
               </div>
               <div className="flex shrink-0 items-center gap-2">
