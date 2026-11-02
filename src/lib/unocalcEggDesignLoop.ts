@@ -135,7 +135,7 @@ export const restoreDesignLoop = (): DesignLoop | null => {
       ["hypothesis", "observation", "question"].includes(v.evidence) &&
       typeof v.receivedAt === "number");
     return {
-      seed: data.seed, layer: data.layer, status: data.status,
+      seed: data.seed, layer: data.layer, status: data.status as DesignStatus,
       description: data.description, changeNote: typeof data.changeNote === "string" ? data.changeNote : "",
       imageIds: data.imageIds.filter((v): v is string => typeof v === "string"),
       submissions, feedback,
@@ -145,4 +145,17 @@ export const restoreDesignLoop = (): DesignLoop | null => {
       testEvidence: ["hypothesis", "observation", "question"].includes(data.testEvidence ?? "") ? data.testEvidence! : "hypothesis",
     };
   } catch { return null; }
+};
+
+/** A portable task for a separate visual-generation tool; not an AI call. */
+export const createDesignSketchPrompt = (loop: DesignLoop, locale: "ru" | "uk" | "en"): string => {
+  const intro = {
+    ru: "Разработай три альтернативных графических эскиза объекта. Исследуй пропорции, характер и предварительную конструктивную логику. Не придумывай отсутствующие требования: неизвестные размеры, технологии и характеристики оставляй открытыми. Покажи различия вариантов и подпиши каждый. Это концептуальные эскизы, а не проверенные чертежи.",
+    uk: "Розроби три альтернативні графічні ескізи об'єкта. Досліди пропорції, характер і попередню конструктивну логіку. Не вигадуй невідомі вимоги, розміри та технології. Познач відмінності варіантів. Це концептуальні ескізи, не перевірені креслення.",
+    en: "Create three alternative graphic sketches exploring proportion, character, and preliminary construction logic. Do not invent missing dimensions, technologies or requirements; label unknowns. Compare the options. These are conceptual sketches, not verified technical drawings.",
+  }[locale];
+  const source = { ru: "Исходное зерно", uk: "Початкове зерно", en: "Original seed" }[locale];
+  const layer = { ru: "Слой 1", uk: "Шар 1", en: "Layer 1" }[locale];
+  const proposal = { ru: "Текущая проработка Дизайна", uk: "Поточне опрацювання Дизайну", en: "Current Design proposal" }[locale];
+  return [intro, `${source}:\n${loop.seed}`, `${layer}:\n${loop.layer}`, `${proposal}:\n${loop.description.trim() || "—"}`].join("\n\n");
 };
