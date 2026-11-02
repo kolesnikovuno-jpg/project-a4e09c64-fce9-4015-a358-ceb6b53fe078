@@ -25,7 +25,7 @@
 
 ## Изменения в тестовой ветке
 
-1. Добавлен серверный модуль \`api/_eggStorageConfig.ts\` с **обязательными отдельными** переменными:
+1. Добавлен серверный модуль \`src/server/eggStorageConfig.ts\` с **обязательными отдельными** переменными:
    - \`EGG_SUPABASE_URL\`
    - \`EGG_SUPABASE_PUBLISHABLE_KEY\`
    - \`EGG_SUPABASE_SERVICE_ROLE_KEY\`
