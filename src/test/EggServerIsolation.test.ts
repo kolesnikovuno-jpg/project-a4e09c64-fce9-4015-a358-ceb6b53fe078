@@ -4,7 +4,7 @@ import { getEggStorageConfig, type EggStorageEnv } from "../server/eggStorageCon
 const independent: EggStorageEnv = {
   EGG_SUPABASE_URL: "https://egg-isolated.supabase.co",
   EGG_SUPABASE_PUBLISHABLE_KEY: "egg-publishable-test",
-  EGG_SUPABASE_SERVICE_ROLE_KEY: "egg-secret-for-server-only",
+  EGG_SUPABASE_SECRET_KEY: "sb_secret_egg-test-only-not-a-real-key",
   VITE_SUPABASE_URL: "https://website-lovable.supabase.co",
 };
 describe("Egg standalone server config", () => {
@@ -12,7 +12,7 @@ describe("Egg standalone server config", () => {
     expect(getEggStorageConfig(independent)).toEqual({
       url: independent.EGG_SUPABASE_URL,
       publishableKey: independent.EGG_SUPABASE_PUBLISHABLE_KEY,
-      serviceKey: independent.EGG_SUPABASE_SERVICE_ROLE_KEY,
+      serviceKey: independent.EGG_SUPABASE_SECRET_KEY,
     });
     expect(getEggStorageConfig({
       VITE_SUPABASE_URL: "https://lovable.supabase.co",
@@ -23,7 +23,7 @@ describe("Egg standalone server config", () => {
       ...independent, EGG_SUPABASE_PUBLISHABLE_KEY: undefined,
     })).toBeNull();
     expect(getEggStorageConfig({
-      ...independent, EGG_SUPABASE_SERVICE_ROLE_KEY: independent.EGG_SUPABASE_PUBLISHABLE_KEY,
+      ...independent, EGG_SUPABASE_SECRET_KEY: independent.EGG_SUPABASE_PUBLISHABLE_KEY,
     })).toBeNull();
     expect(getEggStorageConfig({
       ...independent, EGG_SUPABASE_URL: independent.VITE_SUPABASE_URL,
