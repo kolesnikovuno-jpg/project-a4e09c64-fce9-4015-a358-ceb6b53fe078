@@ -37,7 +37,7 @@ describe("Bring-your-own-Drive artifact registry", () => {
       fileId, provider: "google_drive", status: "reported", version: 1,
       registeredBy: "ai", collectionKey: "design/sketches",
     });
-    expect(second.events.at(-1)?.kind).toBe("artifact_registered");
+    expect(second.events[second.events.length - 1]?.kind).toBe("artifact_registered");
     expect(second.seed).toEqual(first.seed);
     expect(second.level).toBe(1);
     expect(second.iteration).toBe(1);
@@ -100,7 +100,7 @@ describe("Bring-your-own-Drive artifact registry", () => {
     expect(confirmed.artifacts?.[0]).toMatchObject({
       status: "author_confirmed", confirmedAt: at,
     });
-    expect(confirmed.events.at(-1)?.kind).toBe("artifact_confirmed");
+    expect(confirmed.events[confirmed.events.length - 1]?.kind).toBe("artifact_confirmed");
     expect(confirmDriveReference(confirmed, {
       actor: "author", artifactId, at,
     })).toBe(confirmed);
