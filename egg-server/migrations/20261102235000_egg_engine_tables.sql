@@ -45,6 +45,7 @@ grant all on public.egg_engine_access_keys to service_role;
 
 -- Atomic optimistic concurrency: prevents parallel AI and Author requests
 -- from silently overwriting each other's accepted decisions or history.
+-- SECURITY INVOKER: only service_role can execute; no public RLS bypass.
 create or replace function public.egg_engine_cas_update(
   p_project_id uuid,
   p_owner_id uuid,
@@ -53,7 +54,7 @@ create or replace function public.egg_engine_cas_update(
 )
 returns table (new_revision integer)
 language sql
-security definer
+security invoker
 set search_path = ''
 as $$
   update public.egg_engine_projects
