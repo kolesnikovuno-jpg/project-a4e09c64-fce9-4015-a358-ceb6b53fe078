@@ -1,8 +1,8 @@
 /** Local-only bridge between the current browser prototype and Egg v0.3.
  * Does NOT imply Supabase storage, Google Drive access, or server approval.
  */
-import { createEggProject, type EggProject } from "./eggEngine.js";
-import { exportEggManifest, validDriveFileId, validDriveWebUrl } from "./eggArtifacts.js";
+import { createEggProject, EGG_SPHERES, type EggProject, type SphereId } from "./eggEngine.js";
+import { exportEggManifest, registerDriveReference, validDriveFileId, validDriveWebUrl } from "./eggArtifacts.js";
 
 export const EGG_LOCAL_PROJECTS_KEY = "unocalc.egg.local-projects.v1";
 const LIMIT = 12;
@@ -135,3 +135,66 @@ export const createLocalEggBundle = (input: LocalEggBundleInput) => ({
     sketchIndex: input.sketches,
   },
 });
+
+
+/** Import ONLY Drive links from a previously exported Egg JSON.
+ * It does not overwrite seed, levels, Author decisions, design state, or files.
+ * Imported links return to "reported" so an arbitrary JSON file cannot forge
+ * an Author's confirmation. Existing links are deduplicated.
+ */
+export const importEggFileReferences = (
+  current: EggProject, raw: string, at: string,
+): { project: EggProject; imported: number; skipped: number } => {
+  if (!raw.trim() || raw.length > 2_000_000) throw new Error("Invalid import size");
+  let data: unknown;
+  try { data = JSON.parse(raw); } catch { throw new Error("Invalid JSON"); }
+  if (!data || typeof data !== "object") throw new Error("Invalid Egg export");
+  const root = data as Record<string, unknown>;
+  const manifest = root.schema === "egg.browser-bundle/0.1"
+    ? root.engine : root.schema === "egg.export/0.1" ? root : null;
+  if (!manifest || typeof manifest !== "object") throw new Error("Unsupported Egg export");
+  const exportedProject = (manifest as { project?: unknown }).project;
+  if (!exportedProject || typeof exportedProject !== "object") throw new Error("Missing Egg project");
+  const record = exportedProject as Partial<EggProject>;
+  if (record.schema !== "egg.engine/0.1" ||
+      record.seed?.text?.trim() !== current.seed.text.trim())
+    throw new Error("This export belongs to another project seed");
+  const list = record.artifacts ?? [];
+  if (!Array.isArray(list) || list.length > 250) throw new Error("Invalid artifact count");
+  let project = current;
+  let imported = 0;
+  let skipped = 0;
+  for (const item of list) {
+    if (!item || typeof item !== "object") throw new Error("Invalid artifact entry");
+    const artifact = item as Record<string, unknown>;
+    if (artifact.provider !== "google_drive" ||
+        typeof artifact.fileId !== "string" || !validDriveFileId(artifact.fileId) ||
+        typeof artifact.title !== "string" || !artifact.title.trim() || artifact.title.length > 250 ||
+        typeof artifact.mimeType !== "string" || !artifact.mimeType.trim() || artifact.mimeType.length > 140 ||
+        typeof artifact.collectionKey !== "string" || !artifact.collectionKey.trim() ||
+        artifact.collectionKey.length > 80 ||
+        typeof artifact.webUrl !== "string" || artifact.webUrl.length > 1200 ||
+        !validDriveWebUrl(artifact.webUrl, artifact.fileId) ||
+        (artifact.sphere !== undefined &&
+          (typeof artifact.sphere !== "string" ||
+            !Object.prototype.hasOwnProperty.call(EGG_SPHERES, artifact.sphere))))
+      throw new Error("Invalid Drive reference in export");
+    const sphere = artifact.sphere as SphereId | undefined;
+    if (project.artifacts?.some(previous =>
+      previous.provider === "google_drive" &&
+      previous.fileId === artifact.fileId &&
+      previous.collectionKey === artifact.collectionKey &&
+      previous.sphere === sphere)) {
+      skipped++;
+      continue;
+    }
+    project = registerDriveReference(project, {
+      actor: "author", at, fileId: artifact.fileId,
+      title: artifact.title, mimeType: artifact.mimeType,
+      webUrl: artifact.webUrl, collectionKey: artifact.collectionKey,
+      ...(sphere ? { sphere } : {}),
+    });
+    imported++;
+  }
+  return { project, imported, skipped };
+};
