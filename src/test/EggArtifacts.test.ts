@@ -51,6 +51,21 @@ describe("Bring-your-own-Drive artifact registry", () => {
     expect(state.artifacts?.map(a => a.fileId)).toEqual([fileId, fileId]);
   });
 
+  it("is idempotent for the same external save operation, without extra events or a version", () => {
+    const input = { ...fileInput, operationId: "save-sketch-001" };
+    const first = registerDriveReference(create(), input);
+    const repeated = registerDriveReference(first, { ...input, at: "2026-11-04T12:00:00Z" });
+    expect(repeated).toBe(first);
+    expect(repeated.artifacts).toHaveLength(1);
+    expect(repeated.events).toHaveLength(2);
+    const second = registerDriveReference(first, { ...input, operationId: "save-sketch-002", title: "New export" });
+    expect(second.artifacts?.map(item => item.version)).toEqual([1, 2]);
+    expect(() => registerDriveReference(first, { ...input, title: "Different document" }))
+      .toThrow(/different artifact/);
+    expect(() => registerDriveReference(first, { ...input, fileId: "a-different-file-ID-1234" }))
+      .toThrow(/different artifact/);
+  });
+
   it("links a reference only to an existing task in the same project", () => {
     expect(() => registerDriveReference(create(), {
       ...fileInput, taskId: "task-404",
