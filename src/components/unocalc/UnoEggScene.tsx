@@ -19,6 +19,7 @@ import {
   eggSurface,
   eggIdeaLinks,
   eggSupportLinks,
+  projectEggPoint,
   svgOutline,
   visibleEggSectionNodes,
   type EggOrientation,
