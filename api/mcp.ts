@@ -16,6 +16,36 @@ import { processEggMcp } from "../src/lib/eggMcpProtocol.js";
 type Incoming = IncomingMessage & { body?: unknown };
 type ServerConfig = { url: string; serviceKey: string };
 type ProjectRow = { id: string; owner_id: string; revision: number; document: EggProject };
+type McpDb = {
+  public: {
+    Tables: {
+      egg_engine_projects: {
+        Row: ProjectRow & { created_at: string; updated_at: string };
+        Insert: { id: string; owner_id: string; document: EggProject; revision?: number };
+        Update: { document?: EggProject; revision?: number };
+        Relationships: [];
+      };
+      egg_engine_access_keys: {
+        Row: KeyRow & { id: string; key_hash: string; label: string; created_at: string };
+        Insert: { project_id: string; owner_id: string; key_hash: string; label: string;
+          scopes: Array<"read" | "contribute">; expires_at: string };
+        Update: { revoked_at?: string | null };
+        Relationships: [];
+      };
+    };
+    Views: {};
+    Functions: {
+      egg_engine_cas_update: {
+        Args: {
+          p_project_id: string; p_owner_id: string; p_expected_revision: number; p_document: EggProject;
+        };
+        Returns: Array<{ new_revision: number }>;
+      };
+    };
+    Enums: {};
+    CompositeTypes: {};
+  };
+};
 type KeyRow = {
   project_id: string; owner_id: string; expires_at: string;
   revoked_at: string | null; scopes: Array<"read" | "contribute">;
@@ -73,7 +103,7 @@ export default async function handler(req: Incoming, res: ServerResponse) {
   if (!match) { send(res, 401, { error: "project_access_key_required" }); return; }
 
   try {
-    const db = createClient(config.url, config.serviceKey, {
+    const db = createClient<McpDb>(config.url, config.serviceKey, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     });
     const keyHash = createHash("sha256").update(match[1]).digest("hex");
