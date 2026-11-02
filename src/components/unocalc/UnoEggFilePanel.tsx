@@ -1,9 +1,9 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import type { EggProject, SphereId } from "@/lib/eggEngine";
 import { EGG_SPHERES } from "@/lib/eggEngine";
 import { confirmDriveReference, registerDriveReference } from "@/lib/eggArtifacts";
 import {
-  createLocalEggBundle, loadLocalEggProject, parseGoogleDriveFileLink,
+  createLocalEggBundle, importEggFileReferences, loadLocalEggProject, parseGoogleDriveFileLink,
   saveLocalEggProject, startLocalEggProject,
 } from "@/lib/eggLocalPreview";
 import type { EggMaturity } from "@/lib/unocalcEggStages";
@@ -33,6 +33,9 @@ const words = {
     confirmed: "Подтверждено Автором", reported: "Ссылка зарегистрирована · не подтверждена",
     confirm: "Подтвердить материал", empty: "Пока нет зарегистрированных файлов.",
     export: "Скачать JSON проекта", copy: "Скопировать JSON",
+    import: "Восстановить ссылки из JSON", imported: "Ссылки восстановлены",
+    importError: "Не удалось импортировать: файл должен быть экспортом «Яйца» с тем же зерном и корректными ссылками Drive.",
+    importNote: "Импорт восстанавливает только ссылки. Подтверждения необходимо выполнить повторно; состояние сфер не заменяется.",
     exported: "Экспорт подготовлен. Если Safari показывает файл, используйте «Поделиться» → «Сохранить в Файлы».",
     copied: "JSON скопирован.", copyError: "Не удалось скопировать. Используйте скачивание.",
     saveError: "Браузер не сохранил запись. Экспортируйте проект, чтобы не потерять данные.",
@@ -49,6 +52,9 @@ const words = {
     confirmed: "Підтверджено Автором", reported: "Посилання зареєстровано · не підтверджено",
     confirm: "Підтвердити матеріал", empty: "Зареєстрованих файлів поки немає.",
     export: "Завантажити JSON проєкту", copy: "Копіювати JSON",
+    import: "Відновити посилання з JSON", imported: "Посилання відновлено",
+    importError: "Імпорт не вдався: потрібен експорт «Яйця» з тим самим зерном і коректними посиланнями Drive.",
+    importNote: "Імпортуються лише посилання. Підтвердження треба виконати повторно; стан сфер не змінюється.",
     exported: "Експорт готовий. Якщо Safari відкриває файл, використайте «Поділитися» → «Зберегти у Файли».",
     copied: "JSON скопійовано.", copyError: "Не вдалося скопіювати. Спробуйте завантажити.",
     saveError: "Браузер не зберіг запис. Експортуйте проєкт, щоб не втратити дані.",
@@ -65,6 +71,9 @@ const words = {
     confirmed: "Confirmed by Author", reported: "Registered · not confirmed",
     confirm: "Confirm material", empty: "No file references yet.",
     export: "Download project JSON", copy: "Copy JSON",
+    import: "Restore links from JSON", imported: "Links restored",
+    importError: "Cannot import: use an Egg export with the same Author seed and valid Drive links.",
+    importNote: "Import restores links only. Confirmations must be repeated; sphere state is not replaced.",
     exported: "Export prepared. If Safari opens the file, use Share → Save to Files.",
     copied: "JSON copied.", copyError: "Could not copy. Try downloading.",
     saveError: "Browser storage failed. Export your project to preserve the data.",
@@ -170,6 +179,22 @@ export const UnoEggFilePanel = ({
     }
   };
 
+  const importLinks = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    // Reset value so the same file can be selected again after an error.
+    event.target.value = "";
+    if (!file || !project) return;
+    try {
+      if (file.size > 2_000_000) throw new Error("Import too large");
+      const raw = await file.text();
+      const result = importEggFileReferences(project, raw, new Date().toISOString());
+      if (result.imported) setProject(result.project);
+      setNotice(t.imported + ": " + result.imported + " · " + result.skipped);
+    } catch {
+      setNotice(t.importError);
+    }
+  };
+
   return (
     <details data-testid="unocalc-author-files" className="w-full rounded-xl border border-foreground/15 p-4 text-left">
       <summary className="cursor-pointer text-[13px] font-light text-foreground/80">
@@ -236,6 +261,14 @@ export const UnoEggFilePanel = ({
           <button type="button" className={button} disabled={!project}
             data-testid="unocalc-file-copy" onClick={() => { void copy(); }}>{t.copy}</button>
         </div>
+        {project && (
+          <label className="flex w-full cursor-pointer flex-col gap-2 text-[11px] font-light text-foreground/70">
+            <span>{t.import}</span>
+            <input data-testid="unocalc-file-import" type="file" accept=".json,application/json"
+              className="w-full text-[11px]" onChange={(event) => { void importLinks(event); }} />
+          </label>
+        )}
+        <p className="text-[11px] font-light leading-relaxed text-foreground/55">{t.importNote}</p>
         <p className="text-[11px] font-light leading-relaxed text-foreground/55">{t.limitation}</p>
         {storageError && <p role="alert" className="text-[11px] text-red-600">{t.saveError}</p>}
         {notice && <p data-testid="unocalc-file-notice" role="status"
