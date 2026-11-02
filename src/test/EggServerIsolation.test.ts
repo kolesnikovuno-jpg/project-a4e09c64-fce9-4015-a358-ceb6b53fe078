@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getEggStorageConfig, type EggStorageEnv } from "../../api/_eggStorageConfig";
+import { getEggStorageConfig, type EggStorageEnv } from "../server/eggStorageConfig";
 
 const independent: EggStorageEnv = {
   EGG_SUPABASE_URL: "https://egg-isolated.supabase.co",
