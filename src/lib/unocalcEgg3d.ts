@@ -194,6 +194,23 @@ export const eggPoleNodes = (orientation: EggOrientation) => [
   projectEggPoint({ x: 0, y: EGG_TOP, z: 0 }, orientation),
   projectEggPoint({ x: 0, y: EGG_BOTTOM, z: 0 }, orientation),
 ];
+/** Five formation-stage markers divide the actual polar axis into six equal
+ * segments. Projected endpoints are interpolated so their placement remains
+ * aligned with the rotating 3D egg, including tilt and yaw. */
+export const eggFormationStageNodes = (orientation: EggOrientation) => {
+  const [idea, matter] = eggPoleNodes(orientation);
+  return Array.from({ length: 5 }, (_, offset) => {
+    const index = offset + 1;
+    const t = index / 6;
+    return {
+      index,
+      x: idea.x + (matter.x - idea.x) * t,
+      y: idea.y + (matter.y - idea.y) * t,
+      depth: idea.depth + (matter.depth - idea.depth) * t,
+    };
+  });
+};
+
 
 /**
  * Two explicit 3D relationships from Idea to Marketing and Legal.
