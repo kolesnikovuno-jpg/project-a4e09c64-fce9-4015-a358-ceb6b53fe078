@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent, type MouseEvent, type PointerEvent } from "react";
 import { createPortal } from "react-dom";
 import { IDEA_CYCLE_KEY, newIdeaCycle, restoreIdeaCycle, UnoEggIdeaCyclePanel, type IdeaCycle } from "./UnoEggIdeaCyclePanel";
+import { UnoEggDesignLoopPanel } from "./UnoEggDesignLoopPanel";
+import { DESIGN_LOOP_STORAGE, createDesignLoop, restoreDesignLoop, latestDesignSubmission, type DesignLoop } from "@/lib/unocalcEggDesignLoop";
+import { clearEggDesignAssets } from "@/lib/unocalcEggDesignAssets";
 import { designCopy, EMPTY_BRIEF, makeSketchPrompt, type DesignBrief } from "@/lib/unocalcDesign";
 import { listSketches, removeStoredSketch, storeSketch, type StoredSketch } from "@/lib/unocalcSketches";
 import {
@@ -314,6 +317,7 @@ const UnoEggScene = ({ locale }: Props) => {
   });
   const [ideaSaveStatus, setIdeaSaveStatus] = useState<"idle" | "saved" | "error" | "empty">("idle");
   const [ideaCycle, setIdeaCycle] = useState<IdeaCycle | null>(restoreIdeaCycle);
+  const [designLoop, setDesignLoop] = useState<DesignLoop | null>(restoreDesignLoop);
   const [brief, setBrief] = useState<DesignBrief>(() => {
     try {
       const raw = window.localStorage.getItem(DESIGN_STORAGE_KEY);
@@ -357,6 +361,12 @@ const UnoEggScene = ({ locale }: Props) => {
     if (!ideaCycle) return "idle";
     if (node === "idea") return ideaCycle.phase === "synthesis" ? "attention" :
       ideaCycle.phase === "layered" ? "returned" : ideaCycle.phase === "forwarded" ? "processing" : "idle";
+    if (ideaCycle.phase === "forwarded" && designLoop?.seed === ideaCycle.seed && designLoop.layer === ideaCycle.layer) {
+      if (node === "design" && designLoop.status === "design") return "attention";
+      if (node === "marketing" && designLoop.status === "marketing") return "attention";
+      if (node === "testDrive" && designLoop.status === "testDrive") return "attention";
+      if (node === "design" || node === "marketing" || node === "testDrive") return "returned";
+    }
     if (node === "marketing" || node === "legal") {
       if (ideaCycle.phase === "seed") return "idle";
       if (ideaCycle.phase === "forwarded") return "returned";
@@ -367,7 +377,7 @@ const UnoEggScene = ({ locale }: Props) => {
   };
   const signalColor = (node: InteractiveNode) => cycleSignal(node) === "attention" ? "#c49d65" :
     cycleSignal(node) !== "idle" ? "hsl(var(--primary))" : "currentColor";
-  const hasSketch = sketches.length > 0;
+  const hasSketch = sketches.length > 0 || !!designLoop?.submissions.length;
   // Every sphere can be inspected at any time. Only the actual Design
   // workspace is gated by an idea; creating a sketch remains a later step.
   const canActivateNode = (_node: InteractiveNode) => true;
@@ -380,9 +390,24 @@ const UnoEggScene = ({ locale }: Props) => {
     } catch { /* Manual prototype remains usable without persistence. */ }
   }, [ideaCycle]);
 
+  useEffect(() => {
+    if (ideaCycle?.phase !== "forwarded") return;
+    setDesignLoop((current) => current?.seed === ideaCycle.seed && current.layer === ideaCycle.layer
+      ? current : createDesignLoop(ideaCycle.seed, ideaCycle.layer));
+  }, [ideaCycle?.phase, ideaCycle?.seed, ideaCycle?.layer]);
+
+  useEffect(() => {
+    try {
+      if (designLoop) window.localStorage.setItem(DESIGN_LOOP_STORAGE, JSON.stringify(designLoop));
+      else window.localStorage.removeItem(DESIGN_LOOP_STORAGE);
+    } catch { /* local-only prototype */ }
+  }, [designLoop]);
+
   const placeSeedInCore = () => {
     if (!ideaDraft.trim()) return;
     setIdeaCycle(newIdeaCycle(ideaDraft));
+    setDesignLoop(null);
+    void clearEggDesignAssets().catch(() => { /* browser may prevent storage cleanup */ });
     try { window.localStorage.setItem(IDEA_STORAGE_KEY, ideaDraft); } catch { /* local-only */ }
   };
 
@@ -824,7 +849,15 @@ const UnoEggScene = ({ locale }: Props) => {
               Design and Production, drawn behind the clickable nodes. */}
           <g data-testid="unocalc-support-links" aria-hidden="true" pointerEvents="none">
             {geometry.supportLinks.map((link) => {
-              const active = ideaCycle?.phase === "forwarded" && (link.id === "marketing-design" || link.id === "legal-production");
+              const nextFromIdea = ideaCycle?.phase === "forwarded";
+              const pendingDesignLoop = nextFromIdea && designLoop?.seed === ideaCycle.seed && designLoop.layer === ideaCycle.layer
+                ? designLoop : null;
+              const originalLink = link.id === "legal-production" && nextFromIdea;
+              const initialDesignLink = link.id === "marketing-design" && nextFromIdea && (!pendingDesignLoop || pendingDesignLoop.submissions.length === 0);
+              const reviewMarketLink = link.id === "marketing-design" && pendingDesignLoop?.status === "marketing";
+              const reviewTestLink = link.id === "design-test-drive" && pendingDesignLoop?.status === "testDrive";
+              const active = originalLink || initialDesignLink || reviewMarketLink || reviewTestLink;
+              const reverse = !!reviewMarketLink;
               return <g key={link.id}>
                 <line data-testid={`unocalc-support-link-${link.id}`}
                   x1={link.x1} y1={link.y1} x2={link.x2} y2={link.y2}
@@ -832,9 +865,11 @@ const UnoEggScene = ({ locale }: Props) => {
                   strokeWidth={active ? "1.6" : ".75"}
                   strokeOpacity={active ? ".8" : link.depth < 0 ? ".22" : ".38"}
                   vectorEffect="non-scaling-stroke" pointerEvents="none" />
-                {active && <circle r="3" fill="hsl(var(--primary))" className="unocalc-cycle-pulse">
+                {active && <circle r="3" fill={reviewMarketLink || reviewTestLink ? "#c49d65" : "hsl(var(--primary))"} className="unocalc-cycle-pulse">
                   <animateMotion dur="2s" repeatCount="indefinite"
-                    path={`M ${link.x1} ${link.y1} L ${link.x2} ${link.y2}`} />
+                    path={reverse
+                      ? `M ${link.x2} ${link.y2} L ${link.x1} ${link.y1}`
+                      : `M ${link.x1} ${link.y1} L ${link.x2} ${link.y2}`} />
                 </circle>}
               </g>;
             })}
@@ -1153,7 +1188,14 @@ const UnoEggScene = ({ locale }: Props) => {
               </div>
             </header>
             <div className="unocalc-workspace-body flex min-h-0 flex-1 items-start justify-center overflow-y-auto overscroll-contain px-5 py-8 text-center sm:px-8">
-              {(workspaceNode === "author" || workspaceNode === "idea" || workspaceNode === "marketing" ||
+              {(workspaceNode === "design" || workspaceNode === "marketing" || workspaceNode === "testDrive") &&
+                ideaCycle?.phase === "forwarded" && designLoop?.seed === ideaCycle.seed && designLoop.layer === ideaCycle.layer ? (
+                <UnoEggDesignLoopPanel
+                  locale={locale} node={workspaceNode} loop={designLoop} setLoop={setDesignLoop}
+                  originalMarketing={ideaCycle.marketing}
+                  onNavigate={openWorkspace}
+                />
+              ) : (workspaceNode === "author" || workspaceNode === "idea" || workspaceNode === "marketing" ||
                 workspaceNode === "legal" || workspaceNode === "design" || workspaceNode === "production") ? (
                 <UnoEggIdeaCyclePanel
                   locale={locale} node={workspaceNode} draft={ideaDraft} onDraft={setIdeaDraft}
