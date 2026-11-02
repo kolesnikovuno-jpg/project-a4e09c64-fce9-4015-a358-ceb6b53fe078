@@ -35,6 +35,7 @@ export type RegisterDriveReference = {
   collectionKey: string;
   webUrl?: string;
   taskId?: string;
+  sphere?: SphereId;
   at: string;
 };
 
@@ -93,6 +94,9 @@ export const registerDriveReference = (
   const artifacts = project.artifacts ?? [];
   const version = artifacts.filter(item => item.collectionKey === collectionKey).length + 1;
   const task = project.tasks.find(item => item.id === input.taskId);
+  if (input.sphere && task && input.sphere !== task.sphere)
+    throw new EggEngineError("Artifact sphere must match its task");
+  const sphere = task?.sphere ?? input.sphere;
   const artifact: EggArtifact = {
     id: "artifact-" + project.nextSequence,
     provider: "google_drive",
@@ -102,7 +106,8 @@ export const registerDriveReference = (
     collectionKey,
     version,
     ...(input.webUrl ? { webUrl: input.webUrl } : {}),
-    ...(task ? { taskId: task.id, sphere: task.sphere } : {}),
+    ...(task ? { taskId: task.id } : {}),
+    ...(sphere ? { sphere } : {}),
     status: "reported",
     registeredBy: input.actor,
     registeredAt: at,
