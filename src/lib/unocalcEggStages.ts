@@ -27,8 +27,8 @@ export const restoreEggMaturity = (): EggMaturity => {
     if (value && typeof value === "object") {
       const stage = (value as Partial<EggMaturity>).stage;
       const iteration = (value as Partial<EggMaturity>).iteration;
-      if (Number.isInteger(stage) && typeof stage === "number" && stage >= 1 && stage <= 5 &&
-        Number.isInteger(iteration) && typeof iteration === "number" && iteration >= 1 && iteration <= 999) {
+      if (typeof stage === "number" && Number.isInteger(stage) && stage >= 1 && stage <= 5 &&
+        typeof iteration === "number" && Number.isInteger(iteration) && iteration >= 1 && iteration <= 999) {
         return { stage: stage as EggStageNumber, iteration };
       }
     }
