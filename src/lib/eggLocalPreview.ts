@@ -36,8 +36,7 @@ const readAll = (): EggProject[] => {
 };
 
 export const loadLocalEggProject = (seed: string): EggProject | null =>
-  readAll().findLast?.(item => item.seed.text === seed.trim()) ??
-  [...readAll()].reverse().find(item => item.seed.text === seed.trim()) ?? null;
+  readAll().reverse().find(item => item.seed.text === seed.trim()) ?? null;
 
 export const saveLocalEggProject = (project: EggProject): boolean => {
   try {
