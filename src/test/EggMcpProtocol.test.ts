@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { eggMcpTools, processEggMcp } from "../lib/eggMcpProtocol";
 const id = "04f246c5-e73a-4c66-9b99-36dfcb7074a0";
 const fileId = "1X4SaJX6d_Uh9y7S2H3lHIM4Gie4alYcY";
+const operationId = "save-sketch-v1";
 const obj = (method: string, params: unknown, reqId: number | string = 1) =>
   ({ jsonrpc: "2.0", id: reqId, method, params });
 const operations = () => ({
@@ -37,6 +38,7 @@ describe("MCP protocol and external AI handoff", () => {
     ]);
     expect(tools.some((tool: any) => /confirm|approve|delete/i.test(tool.name))).toBe(false);
     expect(eggMcpTools[1].annotations.readOnlyHint).toBe(false);
+    expect(eggMcpTools[1].annotations.idempotentHint).toBe(true);
     expect(eggMcpTools[0].annotations.readOnlyHint).toBe(true);
   });
 
@@ -60,7 +62,7 @@ describe("MCP protocol and external AI handoff", () => {
     const ops = operations();
     const response = await processEggMcp(obj("tools/call", {
       name: "egg_register_drive_file", arguments: {
-        projectId: id, expectedRevision: 6,
+        projectId: id, expectedRevision: 6, operationId,
         fileId, title: "Design sketches", mimeType: "application/pdf",
         collectionKey: "design/sketches", sphere: "design",
       },
@@ -76,7 +78,7 @@ describe("MCP protocol and external AI handoff", () => {
     const ops = operations();
     const bad = await processEggMcp(obj("tools/call", {
       name: "egg_register_drive_file", arguments: {
-        projectId: id, expectedRevision: 6,
+        projectId: id, expectedRevision: 6, operationId,
         fileId: "fake", title: "Sketch", mimeType: "image/png",
         collectionKey: "design",
       },
@@ -85,7 +87,7 @@ describe("MCP protocol and external AI handoff", () => {
     expect(ops.registerDriveFile).not.toHaveBeenCalled();
     const injected = await processEggMcp(obj("tools/call", {
       name: "egg_register_drive_file", arguments: {
-        projectId: id, expectedRevision: 6, fileId, title: "Sketch",
+        projectId: id, expectedRevision: 6, operationId, fileId, title: "Sketch",
         mimeType: "image/png", collectionKey: "design", actor: "author",
       },
     }), ops);
@@ -100,7 +102,7 @@ describe("MCP protocol and external AI handoff", () => {
     });
     const result = await processEggMcp(obj("tools/call", {
       name: "egg_register_drive_file", arguments: {
-        projectId: id, expectedRevision: 6, fileId,
+        projectId: id, expectedRevision: 6, operationId, fileId,
         title: "Sketch", mimeType: "image/png", collectionKey: "design",
       },
     }), ops);
