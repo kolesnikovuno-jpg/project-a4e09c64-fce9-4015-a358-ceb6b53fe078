@@ -145,11 +145,11 @@ const assertAuthor = (actor: EggActor): void => {
 };
 const assertSphere = (value: unknown): value is SphereId =>
   typeof value === "string" && Object.prototype.hasOwnProperty.call(EGG_SPHERES, value);
-const idOf = (seq: number): string => "egg-" + seq;
+const idOf = (kind: "event" | "task" | "finding" | "decision", seq: number): string => kind + "-" + seq;
 const pushEvent = (project: EggProject, event: Omit<EggEvent, "id">): EggProject => ({
   ...project,
   nextSequence: project.nextSequence + 1,
-  events: [...project.events, { ...event, id: idOf(project.nextSequence) }],
+  events: [...project.events, { ...event, id: idOf("event", project.nextSequence) }],
 });
 
 export const createEggProject = (params: { id: string; seed: string; at: string }): EggProject => {
@@ -177,7 +177,7 @@ export const routeQuestion = (project: EggProject, params: {
   const question = required(params.question, "Sphere question");
   const at = required(params.at, "Timestamp");
   const task: EggTask = {
-    id: idOf(project.nextSequence), from: params.from, sphere: params.to,
+    id: idOf("task", project.nextSequence), from: params.from, sphere: params.to,
     question, initiatedBy: params.actor, openedAt: at,
     level: project.level, iteration: project.iteration,
     status: "question", findings: [], decisions: [],
@@ -223,7 +223,7 @@ export const returnFinding = (project: EggProject, params: {
   if (!Array.isArray(sourceRefs) || !sourceRefs.every((s) => typeof s === "string" && s.trim()))
     throw new EggEngineError("Invalid source references");
   const finding: EggFinding = {
-    id: idOf(project.nextSequence), taskId: task.id,
+    id: idOf("finding", project.nextSequence), taskId: task.id,
     text: required(params.text, "Finding"), evidence: params.evidence,
     sourceRefs: [...sourceRefs], submittedBy: params.actor,
     submittedAt: required(params.at, "Timestamp"),
@@ -252,7 +252,7 @@ export const decideFinding = (project: EggProject, params: {
     throw new EggEngineError("Unknown decision");
   const finding = task.findings[task.findings.length - 1];
   const decision: EggDecision = {
-    id: idOf(project.nextSequence), taskId: task.id, findingId: finding.id,
+    id: idOf("decision", project.nextSequence), taskId: task.id, findingId: finding.id,
     outcome: params.outcome, reason: required(params.reason, "Reason"),
     decidedAt: required(params.at, "Timestamp"),
   };
