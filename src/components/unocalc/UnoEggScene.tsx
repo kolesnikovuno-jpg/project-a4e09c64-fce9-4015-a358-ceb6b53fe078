@@ -315,7 +315,6 @@ const UnoEggScene = ({ locale }: Props) => {
     try { return window.localStorage.getItem(IDEA_STORAGE_KEY) ?? ""; }
     catch { return ""; }
   });
-  const [ideaSaveStatus, setIdeaSaveStatus] = useState<"idle" | "saved" | "error" | "empty">("idle");
   const [ideaCycle, setIdeaCycle] = useState<IdeaCycle | null>(restoreIdeaCycle);
   const [designLoop, setDesignLoop] = useState<DesignLoop | null>(restoreDesignLoop);
   const [maturity, setMaturity] = useState(restoreEggMaturity);
@@ -395,6 +394,7 @@ const UnoEggScene = ({ locale }: Props) => {
     axis: "Idea → five stages → Matter", guide: "Violet and red mark the permanent poles",
   };
   const currentStage = EGG_STAGES[maturity.stage - 1];
+  const hasSketch = sketches.length > 0 || !!designLoop?.submissions.length;
   // Every sphere can be inspected at any time. Only the actual Design
   // workspace is gated by an idea; creating a sketch remains a later step.
   const canActivateNode = (_node: InteractiveNode) => true;
@@ -627,22 +627,6 @@ const UnoEggScene = ({ locale }: Props) => {
       stageNodes: eggFormationStageNodes(orientation),
     };
   }, [orientation]);
-
-  const saveIdea = () => {
-    if (!hasIdea) {
-      setIdeaSaveStatus("empty");
-      return;
-    }
-    try {
-      window.localStorage.setItem(IDEA_STORAGE_KEY, ideaDraft);
-      setIdeaSaveStatus("saved");
-    } catch {
-      setIdeaSaveStatus("error");
-    }
-    // Saving the idea is the transition to Design, not a dead end.
-    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
-    openDesignWorkspace();
-  };
 
   const onPointerDown = (event: PointerEvent<SVGSVGElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
@@ -916,10 +900,10 @@ const UnoEggScene = ({ locale }: Props) => {
                   cx={node.x}
                   cy={node.y}
                   r={NODE_CONTOUR.radius}
-                  fill={`url(#unocalc-${nodeType === "idea" ? "idea" : "matter"}-pole-light)`}
-                  stroke={EGG_POLES[nodeType === "idea" ? "idea" : "matter"].color}
-                  strokeWidth={active ? 1.5 : NODE_CONTOUR.width}
-                  strokeOpacity={active ? 1 : .92}
+                  fill={active ? "hsl(var(--primary) / 0.15)" : "none"}
+                  stroke={active ? "hsl(var(--primary))" : signalColor(nodeType ?? "idea")}
+                  strokeWidth={NODE_CONTOUR.width}
+                  strokeOpacity={active ? NODE_CONTOUR.activeOpacity : NODE_CONTOUR.idleOpacity}
                   vectorEffect="non-scaling-stroke"
                   pointerEvents="none"
                 />
@@ -1093,7 +1077,7 @@ const UnoEggScene = ({ locale }: Props) => {
                   {locale === "ru" ? "Открыть рабочее пространство" : locale === "uk" ? "Відкрити робочий простір" : "Open workspace"}
                 </button>
               )}
-              {node === "design" && hasIdea && (
+              {node === "design" && hasIdea && ideaCycle?.phase !== "forwarded" && (
                 <button
                   type="button"
                   onClick={openDesignWorkspace}
@@ -1207,7 +1191,7 @@ const UnoEggScene = ({ locale }: Props) => {
         </div>,
         document.body
       )}
-      {selectedNodes.includes("design") && hasIdea && (
+      {selectedNodes.includes("design") && hasIdea && ideaCycle?.phase !== "forwarded" && (
         <section
           ref={designWorkspace}
           data-testid="unocalc-design-workspace"
