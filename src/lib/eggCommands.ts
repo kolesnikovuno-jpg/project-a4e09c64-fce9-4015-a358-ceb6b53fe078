@@ -9,7 +9,7 @@ import {
   decideFinding, nextIteration, readCore, readSphereStates, returnFinding,
   routeQuestion, setLevel, startSphereWork,
   type EggProject, type EggActor,
-} from "./eggEngine";
+} from "./eggEngine.js";
 
 const identifier = z.string().min(1).max(100);
 const valueText = z.string().trim().min(1).max(10000);
