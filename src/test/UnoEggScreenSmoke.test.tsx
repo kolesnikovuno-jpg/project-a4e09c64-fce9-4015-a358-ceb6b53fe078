@@ -15,9 +15,9 @@ describe("Egg screen smoke test", () => {
     expect(screen.getByTestId("unocalc-author-source")).toBeTruthy();
     expect(screen.getByTestId("unocalc-axis-stages")).toBeTruthy();
     expect(screen.getAllByTestId("unocalc-pole-sphere")).toHaveLength(2);
-    expect(screen.getByTestId("unocalc-axis-stage-5").getAttribute("data-state")).toBe("current");
-    expect(screen.getByTestId("unocalc-axis-stage-4").getAttribute("data-state")).toBe("future");
-    expect(screen.getByTestId("unocalc-maturity-readout").textContent).toContain("Стадия 05 / 05 · Замысел");
+    expect(screen.getByTestId("unocalc-axis-stage-1").getAttribute("data-state")).toBe("current");
+    expect(screen.getByTestId("unocalc-axis-stage-5").getAttribute("data-state")).toBe("future");
+    expect(screen.getByTestId("unocalc-maturity-readout").textContent).toContain("Стадия 01 / 05 · Замысел");
     expect(screen.queryByTestId("unocalc-core-matryoshka")).toBeNull();
   });
 
@@ -28,9 +28,9 @@ describe("Egg screen smoke test", () => {
     expect(screen.getByTestId("unocalc-cycle-seed")).toBeTruthy();
     expect(screen.getByTestId("unocalc-author-stage-controls")).toBeTruthy();
     expect(screen.getByTestId("unocalc-cycle-set-seed").textContent).toContain("Идею");
-    fireEvent.click(screen.getByTestId("unocalc-maturity-select-4"));
-    expect(screen.getByTestId("unocalc-maturity-status").textContent).toContain("Стадия 04 / 05 · Концепт");
-    expect(screen.getByTestId("unocalc-axis-stage-5").getAttribute("data-state")).toBe("completed");
-    expect(screen.getByTestId("unocalc-axis-stage-4").getAttribute("data-state")).toBe("current");
+    fireEvent.click(screen.getByTestId("unocalc-maturity-select-2"));
+    expect(screen.getByTestId("unocalc-maturity-status").textContent).toContain("Стадия 02 / 05 · Концепт");
+    expect(screen.getByTestId("unocalc-axis-stage-1").getAttribute("data-state")).toBe("completed");
+    expect(screen.getByTestId("unocalc-axis-stage-2").getAttribute("data-state")).toBe("current");
   });
 });
