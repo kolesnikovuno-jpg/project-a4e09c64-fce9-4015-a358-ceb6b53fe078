@@ -9,7 +9,7 @@
 import { createHash } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createClient } from "@supabase/supabase-js";
-import { getEggStorageConfig } from "./_eggStorageConfig.js";
+import { getEggStorageConfig } from "../src/server/eggStorageConfig.js";
 import type { EggProject } from "../src/lib/eggEngine.js";
 import { eggMutationSchema, mayAccessEgg, readEggState, runEggMutation, type EggPermission } from "../src/lib/eggCommands.js";
 import { processEggMcp } from "../src/lib/eggMcpProtocol.js";
