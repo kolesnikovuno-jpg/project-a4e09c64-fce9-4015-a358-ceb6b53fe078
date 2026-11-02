@@ -5,6 +5,7 @@
  * This module does not provide authentication. See api/egg.ts.
  */
 import { z } from "zod";
+import { confirmDriveReference, registerDriveReference } from "./eggArtifacts.js";
 import {
   decideFinding, nextIteration, readCore, readSphereStates, returnFinding,
   routeQuestion, setLevel, startSphereWork,
@@ -50,13 +51,28 @@ export const eggMutationSchema = z.discriminatedUnion("command", [
   shared.extend({
     command: z.literal("next_iteration"), reason: valueText,
   }).strict(),
+  shared.extend({
+    command: z.literal("register_file"),
+    provider: z.literal("google_drive"),
+    fileId: z.string().regex(/^[a-zA-Z0-9_-]{10,256}$/),
+    title: z.string().trim().min(1).max(250),
+    mimeType: z.string().trim().min(1).max(140),
+    collectionKey: z.string().trim().min(1).max(80),
+    webUrl: z.string().url().max(1200).optional(),
+    taskId: identifier.optional(),
+  }).strict(),
+  shared.extend({
+    command: z.literal("confirm_file"),
+    artifactId: identifier,
+  }).strict(),
 ]);
 export type EggMutation = z.infer<typeof eggMutationSchema>;
 export type EggPermission = { kind: "author"; ownerId: string } |
   { kind: "agent"; projectId: string; ownerId: string; scopes: Array<"read" | "contribute"> };
 
 export const isAuthorCommand = (command: EggMutation["command"]) =>
-  command === "decide" || command === "set_level" || command === "next_iteration";
+  command === "decide" || command === "set_level" || command === "next_iteration" ||
+  command === "confirm_file";
 
 export const mayAccessEgg = (
   identity: EggPermission, projectId: string, ownerId: string, action: "read" | "contribute" | "author",
@@ -99,6 +115,16 @@ export const runEggMutation = (
       });
     case "next_iteration":
       return nextIteration(state, { actor, at, reason: mutation.reason });
+    case "register_file":
+      return registerDriveReference(state, {
+        actor, at, fileId: mutation.fileId, title: mutation.title,
+        mimeType: mutation.mimeType, collectionKey: mutation.collectionKey,
+        webUrl: mutation.webUrl, taskId: mutation.taskId,
+      });
+    case "confirm_file":
+      return confirmDriveReference(state, {
+        actor, at, artifactId: mutation.artifactId,
+      });
   }
 };
 
@@ -106,6 +132,7 @@ export const readEggState = (state: EggProject) => ({
   core: readCore(state),
   spheres: readSphereStates(state),
   tasks: state.tasks,
+  files: state.artifacts ?? [],
   events: state.events,
 });
 
