@@ -1071,54 +1071,10 @@ const UnoEggScene = ({ locale }: Props) => {
           />
         </svg>
       </div>
-      <div data-testid="unocalc-maturity-controls"
-           className="mx-auto mt-2 flex w-full max-w-[560px] flex-col items-center gap-2.5 px-3">
-        <p className="text-center text-[10px] font-light uppercase tracking-[0.12em] text-foreground/45">
-          {stageLabels.axis}
-        </p>
-        <p data-testid="unocalc-maturity-status"
-           className="text-center text-[12px] font-light tracking-[0.025em] text-foreground/80">
-          {stageLabels.stage} {String(maturity.stage).padStart(2, "0")} / 05 · {currentStage[locale]} · {stageLabels.iteration} {maturity.iteration}
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2" role="group"
-             aria-label={stageLabels.manual}>
-          <span title={EGG_POLES.idea[locale]} data-testid="unocalc-pole-idea-key"
-                className="flex h-7 w-4 items-center justify-center">
-            <span className="h-3 w-3 rounded-full" style={{backgroundColor: EGG_POLES.idea.color}} />
-          </span>
-          {EGG_STAGES.map((level) => {
-            const status = eggStageState(maturity, level.index);
-            const isCurrent = status === "current";
-            return <button key={level.index} type="button"
-              data-testid={`unocalc-maturity-select-${level.index}`}
-              data-state={status}
-              onClick={() => setMaturity((prev) => setEggStage(prev, level.index as EggStageNumber))}
-              title={`${level[locale]} · ${stageLabels[status]}`}
-              aria-label={`${stageLabels.stage} ${level.index}: ${level[locale]} · ${stageLabels[status]}`}
-              aria-pressed={isCurrent}
-              className={`flex h-11 w-11 items-center justify-center gap-1 rounded-full border text-[12px] font-light transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${isCurrent ? "border-foreground/55 bg-foreground/[0.045] text-foreground shadow-[0_0_0_2px_rgba(120,120,120,0.10)]" : status === "completed" ? "border-foreground/25 text-foreground/80 hover:border-foreground/55" : "border-foreground/10 text-foreground/40 hover:border-foreground/35"}`}>
-              <span className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: level.color, opacity: status === "future" ? 0.23 : 1,
-                      boxShadow: isCurrent ? `0 0 9px 2px ${level.color}55` : "none" }} />
-              {level.index}
-            </button>;
-          })}
-          <span title={EGG_POLES.matter[locale]} data-testid="unocalc-pole-matter-key"
-                className="flex h-7 w-4 items-center justify-center">
-            <span className="h-3 w-3 rounded-full" style={{backgroundColor: EGG_POLES.matter.color}} />
-          </span>
-          <button data-testid="unocalc-maturity-new-iteration" type="button"
-            onClick={() => setMaturity((prev) => nextEggIteration(prev))}
-            aria-label={stageLabels.newIteration}
-            title={stageLabels.newIteration}
-            className="flex h-11 min-w-11 items-center justify-center rounded-full border border-foreground/15 px-3 text-[11px] font-light text-foreground/65 hover:border-foreground/50">
-            +1
-          </button>
-        </div>
-        <p className="text-center text-[10px] font-light leading-relaxed text-foreground/45">
-          {stageLabels.manual}
-        </p>
-      </div>
+      <p data-testid="unocalc-maturity-readout"
+         className="mx-auto mt-2 px-3 text-center text-[12px] font-light tracking-[0.025em] text-foreground/65">
+        {stageLabels.stage} {String(maturity.stage).padStart(2, "0")} / 05 · {currentStage[locale]} · {stageLabels.iteration} {maturity.iteration}
+      </p>
       <p data-testid="unocalc-rotation-hint"
         className="mt-1 px-3 text-center text-[11px] font-light tracking-[0.025em] text-foreground/50">
         {copy.hint}
@@ -1146,53 +1102,8 @@ const UnoEggScene = ({ locale }: Props) => {
                   {workflowCopy.workOpen}
                 </button>
               )}
-              {node === "idea" && (
-                <form
-                  data-testid="unocalc-idea-editor"
-                  className="flex min-w-0 flex-col gap-3"
-                  onSubmit={(event) => { event.preventDefault(); saveIdea(); }}
-                >
-                  <label htmlFor="unocalc-idea-input" className="text-[11px] font-light tracking-[0.03em] text-foreground/65">
-                    {copy.ideaInputLabel}
-                  </label>
-                  <textarea
-                    id="unocalc-idea-input"
-                    data-testid="unocalc-idea-input"
-                    value={ideaDraft}
-                    onChange={(event) => {
-                      setIdeaDraft(event.target.value);
-                      setIdeaSaveStatus("idle");
-                    }}
-                    maxLength={2000}
-                    rows={5}
-                    placeholder={copy.ideaInputPlaceholder}
-                    className="w-full min-w-0 resize-y rounded-md border border-foreground/20 bg-transparent p-3 text-[13px] font-light leading-relaxed text-foreground/85 outline-none placeholder:text-foreground/35 focus-visible:border-primary"
-                  />
-                  <button
-                    type="submit"
-                    className="self-start rounded-md border border-foreground/25 px-4 py-2 text-[12px] font-light text-foreground/80 transition-colors hover:border-foreground/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                  >
-                    {copy.ideaSave}
-                  </button>
-                  <p role="status" className="text-[10px] font-light leading-relaxed text-foreground/50">
-                    {ideaSaveStatus === "saved" ? copy.ideaSaved : ideaSaveStatus === "error" ? copy.ideaSaveError : ideaSaveStatus === "empty" ? workflowCopy.ideaRequired : copy.ideaStorageNote}
-                  </p>
-                </form>
-              )}
             </div>
           ))}
-        </div>
-      )}
-      {hasIdea && (
-        <div className="mt-4 flex justify-center px-3">
-          <button
-            data-testid="unocalc-continue-design"
-            type="button"
-            onClick={saveIdea}
-            className="rounded-md border border-foreground/35 px-5 py-3 text-[13px] font-light tracking-[0.015em] text-foreground/85 transition-colors hover:border-foreground/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-          >
-            {workflowCopy.continueDesign}
-          </button>
         </div>
       )}
       {workspaceOpen && createPortal(
@@ -1228,11 +1139,64 @@ const UnoEggScene = ({ locale }: Props) => {
                 />
               ) : (workspaceNode === "author" || workspaceNode === "idea" || workspaceNode === "marketing" ||
                 workspaceNode === "legal" || workspaceNode === "design" || workspaceNode === "production") ? (
+                <div data-testid={workspaceNode === "author" ? "unocalc-author-page" : undefined}
+                     className="w-full space-y-6">
                 <UnoEggIdeaCyclePanel
                   locale={locale} node={workspaceNode} draft={ideaDraft} onDraft={setIdeaDraft}
                   cycle={ideaCycle} setCycle={setIdeaCycle} onSetSeed={placeSeedInCore}
                   onNavigate={openWorkspace}
                 />
+                  {workspaceNode === "author" && (
+          <div data-testid="unocalc-author-stage-controls"
+               className="flex w-full flex-col items-start gap-3 rounded-xl border border-foreground/15 p-4">
+            <p className="text-left text-[10px] font-light uppercase tracking-[0.12em] text-foreground/45">
+              {stageLabels.axis}
+            </p>
+            <p data-testid="unocalc-maturity-status"
+               className="text-left text-[12px] font-light tracking-[0.025em] text-foreground/80">
+              {stageLabels.stage} {String(maturity.stage).padStart(2, "0")} / 05 · {currentStage[locale]} · {stageLabels.iteration} {maturity.iteration}
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2" role="group"
+                 aria-label={stageLabels.manual}>
+              <span title={EGG_POLES.idea[locale]} data-testid="unocalc-pole-idea-key"
+                    className="flex h-7 w-4 items-center justify-center">
+                <span className="h-3 w-3 rounded-full" style={{backgroundColor: EGG_POLES.idea.color}} />
+              </span>
+              {EGG_STAGES.map((level) => {
+                const status = eggStageState(maturity, level.index);
+                const isCurrent = status === "current";
+                return <button key={level.index} type="button"
+                  data-testid={`unocalc-maturity-select-${level.index}`}
+                  data-state={status}
+                  onClick={() => setMaturity((prev) => setEggStage(prev, level.index as EggStageNumber))}
+                  title={`${level[locale]} · ${stageLabels[status]}`}
+                  aria-label={`${stageLabels.stage} ${level.index}: ${level[locale]} · ${stageLabels[status]}`}
+                  aria-pressed={isCurrent}
+                  className={`flex h-11 w-11 items-center justify-center gap-1 rounded-full border text-[12px] font-light transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${isCurrent ? "border-foreground/55 bg-foreground/[0.045] text-foreground shadow-[0_0_0_2px_rgba(120,120,120,0.10)]" : status === "completed" ? "border-foreground/25 text-foreground/80 hover:border-foreground/55" : "border-foreground/10 text-foreground/40 hover:border-foreground/35"}`}>
+                  <span className="h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: level.color, opacity: status === "future" ? 0.23 : 1,
+                          boxShadow: isCurrent ? `0 0 9px 2px ${level.color}55` : "none" }} />
+                  {level.index}
+                </button>;
+              })}
+              <span title={EGG_POLES.matter[locale]} data-testid="unocalc-pole-matter-key"
+                    className="flex h-7 w-4 items-center justify-center">
+                <span className="h-3 w-3 rounded-full" style={{backgroundColor: EGG_POLES.matter.color}} />
+              </span>
+              <button data-testid="unocalc-maturity-new-iteration" type="button"
+                onClick={() => setMaturity((prev) => nextEggIteration(prev))}
+                aria-label={stageLabels.newIteration}
+                title={stageLabels.newIteration}
+                className="flex h-11 min-w-11 items-center justify-center rounded-full border border-foreground/15 px-3 text-[11px] font-light text-foreground/65 hover:border-foreground/50">
+                +1
+              </button>
+            </div>
+            <p className="text-left text-[10px] font-light leading-relaxed text-foreground/45">
+              {stageLabels.manual}
+            </p>
+          </div>
+                  )}
+                </div>
               ) : (
                 <p className="max-w-[260px] text-[12px] font-light leading-[1.8] text-foreground/40">
                   {locale === "ru" ? "Пустое рабочее пространство. Проверяем открытие и закрытие панели." : locale === "uk" ? "Порожній робочий простір. Перевіряємо відкриття та закриття панелі." : "Empty workspace. Testing panel opening and closing."}
