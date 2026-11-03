@@ -7,7 +7,7 @@
 import { z } from "zod";
 import { confirmDriveReference, registerDriveReference } from "./eggArtifacts.js";
 import {
-  decideFinding, nextIteration, readCore, readSphereStates, returnFinding,
+  decideFinding, nextIteration, readCore, readSphereStates, returnFinding, recordAuthorSeed,
   routeQuestion, setLevel, startSphereWork,
   type EggProject, type EggActor,
 } from "./eggEngine.js";
@@ -23,6 +23,7 @@ const shared = z.object({
   expectedRevision: z.number().int().positive(),
 });
 export const eggMutationSchema = z.discriminatedUnion("command", [
+  shared.extend({ command: z.literal("set_seed"), seed: valueText }).strict(),
   shared.extend({
     command: z.literal("route"),
     from: source, to: sphere, question: valueText,
@@ -73,7 +74,7 @@ export type EggPermission = { kind: "author"; ownerId: string } |
   { kind: "agent"; projectId: string; ownerId: string; scopes: Array<"read" | "contribute"> };
 
 export const isAuthorCommand = (command: EggMutation["command"]) =>
-  command === "decide" || command === "set_level" || command === "next_iteration" ||
+  command === "set_seed" || command === "decide" || command === "set_level" || command === "next_iteration" ||
   command === "confirm_file";
 
 export const mayAccessEgg = (
@@ -95,6 +96,8 @@ export const runEggMutation = (
     throw new Error("Forbidden");
   }
   switch (mutation.command) {
+    case "set_seed":
+      return recordAuthorSeed(state, mutation.seed, at);
     case "route":
       return routeQuestion(state, {
         actor, from: mutation.from, to: mutation.to, question: mutation.question, at,
@@ -141,8 +144,9 @@ export const readEggState = (state: EggProject) => ({
 
 export const eggCreateSchema = z.object({
   command: z.literal("create"),
-  seed: valueText,
-}).strict();
+  title: z.string().trim().min(1).max(120).optional(),
+  seed: valueText.optional(),
+}).refine(value => Boolean(value.title || value.seed));
 
 export const eggIssueKeySchema = z.object({
   command: z.literal("issue_key"),
