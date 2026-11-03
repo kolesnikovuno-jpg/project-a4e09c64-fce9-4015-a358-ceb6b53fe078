@@ -496,7 +496,7 @@ const UnoEggScene = ({ locale, onSphereOpen }: Props) => {
   }, []);
 
   const openWorkspace = (node: EggHitNode) => {
-    onSphereOpen?.(node);
+    if (onSphereOpen && node !== "idea" && node !== "matter" && node !== "author") { onSphereOpen(node); return; }
     if (workspaceExitTimer.current !== null) {
       window.clearTimeout(workspaceExitTimer.current);
       workspaceExitTimer.current = null;
