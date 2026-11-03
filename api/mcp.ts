@@ -89,6 +89,13 @@ export default async function handler(req: Incoming, res: ServerResponse) {
   // MCP server-to-server only. Reject all Origin-bearing browser requests:
   // no CORS wildcard, no browser-visible service tokens.
   if (req.headers.origin) { send(res, 403, { error: "origin_not_permitted" }); return; }
+  if (req.method === "GET" && !req.headers.authorization) {
+    const origin = process.env.EGG_MCP_PUBLIC_ORIGIN?.trim();
+    if (origin) res.setHeader("WWW-Authenticate",
+      'Bearer resource_metadata="' + origin + '/.well-known/oauth-protected-resource"');
+    send(res, 401, { error: "authorization_required" });
+    return;
+  }
   if (req.method !== "POST") { send(res, 405, { error: "method_not_allowed" }); return; }
   const config = getEggStorageConfig(process.env);
   if (!config) { send(res, 503, { error: "egg_engine_not_configured" }); return; }
