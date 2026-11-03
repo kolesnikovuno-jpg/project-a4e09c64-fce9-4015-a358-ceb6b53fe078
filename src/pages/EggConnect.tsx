@@ -113,7 +113,7 @@ export default function EggConnect() {
         {user && projects?.length === 0 && <p className="mb-3 text-sm">В аккаунте пока нет серверных проектов EGG.</p>}
         {user && projects?.map(project => <div key={project.id} className="mb-3 rounded-lg border border-border p-3"><p className="text-sm font-medium">{project.title || project.seed || "Без названия"}</p><p className="mt-1 text-xs text-muted-foreground">Ревизия {project.revision} · Уровень {project.level} · Итерация {project.iteration} · Задач {project.tasks.length}</p><p className="mt-1 break-all font-mono text-xs text-muted-foreground">ID: {project.id}</p><Link to={"/egg?project=" + encodeURIComponent(project.id)} className="mt-2 inline-block rounded border border-border px-3 py-1 text-sm">Открыть проект</Link>{client && <EggProjectActions client={client} project={project} onDone={() => setRefreshProjects(value => value + 1)} />}</div>)}
         {user && <Link to={projects?.length ? "/egg?project=" + encodeURIComponent(projects![0].id) : "/egg"} className="mb-4 inline-block rounded border border-border px-4 py-2">Открыть Яйцо</Link>}
-        <p className="text-sm text-muted-foreground">Откройте существующий проект. Создание пустого проекта по одному названию будет добавлено после разделения названия и исходной идеи в EGG Engine.</p>
+        <p className="text-sm text-muted-foreground">Создайте проект по названию или откройте существующий. Исходную идею можно сформировать и утвердить позже.</p>
         <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer"
           className="mt-4 inline-block rounded bg-foreground px-4 py-2 text-background">Открыть ChatGPT</a>
       </section>
