@@ -43,6 +43,13 @@ export const eggMcpTools = [
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
   },
   {
+    name: "egg_propose_seed",
+    title: "Propose initial idea for Author review",
+    description: "Save a draft initial idea to an empty Egg project. This does not approve the idea or launch sphere tasks. Only the Author can approve it in EGG.",
+    inputSchema: { type: "object", properties: { projectId: { type: "string", format: "uuid" }, expectedRevision: { type: "integer", minimum: 1 }, seed: { type: "string", minLength: 1, maxLength: 10000 } }, required: ["projectId", "expectedRevision", "seed"], additionalProperties: false },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  },
+  {
     name: "egg_register_drive_file",
     title: "Register a Google Drive file",
     description: "After your Google Drive connector ACTUALLY returns a file ID, register only its reference in the Egg project. This does NOT upload the file or independently verify it. The Author reviews it separately. Read state first to obtain expectedRevision. Generate a stable operationId once for the file-save action, and reuse it on retries. On revision conflict, read the latest revision and retry with the SAME operationId.",
