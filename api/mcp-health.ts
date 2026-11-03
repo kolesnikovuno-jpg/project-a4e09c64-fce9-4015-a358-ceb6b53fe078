@@ -4,7 +4,7 @@ import { eggMcpTools, processEggMcp } from "../src/lib/eggMcpProtocol.js";
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   if (req.method !== "GET") { res.statusCode = 405; res.setHeader("Allow", "GET"); return res.end(); }
   const unavailable = async (): Promise<never> => { throw new Error("not_available"); };
-  const operations = { getState: unavailable, contributeSphere: unavailable, registerDriveFile: unavailable };
+  const operations = { getState: unavailable, contributeSphere: unavailable, registerDriveFile: unavailable, proposeSeed: unavailable };
   const init = await processEggMcp({ jsonrpc: "2.0", id: 1, method: "initialize" }, operations);
   const listed = await processEggMcp({ jsonrpc: "2.0", id: 2, method: "tools/list" }, operations);
   const version = (init.body as any)?.result?.protocolVersion;
