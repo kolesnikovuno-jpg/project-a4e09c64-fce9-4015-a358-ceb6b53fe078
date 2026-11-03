@@ -139,6 +139,28 @@ export default async function handler(req: Incoming, res: ServerResponse) {
         const row = await getProject(projectId, "read");
         return { ok: true, revision: row.revision, project: readEggState(row.document) };
       },
+      contributeSphere: async (args) => {
+        const row = await getProject(args.projectId, "contribute");
+        if (args.expectedRevision !== row.revision)
+          throw new ServiceError("revision_conflict", 409);
+        const parsed = eggMutationSchema.parse(args);
+        let next: EggProject;
+        try {
+          next = runEggMutation(row.document, parsed, agent, row.owner_id, new Date().toISOString());
+        } catch {
+          throw new ServiceError("invalid_state_transition", 400);
+        }
+        const { data, error } = await db.rpc("egg_engine_cas_update", {
+          p_project_id: row.id, p_owner_id: row.owner_id,
+          p_expected_revision: row.revision, p_document: next,
+        });
+        if (error) throw new ServiceError("database_unavailable", 503);
+        if (!Array.isArray(data) || data.length === 0)
+          throw new ServiceError("revision_conflict", 409);
+        return { ok: true, revision: data[0].new_revision,
+          project: readEggState(next),
+          note: "AI contribution recorded; Author review is required" };
+      },
       registerDriveFile: async (args) => {
         const row = await getProject(args.projectId, "contribute");
         const parsed = eggMutationSchema.parse({
