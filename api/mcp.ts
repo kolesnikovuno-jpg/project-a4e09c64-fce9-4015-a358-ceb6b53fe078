@@ -204,7 +204,7 @@ export default async function handler(req: Incoming, res: ServerResponse) {
         const existing = row.document.artifacts?.find(item => item.operationId === args.operationId);
         if (existing) {
           try {
-            const repeat = runEggMutation(row.document, parsed, agent, row.owner_id, new Date().toISOString());
+            const repeat = runEggMutation(row.document, parsed, agentFor(row.id), row.owner_id, new Date().toISOString());
             if (repeat !== row.document) throw new Error("Duplicate did not resolve");
           } catch {
             throw new ServiceError("invalid_state_transition", 400);
