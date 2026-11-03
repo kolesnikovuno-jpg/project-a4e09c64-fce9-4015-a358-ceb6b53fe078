@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import EggNewProject from "../components/egg/EggNewProject";
+import EggProjectActions from "../components/egg/EggProjectActions";
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 
 const EGG_MCP_URL = "https://project-a4e09c64-fce9-40-git-e8febd-kolesnikovuno-jpgs-projects.vercel.app/api/mcp";
@@ -11,7 +12,7 @@ export default function EggConnect() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
-  const [projects, setProjects] = useState<Array<{ id: string; revision: number; title: string; seed: string; level: number; iteration: number; tasks: Array<{id:string;sphere:string;status:string;findings:number}> }> | null>(null);
+  const [projects, setProjects] = useState<Array<{ id: string; revision: number; title: string; seed: string; archivedAt?: string | null; level: number; iteration: number; tasks: Array<{id:string;sphere:string;status:string;findings:number}> }> | null>(null);
   const [projectError, setProjectError] = useState("");
   useEffect(() => {
     if (!client || !user) { setProjects(null); return; }
