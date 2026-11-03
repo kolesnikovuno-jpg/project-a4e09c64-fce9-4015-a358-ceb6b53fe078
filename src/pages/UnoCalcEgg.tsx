@@ -38,10 +38,10 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
             </Link>
           </nav>
         </header>
-        {eggBrand && <EggServerState activeSphere={activeSphere} />}
         <section className="mt-3" aria-label={eggBrand ? "EGG — interactive project workspace" : "UNOcalc — egg geometry"}>
           <UnoEggScene locale={locale} onSphereOpen={eggBrand ? setActiveSphere : undefined} />
         </section>
+        {eggBrand && <EggServerState activeSphere={activeSphere} onSelectSphere={setActiveSphere} />}
       </main>
     </div>
   );
