@@ -6,6 +6,7 @@
  * can later be configured without touching the existing site's data.
  */
 export type EggStorageEnv = {
+  [key: string]: string | undefined;
   EGG_SUPABASE_URL?: string;
   EGG_SUPABASE_PUBLISHABLE_KEY?: string;
   EGG_SUPABASE_SECRET_KEY?: string;
