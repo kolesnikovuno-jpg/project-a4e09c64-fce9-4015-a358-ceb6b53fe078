@@ -57,7 +57,7 @@ export default function EggConnect() {
       email: email.trim(),
       options: { emailRedirectTo: window.location.origin + "/egg/connect" },
     });
-    setMessage(error ? "Не удалось отправить ссылку. Попробуйте позднее." : "Проверьте почту: ссылка для входа отправлена.");
+    setMessage(error ? (error.status === 429 || /rate limit|too many/i.test(error.message) ? "Превышен лимит отправки писем. Подождите перед повторной попыткой." : `Ошибка входа (${error.status ?? "неизвестно"}): ${error.message}`) : "Проверьте почту: ссылка для входа отправлена.");
     setBusy(false);
   }
   async function signOut() {
