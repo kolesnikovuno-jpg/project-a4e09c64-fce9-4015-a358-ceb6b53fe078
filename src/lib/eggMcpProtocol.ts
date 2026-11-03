@@ -1,7 +1,7 @@
 /**
  * Egg v0.5: small stateless MCP JSON-RPC adapter for external AI clients.
  * The protocol layer knows NOTHING about secrets, Drive files or databases.
- * It delegates two safe scoped operations to authenticated server handlers.
+ * It delegates three safe scoped operations to authenticated server handlers.
  *
  * The "register" tool only stores a Drive reference. It cannot upload files,
  * prove that an upload succeeded, confirm an Author's decision, or grant access.
@@ -21,6 +21,26 @@ export const eggMcpTools = [
       required: ["projectId"], additionalProperties: false,
     },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  {
+    name: "egg_contribute_sphere",
+    title: "Contribute to an Egg sphere",
+    description: "Submit a scoped AI question, start work, or return a finding for Author review. Cannot approve decisions or advance iterations. Read state to get expectedRevision and task IDs; retry after revision conflict only after rereading state.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        projectId: { type: "string", format: "uuid" },
+        expectedRevision: { type: "integer", minimum: 1 },
+        command: { type: "string", enum: ["route", "start", "return"] },
+        from: { type: "string", enum: ["idea", "marketing", "legal", "design", "production", "testDrive", "procurement", "commerce", "retail"] },
+        to: { type: "string", enum: ["marketing", "legal", "design", "production", "testDrive", "procurement", "commerce", "retail"] },
+        question: { type: "string" }, taskId: { type: "string" }, text: { type: "string" },
+        evidence: { type: "string", enum: ["observation", "hypothesis", "question"] },
+        sourceRefs: { type: "array", items: { type: "string" } },
+      },
+      required: ["projectId", "expectedRevision", "command"], additionalProperties: false,
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
   },
   {
     name: "egg_register_drive_file",
@@ -61,7 +81,14 @@ const registerParams = baseParams.extend({
   webUrl: z.string().url().max(1200).optional(),
 }).strict();
 
+const contributeParams = z.discriminatedUnion("command", [
+  baseParams.extend({ expectedRevision: z.number().int().positive(), command: z.literal("route"), from: z.enum(["idea", "marketing", "legal", "design", "production", "testDrive", "procurement", "commerce", "retail"]), to: z.enum(["marketing", "legal", "design", "production", "testDrive", "procurement", "commerce", "retail"]), question: z.string().trim().min(1).max(10000) }).strict(),
+  baseParams.extend({ expectedRevision: z.number().int().positive(), command: z.literal("start"), taskId: z.string().min(1).max(100) }).strict(),
+  baseParams.extend({ expectedRevision: z.number().int().positive(), command: z.literal("return"), taskId: z.string().min(1).max(100), text: z.string().trim().min(1).max(10000), evidence: z.enum(["observation", "hypothesis", "question"]), sourceRefs: z.array(z.string().min(1).max(600)).max(20).optional() }).strict(),
+]);
+
 export type EggMcpOperations = {
+  contributeSphere: (args: z.infer<typeof contributeParams>) => Promise<unknown>;
   getState: (projectId: string) => Promise<unknown>;
   registerDriveFile: (args: z.infer<typeof registerParams>) => Promise<unknown>;
 };
@@ -110,7 +137,7 @@ export const processEggMcp = async (
   }
   if (method !== "tools/call") return { status: 200, body: jsonError(id, -32601, "Method not found") };
   const invocation = z.object({
-    name: z.enum(["egg_get_project_state", "egg_register_drive_file"]),
+    name: z.enum(["egg_get_project_state", "egg_register_drive_file", "egg_contribute_sphere"]),
     arguments: z.unknown().optional(),
   }).strict().safeParse(params);
   if (!invocation.success) return { status: 200, body: jsonError(id, -32602, "Invalid tool call") };
@@ -118,13 +145,15 @@ export const processEggMcp = async (
   const { name, arguments: args } = invocation.data;
   const validation = name === "egg_get_project_state"
     ? baseParams.safeParse(args)
-    : registerParams.safeParse(args);
+    : name === "egg_contribute_sphere" ? contributeParams.safeParse(args) : registerParams.safeParse(args);
   if (!validation.success) return { status: 200, body: jsonError(id, -32602, "Invalid tool arguments") };
 
   try {
     const value = name === "egg_get_project_state"
       ? await operations.getState((validation.data as { projectId: string }).projectId)
-      : await operations.registerDriveFile(validation.data as z.infer<typeof registerParams>);
+      : name === "egg_contribute_sphere"
+        ? await operations.contributeSphere(validation.data as z.infer<typeof contributeParams>)
+        : await operations.registerDriveFile(validation.data as z.infer<typeof registerParams>);
     return { status: 200, body: response(id, toolResponse(value)) };
   } catch (error) {
     // Tool errors are tool results (not protocol failures). Avoid stack traces,
