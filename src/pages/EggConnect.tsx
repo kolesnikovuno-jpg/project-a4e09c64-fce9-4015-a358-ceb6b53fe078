@@ -15,6 +15,8 @@ export default function EggConnect() {
   const [projects, setProjects] = useState<Array<{ id: string; revision: number; title: string; seed: string; archivedAt?: string | null; level: number; iteration: number; tasks: Array<{id:string;sphere:string;status:string;findings:number}> }> | null>(null);
   const [projectError, setProjectError] = useState("");
   const [refreshProjects, setRefreshProjects] = useState(0);
+  const [memberships, setMemberships] = useState<Array<{project_id:string;role:string;spheres:string[]}>>([]);
+  const [inviteFeedback, setInviteFeedback] = useState("");
   useEffect(() => {
     if (!client || !user) { setProjects(null); return; }
     let active = true;
@@ -53,6 +55,40 @@ export default function EggConnect() {
     })();
     return () => { active = false; unsubscribe?.(); };
   }, []);
+  useEffect(() => {
+    if (!client || !user) { setMemberships([]); return; }
+    let active = true;
+    client.from("egg_project_members").select("project_id,role,spheres").eq("user_id", user.id).then(({data,error}) => {
+      if (active && !error) setMemberships(data ?? []);
+    });
+    return () => { active = false; };
+  }, [client, user, refreshProjects]);
+
+  useEffect(() => {
+    if (!client || !user) return;
+    const match = /^#egg-invite=([a-zA-Z0-9_-]{43})$/.exec(window.location.hash);
+    if (!match) return;
+    let active = true;
+    (async () => {
+      try {
+        const {data} = await client.auth.getSession();
+        if (!data.session) throw new Error("session");
+        const response = await fetch("/api/egg-invitations", {method:"POST",
+          headers:{"Content-Type":"application/json", Authorization:"Bearer "+data.session.access_token},
+          body:JSON.stringify({action:"accept",token:match[1]})});
+        if (!response.ok) throw new Error("invitation");
+        const result = await response.json() as {projectId:string};
+        if (active) {
+          window.history.replaceState(null,"",window.location.pathname+window.location.search);
+          setInviteFeedback("Приглашение принято. Вы можете открыть совместную работу.");
+          setRefreshProjects(value=>value+1);
+          window.location.assign("/egg/collab?project="+encodeURIComponent(result.projectId));
+        }
+      } catch { if(active)setInviteFeedback("Не удалось принять приглашение. Проверьте, что вы вошли с указанной в приглашении почтой, и срок ссылки не истёк."); }
+    })();
+    return () => { active=false; };
+  }, [client,user]);
+
   async function sendLink() {
     if (!client || !email.trim()) return;
     setBusy(true);
@@ -94,6 +130,8 @@ export default function EggConnect() {
           </div>
         )}
         {message && <p role="status" className="mt-3 text-sm">{message}</p>}
+        {inviteFeedback && <p role="status" className="mt-3 text-sm">{inviteFeedback}</p>}
+        {!user && window.location.hash.startsWith("#egg-invite=") && <p className="mt-3 text-sm">Войдите с почтой, на которую вас пригласили. После входа приглашение будет принято автоматически.</p>}
       </section>
       <section className="mb-5 rounded-xl border border-border p-6">
         <h2 className="mb-3 text-xl font-medium">Подключение ChatGPT · настройка</h2>
@@ -104,6 +142,14 @@ export default function EggConnect() {
         }}>Скопировать адрес подключения</button>
         <p className="mt-3 text-sm text-muted-foreground">Автоматическая установка приложения в ChatGPT пока не поддерживается этим сайтом. Доступность пользовательских MCP-коннекторов зависит от настроек ChatGPT.</p>
       </section>
+      {user && memberships.length>0 && <section className="mb-5 rounded-xl border border-border p-6">
+        <h2 className="mb-3 text-xl font-medium">Проекты, куда меня пригласили</h2>
+        {memberships.map(member=><div key={member.project_id} className="mb-2 rounded border border-border p-3">
+          <p className="break-all text-xs text-muted-foreground">{member.project_id}</p>
+          <p className="my-2 text-sm">{member.role==="observer"?"Наблюдатель":"Участник"} · {member.spheres.join(", ")||"общий чат"}</p>
+          <Link to={"/egg/collab?project="+encodeURIComponent(member.project_id)} className="text-sm underline underline-offset-4">Открыть чаты</Link>
+        </div>)}
+      </section>}
       <section className="rounded-xl border border-border p-6">
         <h2 className="mb-3 text-xl font-medium">Мои проекты</h2>
         <p className="mb-3 text-sm text-muted-foreground">Проекты ниже читаются из EGG Engine. Визуальное Яйцо пока сохраняет изменения локально: эти два состояния ещё не синхронизированы.</p>
