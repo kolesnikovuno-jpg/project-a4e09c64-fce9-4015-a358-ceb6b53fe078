@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 
 const EGG_MCP_URL = "https://project-a4e09c64-fce9-40-git-e8febd-kolesnikovuno-jpgs-projects.vercel.app/api/mcp";
@@ -57,7 +58,7 @@ export default function EggConnect() {
         {user ? (
           <div className="space-y-3">
             <p>Вы вошли как <strong>{user.email ?? "пользователь EGG"}</strong>.</p>
-            <button className="rounded border border-border px-4 py-2" onClick={signOut}>Выйти</button>
+            <div className="flex flex-wrap gap-3"><Link to="/egg" className="rounded bg-foreground px-4 py-2 text-background">Открыть EGG</Link><button className="rounded border border-border px-4 py-2" onClick={signOut}>Выйти</button></div>
           </div>
         ) : (
           <div className="space-y-3">
@@ -84,7 +85,9 @@ export default function EggConnect() {
         <p className="mt-3 text-sm text-muted-foreground">Автоматическая установка приложения в ChatGPT пока не поддерживается этим сайтом. Доступность пользовательских MCP-коннекторов зависит от настроек ChatGPT.</p>
       </section>
       <section className="rounded-xl border border-border p-6">
-        <h2 className="mb-3 text-xl font-medium">3. Начните работу</h2>
+        <h2 className="mb-3 text-xl font-medium">3. Рабочее пространство EGG</h2>
+        <p className="mb-3 text-sm text-muted-foreground">Визуальное Яйцо уже доступно. Пока его локальные изменения в браузере не синхронизированы автоматически с проектами MCP — интеграция будет отдельным этапом.</p>
+        {user && <Link to="/egg" className="mb-4 inline-block rounded border border-border px-4 py-2">Открыть Яйцо</Link>}
         <p className="text-sm text-muted-foreground">После подключения выберите EGG в ChatGPT и попросите открыть проект. Сейчас для чтения нужен ID проекта; автоматический список ваших проектов появится в следующей версии.</p>
         <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer"
           className="mt-4 inline-block rounded bg-foreground px-4 py-2 text-background">Открыть ChatGPT</a>
