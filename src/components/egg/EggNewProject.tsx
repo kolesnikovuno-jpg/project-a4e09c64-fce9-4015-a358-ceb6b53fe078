@@ -25,7 +25,7 @@ export default function EggNewProject({ client }: { client: SupabaseClient }) {
       });
       const result = await response.json() as { projectId?: string; error?: string };
       if (!response.ok || !result.projectId) throw new Error(result.error || "Не удалось создать проект");
-      navigate("/egg?project=" + encodeURIComponent(result.projectId));
+      navigate("/egg?project=" + encodeURIComponent(result.projectId) + "&start=author");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Ошибка создания проекта");
     } finally {
