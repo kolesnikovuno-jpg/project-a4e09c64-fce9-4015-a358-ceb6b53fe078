@@ -143,11 +143,13 @@ export default async function handler(req: Incoming, res: ServerResponse) {
       try {
         claims = JSON.parse(Buffer.from(match[1].split(".")[1], "base64url").toString("utf8"));
       } catch { throw new ServiceError("invalid_oauth_token", 401); }
-      const audience = origin + "/api/mcp";
+      // Supabase OAuth access tokens normally have aud="authenticated", NOT
+      // the MCP resource URL. Supabase Auth verifies the token and issuer above.
+      // A client_id claim distinguishes OAuth grants from ordinary Author JWTs.
       const audiences = Array.isArray(claims.aud) ? claims.aud : [claims.aud];
       if (typeof claims.client_id !== "string" || !claims.client_id ||
-          !audiences.includes(audience))
-        throw new ServiceError("invalid_oauth_audience", 401);
+          !audiences.includes("authenticated"))
+        throw new ServiceError("invalid_oauth_token_claims", 401);
       oauthIdentity = true;
       agent = { kind: "agent", projectId: "", ownerId: userData.user.id,
         scopes: ["read", "contribute"] };
