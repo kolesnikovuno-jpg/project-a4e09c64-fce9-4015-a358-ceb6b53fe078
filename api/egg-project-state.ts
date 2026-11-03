@@ -2,7 +2,8 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createClient } from "@supabase/supabase-js";
 import { getEggStorageConfig } from "../src/server/eggStorageConfig.js";
-import { readEggState, type EggProject } from "../src/lib/eggEngine.js";
+import type { EggProject } from "../src/lib/eggEngine.js";
+import { readEggState } from "../src/lib/eggCommands.js";
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   res.setHeader("Cache-Control", "private, no-store");
