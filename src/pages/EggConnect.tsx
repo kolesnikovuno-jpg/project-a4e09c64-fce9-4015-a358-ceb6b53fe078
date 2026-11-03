@@ -14,6 +14,7 @@ export default function EggConnect() {
   const [busy, setBusy] = useState(false);
   const [projects, setProjects] = useState<Array<{ id: string; revision: number; title: string; seed: string; archivedAt?: string | null; level: number; iteration: number; tasks: Array<{id:string;sphere:string;status:string;findings:number}> }> | null>(null);
   const [projectError, setProjectError] = useState("");
+  const [refreshProjects, setRefreshProjects] = useState(0);
   useEffect(() => {
     if (!client || !user) { setProjects(null); return; }
     let active = true;
@@ -28,7 +29,7 @@ export default function EggConnect() {
       } catch { if (active) setProjectError("Не удалось загрузить проекты. Повторите вход или обновите страницу."); }
     })();
     return () => { active = false; };
-  }, [client, user]);
+  }, [client, user, refreshProjects]);
   useEffect(() => {
     let active = true;
     let unsubscribe: (() => void) | undefined;
