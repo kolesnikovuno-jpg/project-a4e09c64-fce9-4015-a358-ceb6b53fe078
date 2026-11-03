@@ -24,9 +24,9 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       .order("updated_at", { ascending: false }).limit(30);
     if (error) { res.statusCode = 503; res.end(JSON.stringify({ error: "database_unavailable" })); return; }
     const projects = (data ?? []).map(row => {
-      const doc = row.document as { title?: string; seed?: { text?: string }; level?: number; iteration?: number; tasks?: Array<{ id: string; sphere: string; status: string; findings?: unknown[] }> };
+      const doc = row.document as { title?: string; archivedAt?: string; seed?: { text?: string }; level?: number; iteration?: number; tasks?: Array<{ id: string; sphere: string; status: string; findings?: unknown[] }> };
       return { id: row.id, revision: row.revision, updatedAt: row.updated_at,
-        title: doc?.title ?? doc?.seed?.text ?? "", seed: doc?.seed?.text ?? "", level: doc?.level ?? 1, iteration: doc?.iteration ?? 1,
+        title: doc?.title ?? doc?.seed?.text ?? "", archivedAt: doc?.archivedAt ?? null, seed: doc?.seed?.text ?? "", level: doc?.level ?? 1, iteration: doc?.iteration ?? 1,
         tasks: (doc?.tasks ?? []).map(task => ({ id: task.id, sphere: task.sphere, status: task.status, findings: task.findings?.length ?? 0 })) };
     });
     res.setHeader("Content-Type", "application/json; charset=utf-8");
