@@ -139,6 +139,8 @@ export const runEggMutation = (
 
 export const readEggState = (state: EggProject) => ({
   core: readCore(state),
+  title: state.title ?? state.seed.text,
+  seedProposal: state.seedProposal ?? null,
   spheres: readSphereStates(state),
   tasks: state.tasks,
   files: state.artifacts ?? [],
