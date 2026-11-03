@@ -27,7 +27,17 @@ export default function EggOAuthConsent() {
         if (!session.session) { setMessage("Войдите в Яйцо, чтобы разрешить доступ ChatGPT."); return; }
         const result = await auth.auth.oauth.getAuthorizationDetails(id);
         if (result.error) throw result.error;
-        if (active) { setDetails(result.data); setMessage(""); }
+        if (!active) return;
+        if (result.data && "redirect_url" in result.data) {
+          window.location.assign(result.data.redirect_url);
+          return;
+        }
+        if (result.data && "authorization_id" in result.data) {
+          setDetails(result.data);
+          setMessage("");
+          return;
+        }
+        throw new Error("Unknown OAuth authorization response");
       } catch { if (active) setMessage("Не удалось загрузить запрос. Проверьте настройки OAuth в Supabase."); }
     })();
     return () => { active = false; };
