@@ -7,7 +7,7 @@
 import { z } from "zod";
 import { confirmDriveReference, registerDriveReference } from "./eggArtifacts.js";
 import {
-  decideFinding, nextIteration, readCore, readSphereStates, returnFinding, recordAuthorSeed,
+  decideFinding, nextIteration, readCore, readSphereStates, returnFinding, recordAuthorSeed, proposeEggSeed,
   routeQuestion, setLevel, startSphereWork,
   type EggProject, type EggActor,
 } from "./eggEngine.js";
@@ -24,6 +24,7 @@ const shared = z.object({
 });
 export const eggMutationSchema = z.discriminatedUnion("command", [
   shared.extend({ command: z.literal("set_seed"), seed: valueText }).strict(),
+  shared.extend({ command: z.literal("propose_seed"), seed: valueText }).strict(),
   shared.extend({
     command: z.literal("route"),
     from: source, to: sphere, question: valueText,
@@ -96,6 +97,8 @@ export const runEggMutation = (
     throw new Error("Forbidden");
   }
   switch (mutation.command) {
+    case "propose_seed":
+      return proposeEggSeed(state, mutation.seed, at);
     case "set_seed":
       return recordAuthorSeed(state, mutation.seed, at);
     case "route":
