@@ -94,32 +94,64 @@ export default async function handler(req: Incoming, res: ServerResponse) {
   if (!config) { send(res, 503, { error: "egg_engine_not_configured" }); return; }
   const authHeader = req.headers.authorization;
   const match = typeof authHeader === "string"
-    ? /^Bearer\s+(egg_v1_[a-zA-Z0-9_-]+)$/i.exec(authHeader) : null;
-  if (!match) { send(res, 401, { error: "project_access_key_required" }); return; }
+    ? /^Bearer\\s+(\\S+)$/i.exec(authHeader) : null;
+  const origin = process.env.EGG_MCP_PUBLIC_ORIGIN?.trim();
+  const challenge = origin
+    ? 'Bearer resource_metadata="' + origin + '/.well-known/oauth-protected-resource"'
+    : "Bearer";
+  if (!match) {
+    res.setHeader("WWW-Authenticate", challenge);
+    send(res, 401, { error: "authorization_required" }); return;
+  }
 
   try {
     const db = createClient<McpDb>(config.url, config.serviceKey, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     });
-    const keyHash = createHash("sha256").update(match[1]).digest("hex");
-    const { data: keyData, error: keyError } = await db.from("egg_engine_access_keys")
-      .select("project_id,owner_id,scopes,expires_at,revoked_at")
-      .eq("key_hash", keyHash).maybeSingle();
-    if (keyError) throw new ServiceError("database_unavailable", 503);
-    const key = keyData as KeyRow | null;
-    if (!key || key.revoked_at || !Number.isFinite(Date.parse(key.expires_at)) ||
-        Date.parse(key.expires_at) <= Date.now())
-      throw new ServiceError("invalid_or_expired_key", 401);
-    if (!Array.isArray(key.scopes) || !key.scopes.every(v => v === "read" || v === "contribute"))
-      throw new ServiceError("invalid_key_scopes", 401);
-    const agent: EggPermission = {
-      kind: "agent", projectId: key.project_id, ownerId: key.owner_id, scopes: key.scopes,
-    };
+    let agent: EggPermission;
+    let oauthIdentity = false;
+    if (match[1].startsWith("egg_v1_")) {
+      const keyHash = createHash("sha256").update(match[1]).digest("hex");
+      const { data: keyData, error: keyError } = await db.from("egg_engine_access_keys")
+        .select("project_id,owner_id,scopes,expires_at,revoked_at")
+        .eq("key_hash", keyHash).maybeSingle();
+      if (keyError) throw new ServiceError("database_unavailable", 503);
+      const key = keyData as KeyRow | null;
+      if (!key || key.revoked_at || !Number.isFinite(Date.parse(key.expires_at)) ||
+          Date.parse(key.expires_at) <= Date.now())
+        throw new ServiceError("invalid_or_expired_key", 401);
+      if (!Array.isArray(key.scopes) || !key.scopes.every(v => v === "read" || v === "contribute"))
+        throw new ServiceError("invalid_key_scopes", 401);
+      agent = { kind: "agent", projectId: key.project_id, ownerId: key.owner_id, scopes: key.scopes };
+    } else {
+      // OAuth access tokens are validated by Supabase Auth, not trusted by decoding alone.
+      // Require OAuth client_id and a resource-bound audience; reject ordinary Author JWTs.
+      if (!origin) throw new ServiceError("oauth_not_configured", 503);
+      const auth = createClient(config.url, config.publishableKey, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+      });
+      const { data: userData, error: userError } = await auth.auth.getUser(match[1]);
+      if (userError || !userData.user?.id) throw new ServiceError("invalid_oauth_token", 401);
+      let claims: { client_id?: unknown; aud?: unknown };
+      try {
+        claims = JSON.parse(Buffer.from(match[1].split(".")[1], "base64url").toString("utf8"));
+      } catch { throw new ServiceError("invalid_oauth_token", 401); }
+      const audience = origin + "/api/mcp";
+      const audiences = Array.isArray(claims.aud) ? claims.aud : [claims.aud];
+      if (typeof claims.client_id !== "string" || !claims.client_id ||
+          !audiences.includes(audience))
+        throw new ServiceError("invalid_oauth_audience", 401);
+      oauthIdentity = true;
+      agent = { kind: "agent", projectId: "", ownerId: userData.user.id,
+        scopes: ["read", "contribute"] };
+    }
+    const agentFor = (projectId: string): EggPermission =>
+      oauthIdentity ? { ...agent, projectId } : agent;
     // Reject read-only token when called with write operation; no way to
     // authenticate as Author on MCP endpoint, even with a genuine user JWT.
     const getProject = async (projectId: string, action: "read" | "contribute"): Promise<ProjectRow> => {
       if (!uuid(projectId)) throw new ServiceError("invalid_project_id", 400);
-      if (projectId !== agent.projectId)
+      if (!oauthIdentity && projectId !== agent.projectId)
         throw new ServiceError("forbidden", 403);
       const { data, error } = await db.from("egg_engine_projects")
         .select("id,owner_id,document,revision")
@@ -128,7 +160,7 @@ export default async function handler(req: Incoming, res: ServerResponse) {
       const row = data as ProjectRow | null;
       if (!row) throw new ServiceError("project_not_found", 404);
       if (row.owner_id !== agent.ownerId ||
-          !mayAccessEgg(agent, row.id, row.owner_id, action))
+          !mayAccessEgg(agentFor(row.id), row.id, row.owner_id, action))
         throw new ServiceError("forbidden", 403);
       if (!row.document || row.document.schema !== "egg.engine/0.1" ||
           row.document.id !== projectId) throw new ServiceError("operation_failed", 409);
@@ -146,7 +178,7 @@ export default async function handler(req: Incoming, res: ServerResponse) {
         const parsed = eggMutationSchema.parse(args);
         let next: EggProject;
         try {
-          next = runEggMutation(row.document, parsed, agent, row.owner_id, new Date().toISOString());
+          next = runEggMutation(row.document, parsed, agentFor(row.id), row.owner_id, new Date().toISOString());
         } catch {
           throw new ServiceError("invalid_state_transition", 400);
         }
