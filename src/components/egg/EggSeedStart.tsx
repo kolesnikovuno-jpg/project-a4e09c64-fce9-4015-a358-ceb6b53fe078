@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-export default function EggSeedStart({ projectId, revision, onSaved }: { projectId: string; revision: number; onSaved: () => void }) {
-  const [seed, setSeed] = useState("");
+export default function EggSeedStart({ projectId, revision, proposal, onSaved }: { projectId: string; revision: number; proposal?: string; onSaved: () => void }) {
+  const [seed, setSeed] = useState(proposal ?? "");
+  useEffect(() => { if (proposal) setSeed(proposal); }, [proposal]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   async function approve() {
