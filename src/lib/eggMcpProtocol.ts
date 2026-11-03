@@ -88,6 +88,8 @@ const registerParams = baseParams.extend({
   webUrl: z.string().url().max(1200).optional(),
 }).strict();
 
+const proposalParams = baseParams.extend({ expectedRevision: z.number().int().positive(), seed: z.string().trim().min(1).max(10000) }).strict();
+
 const contributeParams = z.discriminatedUnion("command", [
   baseParams.extend({ expectedRevision: z.number().int().positive(), command: z.literal("route"), from: z.enum(["idea", "marketing", "legal", "design", "production", "testDrive", "procurement", "commerce", "retail"]), to: z.enum(["marketing", "legal", "design", "production", "testDrive", "procurement", "commerce", "retail"]), question: z.string().trim().min(1).max(10000) }).strict(),
   baseParams.extend({ expectedRevision: z.number().int().positive(), command: z.literal("start"), taskId: z.string().min(1).max(100) }).strict(),
@@ -97,6 +99,7 @@ const contributeParams = z.discriminatedUnion("command", [
 export type EggMcpOperations = {
   contributeSphere: (args: z.infer<typeof contributeParams>) => Promise<unknown>;
   getState: (projectId: string) => Promise<unknown>;
+  proposeSeed: (args: z.infer<typeof proposalParams>) => Promise<unknown>;
   registerDriveFile: (args: z.infer<typeof registerParams>) => Promise<unknown>;
 };
 
