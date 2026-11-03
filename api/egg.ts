@@ -194,6 +194,23 @@ export default async function handler(req: Request, res: Response) {
 
     if (req.method === "GET") {
       const url = new URL(req.url || "/", "https://local.invalid");
+      if (url.searchParams.get("list") === "1") {
+        if (identity.kind !== "author") throw new RequestFailure(403, "author_required");
+        const { data, error } = await db.from("egg_engine_projects")
+          .select("id,revision,document,updated_at")
+          .eq("owner_id", identity.ownerId)
+          .order("updated_at", { ascending: false }).limit(50);
+        if (error) throw new RequestFailure(503, "database_unavailable");
+        respond(res, 200, {
+          ok: true,
+          projects: (data ?? []).map(item => ({
+            projectId: item.id, revision: item.revision,
+            seed: item.document?.seed?.text ?? "",
+            updatedAt: item.updated_at,
+          })),
+        });
+        return;
+      }
       const projectId = url.searchParams.get("projectId") || "";
       const format = url.searchParams.get("format") || "state";
       if (format !== "state" && format !== "manifest")
