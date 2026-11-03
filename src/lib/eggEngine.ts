@@ -126,6 +126,7 @@ export type EggEvent = {
 export type EggProject = {
   schema: "egg.engine/0.1";
   id: string;
+  title?: string;
   seed: { text: string; createdAt: string; source: "author" };
   level: EggLevel;
   iteration: number;
@@ -157,16 +158,25 @@ const pushEvent = (project: EggProject, event: Omit<EggEvent, "id">): EggProject
   events: [...project.events, { ...event, id: idOf("event", project.nextSequence) }],
 });
 
-export const createEggProject = (params: { id: string; seed: string; at: string }): EggProject => {
+export const createEggProject = (params: { id: string; seed?: string; title?: string; at: string }): EggProject => {
   const id = required(params.id, "Project ID");
-  const seed = required(params.seed, "Author seed");
+  const seed = params.seed?.trim() ?? "";
+  const title = params.title?.trim() || seed;
+  if (!title) throw new EggEngineError("Project title is required");
   const at = required(params.at, "Timestamp");
   const project: EggProject = {
-    schema: "egg.engine/0.1", id,
+    schema: "egg.engine/0.1", id, title,
     seed: { text: seed, source: "author", createdAt: at },
     level: 1, iteration: 1, tasks: [], artifacts: [], events: [], nextSequence: 1,
   };
-  return pushEvent(project, { kind: "seed_recorded", actor: "author", at, detail: "Original author seed recorded" });
+  return seed ? pushEvent(project, { kind: "seed_recorded", actor: "author", at, detail: "Original author seed recorded" }) : project;
+};
+
+export const recordAuthorSeed = (project: EggProject, seed: string, at: string): EggProject => {
+  if (project.seed.text.trim()) throw new EggEngineError("Seed already exists; use a versioned revision instead");
+  if (project.tasks.length) throw new EggEngineError("Cannot set seed after sphere work begins");
+  const updated = { ...project, seed: { text: required(seed, "Author seed"), source: "author" as const, createdAt: at } };
+  return pushEvent(updated, { kind: "seed_recorded", actor: "author", at, detail: "Original author seed approved" });
 };
 
 export const canRoute = (from: EggEntry, to: SphereId, actor: EggActor): boolean => {
@@ -178,6 +188,7 @@ export const canRoute = (from: EggEntry, to: SphereId, actor: EggActor): boolean
 export const routeQuestion = (project: EggProject, params: {
   actor: EggActor; from: EggEntry; to: SphereId; question: string; at: string;
 }): EggProject => {
+  if (!project.seed.text.trim()) throw new EggEngineError("Author seed must be approved before routing");
   if (!canRoute(params.from, params.to, params.actor)) throw new EggEngineError("Unpermitted sphere route");
   const question = required(params.question, "Sphere question");
   const at = required(params.at, "Timestamp");
