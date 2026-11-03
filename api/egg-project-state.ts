@@ -3,7 +3,6 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { createClient } from "@supabase/supabase-js";
 import { getEggStorageConfig } from "../src/server/eggStorageConfig.js";
 import type { EggProject } from "../src/lib/eggEngine.js";
-import { readEggState } from "../src/lib/eggCommands.js";
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   res.setHeader("Cache-Control", "private, no-store");
@@ -31,6 +30,6 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const document = data.document as EggProject;
     if (document.schema !== "egg.engine/0.1" || document.id !== data.id) { fail(409, "invalid_document"); return; }
     res.statusCode = 200;
-    res.end(JSON.stringify({ revision: data.revision, project: readEggState(document) }));
+    res.end(JSON.stringify({ revision: data.revision, project: document }));
   } catch { fail(500, "internal_error"); }
 }
