@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import EggAuthorDecision from "./EggAuthorDecision";
 import EggSeedStart from "./EggSeedStart";
 
-type Project = { id: string; title?: string; seed: { text: string }; level: number; iteration: number; tasks: Array<{ id: string; sphere: string; status: string; question: string; findings: Array<{ id: string; text: string; evidence: string }>; decisions: Array<{ id: string; outcome: string; reason: string }> }> };
+type Project = { id: string; title?: string; seedProposal?: { text: string }; seed: { text: string }; level: number; iteration: number; tasks: Array<{ id: string; sphere: string; status: string; question: string; findings: Array<{ id: string; text: string; evidence: string }>; decisions: Array<{ id: string; outcome: string; reason: string }> }> };
 
 export default function EggServerState({ activeSphere, onSelectSphere }: { activeSphere: string | null; onSelectSphere: (sphere: string | null) => void }) {
   const [params] = useSearchParams();
@@ -57,7 +57,7 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
     {project && <div className="space-y-2">
       <p className="text-sm font-medium">{project.title || "Проект EGG"}</p>
       <p className="text-sm text-foreground/70">{project.seed.text || "Исходный замысел ещё не сформирован"}</p>
-      {!project.seed.text.trim() && revision !== null && <EggSeedStart projectId={project.id} revision={revision} onSaved={() => setRefreshKey(value => value + 1)} />}
+      {!project.seed.text.trim() && revision !== null && <EggSeedStart projectId={project.id} revision={revision} proposal={project.seedProposal?.text} onSaved={() => setRefreshKey(value => value + 1)} />}
       <p className="text-xs text-foreground/65">Ревизия {revision} · Уровень {project.level} · Итерация {project.iteration}{lastUpdated ? " · Обновлено " + lastUpdated : ""}</p>
       <div className="flex flex-wrap gap-2 py-2"><button type="button" onClick={() => onSelectSphere(null)} className={`rounded-full border px-3 py-2 text-xs ${!isSphere ? "border-foreground/60" : "border-foreground/15"}`}>Обзор · {project.tasks.length} задач</button>{Object.entries(sphereNames).map(([key, label]) => { const tasks = project.tasks.filter(task => task.sphere === key); return <button type="button" key={key} onClick={() => onSelectSphere(key)} className={`rounded-full border px-3 py-2 text-xs ${activeSphere === key ? "border-foreground/60" : "border-foreground/15"}`}>{label}{tasks.length ? ` · ${tasks.length}` : ""}</button>; })}</div>
       {!isSphere && <p className="text-xs text-foreground/60">Ожидают решения Автора: {pending}. Выберите сферу на Яйце или в строке выше, чтобы открыть её результаты.</p>}
