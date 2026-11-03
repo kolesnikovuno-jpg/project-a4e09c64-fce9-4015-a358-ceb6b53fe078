@@ -27,6 +27,7 @@ import Semantic from "./pages/Semantic";
 import SemanticAbout from "./pages/SemanticAbout";
 import OperatorLogin from "./pages/OperatorLogin";
 import EggOAuthConsent from "./pages/EggOAuthConsent";
+import EggConnect from "./pages/EggConnect";
 import OperatorCases from "./pages/OperatorCases";
 import OperatorCaseDetail from "./pages/OperatorCaseDetail";
 import OperatorSubmissions from "./pages/OperatorSubmissions";
@@ -138,6 +139,7 @@ const App = () => (
           ))}
 
           <Route path="/oauth/consent" element={<EggOAuthConsent />} />
+          <Route path="/egg/connect" element={<EggConnect />} />
 
           {/* Internal operator workspace */}
           <Route path="/operator/login" element={<OperatorLogin />} />
