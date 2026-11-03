@@ -4,6 +4,14 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [
-    { "source": "/((?!api/|og/|assets/|.*\\..*).*)", "destination": "/index.html" }
-  ]
+    {
+      "source": "/((?!api/|og/|assets/|.*\\..*).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "prototype/design-brief-sketch-gates": false
+    }
+  }
 }
