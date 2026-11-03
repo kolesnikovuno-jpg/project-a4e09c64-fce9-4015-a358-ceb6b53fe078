@@ -182,7 +182,7 @@ export const proposeEggSeed = (project: EggProject, text: string, at: string): E
 export const recordAuthorSeed = (project: EggProject, seed: string, at: string): EggProject => {
   if (project.seed.text.trim()) throw new EggEngineError("Seed already exists; use a versioned revision instead");
   if (project.tasks.length) throw new EggEngineError("Cannot set seed after sphere work begins");
-  const updated = { ...project, seed: { text: required(seed, "Author seed"), source: "author" as const, createdAt: at } };
+  const updated = { ...project, seedProposal: undefined, seed: { text: required(seed, "Author seed"), source: "author" as const, createdAt: at } };
   return pushEvent(updated, { kind: "seed_recorded", actor: "author", at, detail: "Original author seed approved" });
 };
 
