@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import { useLocale } from "@/i18n/useLocale";
 import UnoEggScene from "@/components/unocalc/UnoEggScene";
@@ -8,6 +9,7 @@ const modelLabel = { ru: "Модель объекта", uk: "Модель об�
 
 const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
   const { locale, localePath } = useLocale();
+  const [activeSphere, setActiveSphere] = useState<string | null>(null);
   return (
     <div
       className="min-h-screen bg-background font-body text-foreground"
@@ -36,9 +38,9 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
             </Link>
           </nav>
         </header>
-        {eggBrand && <EggServerState />}
+        {eggBrand && <EggServerState activeSphere={activeSphere} />}
         <section className="mt-3" aria-label={eggBrand ? "EGG — interactive project workspace" : "UNOcalc — egg geometry"}>
-          <UnoEggScene locale={locale} />
+          <UnoEggScene locale={locale} onSphereOpen={eggBrand ? setActiveSphere : undefined} />
         </section>
       </main>
     </div>
