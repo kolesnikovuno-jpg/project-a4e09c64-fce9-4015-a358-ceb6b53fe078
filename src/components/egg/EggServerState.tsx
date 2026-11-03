@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
+import EggAuthorDecision from "./EggAuthorDecision";
 
 type Project = { id: string; seed: { text: string }; level: number; iteration: number; tasks: Array<{ id: string; sphere: string; status: string; question: string; findings: Array<{ id: string; text: string; evidence: string }>; decisions: Array<{ id: string; outcome: string; reason: string }> }> };
 
@@ -52,7 +53,7 @@ export default function EggServerState({ activeSphere }: { activeSphere: string 
     {project && <div className="space-y-2">
       <p className="text-sm">{project.seed.text}</p>
       <p className="text-xs text-foreground/65">Ревизия {revision} · Уровень {project.level} · Итерация {project.iteration}{lastUpdated ? " · Обновлено " + lastUpdated : ""}</p>
-      <div className="space-y-3">{project.tasks.filter(task => !activeSphere || activeSphere === "author" || activeSphere === "idea" || activeSphere === "matter" || task.sphere === activeSphere).map(task => <div key={task.id} className="rounded-lg border border-foreground/10 p-3"><p className="text-sm font-medium">{task.sphere} · {task.status}</p><p className="mt-1 text-xs text-foreground/70">{task.question}</p>{task.findings.map(finding => <p key={finding.id} className="mt-2 text-xs"><span className="text-foreground/50">{finding.evidence}:</span> {finding.text}</p>)}{task.decisions.length > 0 && <p className="mt-2 text-xs">Решений Автора: {task.decisions.length}</p>}{task.status === "returned" && task.decisions.length === 0 && <p className="mt-2 text-xs text-foreground/60">Ожидает рассмотрения Автором</p>}</div>)}</div>
+      <div className="space-y-3">{project.tasks.filter(task => !activeSphere || activeSphere === "author" || activeSphere === "idea" || activeSphere === "matter" || task.sphere === activeSphere).map(task => <div key={task.id} className="rounded-lg border border-foreground/10 p-3"><p className="text-sm font-medium">{task.sphere} · {task.status}</p><p className="mt-1 text-xs text-foreground/70">{task.question}</p>{task.findings.map(finding => <p key={finding.id} className="mt-2 text-xs"><span className="text-foreground/50">{finding.evidence}:</span> {finding.text}</p>)}{task.decisions.length > 0 && <p className="mt-2 text-xs">Решений Автора: {task.decisions.length}</p>}{task.status === "returned" && revision !== null && <EggAuthorDecision projectId={project.id} revision={revision} taskId={task.id} onSaved={() => setRefreshKey(value => value + 1)} />}</div>)}</div>
     </div>}
     {project && activeSphere && !["author", "idea", "matter"].includes(activeSphere) && !project.tasks.some(task => task.sphere === activeSphere) && <p className="mt-2 text-xs text-foreground/60">В этой сфере пока нет серверных задач.</p>}
     <p className="mt-3 text-xs text-foreground/55">Серверное состояние только для чтения. 3D-модель ниже пока работает с локальными данными браузера.</p>
