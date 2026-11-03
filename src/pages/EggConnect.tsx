@@ -67,7 +67,9 @@ export default function EggConnect() {
   useEffect(() => {
     if (!client || !user) return;
     const match = /^#egg-invite=([a-zA-Z0-9_-]{43})$/.exec(window.location.hash);
-    if (!match) return;
+    const saved = window.localStorage.getItem("egg.pendingInvite");
+    const token = match?.[1] ?? (saved && /^[a-zA-Z0-9_-]{43}$/.test(saved) ? saved : null);
+    if (!token) return;
     let active = true;
     (async () => {
       try {
@@ -75,10 +77,11 @@ export default function EggConnect() {
         if (!data.session) throw new Error("session");
         const response = await fetch("/api/egg-invitations", {method:"POST",
           headers:{"Content-Type":"application/json", Authorization:"Bearer "+data.session.access_token},
-          body:JSON.stringify({action:"accept",token:match[1]})});
+          body:JSON.stringify({action:"accept",token})});
         if (!response.ok) throw new Error("invitation");
         const result = await response.json() as {projectId:string};
         if (active) {
+          window.localStorage.removeItem("egg.pendingInvite");
           window.history.replaceState(null,"",window.location.pathname+window.location.search);
           setInviteFeedback("Приглашение принято. Вы можете открыть совместную работу.");
           setRefreshProjects(value=>value+1);
@@ -91,6 +94,8 @@ export default function EggConnect() {
 
   async function sendLink() {
     if (!client || !email.trim()) return;
+    const invited = /^#egg-invite=([a-zA-Z0-9_-]{43})$/.exec(window.location.hash);
+    if (invited) window.localStorage.setItem("egg.pendingInvite", invited[1]);
     setBusy(true);
     const { error } = await client.auth.signInWithOtp({
       email: email.trim(),
