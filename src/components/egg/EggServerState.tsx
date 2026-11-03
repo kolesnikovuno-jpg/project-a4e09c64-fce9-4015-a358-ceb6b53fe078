@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
 
-type Project = { id: string; seed: string; revision: number; level: number; iteration: number; tasks: Array<{ id: string; sphere: string; status: string; findings: number }> };
+type Project = { id: string; seed: { text: string }; level: number; iteration: number; tasks: Array<{ id: string; sphere: string; status: string; question: string; findings: Array<{ id: string; text: string; evidence: string }>; decisions: Array<{ id: string; outcome: string; reason: string }> }> };
 
 export default function EggServerState() {
   const [params] = useSearchParams();
   const id = params.get("project");
   const [project, setProject] = useState<Project | null>(null);
+  const [revision, setRevision] = useState<number | null>(null);
   const [status, setStatus] = useState("");
   useEffect(() => {
     if (!id) return;
@@ -20,11 +21,10 @@ export default function EggServerState() {
         const auth = createClient(config.supabaseUrl, config.publishableKey);
         const { data } = await auth.auth.getSession();
         if (!data.session?.access_token) { if (active) setStatus("Войдите в аккаунт EGG для просмотра проекта."); return; }
-        const response = await fetch("/api/egg-my-projects", { cache: "no-store", headers: { Authorization: "Bearer " + data.session.access_token } });
+        const response = await fetch("/api/egg-project-state?project=" + encodeURIComponent(id), { cache: "no-store", headers: { Authorization: "Bearer " + data.session.access_token } });
         if (!response.ok) throw new Error("projects");
-        const payload = await response.json() as { projects: Project[] };
-        const match = payload.projects.find(item => item.id === id);
-        if (active) { setProject(match ?? null); setStatus(match ? "" : "Проект не найден в вашем аккаунте."); }
+        const payload = await response.json() as { project: Project; revision: number };
+        if (active) { setProject(payload.project); setRevision(payload.revision); setStatus(""); }
       } catch { if (active) setStatus("Не удалось прочитать серверное состояние."); }
     })();
     return () => { active = false; };
@@ -38,10 +38,9 @@ export default function EggServerState() {
     {id && !project && !status && <p className="text-sm">Загружаем проект…</p>}
     {status && <p role="status" className="text-sm text-foreground/70">{status}</p>}
     {project && <div className="space-y-2">
-      <p className="text-sm">{project.seed}</p>
-      <p className="text-xs text-foreground/65">Ревизия {project.revision} · Уровень {project.level} · Итерация {project.iteration}</p>
-      <ul className="space-y-1 text-xs text-foreground/75">{project.tasks.map(task =>
-        <li key={task.id}>{task.sphere}: {task.status} · результатов {task.findings}</li>)}</ul>
+      <p className="text-sm">{project.seed.text}</p>
+      <p className="text-xs text-foreground/65">Ревизия {revision} · Уровень {project.level} · Итерация {project.iteration}</p>
+      <div className="space-y-3">{project.tasks.map(task => <div key={task.id} className="rounded-lg border border-foreground/10 p-3"><p className="text-sm font-medium">{task.sphere} · {task.status}</p><p className="mt-1 text-xs text-foreground/70">{task.question}</p>{task.findings.map(finding => <p key={finding.id} className="mt-2 text-xs"><span className="text-foreground/50">{finding.evidence}:</span> {finding.text}</p>)}{task.decisions.length > 0 && <p className="mt-2 text-xs">Решений Автора: {task.decisions.length}</p>}{task.status === "returned" && task.decisions.length === 0 && <p className="mt-2 text-xs text-foreground/60">Ожидает рассмотрения Автором</p>}</div>)}</div>
     </div>}
     <p className="mt-3 text-xs text-foreground/55">Серверное состояние только для чтения. 3D-модель ниже пока работает с локальными данными браузера.</p>
   </section>;
