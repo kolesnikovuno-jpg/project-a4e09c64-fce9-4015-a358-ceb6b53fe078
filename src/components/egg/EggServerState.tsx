@@ -47,7 +47,7 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
   const pending = project?.tasks.filter(task => task.status === "returned").length ?? 0;
   return <section className="mx-auto mb-5 mt-5 max-w-[760px] rounded-xl border border-foreground/15 p-4 sm:p-5" aria-label="Серверные результаты EGG">
     <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-      <h2 className="text-sm font-medium">EGG · {isSphere ? (sphereNames[activeSphere] ?? activeSphere) : "Серверный проект"}</h2>
+      <h2 className="text-sm font-medium">EGG · {isSphere ? (sphereNames[activeSphere ?? ""] ?? activeSphere) : "Серверный проект"}</h2>
       <div className="flex items-center gap-3"><button type="button" onClick={() => setRefreshKey(value => value + 1)} className="text-xs underline underline-offset-4">Обновить</button><Link to="/egg/connect" className="text-xs underline underline-offset-4">Мои проекты</Link></div>
     </div>
     {!id && <p className="text-sm text-foreground/70">Выберите проект в личном кабинете.</p>}
