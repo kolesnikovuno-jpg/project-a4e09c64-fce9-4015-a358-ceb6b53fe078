@@ -56,7 +56,7 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
           </nav>
         </header>
         <section className="mt-3" aria-label={eggBrand ? "EGG — interactive project workspace" : "UNOcalc — egg geometry"}>
-          <UnoEggScene locale={locale} onSphereOpen={eggBrand ? openSphere : undefined} />
+          {(!eggBrand || !panelOpen) && <UnoEggScene locale={locale} onSphereOpen={eggBrand ? openSphere : undefined} />}
         </section>
         {eggBrand && <div className="flex flex-wrap items-center justify-center gap-3 py-5">
           <button type="button" onClick={() => { setActiveSphere(null); setPanelOpen(true); }} className="rounded-full border border-foreground/30 px-5 py-3 text-sm text-foreground/80">{hasProject ? "Открыть проект и результаты сфер" : "Познакомиться с EGG"}</button>
