@@ -21,7 +21,7 @@ const send = (res: ServerResponse, status: number, value: unknown) => {
 export default async function handler(req: Request, res: ServerResponse) {
   res.setHeader("Allow", "POST");
   if (req.method !== "POST") return send(res, 405, { ok: false, error: "method_not_allowed" });
-  if (req.headers.origin) return send(res, 403, { ok: false, error: "browser_origin_not_supported" });
+  // Permit same-origin Author UI calls; cross-origin browser requests remain blocked.\n  if (req.headers.origin) {\n    let sameOrigin = false;\n    try {\n      const origin = new URL(req.headers.origin);\n      sameOrigin = origin.protocol === "https:" &&\n        origin.host === String(req.headers["x-forwarded-host"] || req.headers.host || "");\n    } catch { /* invalid origin */ }\n    if (!sameOrigin) return send(res, 403, { ok: false, error: "cross_origin_forbidden" });\n  }
   const config = getEggStorageConfig(process.env);
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!config || !apiKey) return send(res, 503, { ok: false, error: "ai_worker_not_configured" });
