@@ -2,8 +2,8 @@
  * Minimal browser → independent Egg API bridge. No Lovable / existing site
  * Supabase client, no service-role key in the browser, no silent sync.
  */
-import type { EggArtifact } from "./eggArtifacts";
-import type { EggProject } from "./eggEngine";
+import type { EggArtifact } from "./eggArtifacts.js";
+import type { EggProject } from "./eggEngine.js";
 
 export type EggPublicAuthConfig = {
   ok: true;
