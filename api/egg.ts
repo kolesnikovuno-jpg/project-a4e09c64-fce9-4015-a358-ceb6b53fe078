@@ -205,7 +205,7 @@ export default async function handler(req: Request, res: Response) {
           ok: true,
           projects: (data ?? []).map(item => ({
             projectId: item.id, revision: item.revision,
-            seed: item.document?.seed?.text ?? "",
+            seed: item.document?.seed?.text ?? "", title: item.document?.title ?? item.document?.seed?.text ?? "",
             updatedAt: item.updated_at,
           })),
         });
@@ -240,7 +240,7 @@ export default async function handler(req: Request, res: Response) {
     if (input.command === "create") {
       if (identity.kind !== "author") throw new RequestFailure(403, "author_required");
       const projectId = randomUUID();
-      const state = createEggProject({ id: projectId, seed: input.seed, at });
+      const state = createEggProject({ id: projectId, title: input.title, seed: input.seed, at });
       const { error } = await db.from("egg_engine_projects").insert({
         id: projectId, owner_id: identity.ownerId, document: state, revision: 1,
       });
