@@ -105,6 +105,7 @@ export default function EggConnect() {
       <section className="rounded-xl border border-border p-6">
         <h2 className="mb-3 text-xl font-medium">Мои проекты</h2>
         <p className="mb-3 text-sm text-muted-foreground">Проекты ниже читаются из EGG Engine. Визуальное Яйцо пока сохраняет изменения локально: эти два состояния ещё не синхронизированы.</p>
+        {user && client && <EggNewProject client={client} />}
         {user && projectError && <p role="status" className="mb-3 text-sm">{projectError}</p>}
         {user && projects === null && !projectError && <p className="mb-3 text-sm">Загружаем проекты…</p>}
         {user && projects?.length === 0 && <p className="mb-3 text-sm">В аккаунте пока нет серверных проектов EGG.</p>}
