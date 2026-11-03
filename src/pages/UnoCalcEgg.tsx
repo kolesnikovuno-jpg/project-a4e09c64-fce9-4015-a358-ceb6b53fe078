@@ -62,8 +62,8 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
           <button type="button" onClick={() => { setActiveSphere(null); setPanelOpen(true); }} className="rounded-full border border-foreground/30 px-5 py-3 text-sm text-foreground/80">{hasProject ? "Открыть проект и результаты сфер" : "Познакомиться с EGG"}</button>
           <span className="text-xs text-foreground/50">Выберите сферу на Яйце или откройте обзор</span>
         </div>}
-        {eggBrand && panelOpen && <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/35 p-0 sm:items-center sm:p-5" onMouseDown={event => { if (event.target === event.currentTarget) setPanelOpen(false); }}>
-          <div role="dialog" aria-modal="true" aria-label="Рабочая панель EGG" className="flex max-h-[94dvh] w-full max-w-[800px] flex-col overflow-hidden rounded-t-2xl border border-foreground/15 bg-background shadow-2xl sm:max-h-[88dvh] sm:rounded-2xl">
+        {eggBrand && panelOpen && <div className="fixed inset-0 z-[100] isolate flex items-end justify-center bg-background/95 p-0 backdrop-blur-md sm:items-center sm:p-5" onMouseDown={event => { if (event.target === event.currentTarget) setPanelOpen(false); }}>
+          <div role="dialog" aria-modal="true" aria-label="Рабочая панель EGG" className="relative z-10 flex max-h-[94dvh] w-full max-w-[800px] flex-col overflow-hidden rounded-t-2xl border border-foreground/20 bg-background shadow-2xl sm:max-h-[88dvh] sm:rounded-2xl">
             <div className="flex shrink-0 items-center justify-between border-b border-foreground/10 px-5 py-3">
               <span className="text-sm font-medium">EGG · Рабочая панель</span>
               <button type="button" autoFocus onClick={() => setPanelOpen(false)} aria-label="Закрыть панель" className="rounded-full border border-foreground/20 px-4 py-2 text-sm">Закрыть ×</button>
