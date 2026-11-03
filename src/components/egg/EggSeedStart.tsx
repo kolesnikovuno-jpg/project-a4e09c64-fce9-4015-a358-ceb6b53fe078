@@ -33,6 +33,8 @@ export default function EggSeedStart({ projectId, revision, proposal, onSaved }:
     <h3 className="font-medium">Начните со сферы Автора</h3>
     <p className="text-sm text-foreground/70">Проект создан. Сначала исследуйте замысел в ChatGPT, затем вставьте согласованную формулировку сюда. Утверждение исходной идеи запускает готовность проекта к работе сфер, но не запускает задачи автоматически.</p>
     <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" className="inline-block rounded-full border border-foreground/30 px-4 py-2 text-sm">Открыть ChatGPT</a>
+    {proposal && <p role="status" className="rounded border border-foreground/20 p-3 text-sm">ChatGPT передал предложение. Проверьте и при необходимости измените текст перед утверждением. Это пока не исходный замысел проекта.</p>}
+    <p className="break-all text-xs text-foreground/60">ID проекта для ChatGPT: {projectId}</p>
     <label htmlFor="egg-author-seed" className="block text-sm">Исходный замысел</label>
     <textarea id="egg-author-seed" rows={5} maxLength={10000} value={seed} onChange={event => setSeed(event.target.value)} placeholder="Сформулированная идея, наблюдение или гипотеза…" className="w-full rounded-lg border border-foreground/20 bg-background p-3 text-sm" />
     <button type="button" disabled={busy || !seed.trim()} onClick={approve} className="rounded-full bg-foreground px-4 py-2 text-sm text-background disabled:opacity-50">{busy ? "Сохраняем…" : "Утвердить исходный замысел"}</button>
