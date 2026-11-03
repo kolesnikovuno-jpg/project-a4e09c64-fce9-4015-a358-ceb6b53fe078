@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import { useLocale } from "@/i18n/useLocale";
 import UnoEggScene from "@/components/unocalc/UnoEggScene";
+import EggServerState from "@/components/egg/EggServerState";
 
 const modelLabel = { ru: "Модель объекта", uk: "Модель об’єкта", en: "Object model" };
 
@@ -35,6 +36,7 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
             </Link>
           </nav>
         </header>
+        {eggBrand && <EggServerState />}
         <section className="mt-3" aria-label={eggBrand ? "EGG — interactive project workspace" : "UNOcalc — egg geometry"}>
           <UnoEggScene locale={locale} />
         </section>
