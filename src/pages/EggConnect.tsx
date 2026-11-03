@@ -75,7 +75,7 @@ export default function EggConnect() {
         {user ? (
           <div className="space-y-3">
             <p>Вы вошли как <strong>{user.email ?? "пользователь EGG"}</strong>.</p>
-            <div className="flex flex-wrap gap-3"><Link to={projects.length ? "/egg?project=" + encodeURIComponent(projects[0].id) : "/egg"} className="rounded bg-foreground px-4 py-2 text-background">Открыть EGG</Link><button className="rounded border border-border px-4 py-2" onClick={signOut}>Выйти</button></div>
+            <div className="flex flex-wrap gap-3"><Link to={projects?.length ? "/egg?project=" + encodeURIComponent(projects![0].id) : "/egg"} className="rounded bg-foreground px-4 py-2 text-background">Открыть EGG</Link><button className="rounded border border-border px-4 py-2" onClick={signOut}>Выйти</button></div>
           </div>
         ) : (
           <div className="space-y-3">
@@ -108,7 +108,7 @@ export default function EggConnect() {
         {user && projects === null && !projectError && <p className="mb-3 text-sm">Загружаем проекты…</p>}
         {user && projects?.length === 0 && <p className="mb-3 text-sm">В аккаунте пока нет серверных проектов EGG.</p>}
         {user && projects?.map(project => <div key={project.id} className="mb-3 rounded-lg border border-border p-3"><p className="text-sm font-medium">{project.seed || "Без названия"}</p><p className="mt-1 text-xs text-muted-foreground">Ревизия {project.revision} · Уровень {project.level} · Итерация {project.iteration} · Задач {project.tasks.length}</p><p className="mt-1 break-all font-mono text-xs text-muted-foreground">ID: {project.id}</p><Link to={"/egg?project=" + encodeURIComponent(project.id)} className="mt-2 inline-block rounded border border-border px-3 py-1 text-sm">Открыть проект</Link></div>)}
-        {user && <Link to={projects.length ? "/egg?project=" + encodeURIComponent(projects[0].id) : "/egg"} className="mb-4 inline-block rounded border border-border px-4 py-2">Открыть Яйцо</Link>}
+        {user && <Link to={projects?.length ? "/egg?project=" + encodeURIComponent(projects![0].id) : "/egg"} className="mb-4 inline-block rounded border border-border px-4 py-2">Открыть Яйцо</Link>}
         <p className="text-sm text-muted-foreground">После подключения выберите EGG в ChatGPT и попросите открыть проект. Сейчас для чтения нужен ID проекта; автоматический список ваших проектов появится в следующей версии.</p>
         <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer"
           className="mt-4 inline-block rounded bg-foreground px-4 py-2 text-background">Открыть ChatGPT</a>
