@@ -225,7 +225,7 @@ export default async function handler(req: Incoming, res: ServerResponse) {
           throw new ServiceError("revision_conflict", 409);
         let next: EggProject;
         try {
-          next = runEggMutation(row.document, parsed, agent, row.owner_id, new Date().toISOString());
+          next = runEggMutation(row.document, parsed, agentFor(row.id), row.owner_id, new Date().toISOString());
         } catch {
           throw new ServiceError("invalid_state_transition", 400);
         }
