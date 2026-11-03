@@ -147,7 +147,7 @@ export const processEggMcp = async (
   }
   if (method !== "tools/call") return { status: 200, body: jsonError(id, -32601, "Method not found") };
   const invocation = z.object({
-    name: z.enum(["egg_get_project_state", "egg_register_drive_file", "egg_contribute_sphere"]),
+    name: z.enum(["egg_get_project_state", "egg_register_drive_file", "egg_contribute_sphere", "egg_propose_seed"]),
     arguments: z.unknown().optional(),
   }).passthrough().safeParse(params);
   if (!invocation.success) return { status: 200, body: jsonError(id, -32602, "Invalid tool call") };
@@ -155,7 +155,8 @@ export const processEggMcp = async (
   const { name, arguments: args } = invocation.data;
   const validation = name === "egg_get_project_state"
     ? baseParams.safeParse(args)
-    : name === "egg_contribute_sphere" ? contributeParams.safeParse(args) : registerParams.safeParse(args);
+    : name === "egg_contribute_sphere" ? contributeParams.safeParse(args)
+    : name === "egg_propose_seed" ? proposalParams.safeParse(args) : registerParams.safeParse(args);
   if (!validation.success) return { status: 200, body: jsonError(id, -32602, "Invalid tool arguments") };
 
   try {
@@ -163,7 +164,9 @@ export const processEggMcp = async (
       ? await operations.getState((validation.data as { projectId: string }).projectId)
       : name === "egg_contribute_sphere"
         ? await operations.contributeSphere(validation.data as z.infer<typeof contributeParams>)
-        : await operations.registerDriveFile(validation.data as z.infer<typeof registerParams>);
+        : name === "egg_propose_seed"
+          ? await operations.proposeSeed(validation.data as z.infer<typeof proposalParams>)
+          : await operations.registerDriveFile(validation.data as z.infer<typeof registerParams>);
     return { status: 200, body: response(id, toolResponse(value)) };
   } catch (error) {
     // Tool errors are tool results (not protocol failures). Avoid stack traces,
