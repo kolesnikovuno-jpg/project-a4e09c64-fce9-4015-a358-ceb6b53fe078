@@ -139,7 +139,7 @@ export const processEggMcp = async (
   const invocation = z.object({
     name: z.enum(["egg_get_project_state", "egg_register_drive_file", "egg_contribute_sphere"]),
     arguments: z.unknown().optional(),
-  }).strict().safeParse(params);
+  }).passthrough().safeParse(params);
   if (!invocation.success) return { status: 200, body: jsonError(id, -32602, "Invalid tool call") };
 
   const { name, arguments: args } = invocation.data;
