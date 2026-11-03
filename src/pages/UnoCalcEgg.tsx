@@ -15,6 +15,9 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
   const hasProject = Boolean(params.get("project"));
   const [activeSphere, setActiveSphere] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
+  useEffect(() => {
+    if (eggBrand && hasProject) { setActiveSphere("author"); setPanelOpen(true); }
+  }, [eggBrand, hasProject]);
   const openSphere = (sphere: string) => { setActiveSphere(sphere); setPanelOpen(true); };
   useEffect(() => {
     if (!panelOpen) return;
