@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import { useLocale } from "@/i18n/useLocale";
 import UnoEggScene from "@/components/unocalc/UnoEggScene";
@@ -10,6 +10,16 @@ const modelLabel = { ru: "Модель объекта", uk: "Модель об�
 const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
   const { locale, localePath } = useLocale();
   const [activeSphere, setActiveSphere] = useState<string | null>(null);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const openSphere = (sphere: string) => { setActiveSphere(sphere); setPanelOpen(true); };
+  useEffect(() => {
+    if (!panelOpen) return;
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setPanelOpen(false); };
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => { document.body.style.overflow = previous; window.removeEventListener("keydown", onKey); };
+  }, [panelOpen]);
   return (
     <div
       className="min-h-screen bg-background font-body text-foreground"
@@ -39,9 +49,23 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
           </nav>
         </header>
         <section className="mt-3" aria-label={eggBrand ? "EGG — interactive project workspace" : "UNOcalc — egg geometry"}>
-          <UnoEggScene locale={locale} onSphereOpen={eggBrand ? setActiveSphere : undefined} />
+          <UnoEggScene locale={locale} onSphereOpen={eggBrand ? openSphere : undefined} />
         </section>
-        {eggBrand && <EggServerState activeSphere={activeSphere} onSelectSphere={setActiveSphere} />}
+        {eggBrand && <div className="flex flex-wrap items-center justify-center gap-3 py-5">
+          <button type="button" onClick={() => { setActiveSphere(null); setPanelOpen(true); }} className="rounded-full border border-foreground/30 px-5 py-3 text-sm text-foreground/80">Открыть проект и результаты сфер</button>
+          <span className="text-xs text-foreground/50">Выберите сферу на Яйце или откройте обзор</span>
+        </div>}
+        {eggBrand && panelOpen && <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/35 p-0 sm:items-center sm:p-5" onMouseDown={event => { if (event.target === event.currentTarget) setPanelOpen(false); }}>
+          <div role="dialog" aria-modal="true" aria-label="Рабочая панель EGG" className="flex max-h-[94dvh] w-full max-w-[800px] flex-col overflow-hidden rounded-t-2xl border border-foreground/15 bg-background shadow-2xl sm:max-h-[88dvh] sm:rounded-2xl">
+            <div className="flex shrink-0 items-center justify-between border-b border-foreground/10 px-5 py-3">
+              <span className="text-sm font-medium">EGG · Рабочая панель</span>
+              <button type="button" autoFocus onClick={() => setPanelOpen(false)} aria-label="Закрыть панель" className="rounded-full border border-foreground/20 px-4 py-2 text-sm">Закрыть ×</button>
+            </div>
+            <div className="min-h-0 overflow-y-auto overscroll-contain px-3 pb-5 sm:px-5">
+              <EggServerState activeSphere={activeSphere} onSelectSphere={setActiveSphere} />
+            </div>
+          </div>
+        </div>}
       </main>
     </div>
   );
