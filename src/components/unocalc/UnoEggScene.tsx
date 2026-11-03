@@ -28,7 +28,7 @@ import {
 } from "@/lib/unocalcEgg3d";
 
 type Locale = "ru" | "uk" | "en";
-type Props = { locale: Locale };
+type Props = { locale: Locale; onSphereOpen?: (sphere: string) => void };
 type InteractiveNode = "retail" | "commerce" | "design" | "production" | "marketing" | "testDrive" | "procurement" | "legal" | "idea" | "matter";
 type EggHitNode = InteractiveNode | "author";
 type NodeDetail = { title: string; description: string; number: string; openLabel: string; closeLabel: string };
@@ -306,7 +306,7 @@ const NodeDescription = ({ node, detail }: { node: InteractiveNode; detail: Node
   );
 };
 
-const UnoEggScene = ({ locale }: Props) => {
+const UnoEggScene = ({ locale, onSphereOpen }: Props) => {
   const [orientation, setOrientation] = useState<EggOrientation>(INITIAL);
   const [selectedNodes, setSelectedNodes] = useState<InteractiveNode[]>([]);
   const [workspaceNode, setWorkspaceNode] = useState<EggHitNode | null>(null);
@@ -496,6 +496,7 @@ const UnoEggScene = ({ locale }: Props) => {
   }, []);
 
   const openWorkspace = (node: EggHitNode) => {
+    onSphereOpen?.(node);
     if (workspaceExitTimer.current !== null) {
       window.clearTimeout(workspaceExitTimer.current);
       workspaceExitTimer.current = null;
