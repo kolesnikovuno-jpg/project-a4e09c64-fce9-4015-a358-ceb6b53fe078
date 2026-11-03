@@ -10,6 +10,7 @@ import type { EggMaturity } from "@/lib/unocalcEggStages";
 import type { IdeaCycle } from "./UnoEggIdeaCyclePanel";
 import type { DesignLoop } from "@/lib/unocalcEggDesignLoop";
 import type { DesignBrief } from "@/lib/unocalcDesign";
+import { UnoEggServerPanel } from "./UnoEggServerPanel";
 
 type Locale = "ru" | "uk" | "en";
 type Props = {
@@ -269,6 +270,7 @@ export const UnoEggFilePanel = ({
           </label>
         )}
         <p className="text-[11px] font-light leading-relaxed text-foreground/55">{t.importNote}</p>
+        <UnoEggServerPanel locale={locale} seed={seed} localProject={project} />
         <p className="text-[11px] font-light leading-relaxed text-foreground/55">{t.limitation}</p>
         {storageError && <p role="alert" className="text-[11px] text-red-600">{t.saveError}</p>}
         {notice && <p data-testid="unocalc-file-notice" role="status"
