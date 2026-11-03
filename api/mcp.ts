@@ -94,7 +94,7 @@ export default async function handler(req: Incoming, res: ServerResponse) {
   if (!config) { send(res, 503, { error: "egg_engine_not_configured" }); return; }
   const authHeader = req.headers.authorization;
   const match = typeof authHeader === "string"
-    ? /^Bearer\\s+(\\S+)$/i.exec(authHeader) : null;
+    ? /^Bearer\s+(\S+)$/i.exec(authHeader) : null;
   const origin = process.env.EGG_MCP_PUBLIC_ORIGIN?.trim();
   const challenge = origin
     ? 'Bearer resource_metadata="' + origin + '/.well-known/oauth-protected-resource"'
