@@ -68,10 +68,10 @@ export default function EggConnect() {
   return (
     <main className="mx-auto max-w-2xl px-5 py-14 text-foreground">
       <p className="mb-2 text-sm text-muted-foreground">EGG Engine · подключение</p>
-      <h1 className="mb-3 text-3xl font-medium">Ваше Яйцо в ChatGPT</h1>
-      <p className="mb-8 text-muted-foreground">Сначала войдите в EGG, затем разрешите ChatGPT доступ к вашему аккаунту. Устанавливать сервер или вводить API-ключ не требуется.</p>
+      <h1 className="mb-3 text-3xl font-medium">Аккаунт EGG</h1>
+      <p className="mb-8 text-muted-foreground">Войдите один раз, выберите свой проект и откройте Яйцо. Подключение ChatGPT настраивается отдельно и не блокирует просмотр проектов.</p>
       <section className="mb-5 rounded-xl border border-border p-6">
-        <h2 className="mb-3 text-xl font-medium">1. Аккаунт EGG</h2>
+        <h2 className="mb-3 text-xl font-medium">Вход и профиль</h2>
         {user ? (
           <div className="space-y-3">
             <p>Вы вошли как <strong>{user.email ?? "пользователь EGG"}</strong>.</p>
@@ -93,7 +93,7 @@ export default function EggConnect() {
         {message && <p role="status" className="mt-3 text-sm">{message}</p>}
       </section>
       <section className="mb-5 rounded-xl border border-border p-6">
-        <h2 className="mb-3 text-xl font-medium">2. Подключите EGG к ChatGPT</h2>
+        <h2 className="mb-3 text-xl font-medium">Подключение ChatGPT · настройка</h2>
         <p className="mb-3 text-sm text-muted-foreground">Откройте настройки приложений ChatGPT и добавьте EGG как доступный MCP-коннектор, если такая возможность есть в вашем аккаунте. При запросе разрешения войдите в EGG и подтвердите доступ.</p>
         <div className="break-all rounded-lg bg-muted p-3 font-mono text-xs">{EGG_MCP_URL}</div>
         <button className="mt-3 rounded border border-border px-4 py-2" onClick={() => {
@@ -102,14 +102,14 @@ export default function EggConnect() {
         <p className="mt-3 text-sm text-muted-foreground">Автоматическая установка приложения в ChatGPT пока не поддерживается этим сайтом. Доступность пользовательских MCP-коннекторов зависит от настроек ChatGPT.</p>
       </section>
       <section className="rounded-xl border border-border p-6">
-        <h2 className="mb-3 text-xl font-medium">3. Рабочее пространство EGG</h2>
+        <h2 className="mb-3 text-xl font-medium">Мои проекты</h2>
         <p className="mb-3 text-sm text-muted-foreground">Проекты ниже читаются из EGG Engine. Визуальное Яйцо пока сохраняет изменения локально: эти два состояния ещё не синхронизированы.</p>
         {user && projectError && <p role="status" className="mb-3 text-sm">{projectError}</p>}
         {user && projects === null && !projectError && <p className="mb-3 text-sm">Загружаем проекты…</p>}
         {user && projects?.length === 0 && <p className="mb-3 text-sm">В аккаунте пока нет серверных проектов EGG.</p>}
         {user && projects?.map(project => <div key={project.id} className="mb-3 rounded-lg border border-border p-3"><p className="text-sm font-medium">{project.seed || "Без названия"}</p><p className="mt-1 text-xs text-muted-foreground">Ревизия {project.revision} · Уровень {project.level} · Итерация {project.iteration} · Задач {project.tasks.length}</p><p className="mt-1 break-all font-mono text-xs text-muted-foreground">ID: {project.id}</p><Link to={"/egg?project=" + encodeURIComponent(project.id)} className="mt-2 inline-block rounded border border-border px-3 py-1 text-sm">Открыть проект</Link></div>)}
         {user && <Link to={projects?.length ? "/egg?project=" + encodeURIComponent(projects![0].id) : "/egg"} className="mb-4 inline-block rounded border border-border px-4 py-2">Открыть Яйцо</Link>}
-        <p className="text-sm text-muted-foreground">После подключения выберите EGG в ChatGPT и попросите открыть проект. Сейчас для чтения нужен ID проекта; автоматический список ваших проектов появится в следующей версии.</p>
+        <p className="text-sm text-muted-foreground">Откройте существующий проект. Создание пустого проекта по одному названию будет добавлено после разделения названия и исходной идеи в EGG Engine.</p>
         <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer"
           className="mt-4 inline-block rounded bg-foreground px-4 py-2 text-background">Открыть ChatGPT</a>
       </section>
