@@ -26,6 +26,7 @@ import ClarityIntake from "./pages/ClarityIntake";
 import Semantic from "./pages/Semantic";
 import SemanticAbout from "./pages/SemanticAbout";
 import OperatorLogin from "./pages/OperatorLogin";
+import EggOAuthConsent from "./pages/EggOAuthConsent";
 import OperatorCases from "./pages/OperatorCases";
 import OperatorCaseDetail from "./pages/OperatorCaseDetail";
 import OperatorSubmissions from "./pages/OperatorSubmissions";
@@ -135,6 +136,8 @@ const App = () => (
           {LOCALES.map((loc) => (
             <Route key={`sta-${loc}`} path={`/${loc}/semantic-time/about`} element={<SemanticAbout />} />
           ))}
+
+          <Route path="/oauth/consent" element={<EggOAuthConsent />} />
 
           {/* Internal operator workspace */}
           <Route path="/operator/login" element={<OperatorLogin />} />
