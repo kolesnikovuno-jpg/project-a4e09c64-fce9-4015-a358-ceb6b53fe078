@@ -112,7 +112,7 @@ export type EggTask = {
   decisions: EggDecision[];
 };
 export type EggEventKind =
-  | "seed_recorded" | "question_routed" | "work_started"
+  | "seed_recorded" | "seed_proposed" | "question_routed" | "work_started"
   | "finding_returned" | "author_decision" | "level_changed" | "iteration_started"
   | "artifact_registered" | "artifact_confirmed";
 export type EggEvent = {
