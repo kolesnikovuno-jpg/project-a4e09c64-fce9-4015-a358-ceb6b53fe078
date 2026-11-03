@@ -286,7 +286,7 @@ export default async function handler(req: Request, res: Response) {
 
     const mutation = eggMutationSchema.parse(input);
     const project = await checkedProject(db, mutation.projectId, identity,
-      mutation.command === "decide" || mutation.command === "set_level" ||
+      mutation.command === "set_seed" || mutation.command === "decide" || mutation.command === "set_level" ||
       mutation.command === "next_iteration" || mutation.command === "confirm_file"
         ? "author" : "contribute");
     if (mutation.expectedRevision !== project.revision)
