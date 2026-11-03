@@ -5,7 +5,7 @@ import EggAuthorDecision from "./EggAuthorDecision";
 
 type Project = { id: string; seed: { text: string }; level: number; iteration: number; tasks: Array<{ id: string; sphere: string; status: string; question: string; findings: Array<{ id: string; text: string; evidence: string }>; decisions: Array<{ id: string; outcome: string; reason: string }> }> };
 
-export default function EggServerState({ activeSphere }: { activeSphere: string | null }) {
+export default function EggServerState({ activeSphere, onSelectSphere }: { activeSphere: string | null; onSelectSphere: (sphere: string | null) => void }) {
   const [params] = useSearchParams();
   const id = params.get("project");
   const [project, setProject] = useState<Project | null>(null);
@@ -42,9 +42,12 @@ export default function EggServerState({ activeSphere }: { activeSphere: string 
     const timer = window.setInterval(refresh, 30000);
     return () => { window.removeEventListener("focus", refresh); window.clearInterval(timer); };
   }, [id]);
-  return <section className="mb-5 rounded-xl border border-foreground/15 p-4">
+  const isSphere = activeSphere && !["author", "idea", "matter"].includes(activeSphere);
+  const sphereNames: Record<string, string> = { marketing: "Маркетинг", legal: "Право", design: "Дизайн", production: "Производство", testDrive: "Тестдрайв", procurement: "Комплектация", commerce: "Коммерция", retail: "Ритейл" };
+  const pending = project?.tasks.filter(task => task.status === "returned").length ?? 0;
+  return <section className="mx-auto mb-5 mt-5 max-w-[760px] rounded-xl border border-foreground/15 p-4 sm:p-5" aria-label="Серверные результаты EGG">
     <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-      <h2 className="text-sm font-medium">EGG Engine · {activeSphere && activeSphere !== "author" && activeSphere !== "idea" && activeSphere !== "matter" ? activeSphere : "проект"}</h2>
+      <h2 className="text-sm font-medium">EGG · {isSphere ? (sphereNames[activeSphere] ?? activeSphere) : "Серверный проект"}</h2>
       <div className="flex items-center gap-3"><button type="button" onClick={() => setRefreshKey(value => value + 1)} className="text-xs underline underline-offset-4">Обновить</button><Link to="/egg/connect" className="text-xs underline underline-offset-4">Мои проекты</Link></div>
     </div>
     {!id && <p className="text-sm text-foreground/70">Выберите проект в личном кабинете.</p>}
@@ -53,9 +56,11 @@ export default function EggServerState({ activeSphere }: { activeSphere: string 
     {project && <div className="space-y-2">
       <p className="text-sm">{project.seed.text}</p>
       <p className="text-xs text-foreground/65">Ревизия {revision} · Уровень {project.level} · Итерация {project.iteration}{lastUpdated ? " · Обновлено " + lastUpdated : ""}</p>
-      <div className="space-y-3">{project.tasks.filter(task => !activeSphere || activeSphere === "author" || activeSphere === "idea" || activeSphere === "matter" || task.sphere === activeSphere).map(task => <div key={task.id} className="rounded-lg border border-foreground/10 p-3"><p className="text-sm font-medium">{task.sphere} · {task.status}</p><p className="mt-1 text-xs text-foreground/70">{task.question}</p>{task.findings.map(finding => <p key={finding.id} className="mt-2 text-xs"><span className="text-foreground/50">{finding.evidence}:</span> {finding.text}</p>)}{task.decisions.length > 0 && <p className="mt-2 text-xs">Решений Автора: {task.decisions.length}</p>}{task.status === "returned" && revision !== null && <EggAuthorDecision projectId={project.id} revision={revision} taskId={task.id} onSaved={() => setRefreshKey(value => value + 1)} />}</div>)}</div>
+      <div className="flex flex-wrap gap-2 py-2"><button type="button" onClick={() => onSelectSphere(null)} className={`rounded-full border px-3 py-2 text-xs ${!isSphere ? "border-foreground/60" : "border-foreground/15"}`}>Обзор · {project.tasks.length} задач</button>{Object.entries(sphereNames).map(([key, label]) => { const tasks = project.tasks.filter(task => task.sphere === key); return <button type="button" key={key} onClick={() => onSelectSphere(key)} className={`rounded-full border px-3 py-2 text-xs ${activeSphere === key ? "border-foreground/60" : "border-foreground/15"}`}>{label}{tasks.length ? ` · ${tasks.length}` : ""}</button>; })}</div>
+      {!isSphere && <p className="text-xs text-foreground/60">Ожидают решения Автора: {pending}. Выберите сферу на Яйце или в строке выше, чтобы открыть её результаты.</p>}
+      <div className="space-y-3">{project.tasks.filter(task => isSphere && task.sphere === activeSphere).map(task => <div key={task.id} className="rounded-lg border border-foreground/10 p-3 sm:p-4"><p className="text-sm font-medium">{task.sphere} · {task.status}</p><p className="mt-1 text-xs text-foreground/70">{task.question}</p>{task.findings.map(finding => <p key={finding.id} className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed"><span className="text-foreground/50">{finding.evidence}:</span> {finding.text}</p>)}{task.decisions.length > 0 && <p className="mt-2 text-xs">Решений Автора: {task.decisions.length}</p>}{task.status === "returned" && revision !== null && <EggAuthorDecision projectId={project.id} revision={revision} taskId={task.id} onSaved={() => setRefreshKey(value => value + 1)} />}</div>)}</div>
     </div>}
     {project && activeSphere && !["author", "idea", "matter"].includes(activeSphere) && !project.tasks.some(task => task.sphere === activeSphere) && <p className="mt-2 text-xs text-foreground/60">В этой сфере пока нет серверных задач.</p>}
-    <p className="mt-3 text-xs text-foreground/55">Серверное состояние только для чтения. 3D-модель ниже пока работает с локальными данными браузера.</p>
+    <p className="mt-3 text-xs text-foreground/55">Серверные результаты синхронизируются с EGG Engine. Визуальная модель и локальные черновики пока сохраняются отдельно.</p>
   </section>;
 }
