@@ -10,6 +10,23 @@ export default function EggConnect() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [projects, setProjects] = useState<Array<{ id: string; revision: number; seed: string; level: number; iteration: number; tasks: Array<{id:string;sphere:string;status:string;findings:number}> }> | null>(null);
+  const [projectError, setProjectError] = useState("");
+  useEffect(() => {
+    if (!client || !user) { setProjects(null); return; }
+    let active = true;
+    (async () => {
+      try {
+        const { data } = await client.auth.getSession();
+        if (!data.session?.access_token) throw new Error("No session");
+        const response = await fetch("/api/egg-my-projects", { headers: { Authorization: "Bearer " + data.session.access_token }, cache: "no-store" });
+        if (!response.ok) throw new Error("Projects unavailable");
+        const result = await response.json() as { projects: NonNullable<typeof projects> };
+        if (active) { setProjects(result.projects); setProjectError(""); }
+      } catch { if (active) setProjectError("Не удалось загрузить проекты. Повторите вход или обновите страницу."); }
+    })();
+    return () => { active = false; };
+  }, [client, user]);
   useEffect(() => {
     let active = true;
     let unsubscribe: (() => void) | undefined;
@@ -86,7 +103,11 @@ export default function EggConnect() {
       </section>
       <section className="rounded-xl border border-border p-6">
         <h2 className="mb-3 text-xl font-medium">3. Рабочее пространство EGG</h2>
-        <p className="mb-3 text-sm text-muted-foreground">Визуальное Яйцо уже доступно. Пока его локальные изменения в браузере не синхронизированы автоматически с проектами MCP — интеграция будет отдельным этапом.</p>
+        <p className="mb-3 text-sm text-muted-foreground">Проекты ниже читаются из EGG Engine. Визуальное Яйцо пока сохраняет изменения локально: эти два состояния ещё не синхронизированы.</p>
+        {user && projectError && <p role="status" className="mb-3 text-sm">{projectError}</p>}
+        {user && projects === null && !projectError && <p className="mb-3 text-sm">Загружаем проекты…</p>}
+        {user && projects?.length === 0 && <p className="mb-3 text-sm">В аккаунте пока нет серверных проектов EGG.</p>}
+        {user && projects?.map(project => <div key={project.id} className="mb-3 rounded-lg border border-border p-3"><p className="text-sm font-medium">{project.seed || "Без названия"}</p><p className="mt-1 text-xs text-muted-foreground">Ревизия {project.revision} · Уровень {project.level} · Итерация {project.iteration} · Задач {project.tasks.length}</p><p className="mt-1 break-all font-mono text-xs text-muted-foreground">ID: {project.id}</p></div>)}
         {user && <Link to="/egg" className="mb-4 inline-block rounded border border-border px-4 py-2">Открыть Яйцо</Link>}
         <p className="text-sm text-muted-foreground">После подключения выберите EGG в ChatGPT и попросите открыть проект. Сейчас для чтения нужен ID проекта; автоматический список ваших проектов появится в следующей версии.</p>
         <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer"
