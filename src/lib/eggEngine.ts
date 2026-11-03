@@ -127,6 +127,7 @@ export type EggProject = {
   schema: "egg.engine/0.1";
   id: string;
   title?: string;
+  seedProposal?: { text: string; proposedAt: string; source: "ai" };
   seed: { text: string; createdAt: string; source: "author" };
   level: EggLevel;
   iteration: number;
