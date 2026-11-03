@@ -173,6 +173,12 @@ export const createEggProject = (params: { id: string; seed?: string; title?: st
   return seed ? pushEvent(project, { kind: "seed_recorded", actor: "author", at, detail: "Original author seed recorded" }) : project;
 };
 
+export const proposeEggSeed = (project: EggProject, text: string, at: string): EggProject => {
+  if (project.seed.text.trim() || project.tasks.length) throw new EggEngineError("Seed proposal not allowed after approval or work");
+  const next = { ...project, seedProposal: { text: required(text, "Proposed seed"), proposedAt: required(at, "Timestamp"), source: "ai" as const } };
+  return pushEvent(next, { kind: "seed_proposed", actor: "ai", at, detail: "Seed proposed for Author approval" });
+};
+
 export const recordAuthorSeed = (project: EggProject, seed: string, at: string): EggProject => {
   if (project.seed.text.trim()) throw new EggEngineError("Seed already exists; use a versioned revision instead");
   if (project.tasks.length) throw new EggEngineError("Cannot set seed after sphere work begins");
