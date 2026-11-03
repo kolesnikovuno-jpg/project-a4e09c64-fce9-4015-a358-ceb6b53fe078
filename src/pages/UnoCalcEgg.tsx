@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { EGG_SPHERES } from "@/lib/eggEngine";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import { useLocale } from "@/i18n/useLocale";
 import UnoEggScene from "@/components/unocalc/UnoEggScene";
@@ -9,6 +11,8 @@ const modelLabel = { ru: "Модель объекта", uk: "Модель об�
 
 const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
   const { locale, localePath } = useLocale();
+  const [params] = useSearchParams();
+  const hasProject = Boolean(params.get("project"));
   const [activeSphere, setActiveSphere] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const openSphere = (sphere: string) => { setActiveSphere(sphere); setPanelOpen(true); };
@@ -52,7 +56,7 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
           <UnoEggScene locale={locale} onSphereOpen={eggBrand ? openSphere : undefined} />
         </section>
         {eggBrand && <div className="flex flex-wrap items-center justify-center gap-3 py-5">
-          <button type="button" onClick={() => { setActiveSphere(null); setPanelOpen(true); }} className="rounded-full border border-foreground/30 px-5 py-3 text-sm text-foreground/80">Открыть проект и результаты сфер</button>
+          <button type="button" onClick={() => { setActiveSphere(null); setPanelOpen(true); }} className="rounded-full border border-foreground/30 px-5 py-3 text-sm text-foreground/80">{hasProject ? "Открыть проект и результаты сфер" : "Познакомиться с EGG"}</button>
           <span className="text-xs text-foreground/50">Выберите сферу на Яйце или откройте обзор</span>
         </div>}
         {eggBrand && panelOpen && <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/35 p-0 sm:items-center sm:p-5" onMouseDown={event => { if (event.target === event.currentTarget) setPanelOpen(false); }}>
@@ -62,7 +66,12 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
               <button type="button" autoFocus onClick={() => setPanelOpen(false)} aria-label="Закрыть панель" className="rounded-full border border-foreground/20 px-4 py-2 text-sm">Закрыть ×</button>
             </div>
             <div className="min-h-0 overflow-y-auto overscroll-contain px-3 pb-5 sm:px-5">
-              <EggServerState activeSphere={activeSphere} onSelectSphere={setActiveSphere} />
+              {!hasProject ? <div className="mx-auto max-w-[660px] space-y-4 py-6">
+  <h2 className="text-lg font-medium">{activeSphere && activeSphere in EGG_SPHERES ? activeSphere : activeSphere === "author" ? "Автор" : "Знакомство с EGG"}</h2>
+  <p className="text-sm leading-relaxed text-foreground/75">{activeSphere && activeSphere in EGG_SPHERES ? EGG_SPHERES[activeSphere as keyof typeof EGG_SPHERES].purpose : activeSphere === "author" ? "Автор формирует замысел, направляет работу сфер и утверждает решения." : "Вращайте Яйцо и выбирайте сферы. Здесь можно познакомиться с системой без регистрации."}</p>
+  {activeSphere && activeSphere in EGG_SPHERES && <p className="text-sm text-foreground/70">Вопрос сферы: {EGG_SPHERES[activeSphere as keyof typeof EGG_SPHERES].question}</p>}
+  <Link to="/egg/connect" className="inline-flex rounded-full bg-foreground px-5 py-3 text-sm text-background">Начать · Вход или регистрация</Link>
+</div> : <EggServerState activeSphere={activeSphere} onSelectSphere={setActiveSphere} />}
             </div>
           </div>
         </div>}
