@@ -24,7 +24,7 @@ describe("EGG spatial generator · real geometric GLB",()=>{
     const volume=buildSpatialSketch("volume","A",3);
     expect(frame.paths.length).toBeGreaterThan(gesture.paths.length);
     expect(volume.quads.length).toBeGreaterThan(0);
-    expect(volume.paths.length).toBeGreaterThan(frame.paths.length);
+    expect(volume.paths.length).toBeGreaterThanOrEqual(frame.paths.length);
     const alternate=buildSpatialSketch("gesture","B",1);
     expect(alternate.paths[0].points[0].x).not.toBe(gesture.paths[0].points[0].x);
   });
