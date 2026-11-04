@@ -36,7 +36,7 @@ export default function EggProjectOverview({ project, activeSphere, onSelectSphe
   const notStarted = Object.keys(EGG_SPHERES).filter(id => !project.tasks.some(t => t.sphere === id));
   let next = "Сформулируйте и утвердите исходную идею — только после этого запускаются сферы.";
   if (project.seed.text.trim()) {
-    if (!(project.concepts??[]).some(c=>c.status==="accepted")) next = "Сфера «Идея»: сформируйте концепцию из исходного замысла и представьте её Автору на утверждение.";
+    if (!(project.concepts??[]).some(c=>c.status==="accepted") && project.tasks.length===0) next = "Сфера «Идея»: сформируйте концепцию из исходного замысла и представьте её Автору на утверждение.";
     else if (waiting.length) next = "Есть результаты для решения Автора. Откройте соответствующую сферу и примите, верните на доработку или отклоните результат.";
     else if (revision.length) next = "Есть задачи на доработке. Уточнения должны вернуться к Автору на повторное рассмотрение.";
     else if (running.length) next = "Есть открытые задачи. Их результаты должны быть получены до следующего утверждения.";
