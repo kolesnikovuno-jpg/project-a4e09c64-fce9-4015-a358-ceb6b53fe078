@@ -12,6 +12,8 @@ export default function EggConnect() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [authIssue, setAuthIssue] = useState("");
   const [projects, setProjects] = useState<Array<{ id: string; revision: number; title: string; seed: string; archivedAt?: string | null; level: number; iteration: number; tasks: Array<{id:string;sphere:string;status:string;findings:number}> }> | null>(null);
   const [projectError, setProjectError] = useState("");
   const [refreshProjects, setRefreshProjects] = useState(0);
@@ -42,15 +44,28 @@ export default function EggConnect() {
         const config = await response.json() as { supabaseUrl: string; publishableKey: string };
         const auth = createClient(config.supabaseUrl, config.publishableKey);
         if (!active) return;
+        // The client detects Supabase's magic-link URL callback during initialization.
+        // The session must finish initializing before the sign-up form can appear.
+        const callbackParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+        const callbackError = callbackParams.get("error_code") || callbackParams.get("error");
+        if (callbackError && active) {
+          const expired = /expired|invalid|access_denied/i.test(callbackError);
+          setAuthIssue(expired
+            ? "Ссылка подтверждения недействительна или уже использована. Откройте страницу в Safari и запросите новую ссылку."
+            : "Не удалось завершить вход по ссылке. Код ошибки: " + callbackError.replace(/[^a-z_0-9-]/gi, "").slice(0, 50));
+        }
+        const { data: initialSession, error: sessionError } = await auth.auth.getSession();
+        if (!active) return;
         setClient(auth);
-        const { data } = await auth.auth.getUser();
-        if (active) setUser(data.user);
+        if (initialSession.session) setUser(initialSession.session.user);
+        if (sessionError) setAuthIssue("Не удалось сохранить сеанс EGG. Откройте ссылку в Safari в обычной вкладке.");
         const { data: listener } = auth.auth.onAuthStateChange((_event, session) => {
-          if (active) setUser(session?.user ?? null);
+          if (active) { setUser(session?.user ?? null); if (session) setAuthIssue(""); }
         });
         unsubscribe = () => listener.subscription.unsubscribe();
+        setCheckingSession(false);
       } catch {
-        if (active) setMessage("Сервис входа временно недоступен.");
+        if (active) { setMessage("Сервис входа временно недоступен."); setCheckingSession(false); }
       }
     })();
     return () => { active = false; unsubscribe?.(); };
@@ -116,7 +131,9 @@ export default function EggConnect() {
       <p className="mb-8 text-muted-foreground">Войдите один раз, выберите свой проект и откройте Яйцо. Подключение ChatGPT настраивается отдельно и не блокирует просмотр проектов.</p>
       <section className="mb-5 rounded-xl border border-border p-6">
         <h2 className="mb-3 text-xl font-medium">Вход и профиль</h2>
-        {user ? (
+        {checkingSession ? (
+          <p role="status" className="text-sm">Проверяем подтверждение входа…</p>
+        ) : user ? (
           <div className="space-y-3">
             <p>Вы вошли как <strong>{user.email ?? "пользователь EGG"}</strong>.</p>
             <div className="flex flex-wrap gap-3"><Link to={projects?.length ? "/egg?project=" + encodeURIComponent(projects![0].id) : "/egg"} className="rounded bg-foreground px-4 py-2 text-background">Открыть EGG</Link><button className="rounded border border-border px-4 py-2" onClick={signOut}>Выйти</button></div>
@@ -134,6 +151,7 @@ export default function EggConnect() {
             <p className="text-sm text-muted-foreground">Вход через Google и Apple запланирован, но пока не настроен.</p>
           </div>
         )}
+        {authIssue && <p role="alert" className="mt-3 text-sm text-destructive">{authIssue}</p>}
         {message && <p role="status" className="mt-3 text-sm">{message}</p>}
         {inviteFeedback && <p role="status" className="mt-3 text-sm">{inviteFeedback}</p>}
         {!user && window.location.hash.startsWith("#egg-invite=") && <p className="mt-3 text-sm">Войдите с почтой, на которую вас пригласили. После входа приглашение будет принято автоматически.</p>}
