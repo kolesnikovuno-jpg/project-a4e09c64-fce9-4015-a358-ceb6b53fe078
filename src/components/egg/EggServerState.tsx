@@ -13,7 +13,8 @@ import EggAiHandoff from "./EggAiHandoff";
 import type { AiHandoffSphere } from "../../lib/eggAiHandoff";
 
 type ConceptVersion = { id:string;text:string;visualUrl?:string;questions:Array<{sphere:string;question:string}>;status:"proposed"|"accepted"|"revision_requested"|"rejected";proposedBy:"author"|"ai";createdAt:string;level:number;iteration:number;decision?:{outcome:"accept"|"revise"|"reject";reason:string;at:string} };
-type Project = { id: string; title?: string; seedProposal?: { text: string }; seed: { text: string }; level: number; iteration: number; concepts?: ConceptVersion[]; tasks: Array<{ id: string; sphere: string; status: string; question: string; sourceConceptId?:string;sourceQuestionIndex?:number; findings: Array<{ id: string; text: string; evidence: string }>; decisions: Array<{ id: string; outcome: string; reason: string }> }> };
+type AttachedFile = { id:string;fileId:string;title:string;webUrl?:string;collectionKey:string;status:"reported"|"author_confirmed";mimeType:string;registeredBy:"author"|"ai" };
+type Project = { id: string; title?: string; seedProposal?: { text: string }; seed: { text: string }; level: number; iteration: number; concepts?: ConceptVersion[]; files?: AttachedFile[]; tasks: Array<{ id: string; sphere: string; status: string; question: string; sourceConceptId?:string;sourceQuestionIndex?:number; findings: Array<{ id: string; text: string; evidence: string }>; decisions: Array<{ id: string; outcome: string; reason: string }> }> };
 
 export default function EggServerState({ activeSphere, onSelectSphere }: { activeSphere: string | null; onSelectSphere: (sphere: string | null) => void }) {
   const [params] = useSearchParams();
@@ -81,7 +82,7 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
       </div>}
       {project.seed.text.trim()&&activeSphere==="idea"&&revision!==null&&
         <EggIdeaWorkshop projectId={project.id} seed={project.seed.text} concepts={project.concepts??[]}
-          tasks={project.tasks} revision={revision} level={project.level} iteration={project.iteration} onSaved={()=>setRefreshKey(v=>v+1)}/>}
+          tasks={project.tasks} files={project.files??[]} revision={revision} level={project.level} iteration={project.iteration} onSaved={()=>setRefreshKey(v=>v+1)}/>}
       <EggProjectOverview project={project} activeSphere={activeSphere} onSelectSphere={onSelectSphere} />
       {!isSphere && <EggYolkMonitor project={project} />}
       {isSphere && <button type="button" onClick={() => onSelectSphere(null)} className="mt-2 rounded-full border border-foreground/30 px-3 py-2 text-xs">← К общему обзору</button>}
