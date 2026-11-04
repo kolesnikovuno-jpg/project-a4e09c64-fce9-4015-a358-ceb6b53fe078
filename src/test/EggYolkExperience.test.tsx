@@ -43,7 +43,13 @@ describe("EGG Yolk: match the main Egg visual system",()=>{
 
   it("does not claim the demo illustration is an approved physical object",()=>{
     show();
-    expect(screen.getByText(/Модель условная · не чертёж/)).toBeTruthy();
+    expect(screen.getByText(/Параметрический эскиз · GLB создаётся локально/)).toBeTruthy();
+    expect(screen.getByTestId("yolk-stage-gesture").getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(screen.getByTestId("yolk-stage-frame"));
+    expect(screen.getByTestId("yolk-stage-frame").getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(screen.getByTestId("yolk-variant-B"));
+    expect(screen.getByTestId("yolk-variant-B").getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByTestId("yolk-generate-glb")).toBeTruthy();
     expect(screen.getByRole("button",{name:"ДНК / концепт"})).toBeTruthy();
   });
 });
