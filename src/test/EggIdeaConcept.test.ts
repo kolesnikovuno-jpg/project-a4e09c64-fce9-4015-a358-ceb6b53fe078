@@ -6,7 +6,7 @@ import {
 import { eggMutationSchema, runEggMutation } from "../lib/eggCommands";
 
 const at="2026-11-04T16:00:00+02:00";
-const newProject=()=>createEggProject({id:"test-concept",seed:"Смысл Автора не должен меняться",at});
+const newProject=()=>createEggProject({id:"11111111-1111-4111-8111-111111111111",seed:"Смысл Автора не должен меняться",at});
 const proposed=(p:EggProject)=>proposeEggConcept(p,{
  actor:"ai",at,text:"Сжатая концепция",questions:[
    {sphere:"production",question:"Как сохранить лёгкость формы?"},
