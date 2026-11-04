@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { eggMcpTools, processEggMcp } from "../src/lib/eggMcpProtocol.js";
+import { getEggStorageConfig } from "../src/server/eggStorageConfig.js";
 /** Read-only protocol self-test. No tokens, no database, no user data. */
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   if (req.method !== "GET") { res.statusCode = 405; res.setHeader("Allow", "GET"); return res.end(); }
@@ -9,12 +10,17 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   const listed = await processEggMcp({ jsonrpc: "2.0", id: 2, method: "tools/list" }, operations);
   const version = (init.body as any)?.result?.protocolVersion;
   const tools = (listed.body as any)?.result?.tools;
-  const ok = init.status === 200 && listed.status === 200 && version === "2025-06-18" &&
+  const protocolOk = init.status === 200 && listed.status === 200 && version === "2025-06-18" &&
     Array.isArray(tools) && tools.length === eggMcpTools.length;
+  // An MCP protocol can pass a local self-test while all real project operations fail.
+  // Never report an operationally healthy EGG server without storage configuration.
+  const storageConfigured = Boolean(getEggStorageConfig(process.env));
+  const ok = protocolOk && storageConfigured;
   res.statusCode = ok ? 200 : 503;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader("Cache-Control", "no-store");
   res.end(JSON.stringify({ ok, protocolVersion: version ?? null,
+    checks: { protocol: protocolOk, storageConfigured },
     toolNames: Array.isArray(tools) ? tools.map((t: {name:string}) => t.name) : [],
-    note: "Local protocol check only; OAuth and ChatGPT not tested." }));
+    note: "Protocol and storage configuration only; OAuth and real authenticated database access not tested." }));
 }
