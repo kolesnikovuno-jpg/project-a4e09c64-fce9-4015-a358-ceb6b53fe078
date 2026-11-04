@@ -169,7 +169,7 @@ export const eggCreateSchema = z.object({
   command: z.literal("create"),
   title: z.string().trim().min(1).max(120).optional(),
   seed: valueText.optional(),
-}).refine(value => Boolean(value.title || value.seed));
+}).strict().refine(value => Boolean(value.title || value.seed));
 
 export const eggIssueKeySchema = z.object({
   command: z.literal("issue_key"),
