@@ -7,6 +7,7 @@ import EggProjectChat from "./EggProjectChat";
 import EggInviteAuthor from "./EggInviteAuthor";
 import EggProjectOverview from "./EggProjectOverview";
 import EggSphereWorkspace from "./EggSphereWorkspace";
+import EggYolkMonitor from "./EggYolkMonitor";
 
 type Project = { id: string; title?: string; seedProposal?: { text: string }; seed: { text: string }; level: number; iteration: number; tasks: Array<{ id: string; sphere: string; status: string; question: string; findings: Array<{ id: string; text: string; evidence: string }>; decisions: Array<{ id: string; outcome: string; reason: string }> }> };
 
@@ -65,6 +66,7 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
       {!project.seed.text.trim() && revision !== null && <EggSeedStart projectId={project.id} revision={revision} proposal={project.seedProposal?.text} onSaved={() => setRefreshKey(value => value + 1)} />}
       <p className="text-xs text-foreground/65">Ревизия {revision}{lastUpdated ? " · Обновлено " + lastUpdated : ""}</p>
       <EggProjectOverview project={project} activeSphere={activeSphere} onSelectSphere={onSelectSphere} />
+      {!isSphere && <EggYolkMonitor project={project} />}
       {isSphere && <button type="button" onClick={() => onSelectSphere(null)} className="mt-2 rounded-full border border-foreground/30 px-3 py-2 text-xs">← К общему обзору</button>}
       {!isSphere && pending === 0 && project.tasks.length > 0 && <p className="text-xs text-foreground/60">Задачи и выводы сохранены в соответствующих сферах. Нажмите на карточку нужной сферы для просмотра.</p>}
       {isSphere && activeSphere && <EggSphereWorkspace key={activeSphere} projectId={project.id} sphere={activeSphere} seed={project.seed.text} level={project.level} iteration={project.iteration} />}
