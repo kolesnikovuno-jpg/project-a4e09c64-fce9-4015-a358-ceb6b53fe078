@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import EggProjectOverview from "../components/egg/EggProjectOverview";
 import EggFieldDemo from "../components/egg/EggFieldDemo";
+import EggIdeaDemo from "../components/egg/EggIdeaDemo";
 import { EGG_SPHERES } from "../lib/eggEngine";
 const demoTasks = [
   { id: "sample-m", sphere: "marketing", status: "accepted" },
@@ -21,6 +22,7 @@ export default function EggDemo() {
     <nav className="mb-4 flex flex-wrap gap-4 text-xs"><Link className="underline underline-offset-4" to="/egg/connect">Аккаунт EGG</Link><Link className="underline underline-offset-4" to="/egg">3D-Яйцо</Link></nav>
     <h1 className="text-2xl font-medium">EGG · демонстрация</h1>
     <p className="my-3 text-sm leading-relaxed text-foreground/75">Это интерактивный пример интерфейса без регистрации. Здесь <strong>нет данных вашего проекта</strong>; выбор сферы ничего не меняет на сервере.</p>
+    <EggIdeaDemo />
     <EggFieldDemo />
     <EggProjectOverview project={project} activeSphere={sphere} onSelectSphere={setSphere} />
     {sphereDef && <section className="mt-4 space-y-3 rounded-xl border border-foreground/15 p-4" aria-label="Пример сферы">
