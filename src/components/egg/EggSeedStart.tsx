@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
+import EggAiHandoff from "./EggAiHandoff";
 
 export default function EggSeedStart({ projectId, revision, proposal, onSaved }: { projectId: string; revision: number; proposal?: string; onSaved: () => void }) {
   const [seed, setSeed] = useState(proposal ?? "");
@@ -32,7 +33,7 @@ export default function EggSeedStart({ projectId, revision, proposal, onSaved }:
   return <div className="space-y-3 rounded-lg border border-foreground/20 p-4">
     <h3 className="font-medium">Начните со сферы Автора</h3>
     <p className="text-sm text-foreground/70">Проект создан. Сначала исследуйте замысел в ChatGPT, затем вставьте согласованную формулировку сюда. Утверждение исходной идеи запускает готовность проекта к работе сфер, но не запускает задачи автоматически.</p>
-    <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" className="inline-block rounded-full border border-foreground/30 px-4 py-2 text-sm">Открыть ChatGPT</a>
+    <EggAiHandoff projectId={projectId} sphere="idea" revision={revision} level={1} iteration={1} seed={proposal??seed} />
     {proposal && <p role="status" className="rounded border border-foreground/20 p-3 text-sm">ChatGPT передал предложение. Проверьте и при необходимости измените текст перед утверждением. Это пока не исходный замысел проекта.</p>}
     <p className="break-all text-xs text-foreground/60">ID проекта для ChatGPT: {projectId}</p>
     <label htmlFor="egg-author-seed" className="block text-sm">Исходный замысел</label>
