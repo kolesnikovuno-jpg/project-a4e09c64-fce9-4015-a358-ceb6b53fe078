@@ -29,7 +29,7 @@ describe("Canonical EGG MCP resource",()=>{
     const {status,body}=invoke();
     expect(status).toBe(200);
     expect(body.resource).toBe("https://egg.kolesnikov.studio/api/mcp");
-    expect(body.authorization_servers).toEqual(["https://test-only.supabase.co//auth/v1"]);
+    expect(body.authorization_servers).toEqual(["https://test-only.supabase.co/auth/v1"]);
     expect(JSON.stringify(body)).not.toContain("sb_secret_");
   });
   it("does not announce a resource if origin is missing",()=>{
