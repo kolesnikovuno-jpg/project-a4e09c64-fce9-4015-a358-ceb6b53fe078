@@ -50,6 +50,7 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
             {eggBrand ? "EGG" : <>UNO<span className="font-extralight">calc</span></>}
           </h1>
           <nav className="flex items-center gap-4 sm:gap-7">
+            {eggBrand && <Link to={"/egg/yolk" + (hasProject ? "?project=" + encodeURIComponent(params.get("project") || "") : "")} className="text-[12px] text-foreground/70 hover:text-primary">Желток · 3D</Link>}
             {eggBrand && <Link to="/egg/connect" className="text-[12px] text-foreground/70 hover:text-primary">{({ ru: "Аккаунт", uk: "Акаунт", en: "Account" } as const)[locale]}</Link>}
             <Link to={localePath("/unocalc/model")}
               className="inline-flex min-h-9 items-center rounded-full border border-foreground/20 px-3 text-[11px] tracking-[0.04em] text-foreground/80 transition-colors hover:border-primary hover:text-primary">
