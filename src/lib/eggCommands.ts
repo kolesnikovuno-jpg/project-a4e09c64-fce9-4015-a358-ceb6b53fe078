@@ -9,6 +9,7 @@ import { confirmDriveReference, registerDriveReference } from "./eggArtifacts.js
 import {
   decideFinding, nextIteration, readCore, readSphereStates, returnFinding, recordAuthorSeed, proposeEggSeed,
   routeQuestion, setLevel, startSphereWork,
+  proposeEggConcept, decideEggConcept, routeConceptQuestion,
   type EggProject, type EggActor,
 } from "./eggEngine.js";
 
@@ -25,6 +26,16 @@ const shared = z.object({
 export const eggMutationSchema = z.discriminatedUnion("command", [
   shared.extend({ command: z.literal("set_seed"), seed: valueText }).strict(),
   shared.extend({ command: z.literal("propose_seed"), seed: valueText }).strict(),
+  shared.extend({ command: z.literal("propose_concept"), text: valueText,
+    visualUrl: z.string().url().max(1200).refine(u=>u.startsWith("https://")||u.startsWith("http://")).optional(),
+    questions: z.array(z.object({sphere, question:z.string().trim().min(1).max(1000)}).strict()).max(8).optional(),
+  }).strict(),
+  shared.extend({ command: z.literal("decide_concept"), conceptId: identifier,
+    outcome: z.enum(["accept","revise","reject"]), reason: valueText,
+  }).strict(),
+  shared.extend({ command: z.literal("route_concept_question"), conceptId: identifier,
+    questionIndex: z.number().int().min(0).max(7),
+  }).strict(),
   shared.extend({
     command: z.literal("route"),
     from: source, to: sphere, question: valueText,
@@ -76,7 +87,7 @@ export type EggPermission = { kind: "author"; ownerId: string } |
 
 export const isAuthorCommand = (command: EggMutation["command"]) =>
   command === "set_seed" || command === "decide" || command === "set_level" || command === "next_iteration" ||
-  command === "confirm_file";
+  command === "confirm_file" || command === "decide_concept" || command === "route_concept_question";
 
 export const mayAccessEgg = (
   identity: EggPermission, projectId: string, ownerId: string, action: "read" | "contribute" | "author",
@@ -101,6 +112,12 @@ export const runEggMutation = (
       return proposeEggSeed(state, mutation.seed, at);
     case "set_seed":
       return recordAuthorSeed(state, mutation.seed, at);
+    case "propose_concept":
+      return proposeEggConcept(state,{actor,text:mutation.text,visualUrl:mutation.visualUrl,questions:mutation.questions,at});
+    case "decide_concept":
+      return decideEggConcept(state,{actor,conceptId:mutation.conceptId,outcome:mutation.outcome,reason:mutation.reason,at});
+    case "route_concept_question":
+      return routeConceptQuestion(state,{actor,conceptId:mutation.conceptId,questionIndex:mutation.questionIndex,at});
     case "route":
       return routeQuestion(state, {
         actor, from: mutation.from, to: mutation.to, question: mutation.question, at,
@@ -141,6 +158,7 @@ export const readEggState = (state: EggProject) => ({
   core: readCore(state),
   title: state.title ?? state.seed.text,
   seedProposal: state.seedProposal ?? null,
+  concepts: state.concepts ?? [],
   spheres: readSphereStates(state),
   tasks: state.tasks,
   files: state.artifacts ?? [],
