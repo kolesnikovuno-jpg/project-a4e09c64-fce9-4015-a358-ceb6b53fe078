@@ -64,7 +64,7 @@ export type EggActor = "author" | "ai";
 export type EggEvidence = "observation" | "hypothesis" | "question";
 export type EggTaskStatus = "question" | "working" | "returned" | "accepted" | "revision_requested" | "rejected";
 export type EggDecisionType = "accept" | "revise" | "reject";
-export type EggLevel = 1 | 2 | 3 | 4 | 5;
+export type EggLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 /** Undirected lines are the currently drawn graph. The Author is outside it
  * and can intervene directly; AI cannot use the Author as a routing source.
@@ -314,7 +314,7 @@ export const setLevel = (project: EggProject, params: {
   actor: EggActor; level: EggLevel; reason: string; at: string;
 }): EggProject => {
   assertAuthor(params.actor);
-  if (![1, 2, 3, 4, 5].includes(params.level)) throw new EggEngineError("Invalid level");
+  if (![1, 2, 3, 4, 5, 6, 7].includes(params.level)) throw new EggEngineError("Invalid level");
   if (params.level === project.level) return project;
   if (params.level > project.level + 1) throw new EggEngineError("Cannot skip forward levels");
   const reason = required(params.reason, "Reason");
@@ -329,7 +329,7 @@ export const nextIteration = (project: EggProject, params: {
   actor: EggActor; at: string; reason: string;
 }): EggProject => {
   assertAuthor(params.actor);
-  if (project.iteration >= 999) throw new EggEngineError("Maximum iteration reached");
+  if (!Number.isSafeInteger(project.iteration + 1)) throw new EggEngineError("Iteration exceeds safe numeric range");
   const updated: EggProject = { ...project, iteration: project.iteration + 1 };
   return pushEvent(updated, {
     kind: "iteration_started", actor: "author", at: required(params.at, "Timestamp"),
