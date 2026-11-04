@@ -135,7 +135,7 @@ export default function EggYolkExperience(){
             <div className="pointer-events-none absolute inset-[6%] rounded-full border border-[#b4a68e]/20 sm:inset-[8%]" />
             <div className="pointer-events-none absolute inset-[16%] rounded-full border border-[#b4a68e]/15 sm:inset-[20%]" />
             <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
-              {YOLK_SPHERES.map(s=>{const a=s.angle*Math.PI/180,x=500+410*Math.cos(a),y=500+410*Math.sin(a);return <line key={s.id} x1="500" y1="500" x2={x} y2={y} stroke={s.accent} strokeWidth={selected===s.id?1.8:.8} strokeOpacity={selected===s.id?.26:.10} strokeDasharray={selected===s.id?"":"4 8"}/>})}
+              {YOLK_SPHERES.map(s=>{const a=s.angle*Math.PI/180,x=500+410*Math.cos(a),y=500+410*Math.sin(a);return <line key={s.id} x1="500" y1="500" x2={x} y2={y} stroke={s.accent} strokeWidth={selected===s.id?1.8:.8} strokeOpacity={selected===s.id ? .26 : .10} strokeDasharray={selected===s.id?"":"4 8"}/>})}
             </svg>
             <div className="absolute inset-[20%] sm:inset-[17%]">
               <EggYolkViewer onFileChange={setLocal3d}/>
