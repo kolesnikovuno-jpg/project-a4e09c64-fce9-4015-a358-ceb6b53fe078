@@ -21,6 +21,22 @@ describe("EGG ChatGPT handoff",()=>{
   expect(text).not.toContain("Authorization:");
   expect(text).not.toContain("service_role");
  });
+ it("asks adaptive clarification questions before freezing the Idea concept",()=>{
+  const prompt=buildEggAiHandoff(ctx);
+  expect(prompt).toContain("АДАПТИВНЫЙ ДИАЛОГ");
+  expect(prompt).toContain("по одному уточняющему вопросу");
+  expect(prompt).toContain("Не показывай обязательную анкету");
+  expect(prompt).toContain("не спрашивай повторно");
+  expect(prompt).toContain("оставляй");
+  expect(prompt).toContain("Маркетинг и Право");
+  expect(prompt).toContain("текстовую, графическую");
+  expect(prompt).toContain("Не утверждай за Автора концепцию");
+ });
+ it("does not mistake a market inquiry for the Idea dialogue",()=>{
+  const prompt=buildEggAiHandoff({...ctx,sphere:"marketing"});
+  expect(prompt).not.toContain("ЯДРО СФЕРЫ «ИДЕЯ»");
+  expect(prompt).toContain("Задача сферы «Маркетинг»");
+ });
  it("hands each sphere its own job and existing questions",()=>{
   const text=buildEggAiHandoff({...ctx,sphere:"production",tasks:[
    {sphere:"marketing",question:"Только рынку",status:"returned"},
