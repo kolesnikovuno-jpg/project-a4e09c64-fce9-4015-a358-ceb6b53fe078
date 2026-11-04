@@ -9,6 +9,8 @@ import EggProjectOverview from "./EggProjectOverview";
 import EggSphereWorkspace from "./EggSphereWorkspace";
 import EggYolkMonitor from "./EggYolkMonitor";
 import EggIdeaWorkshop from "./EggIdeaWorkshop";
+import EggAiHandoff from "./EggAiHandoff";
+import type { AiHandoffSphere } from "../../lib/eggAiHandoff";
 
 type ConceptVersion = { id:string;text:string;visualUrl?:string;questions:Array<{sphere:string;question:string}>;status:"proposed"|"accepted"|"revision_requested"|"rejected";proposedBy:"author"|"ai";createdAt:string;level:number;iteration:number;decision?:{outcome:"accept"|"revise"|"reject";reason:string;at:string} };
 type Project = { id: string; title?: string; seedProposal?: { text: string }; seed: { text: string }; level: number; iteration: number; concepts?: ConceptVersion[]; tasks: Array<{ id: string; sphere: string; status: string; question: string; sourceConceptId?:string;sourceQuestionIndex?:number; findings: Array<{ id: string; text: string; evidence: string }>; decisions: Array<{ id: string; outcome: string; reason: string }> }> };
@@ -73,11 +75,16 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
       </div>}
       {project.seed.text.trim()&&activeSphere==="idea"&&revision!==null&&
         <EggIdeaWorkshop projectId={project.id} seed={project.seed.text} concepts={project.concepts??[]}
-          tasks={project.tasks} revision={revision} onSaved={()=>setRefreshKey(v=>v+1)}/>}
+          tasks={project.tasks} revision={revision} level={project.level} iteration={project.iteration} onSaved={()=>setRefreshKey(v=>v+1)}/>}
       <EggProjectOverview project={project} activeSphere={activeSphere} onSelectSphere={onSelectSphere} />
       {!isSphere && <EggYolkMonitor project={project} />}
       {isSphere && <button type="button" onClick={() => onSelectSphere(null)} className="mt-2 rounded-full border border-foreground/30 px-3 py-2 text-xs">← К общему обзору</button>}
       {!isSphere && pending === 0 && project.tasks.length > 0 && <p className="text-xs text-foreground/60">Задачи и выводы сохранены в соответствующих сферах. Нажмите на карточку нужной сферы для просмотра.</p>}
+      {isSphere && activeSphere && revision!==null && <EggAiHandoff projectId={project.id}
+        sphere={activeSphere as AiHandoffSphere} revision={revision} level={project.level} iteration={project.iteration}
+        seed={project.seed.text}
+        concept={[...(project.concepts??[])].reverse().find(c=>c.status==="accepted")?.text}
+        tasks={project.tasks}/>}
       {isSphere && activeSphere && <EggSphereWorkspace key={activeSphere} projectId={project.id} sphere={activeSphere} seed={project.seed.text}
         concept={[...(project.concepts??[])].reverse().find(c=>c.status==="accepted")?.text}
         level={project.level} iteration={project.iteration} />}
