@@ -50,6 +50,26 @@ export const eggMcpTools = [
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
   },
   {
+    name: "egg_propose_concept",
+    title: "Compress the Author's idea into a draft concept",
+    description: "Read the approved Author seed, then propose a concise concept as text, optional graphic reference and up to eight functional questions. This is only a draft: the Author must approve or return it before any task is routed. Read state first to obtain the current revision.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        projectId: { type:"string",format:"uuid" },
+        expectedRevision: { type:"integer",minimum:1 },
+        text: { type:"string",minLength:1,maxLength:10000,description:"Concise concept preserving the Author's original idea" },
+        visualUrl: {type:"string",format:"uri",description:"Optional genuine http(s) graphic URL, do not invent"},
+        questions: {type:"array",maxItems:8,items:{type:"object",properties:{
+          sphere:{type:"string",enum:["marketing","legal","design","production","testDrive","procurement","commerce","retail"]},
+          question:{type:"string",minLength:1,maxLength:1000}
+        },required:["sphere","question"],additionalProperties:false}}
+      },
+      required:["projectId","expectedRevision","text"],additionalProperties:false
+    },
+    annotations: {readOnlyHint:false,destructiveHint:false,idempotentHint:false,openWorldHint:false},
+  },
+  {
     name: "egg_register_field_item",
     title: "Register knowledge or a work proposal",
     description: "Contribute a source-backed research note, question or proposal into the Egg knowledge field, attributed to an external AI agent. Requires a scoped contribute key and a stable operationId. Never modifies Author-approved core, level or iteration; external facts are not automatically verified.",
@@ -123,6 +143,16 @@ const fieldParams = baseParams.extend({
   claimType: z.enum(["fact","hypothesis","question","proposal"]),
 }).strict();
 
+const conceptParams = baseParams.extend({
+  expectedRevision:z.number().int().positive(),
+  text:z.string().trim().min(1).max(10000),
+  visualUrl:z.string().url().max(1200).refine(u=>u.startsWith("https://")||u.startsWith("http://")).optional(),
+  questions:z.array(z.object({
+    sphere:z.enum(["marketing","legal","design","production","testDrive","procurement","commerce","retail"]),
+    question:z.string().trim().min(1).max(1000)
+  }).strict()).max(8).optional(),
+}).strict();
+
 const proposalParams = baseParams.extend({ expectedRevision: z.number().int().positive(), seed: z.string().trim().min(1).max(10000) }).strict();
 
 const contributeParams = z.discriminatedUnion("command", [
@@ -135,6 +165,7 @@ export type EggMcpOperations = {
   contributeSphere: (args: z.infer<typeof contributeParams>) => Promise<unknown>;
   getState: (projectId: string) => Promise<unknown>;
   proposeSeed: (args: z.infer<typeof proposalParams>) => Promise<unknown>;
+  proposeConcept: (args: z.infer<typeof conceptParams>) => Promise<unknown>;
   registerDriveFile: (args: z.infer<typeof registerParams>) => Promise<unknown>;
   registerFieldItem: (args: z.infer<typeof fieldParams>) => Promise<unknown>;
 };
@@ -183,7 +214,7 @@ export const processEggMcp = async (
   }
   if (method !== "tools/call") return { status: 200, body: jsonError(id, -32601, "Method not found") };
   const invocation = z.object({
-    name: z.enum(["egg_get_project_state", "egg_register_drive_file", "egg_contribute_sphere", "egg_propose_seed", "egg_register_field_item"]),
+    name: z.enum(["egg_get_project_state", "egg_register_drive_file", "egg_contribute_sphere", "egg_propose_seed", "egg_register_field_item", "egg_propose_concept"]),
     arguments: z.unknown().optional(),
   }).passthrough().safeParse(params);
   if (!invocation.success) return { status: 200, body: jsonError(id, -32602, "Invalid tool call") };
@@ -193,6 +224,7 @@ export const processEggMcp = async (
     ? baseParams.safeParse(args)
     : name === "egg_contribute_sphere" ? contributeParams.safeParse(args)
     : name === "egg_propose_seed" ? proposalParams.safeParse(args)
+    : name === "egg_propose_concept" ? conceptParams.safeParse(args)
     : name === "egg_register_field_item" ? fieldParams.safeParse(args) : registerParams.safeParse(args);
   if (!validation.success) return { status: 200, body: jsonError(id, -32602, "Invalid tool arguments") };
 
@@ -203,6 +235,8 @@ export const processEggMcp = async (
         ? await operations.contributeSphere(validation.data as z.infer<typeof contributeParams>)
         : name === "egg_propose_seed"
           ? await operations.proposeSeed(validation.data as z.infer<typeof proposalParams>)
+          : name === "egg_propose_concept"
+            ? await operations.proposeConcept(validation.data as z.infer<typeof conceptParams>)
           : name === "egg_register_field_item"
             ? await operations.registerFieldItem(validation.data as z.infer<typeof fieldParams>)
             : await operations.registerDriveFile(validation.data as z.infer<typeof registerParams>);
