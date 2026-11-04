@@ -220,6 +220,47 @@ export default async function handler(req: Incoming, res: ServerResponse) {
           project: readEggState(next),
           note: "AI contribution recorded; Author review is required" };
       },
+      registerFieldItem: async (args) => {
+        const row = await getProject(args.projectId, "contribute");
+        const fieldDb = createClient(config.url, config.serviceKey, {
+          auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+        });
+        const payload = {
+          project_id: row.id, sphere: args.sphere, flow: args.flow, origin: args.origin,
+          source_kind: args.sourceKind, title: args.title, content: args.content,
+          source_uri: args.sourceUri ?? null, claim_type: args.claimType,
+          level: row.document.level, iteration: row.document.iteration,
+          actor_kind: "agent", operation_id: args.operationId, created_by: null,
+        };
+        // Retry-safe source import without mutating the Author-approved project revision.
+        const lookup = async () => {
+          const { data, error } = await fieldDb.from("egg_field_items")
+            .select("id,sphere,flow,origin,source_kind,title,content,source_uri,claim_type")
+            .eq("project_id", row.id).eq("operation_id", args.operationId).maybeSingle();
+          if (error) throw new ServiceError("database_unavailable", 503);
+          return data;
+        };
+        const same = (data: Record<string, unknown>) =>
+          data.sphere === payload.sphere && data.flow === payload.flow &&
+          data.origin === payload.origin && data.source_kind === payload.source_kind &&
+          data.title === payload.title && data.content === payload.content &&
+          data.source_uri === payload.source_uri && data.claim_type === payload.claim_type;
+        const existing = await lookup();
+        if (existing) {
+          if (!same(existing)) throw new ServiceError("invalid_state_transition", 409);
+          return { ok: true, id: existing.id, idempotentReplay: true, approved: false };
+        }
+        const {data:created,error:writeError} = await fieldDb.from("egg_field_items")
+          .insert(payload).select("id").single();
+        if (writeError || !created) {
+          const repeated = await lookup();
+          if (repeated && same(repeated))
+            return { ok: true, id: repeated.id, idempotentReplay: true, approved: false };
+          throw new ServiceError("database_unavailable", 503);
+        }
+        return { ok: true, id: created.id, approved: false,
+          note: "External AI research stored in the knowledge field, not approved into the Egg core" };
+      },
       registerDriveFile: async (args) => {
         const row = await getProject(args.projectId, "contribute");
         const parsed = eggMutationSchema.parse({
