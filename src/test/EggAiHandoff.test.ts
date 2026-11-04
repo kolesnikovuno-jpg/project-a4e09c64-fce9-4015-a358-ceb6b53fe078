@@ -27,7 +27,7 @@ describe("EGG ChatGPT handoff",()=>{
   expect(prompt).toContain("по одному уточняющему вопросу");
   expect(prompt).toContain("Не показывай обязательную анкету");
   expect(prompt).toContain("не спрашивай повторно");
-  expect(prompt).toContain("оставляй");
+  expect(prompt).toContain("сказать «не знаю»");
   expect(prompt).toContain("Маркетинг и Право");
   expect(prompt).toContain("текстовую, графическую");
   expect(prompt).toContain("Не утверждай за Автора концепцию");
