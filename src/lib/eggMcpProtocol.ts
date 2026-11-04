@@ -119,7 +119,7 @@ const fieldParams = baseParams.extend({
   sourceKind: z.enum(["idea","concept","web","document","database","service","human","observation","device","ai","other"]),
   title: z.string().trim().min(1).max(180),
   content: z.string().trim().min(1).max(8000),
-  sourceUri: z.string().url().max(1000).refine(u=>/^https?:\\/\\//i.test(u), "HTTP(S) only").optional(),
+  sourceUri: z.string().url().max(1000).refine(u => u.startsWith("https://") || u.startsWith("http://"), "HTTP(S) only").optional(),
   claimType: z.enum(["fact","hypothesis","question","proposal"]),
 }).strict();
 
