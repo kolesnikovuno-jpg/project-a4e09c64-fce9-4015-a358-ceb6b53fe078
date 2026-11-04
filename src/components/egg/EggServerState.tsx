@@ -6,6 +6,7 @@ import EggSeedStart from "./EggSeedStart";
 import EggProjectChat from "./EggProjectChat";
 import EggInviteAuthor from "./EggInviteAuthor";
 import EggProjectOverview from "./EggProjectOverview";
+import EggSphereWorkspace from "./EggSphereWorkspace";
 
 type Project = { id: string; title?: string; seedProposal?: { text: string }; seed: { text: string }; level: number; iteration: number; tasks: Array<{ id: string; sphere: string; status: string; question: string; findings: Array<{ id: string; text: string; evidence: string }>; decisions: Array<{ id: string; outcome: string; reason: string }> }> };
 
@@ -66,6 +67,7 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
       <EggProjectOverview project={project} activeSphere={activeSphere} onSelectSphere={onSelectSphere} />
       {isSphere && <button type="button" onClick={() => onSelectSphere(null)} className="mt-2 rounded-full border border-foreground/30 px-3 py-2 text-xs">← К общему обзору</button>}
       {!isSphere && pending === 0 && project.tasks.length > 0 && <p className="text-xs text-foreground/60">Задачи и выводы сохранены в соответствующих сферах. Нажмите на карточку нужной сферы для просмотра.</p>}
+      {isSphere && activeSphere && <EggSphereWorkspace key={activeSphere} projectId={project.id} sphere={activeSphere} seed={project.seed.text} level={project.level} iteration={project.iteration} />}
       <div className="space-y-3">{project.tasks.filter(task => isSphere && task.sphere === activeSphere).map(task => <div key={task.id} className="rounded-lg border border-foreground/10 p-3 sm:p-4"><p className="text-sm font-medium">{task.sphere} · {task.status}</p><p className="mt-1 text-xs text-foreground/70">{task.question}</p>{task.findings.map(finding => <p key={finding.id} className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed"><span className="text-foreground/50">{finding.evidence}:</span> {finding.text}</p>)}{task.decisions.length > 0 && <p className="mt-2 text-xs">Решений Автора: {task.decisions.length}</p>}{task.status === "returned" && revision !== null && <EggAuthorDecision projectId={project.id} revision={revision} taskId={task.id} onSaved={() => setRefreshKey(value => value + 1)} />}</div>)}</div>
     </div>}
     {project && <EggProjectChat projectId={project.id} activeSphere={activeSphere} />}
