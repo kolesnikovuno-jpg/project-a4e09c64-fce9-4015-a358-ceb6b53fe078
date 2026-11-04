@@ -287,7 +287,7 @@ export default async function handler(req: Request, res: Response) {
     const mutation = eggMutationSchema.parse(input);
     const project = await checkedProject(db, mutation.projectId, identity,
       mutation.command === "set_seed" || mutation.command === "decide" || mutation.command === "set_level" ||
-      mutation.command === "next_iteration" || mutation.command === "confirm_file"
+      mutation.command === "next_iteration" || mutation.command === "confirm_file" || mutation.command === "decide_concept" || mutation.command === "route_concept_question"
         ? "author" : "contribute");
     if (mutation.expectedRevision !== project.revision)
       throw new RequestFailure(409, "revision_conflict");

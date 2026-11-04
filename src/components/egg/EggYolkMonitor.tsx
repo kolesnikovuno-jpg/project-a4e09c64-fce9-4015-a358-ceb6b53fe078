@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 type Task = { sphere:string; status:string; decisions:Array<{outcome:string}> };
-type Project = { id:string; level:number; iteration:number; tasks:Task[] };
+type Project = { id:string; level:number; iteration:number; tasks:Task[]; concepts?:Array<{status:string;text:string}> };
 type FieldRow = {flow:"field"|"work"; sphere:string|null; origin:"internal"|"external"};
 
 export default function EggYolkMonitor({project}:{project:Project}){
@@ -24,6 +24,8 @@ export default function EggYolkMonitor({project}:{project:Project}){
    return()=>{live=false;window.clearInterval(timer)}
  },[project.id]);
  const accepted=project.tasks.filter(t=>t.status==="accepted" || t.decisions?.some(d=>d.outcome==="accept")).length;
+ const approvedConcept=[...(project.concepts??[])].reverse().find(c=>c.status==="accepted");
+ const formed=accepted>0||Boolean(approvedConcept);
  const active=project.tasks.filter(t=>["working","returned","question","revision_requested"].includes(t.status)).length;
  const field=rows.filter(x=>x.flow==="field").length;
  const work=rows.filter(x=>x.flow==="work").length;
@@ -37,11 +39,15 @@ export default function EggYolkMonitor({project}:{project:Project}){
       <circle cx="80" cy="80" r="67" fill="none" stroke="currentColor" strokeOpacity=".15" strokeWidth="1.2"/>
       <circle cx="80" cy="80" r="55" fill="none" stroke="#d3ac62" strokeOpacity={work>0?".8":".27"} strokeDasharray="3 7" strokeWidth={work>0?3:1.5}/>
       <circle cx="80" cy="80" r="43" fill="none" stroke="#b8b4ab" strokeOpacity={active>0?".7":".2"} strokeDasharray="2 5" strokeWidth={active>0?2:1}/>
-      <circle cx="80" cy="80" r={accepted>0?34:24} fill="url(#egg-yolk-state)" stroke="#b38b42" strokeOpacity={accepted>0?".85":".3"} strokeWidth="1.5"/>
-      <circle cx="80" cy="80" r="7" fill="#d5ad57" fillOpacity={accepted>0?".9":".25"}/>
+      <circle cx="80" cy="80" r={formed?34:24} fill="url(#egg-yolk-state)" stroke="#b38b42" strokeOpacity={formed?".85":".3"} strokeWidth="1.5"/>
+      <circle cx="80" cy="80" r="7" fill="#d5ad57" fillOpacity={formed?".9":".25"}/>
      </svg>
     </div>
     <div className="grid grid-cols-2 gap-2">
+      <div className="rounded-lg border border-foreground/10 p-2">
+        <p className="text-sm font-medium">{approvedConcept?"Принята":"Не принята"}</p>
+        <p className="text-[11px] text-foreground/70">Концепция</p>
+      </div>
       <div className="rounded-lg border border-foreground/10 p-2"><p className="text-lg font-medium tabular-nums">{accepted}</p><p className="text-[11px] text-foreground/70">Принятые задачи ядра</p></div>
       <div className="rounded-lg border border-foreground/10 p-2"><p className="text-lg font-medium tabular-nums">{active}</p><p className="text-[11px] text-foreground/70">Открытые задачи</p></div>
       <div className="rounded-lg border border-foreground/10 p-2"><p className="text-lg font-medium tabular-nums">{field}</p><p className="text-[11px] text-foreground/70">Записи в облаке</p></div>

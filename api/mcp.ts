@@ -220,6 +220,27 @@ export default async function handler(req: Incoming, res: ServerResponse) {
           project: readEggState(next),
           note: "AI contribution recorded; Author review is required" };
       },
+      proposeConcept: async (args) => {
+        const row=await getProject(args.projectId,"contribute");
+        if(args.expectedRevision!==row.revision)
+          throw new ServiceError("revision_conflict",409);
+        const parsed=eggMutationSchema.parse({command:"propose_concept",...args});
+        let next:EggProject;
+        try {
+          next=runEggMutation(row.document,parsed,agentFor(row.id),row.owner_id,new Date().toISOString());
+        } catch {
+          throw new ServiceError("invalid_state_transition",400);
+        }
+        const {data,error}=await db.rpc("egg_engine_cas_update",{
+          p_project_id:row.id,p_owner_id:row.owner_id,
+          p_expected_revision:row.revision,p_document:next,
+        });
+        if(error)throw new ServiceError("database_unavailable",503);
+        if(!Array.isArray(data)||!data.length)throw new ServiceError("revision_conflict",409);
+        return {ok:true,revision:data[0].new_revision,
+          proposedConcept:next.concepts?.[next.concepts.length-1],
+          note:"Concept proposal recorded. Only Author may accept, revise or route its tasks."};
+      },
       registerFieldItem: async (args) => {
         const row = await getProject(args.projectId, "contribute");
         const fieldDb = createClient(config.url, config.serviceKey, {

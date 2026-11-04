@@ -64,6 +64,7 @@ export type EggActor = "author" | "ai";
 export type EggEvidence = "observation" | "hypothesis" | "question";
 export type EggTaskStatus = "question" | "working" | "returned" | "accepted" | "revision_requested" | "rejected";
 export type EggDecisionType = "accept" | "revise" | "reject";
+export type EggConceptStatus = "proposed" | "accepted" | "revision_requested" | "rejected";
 export type EggLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 /** Undirected lines are the currently drawn graph. The Author is outside it
@@ -110,11 +111,27 @@ export type EggTask = {
   status: EggTaskStatus;
   findings: EggFinding[];
   decisions: EggDecision[];
+  sourceConceptId?: string;
+  sourceQuestionIndex?: number;
+};
+export type EggConceptQuestion = { sphere: SphereId; question: string };
+export type EggConceptVersion = {
+  id: string;
+  text: string;
+  visualUrl?: string;
+  questions: EggConceptQuestion[];
+  status: EggConceptStatus;
+  proposedBy: EggActor;
+  createdAt: string;
+  level: EggLevel;
+  iteration: number;
+  decision?: { outcome: EggDecisionType; reason: string; at: string };
 };
 export type EggEventKind =
   | "seed_recorded" | "seed_proposed" | "question_routed" | "work_started"
   | "finding_returned" | "author_decision" | "level_changed" | "iteration_started"
-  | "artifact_registered" | "artifact_confirmed";
+  | "artifact_registered" | "artifact_confirmed"
+  | "concept_proposed" | "concept_decided";
 export type EggEvent = {
   id: string;
   kind: EggEventKind;
@@ -133,6 +150,8 @@ export type EggProject = {
   level: EggLevel;
   iteration: number;
   tasks: EggTask[];
+  /** Versioned text/graphic concept proposals. Optional for older projects. */
+  concepts?: EggConceptVersion[];
   /** External file references. Optional for projects created before v0.3. */
   artifacts?: EggArtifact[];
   events: EggEvent[];
@@ -153,7 +172,7 @@ const assertAuthor = (actor: EggActor): void => {
 };
 const assertSphere = (value: unknown): value is SphereId =>
   typeof value === "string" && Object.prototype.hasOwnProperty.call(EGG_SPHERES, value);
-const idOf = (kind: "event" | "task" | "finding" | "decision", seq: number): string => kind + "-" + seq;
+const idOf = (kind: "event" | "task" | "finding" | "decision" | "concept", seq: number): string => kind + "-" + seq;
 const pushEvent = (project: EggProject, event: Omit<EggEvent, "id">): EggProject => ({
   ...project,
   nextSequence: project.nextSequence + 1,
@@ -187,6 +206,61 @@ export const recordAuthorSeed = (project: EggProject, seed: string, at: string):
   return pushEvent(updated, { kind: "seed_recorded", actor: "author", at, detail: "Original author seed approved" });
 };
 
+/** The Idea sphere compresses an Author seed into a reviewable concept.
+ * Concept proposals are NOT Core until explicitly accepted by the Author.
+ * Incoming AI proposals never modify the approved original seed.
+ */
+export const proposeEggConcept = (project: EggProject, params: {
+  actor: EggActor; text: string; visualUrl?: string;
+  questions?: EggConceptQuestion[]; at: string;
+}): EggProject => {
+  if (!project.seed.text.trim()) throw new EggEngineError("Approve the original idea first");
+  if ((project.concepts ?? []).some(c => c.status === "proposed"))
+    throw new EggEngineError("Review the open concept proposal before creating another");
+  const text = required(params.text, "Concept text");
+  if (text.length > 10000) throw new EggEngineError("Concept too long");
+  const visualUrl = params.visualUrl?.trim() || undefined;
+  if (visualUrl && (visualUrl.length > 1200 || !/^https?:\/\/[^\s]+$/i.test(visualUrl)))
+    throw new EggEngineError("Invalid visual reference");
+  const questions = params.questions ?? [];
+  if (questions.length > 8 || !questions.every(q => assertSphere(q.sphere) &&
+      typeof q.question === "string" && q.question.trim().length > 0 && q.question.trim().length <= 1000) ||
+      new Set(questions.map(q => q.sphere)).size !== questions.length)
+    throw new EggEngineError("Invalid concept questions");
+  const at = required(params.at, "Timestamp");
+  const version: EggConceptVersion = {
+    id: idOf("concept", project.nextSequence), text, visualUrl,
+    questions: questions.map(q => ({sphere:q.sphere, question:q.question.trim()})),
+    status: "proposed", proposedBy:params.actor, createdAt:at,
+    level:project.level, iteration:project.iteration,
+  };
+  return pushEvent({ ...project, concepts:[...(project.concepts??[]),version] }, {
+    kind:"concept_proposed",actor:params.actor,at,detail:version.id,
+  });
+};
+
+export const decideEggConcept = (project: EggProject, params: {
+  actor: EggActor; conceptId: string; outcome: EggDecisionType; reason: string; at: string;
+}): EggProject => {
+  assertAuthor(params.actor);
+  const index=(project.concepts??[]).findIndex(c=>c.id===params.conceptId);
+  if(index<0 || project.concepts?.[index].status!=="proposed")
+    throw new EggEngineError("Only pending concept proposals may be reviewed");
+  const reason=required(params.reason, "Author remark");
+  const at=required(params.at,"Timestamp");
+  const status:EggConceptStatus=params.outcome==="accept"?"accepted":
+    params.outcome==="revise"?"revision_requested":"rejected";
+  const concepts=(project.concepts??[]).map((c,i)=>i===index?{
+    ...c,status,decision:{outcome:params.outcome,reason,at}
+  }:c);
+  return pushEvent({...project,concepts},{
+    kind:"concept_decided",actor:"author",at,detail:params.conceptId+":"+params.outcome,
+  });
+};
+
+export const getActiveConcept = (project: EggProject): EggConceptVersion | undefined =>
+  [...(project.concepts??[])].reverse().find(c=>c.status==="accepted");
+
 export const canRoute = (from: EggEntry, to: SphereId, actor: EggActor): boolean => {
   if (!assertSphere(to) || (actor !== "author" && actor !== "ai")) return false;
   if (from === "author") return actor === "author";
@@ -210,6 +284,26 @@ export const routeQuestion = (project: EggProject, params: {
     { ...project, tasks: [...project.tasks, task] },
     { kind: "question_routed", actor: params.actor, at, taskId: task.id, detail: params.from + " → " + params.to },
   );
+};
+
+/** Only the Author may release a proposed question from an approved concept.
+ * Retrying the same question will not duplicate a task.
+ */
+export const routeConceptQuestion = (project: EggProject, params: {
+  actor: EggActor; conceptId: string; questionIndex: number; at: string;
+}): EggProject => {
+  assertAuthor(params.actor);
+  const concept=(project.concepts??[]).find(c=>c.id===params.conceptId);
+  if(!concept || concept.status!=="accepted") throw new EggEngineError("Concept not accepted");
+  if(!Number.isInteger(params.questionIndex) || params.questionIndex<0 ||
+     params.questionIndex>=concept.questions.length) throw new EggEngineError("Unknown concept question");
+  if(project.tasks.some(t=>t.sourceConceptId===concept.id && t.sourceQuestionIndex===params.questionIndex))
+    return project;
+  const question=concept.questions[params.questionIndex];
+  const routed=routeQuestion(project,{actor:"author",from:"author",to:question.sphere,question:question.question,at:params.at});
+  const tasks=routed.tasks.slice();
+  tasks[tasks.length-1]={...tasks[tasks.length-1],sourceConceptId:concept.id,sourceQuestionIndex:params.questionIndex};
+  return {...routed,tasks};
 };
 
 const getTaskIndex = (project: EggProject, id: string): number => {
@@ -298,6 +392,7 @@ export const decideFinding = (project: EggProject, params: {
 export const readCore = (project: EggProject) => ({
   projectId: project.id,
   originalSeed: project.seed.text,
+  approvedConcept: getActiveConcept(project) ?? null,
   level: project.level,
   iteration: project.iteration,
   accepted: project.tasks.flatMap((task) => task.decisions
