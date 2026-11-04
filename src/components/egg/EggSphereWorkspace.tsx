@@ -22,8 +22,8 @@ const sphereLabels: Record<string,string> = {
 };
 
 /** Knowledge/work proposals are append-only and NEVER write to the approved EGG Engine core. */
-export default function EggSphereWorkspace({ projectId, sphere, seed, level, iteration }: {
- projectId: string; sphere: string; seed?: string; level?: number; iteration?: number;
+export default function EggSphereWorkspace({ projectId, sphere, seed, level, iteration, readOnly = false, canManageMode = true }: {
+ projectId: string; sphere: string; seed?: string; level?: number; iteration?: number; readOnly?: boolean; canManageMode?: boolean;
 }) {
  const [db,setDb] = useState<SupabaseClient|null>(null);
  const [userId,setUserId] = useState("");
@@ -72,7 +72,7 @@ export default function EggSphereWorkspace({ projectId, sphere, seed, level, ite
   })();return()=>{live=false}
  },[projectId,sphere]);
  async function saveItem(){
-  if(!db||!userId||!title.trim()||!content.trim()||busy)return;
+  if(readOnly||!db||!userId||!title.trim()||!content.trim()||busy)return;
   const url=sourceUri.trim();
   if(url && !/^https?:\/\/[^\s]+$/i.test(url)){setError("Разрешены только ссылки http:// и https://.");return;}
   setBusy(true);setError("");setStatus("");
@@ -89,7 +89,7 @@ export default function EggSphereWorkspace({ projectId, sphere, seed, level, ite
   setBusy(false);
  }
  async function saveMode(next:ExecutionMode){
-  if(!db||!userId)return;
+  if(!canManageMode||!db||!userId)return;
   setBusy(true);setError("");setStatus("");
   const {error:writeError}=await db.from("egg_sphere_settings").upsert({
    project_id:projectId,sphere,mode:next,updated_by:userId,updated_at:new Date().toISOString()
@@ -108,7 +108,7 @@ export default function EggSphereWorkspace({ projectId, sphere, seed, level, ite
   {seed?.trim() && <div className="rounded-lg bg-foreground/5 p-3"><p className="text-xs font-medium">Исходная идея Автора</p><p className="mt-1 whitespace-pre-wrap break-words text-xs leading-relaxed text-foreground/80">{seed}</p></div>}
   <div className="rounded-lg border border-foreground/10 p-3">
    <label htmlFor="egg-sphere-mode" className="block text-xs font-medium">Режим работы сферы</label>
-   <select id="egg-sphere-mode" value={mode??""} disabled={!db||busy} onChange={event=>void saveMode(event.target.value as ExecutionMode)}
+   <select id="egg-sphere-mode" value={mode??""} disabled={!canManageMode||!db||busy} onChange={event=>void saveMode(event.target.value as ExecutionMode)}
     className="mt-2 w-full rounded border border-foreground/20 bg-background p-2 text-sm">
     <option value="" disabled>Режим пока не назначен</option>
     {Object.entries(modeLabels).map(([value,label])=><option value={value} key={value}>{label}</option>)}
@@ -134,7 +134,7 @@ export default function EggSphereWorkspace({ projectId, sphere, seed, level, ite
     </div>
    </div>
   </div>}
-  {db && <details className="rounded-lg border border-foreground/15 p-3" open={false}>
+  {db && !readOnly && <details className="rounded-lg border border-foreground/15 p-3" open={false}>
    <summary className="cursor-pointer text-sm font-medium">Добавить информацию / результат</summary>
    <form className="mt-3 space-y-3" onSubmit={e=>{e.preventDefault();void saveItem()}}>
     <div className="grid grid-cols-2 gap-2">
