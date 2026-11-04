@@ -7,6 +7,7 @@ const obj = (method: string, params: unknown, reqId: number | string = 1) =>
   ({ jsonrpc: "2.0", id: reqId, method, params });
 const operations = () => ({
   getState: vi.fn(async (projectId: string) => ({ ok: true, projectId, revision: 6 })),
+  proposeConcept: vi.fn(async (args: unknown) => ({ok:true,approved:false,text:(args as {text:string}).text})),
   registerDriveFile: vi.fn(async (args: unknown) => ({
     ok: true, revision: 7,
     artifact: { status: "reported", fileId: (args as { fileId: string }).fileId },
@@ -29,17 +30,36 @@ describe("MCP protocol and external AI handoff", () => {
     }, operations())).status).toBe(202);
   });
 
-  it("discloses only read and register tools, never approval tools", async () => {
+  it("discloses scoped research and proposal tools, never approval tools", async () => {
     const result = await processEggMcp(obj("tools/list", {}), operations());
     expect(result.status).toBe(200);
     const tools = (result.body as any).result.tools;
     expect(tools.map((tool: any) => tool.name)).toEqual([
-      "egg_get_project_state", "egg_register_drive_file",
+      "egg_get_project_state", "egg_contribute_sphere", "egg_propose_seed",
+      "egg_propose_concept", "egg_register_field_item", "egg_register_drive_file",
     ]);
     expect(tools.some((tool: any) => /confirm|approve|delete/i.test(tool.name))).toBe(false);
-    expect(eggMcpTools[1].annotations.readOnlyHint).toBe(false);
-    expect(eggMcpTools[1].annotations.idempotentHint).toBe(true);
+    expect(eggMcpTools.find(tool=>tool.name==="egg_propose_concept")?.annotations.readOnlyHint).toBe(false);
+    expect(eggMcpTools.find(tool=>tool.name==="egg_register_drive_file")?.annotations.idempotentHint).toBe(true);
     expect(eggMcpTools[0].annotations.readOnlyHint).toBe(true);
+  });
+
+  it("records AI concept drafts without approving them or inventing files", async()=>{
+    const ops=operations();
+    const result=await processEggMcp(obj("tools/call",{
+      name:"egg_propose_concept",arguments:{projectId:id,expectedRevision:6,
+        text:"Форма как пространственная оболочка",
+        questions:[{sphere:"production",question:"Как построить каркас?"}]
+      },
+    }),ops as any);
+    expect(ops.proposeConcept).toHaveBeenCalledOnce();
+    const value=JSON.parse((result.body as any).result.content[0].text);
+    expect(value.approved).toBe(false);
+    const invalid=await processEggMcp(obj("tools/call",{
+      name:"egg_propose_concept",arguments:{projectId:id,expectedRevision:6,
+        text:"Концепция",actor:"author"}
+    }),ops as any);
+    expect((invalid.body as any).error.code).toBe(-32602);
   });
 
   it("validates read arguments before touching project state", async () => {
