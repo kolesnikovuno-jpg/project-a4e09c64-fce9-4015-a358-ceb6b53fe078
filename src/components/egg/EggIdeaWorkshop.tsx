@@ -139,7 +139,7 @@ export default function EggIdeaWorkshop({projectId,seed,concepts,tasks,revision,
            </select>
            <input aria-label={"Вопрос "+(i+1)} maxLength={1000} value={q.question} onChange={e=>setQuestions(list=>list.map((item,j)=>j===i?{...item,question:e.target.value}:item))}
              placeholder="Что должна выяснить сфера?" className="min-w-[180px] flex-[3] rounded border border-foreground/20 bg-background p-2 text-xs"/>
-           <button type="button" onClick={()=>setQuestions(list=>list.filter((_,j)=>j!==i)) className="rounded border border-foreground/20 px-2 py-2 text-xs">Убрать</button>
+           <button type="button" onClick={()=>setQuestions(list=>list.filter((_,j)=>j!==i))} className="rounded border border-foreground/20 px-2 py-2 text-xs">Убрать</button>
          </div>)}
          <button type="button" disabled={questions.length>=8} onClick={addQuestion} className="rounded-full border border-foreground/25 px-3 py-2 text-xs disabled:opacity-50">Добавить вопрос сфере</button>
        </div>
