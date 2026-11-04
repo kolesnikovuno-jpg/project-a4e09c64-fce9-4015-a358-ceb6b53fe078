@@ -177,7 +177,7 @@ export default function EggYolkExperience(){
           <section className="relative order-1 min-w-0 lg:order-2" aria-label="Крупная пространственная модель и восемь сфер">
             <div className="relative mx-auto aspect-[760/700] w-full max-w-[720px]" data-testid="yolk-orbit-stage">
               <div className="absolute inset-[1%] z-0" data-testid="yolk-central-object">
-                <EggYolkViewer onFileChange={setLocal3d}/>
+                <EggYolkViewer onFileChange={setLocal3d} level={project?.level??1} iteration={project?.iteration??1} projectId={project?.id}/>
               </div>
               <svg viewBox="0 0 760 700" className="pointer-events-none absolute inset-0 z-10 h-full w-full overflow-visible" aria-label="Восемь интерактивных функциональных сфер">
                 <ellipse cx="380" cy="350" rx="290" ry="265" fill="none" stroke="currentColor" strokeOpacity=".16" strokeWidth=".9" vectorEffect="non-scaling-stroke"/>
@@ -208,7 +208,7 @@ export default function EggYolkExperience(){
                 })}
               </svg>
               <button type="button" onClick={()=>{setSelected(null);setShowDna(false);setExpanded(false);}}
-                className="absolute bottom-[1%] left-1/2 z-20 -translate-x-1/2 border-b border-foreground/30 pb-1 text-[11px] font-light tracking-[0.03em] text-foreground/65 hover:text-foreground">
+                className="absolute right-[5%] top-[12%] z-20 border-b border-foreground/30 pb-1 text-[11px] font-light tracking-[0.03em] text-foreground/65 hover:text-foreground">
                 ДНК / концепт
               </button>
             </div>
@@ -228,7 +228,7 @@ export default function EggYolkExperience(){
 
         <footer className="mt-7 flex flex-wrap justify-between gap-3 border-t border-foreground/10 pt-4 text-[11px] font-light text-foreground/45">
           <span>Вращение модели — мышь / жест · Масштаб — колесо</span>
-          <span>{local3d?"GLB открыт локально; не сохранён в проекте":"Модель условная · не чертёж"} · {project?"Чтение данных EGG":"Без изменения проектов"}</span>
+          <span>{local3d?"GLB открыт локально; не сохранён в проекте":"Параметрический эскиз · GLB создаётся локально"} · {project?"Чтение данных EGG":"Без изменения проектов"}</span>
         </footer>
       </main>
 
