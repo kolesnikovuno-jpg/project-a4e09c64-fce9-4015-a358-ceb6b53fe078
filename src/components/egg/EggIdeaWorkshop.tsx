@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import EggAiHandoff from "./EggAiHandoff";
+import EggDriveLinkRegistrar from "./EggDriveLinkRegistrar";
 import { parseEggAiConcept } from "../../lib/eggAiHandoff";
 
 type Question = {sphere:string;question:string};
@@ -11,6 +12,7 @@ type Concept = {
   decision?:{outcome:"accept"|"revise"|"reject";reason:string;at:string};
 };
 type Task = {sphere:string;question:string;status:string;sourceConceptId?:string;sourceQuestionIndex?:number};
+type AttachedFile = { id:string;fileId:string;title:string;webUrl?:string;collectionKey:string;status:"reported"|"author_confirmed";mimeType:string;registeredBy:"author"|"ai" };
 const names:Record<string,string>={
   marketing:"Маркетинг",legal:"Право",design:"Дизайн",production:"Производство",
   testDrive:"Тестдрайв",procurement:"Комплектация",commerce:"Коммерция",retail:"Ритейл",
@@ -20,8 +22,8 @@ const states:Record<Concept["status"],string>={
   revision_requested:"Возвращена на доработку",rejected:"Отклонена",
 };
 
-export default function EggIdeaWorkshop({projectId,seed,concepts,tasks,revision,level,iteration,onSaved}:{
-  projectId:string;seed:string;concepts:Concept[];tasks:Task[];
+export default function EggIdeaWorkshop({projectId,seed,concepts,tasks,files,revision,level,iteration,onSaved}:{
+  projectId:string;seed:string;concepts:Concept[];tasks:Task[];files:AttachedFile[];
   revision:number;level:number;iteration:number;onSaved:()=>void;
 }){
   const accepted=[...concepts].reverse().find(c=>c.status==="accepted");
@@ -91,6 +93,7 @@ export default function EggIdeaWorkshop({projectId,seed,concepts,tasks,revision,
       seed={seed} concept={accepted?.text} pendingConcept={pending?.text}
       remark={[...concepts].reverse().find(c=>c.status==="revision_requested")?.decision?.reason}
       tasks={tasks}/>
+   <EggDriveLinkRegistrar projectId={projectId} revision={revision} files={files} onSaved={onSaved}/>
    <div className="rounded-lg bg-foreground/[0.035] p-3">
      <p className="text-xs font-medium">Вход · идея Автора</p>
      <p className="mt-1 whitespace-pre-wrap break-words text-sm text-foreground/80">{seed || "Замысел ещё не утверждён."}</p>
