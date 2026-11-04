@@ -41,7 +41,7 @@ export default function EggAiHandoff({
         Переключиться на ChatGPT
       </button>
     </div>
-    <p className="text-xs leading-relaxed text-foreground/65">{sphere==="idea"?"Откроется ChatGPT с контекстом для вставки. AI уточнит замысел по одному важному вопросу за раз, не повторяя известного, и поможет сформировать концепцию. Открытые параметры можно оставить открытыми.":"Откроется ChatGPT в новой вкладке. Контекст проекта копируется для вставки в чат. Вы сможете обсуждать и переосмыслять замысел столько, сколько нужно; EGG ничего не утверждает автоматически."} EGG ничего не утверждает автоматически.</p>
+    <p className="text-xs leading-relaxed text-foreground/65">{sphere==="idea"?"Откроется ChatGPT с контекстом для вставки. AI уточнит замысел по одному важному вопросу за раз, не повторяя известного, и поможет сформировать концепцию. Открытые параметры можно оставить открытыми.":"Откроется ChatGPT в новой вкладке. Контекст проекта копируется для вставки в чат. Вы сможете обсуждать и переосмыслять замысел столько, сколько нужно."} EGG ничего не утверждает автоматически.</p>
     <div className="flex flex-wrap gap-x-4 gap-y-2">
       <button type="button" onClick={()=>void copyContext()} className="text-xs underline underline-offset-4">Скопировать контекст</button>
       <button type="button" onClick={()=>setExpanded(open=>!open)} className="text-xs underline underline-offset-4">{expanded?"Скрыть текст для ChatGPT":"Посмотреть текст для ChatGPT"}</button>
