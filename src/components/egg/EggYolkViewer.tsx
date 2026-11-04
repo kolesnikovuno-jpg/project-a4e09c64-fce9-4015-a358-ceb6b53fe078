@@ -1,5 +1,5 @@
 import { createElement, useEffect, useMemo, useRef, useState, type ChangeEvent, type PointerEvent, type WheelEvent } from "react";
-import { ArrowDownToLine, RotateCcw, Scan, Upload, X } from "lucide-react";
+import { RotateCcw, Upload, X } from "lucide-react";
 
 type P3 = { x:number; y:number; z:number };
 type P2 = { x:number; y:number; depth:number };
@@ -25,7 +25,7 @@ function viewerGeometry(yaw:number,pitch:number,zoom:number) {
     const z=-p.x*sy+p.z*cy;
     const y=(p.y-0.80)*cp-z*sp;
     const depth=(p.y-0.80)*sp+z*cp;
-    const perspective=(340*zoom)/(4.30-depth);
+    const perspective=(660*zoom)/(4.30-depth);
     return {x:300+x*perspective,y:315-y*perspective,depth};
   };
   const fmt=(p:P2)=>p.x.toFixed(1)+","+p.y.toFixed(1);
@@ -110,14 +110,7 @@ export default function EggYolkViewer({ onFileChange }: { onFileChange?: (fileNa
     fileRef.current=null;setFileUrl(null);setFileName("");setFileError("");onFileChange?.(null);
   }
   return <div className="relative flex h-full min-h-0 w-full flex-col items-center justify-center" data-testid="yolk-viewer">
-    <div className="pointer-events-none absolute inset-x-10 top-6 flex justify-center">
-      <span className="rounded-full border border-amber-300/25 bg-amber-100/40 px-3 py-1 text-[10px] tracking-[.14em] text-stone-500 dark:bg-amber-400/5 dark:text-stone-400">
-        {fileUrl?"ЛОКАЛЬНЫЙ GLB · НЕ УТВЕРЖДЁН":"ОБЪЁМНАЯ СХЕМА · НЕ ЧЕРТЁЖ"}
-      </span>
-    </div>
-    <div className="relative mt-2 aspect-square w-full max-w-[570px] flex-1 min-h-0">
-      <div className="pointer-events-none absolute inset-[8%] rounded-full border border-stone-400/10" />
-      <div className="pointer-events-none absolute inset-[18%] rounded-full border border-stone-400/10" />
+    <div className="relative aspect-square w-full max-w-[650px] min-h-0">
       {!fileUrl ? <svg viewBox="0 0 600 600" role="img" aria-label="Поворотная пространственная схема кресла для демонстрации вкладки Желтка"
         className="h-full w-full cursor-grab select-none touch-none active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
         tabIndex={0} onPointerDown={dragStart} onPointerMove={dragMove} onPointerUp={dragStop}
