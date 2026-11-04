@@ -16,7 +16,13 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
   const [activeSphere, setActiveSphere] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   useEffect(() => {
-    if (eggBrand && hasProject && params.get("start") === "author") { setActiveSphere("author"); setPanelOpen(true); }
+    if (!eggBrand || !hasProject) return;
+    const requested = params.get("start");
+    if (requested === "idea" || requested === "author" ||
+        (requested !== null && Object.prototype.hasOwnProperty.call(EGG_SPHERES, requested))) {
+      setActiveSphere(requested);
+      setPanelOpen(true);
+    }
   }, [eggBrand, hasProject, params]);
   const openSphere = (sphere: string) => { setActiveSphere(sphere); setPanelOpen(true); };
   useEffect(() => {
