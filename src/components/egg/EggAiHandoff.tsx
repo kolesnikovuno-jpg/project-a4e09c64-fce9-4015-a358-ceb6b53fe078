@@ -35,13 +35,13 @@ export default function EggAiHandoff({
   }
   return <section className="space-y-2 rounded-lg border border-foreground/15 p-3" aria-label={"Переход к AI: "+AI_HANDOFF_SPHERES[sphere]}>
     <div className="flex flex-wrap items-center justify-between gap-2">
-      <div><p className="text-sm font-medium">Диалог с AI</p>
+      <div><p className="text-sm font-medium">{sphere==="idea"?"Осмысление идеи с AI":"Диалог с AI"}</p>
       <p className="text-xs text-foreground/60">Сфера «{AI_HANDOFF_SPHERES[sphere]}» · ревизия {revision}</p></div>
       <button type="button" onClick={switchToAi} className="rounded-full border border-foreground/35 bg-foreground/5 px-4 py-2 text-sm">
         Переключиться на ChatGPT
       </button>
     </div>
-    <p className="text-xs leading-relaxed text-foreground/65">Откроется ChatGPT в новой вкладке. Контекст проекта копируется для вставки в чат. Вы сможете обсуждать и переосмыслять замысел столько, сколько нужно; EGG ничего не утверждает автоматически.</p>
+    <p className="text-xs leading-relaxed text-foreground/65">{sphere==="idea"?"Откроется ChatGPT с контекстом для вставки. AI уточнит замысел по одному важному вопросу за раз, не повторяя известного, и поможет сформировать концепцию. Открытые параметры можно оставить открытыми.":"Откроется ChatGPT в новой вкладке. Контекст проекта копируется для вставки в чат. Вы сможете обсуждать и переосмыслять замысел столько, сколько нужно; EGG ничего не утверждает автоматически."} EGG ничего не утверждает автоматически.</p>
     <div className="flex flex-wrap gap-x-4 gap-y-2">
       <button type="button" onClick={()=>void copyContext()} className="text-xs underline underline-offset-4">Скопировать контекст</button>
       <button type="button" onClick={()=>setExpanded(open=>!open)} className="text-xs underline underline-offset-4">{expanded?"Скрыть текст для ChatGPT":"Посмотреть текст для ChatGPT"}</button>
