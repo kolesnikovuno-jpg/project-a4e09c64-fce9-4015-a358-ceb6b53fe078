@@ -50,6 +50,29 @@ export const eggMcpTools = [
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
   },
   {
+    name: "egg_register_field_item",
+    title: "Register knowledge or a work proposal",
+    description: "Contribute a source-backed research note, question or proposal into the Egg knowledge field, attributed to an external AI agent. Requires a scoped contribute key and a stable operationId. Never modifies Author-approved core, level or iteration; external facts are not automatically verified.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        projectId: { type: "string", format: "uuid" },
+        operationId: { type: "string", minLength: 8, maxLength: 100, description: "Unique stable ID, reuse for the same contribution on retries" },
+        sphere: { type: "string", enum: ["marketing","legal","design","production","testDrive","procurement","commerce","retail"] },
+        flow: { type: "string", enum: ["field","work"], description: "field = reusable knowledge, work = unapproved sphere proposal" },
+        origin: { type: "string", enum: ["internal","external"] },
+        sourceKind: { type: "string", enum: ["idea","concept","web","document","database","service","human","observation","device","ai","other"] },
+        title: { type: "string", minLength: 1, maxLength: 180 },
+        content: { type: "string", minLength: 1, maxLength: 8000 },
+        sourceUri: { type: "string", format: "uri", description: "Optional original http(s) reference; must be real, never invented" },
+        claimType: { type: "string", enum: ["fact","hypothesis","question","proposal"] },
+      },
+      required: ["projectId","operationId","sphere","flow","origin","sourceKind","title","content","claimType"],
+      additionalProperties: false,
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  {
     name: "egg_register_drive_file",
     title: "Register a Google Drive file",
     description: "After your Google Drive connector ACTUALLY returns a file ID, register only its reference in the Egg project. This does NOT upload the file or independently verify it. The Author reviews it separately. Read state first to obtain expectedRevision. Generate a stable operationId once for the file-save action, and reuse it on retries. On revision conflict, read the latest revision and retry with the SAME operationId.",
@@ -88,6 +111,18 @@ const registerParams = baseParams.extend({
   webUrl: z.string().url().max(1200).optional(),
 }).strict();
 
+const fieldParams = baseParams.extend({
+  operationId: z.string().regex(/^[A-Za-z0-9_-]{8,100}$/),
+  sphere: z.enum(["marketing","legal","design","production","testDrive","procurement","commerce","retail"]),
+  flow: z.enum(["field","work"]),
+  origin: z.enum(["internal","external"]),
+  sourceKind: z.enum(["idea","concept","web","document","database","service","human","observation","device","ai","other"]),
+  title: z.string().trim().min(1).max(180),
+  content: z.string().trim().min(1).max(8000),
+  sourceUri: z.string().url().max(1000).refine(u=>/^https?:\\/\\//i.test(u), "HTTP(S) only").optional(),
+  claimType: z.enum(["fact","hypothesis","question","proposal"]),
+}).strict();
+
 const proposalParams = baseParams.extend({ expectedRevision: z.number().int().positive(), seed: z.string().trim().min(1).max(10000) }).strict();
 
 const contributeParams = z.discriminatedUnion("command", [
@@ -101,6 +136,7 @@ export type EggMcpOperations = {
   getState: (projectId: string) => Promise<unknown>;
   proposeSeed: (args: z.infer<typeof proposalParams>) => Promise<unknown>;
   registerDriveFile: (args: z.infer<typeof registerParams>) => Promise<unknown>;
+  registerFieldItem: (args: z.infer<typeof fieldParams>) => Promise<unknown>;
 };
 
 const jsonError = (id: unknown, code: number, message: string) => ({
@@ -147,7 +183,7 @@ export const processEggMcp = async (
   }
   if (method !== "tools/call") return { status: 200, body: jsonError(id, -32601, "Method not found") };
   const invocation = z.object({
-    name: z.enum(["egg_get_project_state", "egg_register_drive_file", "egg_contribute_sphere", "egg_propose_seed"]),
+    name: z.enum(["egg_get_project_state", "egg_register_drive_file", "egg_contribute_sphere", "egg_propose_seed", "egg_register_field_item"]),
     arguments: z.unknown().optional(),
   }).passthrough().safeParse(params);
   if (!invocation.success) return { status: 200, body: jsonError(id, -32602, "Invalid tool call") };
@@ -156,7 +192,8 @@ export const processEggMcp = async (
   const validation = name === "egg_get_project_state"
     ? baseParams.safeParse(args)
     : name === "egg_contribute_sphere" ? contributeParams.safeParse(args)
-    : name === "egg_propose_seed" ? proposalParams.safeParse(args) : registerParams.safeParse(args);
+    : name === "egg_propose_seed" ? proposalParams.safeParse(args)
+    : name === "egg_register_field_item" ? fieldParams.safeParse(args) : registerParams.safeParse(args);
   if (!validation.success) return { status: 200, body: jsonError(id, -32602, "Invalid tool arguments") };
 
   try {
@@ -166,7 +203,9 @@ export const processEggMcp = async (
         ? await operations.contributeSphere(validation.data as z.infer<typeof contributeParams>)
         : name === "egg_propose_seed"
           ? await operations.proposeSeed(validation.data as z.infer<typeof proposalParams>)
-          : await operations.registerDriveFile(validation.data as z.infer<typeof registerParams>);
+          : name === "egg_register_field_item"
+            ? await operations.registerFieldItem(validation.data as z.infer<typeof fieldParams>)
+            : await operations.registerDriveFile(validation.data as z.infer<typeof registerParams>);
     return { status: 200, body: response(id, toolResponse(value)) };
   } catch (error) {
     // Tool errors are tool results (not protocol failures). Avoid stack traces,
