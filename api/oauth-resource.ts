@@ -23,7 +23,7 @@ export default function handler(req: IncomingMessage, res: ServerResponse) {
   res.setHeader("Cache-Control", "public, max-age=300");
   res.end(JSON.stringify({
     resource: origin + "/api/mcp",
-    authorization_servers: [config.url + "/auth/v1"],
+    authorization_servers: [config.url.replace(/\/$/, "") + "/auth/v1"],
     bearer_methods_supported: ["header"],
   }));
 }
