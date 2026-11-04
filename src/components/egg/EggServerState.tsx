@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
 import EggAuthorDecision from "./EggAuthorDecision";
@@ -22,13 +22,19 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
   const [revision, setRevision] = useState<number | null>(null);
   const [status, setStatus] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
+  const displayedProjectId = useRef<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   useEffect(() => {
-    if (!id) { setProject(null); setRevision(null); setStatus(""); return; }
+    if (!id) { displayedProjectId.current = null; setProject(null); setRevision(null); setStatus(""); return; }
     let active = true;
-    setProject(null);
-    setRevision(null);
-    setStatus("");
+    // Refresh data in place on focus. Do not unmount the sphere and lose a draft
+    // while the Author is discussing the project in another ChatGPT tab.
+    if (displayedProjectId.current !== id) {
+      displayedProjectId.current = id;
+      setProject(null);
+      setRevision(null);
+      setStatus("");
+    }
     (async () => {
       try {
         const configResponse = await fetch("/api/egg-config", { cache: "no-store" });
