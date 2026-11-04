@@ -113,7 +113,7 @@ export const runEggMutation = (
     case "set_seed":
       return recordAuthorSeed(state, mutation.seed, at);
     case "propose_concept":
-      return proposeEggConcept(state,{actor,text:mutation.text,visualUrl:mutation.visualUrl,questions:mutation.questions,at});
+      return proposeEggConcept(state,{actor,text:mutation.text,visualUrl:mutation.visualUrl,questions:mutation.questions?.map(q=>({sphere:q.sphere!,question:q.question!})),at});
     case "decide_concept":
       return decideEggConcept(state,{actor,conceptId:mutation.conceptId,outcome:mutation.outcome,reason:mutation.reason,at});
     case "route_concept_question":
