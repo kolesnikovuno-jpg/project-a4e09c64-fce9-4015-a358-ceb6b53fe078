@@ -28,6 +28,7 @@ import SemanticAbout from "./pages/SemanticAbout";
 import OperatorLogin from "./pages/OperatorLogin";
 import EggOAuthConsent from "./pages/EggOAuthConsent";
 import EggConnect from "./pages/EggConnect";
+import EggStablePreview from "./components/egg/EggStablePreview";
 import EggCollaboration from "./pages/EggCollaboration";
 import OperatorCases from "./pages/OperatorCases";
 import OperatorCaseDetail from "./pages/OperatorCaseDetail";
@@ -75,7 +76,7 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   // Previous landing (architectural research) kept for backward compatibility
   { path: "research", element: <Index /> },
   { path: "unocalc", element: <UnoCalcEgg /> },
-  { path: "egg", element: <UnoCalcEgg eggBrand /> },
+  { path: "egg", element: <EggStablePreview><UnoCalcEgg eggBrand /></EggStablePreview> },
   { path: "unocalc/model", element: <UnoObjectModel /> },
   { path: "unocalc/about", element: <UnoCalcAbout /> },
   { path: "unocalc/lab", element: <UnoLab /> },
@@ -141,8 +142,8 @@ const App = () => (
           ))}
 
           <Route path="/oauth/consent" element={<EggOAuthConsent />} />
-          <Route path="/egg/connect" element={<EggConnect />} />
-          <Route path="/egg/collab" element={<EggCollaboration />} />
+          <Route path="/egg/connect" element={<EggStablePreview><EggConnect /></EggStablePreview>} />
+          <Route path="/egg/collab" element={<EggStablePreview><EggCollaboration /></EggStablePreview>} />
 
           {/* Internal operator workspace */}
           <Route path="/operator/login" element={<OperatorLogin />} />
