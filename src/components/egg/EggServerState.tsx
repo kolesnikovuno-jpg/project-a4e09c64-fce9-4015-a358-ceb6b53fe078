@@ -57,6 +57,7 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
     {!id && <p className="text-sm text-foreground/70">Выберите проект в личном кабинете.</p>}
     {id && !project && !status && <p className="text-sm">Загружаем проект…</p>}
     {status && <p role="status" className="text-sm text-foreground/70">{status}</p>}
+    {status && <Link to="/egg/demo" className="mt-3 inline-flex rounded-full border border-foreground/25 px-4 py-2 text-xs">Посмотреть демонстрацию без регистрации</Link>}
     {project && <div className="space-y-2">
       <p className="text-sm font-medium">{project.title || "Проект EGG"}</p>
       {project.seed.text.trim() ? <details className="rounded-lg border border-foreground/10 p-3"><summary className="cursor-pointer text-xs text-foreground/75">Исходная идея Автора</summary><p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground/75">{project.seed.text}</p></details> : <p className="text-sm text-foreground/70">Исходная идея ещё не сформирована</p>}
