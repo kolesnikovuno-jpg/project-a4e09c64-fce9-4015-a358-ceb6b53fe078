@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
+import EggAiHandoff from "./EggAiHandoff";
+import { parseEggAiConcept } from "../../lib/eggAiHandoff";
 
 type Question = {sphere:string;question:string};
 type Concept = {
@@ -8,7 +10,7 @@ type Concept = {
   proposedBy:"author"|"ai"; createdAt:string; level:number; iteration:number;
   decision?:{outcome:"accept"|"revise"|"reject";reason:string;at:string};
 };
-type Task = {sourceConceptId?:string;sourceQuestionIndex?:number};
+type Task = {sphere:string;question:string;status:string;sourceConceptId?:string;sourceQuestionIndex?:number};
 const names:Record<string,string>={
   marketing:"Маркетинг",legal:"Право",design:"Дизайн",production:"Производство",
   testDrive:"Тестдрайв",procurement:"Комплектация",commerce:"Коммерция",retail:"Ритейл",
@@ -18,9 +20,9 @@ const states:Record<Concept["status"],string>={
   revision_requested:"Возвращена на доработку",rejected:"Отклонена",
 };
 
-export default function EggIdeaWorkshop({projectId,seed,concepts,tasks,revision,onSaved}:{
+export default function EggIdeaWorkshop({projectId,seed,concepts,tasks,revision,level,iteration,onSaved}:{
   projectId:string;seed:string;concepts:Concept[];tasks:Task[];
-  revision:number;onSaved:()=>void;
+  revision:number;level:number;iteration:number;onSaved:()=>void;
 }){
   const accepted=[...concepts].reverse().find(c=>c.status==="accepted");
   const pending=concepts.find(c=>c.status==="proposed");
@@ -31,7 +33,8 @@ export default function EggIdeaWorkshop({projectId,seed,concepts,tasks,revision,
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState("");
   const [note,setNote]=useState("");
-  useEffect(()=>{setText("");setVisualUrl("");setQuestions([]);setRemark("");},[projectId]);
+  const [aiReply,setAiReply]=useState("");
+  useEffect(()=>{setText("");setVisualUrl("");setQuestions([]);setRemark("");setAiReply("");},[projectId]);
   async function command(payload:Record<string,unknown>){
     setBusy(true);setError("");setNote("");
     try{
@@ -65,12 +68,29 @@ export default function EggIdeaWorkshop({projectId,seed,concepts,tasks,revision,
   const active=[...concepts].reverse().find(c=>c.status==="accepted");
   const unsubmitted=questions.some(q=>!q.question.trim());
   const visualOk=!visualUrl.trim()||/^https?:\/\/[^\s]+$/i.test(visualUrl.trim());
+  function importAiReply(){
+    try{
+      const result=parseEggAiConcept(aiReply);
+      setText(result.concept);
+      setVisualUrl(result.visualUrl??"");
+      setQuestions(result.questions);
+      setAiReply("");
+      setError("");
+      setNote("Результат перенесён в редактор как черновик. Проверьте и измените перед сохранением.");
+    }catch(e){
+      setError(e instanceof Error?e.message:"Не удалось распознать ответ AI.");
+    }
+  }
 
   return <section className="space-y-4 rounded-xl border border-foreground/20 p-3 sm:p-4" aria-label="Сфера Идея">
    <div>
     <h3 className="text-base font-medium">Сфера «Идея»</h3>
     <p className="mt-1 text-xs leading-relaxed text-foreground/65">Задача сферы — сжать авторскую идею до концепции. На выходе: информационное поле и вопросы для функциональных сфер. Черновик не изменяет утверждённый замысел.</p>
    </div>
+   <EggAiHandoff projectId={projectId} sphere="idea" revision={revision} level={level} iteration={iteration}
+      seed={seed} concept={accepted?.text} pendingConcept={pending?.text}
+      remark={[...concepts].reverse().find(c=>c.status==="revision_requested")?.decision?.reason}
+      tasks={tasks}/>
    <div className="rounded-lg bg-foreground/[0.035] p-3">
      <p className="text-xs font-medium">Вход · идея Автора</p>
      <p className="mt-1 whitespace-pre-wrap break-words text-sm text-foreground/80">{seed || "Замысел ещё не утверждён."}</p>
@@ -119,7 +139,19 @@ export default function EggIdeaWorkshop({projectId,seed,concepts,tasks,revision,
    {!pending&&seed.trim()&&<details className="rounded-lg border border-foreground/15 p-3" open={!accepted}>
      <summary className="cursor-pointer text-sm font-medium">{accepted?"Предложить следующую версию концепции":"Сформировать первую концепцию"}</summary>
      <div className="mt-3 space-y-3">
-       <p className="text-xs text-foreground/65">Текстовая проработка пока выполняется вручную или с внешним AI через подключение EGG. Вы можете вставить сюда готовый результат. Для графики можно приложить доступную ссылку.</p>
+       <p className="text-xs text-foreground/65">Проработайте идею в диалоге с AI или вручную. Здесь вы редактируете результат и только затем направляете его Автору на рассмотрение.</p>
+       <div className="space-y-2 rounded-lg bg-foreground/[0.035] p-3">
+         <label className="block text-xs font-medium">Перенести результат из ChatGPT
+           <textarea rows={4} maxLength={20000} value={aiReply} onChange={e=>setAiReply(e.target.value)}
+             placeholder={'Вставьте согласованный текст или JSON: {"concept":"...","questions":[...]}'}
+             className="mt-1 w-full rounded border border-foreground/20 bg-background p-2 text-sm"/>
+         </label>
+         <button type="button" disabled={!aiReply.trim()} onClick={importAiReply}
+           className="rounded-full border border-foreground/30 px-3 py-2 text-xs disabled:opacity-40">
+           Перенести в редактор концепции
+         </button>
+         <p className="text-[11px] text-foreground/60">Ничего не утверждается при переносе. Графическая концепция может иметь ссылку на реальную клаузуру или эскиз.</p>
+       </div>
        {accepted&&<button type="button" className="rounded-full border border-foreground/20 px-3 py-1.5 text-xs" onClick={()=>{setText(accepted.text);setVisualUrl(accepted.visualUrl??"");setQuestions(accepted.questions.map(q=>({...q})));setNote("Скопирована предыдущая версия для дальнейшей проработки.");}}>Взять принятую версию за основу</button>}
        <label className="block text-xs">Концепция: сущность, принципы, ограничения
          <textarea required rows={6} maxLength={10000} value={text} onChange={e=>setText(e.target.value)}
