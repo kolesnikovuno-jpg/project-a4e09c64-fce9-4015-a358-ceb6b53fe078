@@ -4,7 +4,7 @@ import EggNewProject from "../components/egg/EggNewProject";
 import EggProjectActions from "../components/egg/EggProjectActions";
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 
-const EGG_MCP_URL = "https://project-a4e09c64-fce9-40-git-e8febd-kolesnikovuno-jpgs-projects.vercel.app/api/mcp";
+const EGG_MCP_URL = "https://egg.kolesnikov.studio/api/mcp";
 
 export default function EggConnect() {
   const [client, setClient] = useState<SupabaseClient | null>(null);
