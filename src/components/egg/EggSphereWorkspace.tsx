@@ -22,8 +22,8 @@ const sphereLabels: Record<string,string> = {
 };
 
 /** Knowledge/work proposals are append-only and NEVER write to the approved EGG Engine core. */
-export default function EggSphereWorkspace({ projectId, sphere, seed, level, iteration, readOnly = false, canManageMode = true }: {
- projectId: string; sphere: string; seed?: string; level?: number; iteration?: number; readOnly?: boolean; canManageMode?: boolean;
+export default function EggSphereWorkspace({ projectId, sphere, seed, concept, level, iteration, readOnly = false, canManageMode = true }: {
+ projectId: string; sphere: string; seed?: string; concept?:string; level?: number; iteration?: number; readOnly?: boolean; canManageMode?: boolean;
 }) {
  const [db,setDb] = useState<SupabaseClient|null>(null);
  const [userId,setUserId] = useState("");
@@ -106,6 +106,11 @@ export default function EggSphereWorkspace({ projectId, sphere, seed, level, ite
    <p className="mt-1 text-xs leading-relaxed text-foreground/65">Два входа: внутреннее поле Яйца и внешние источники. Два выхода: новые сведения для общего поля и рабочие предложения для формирования желтка.</p>
   </div>
   {seed?.trim() && <div className="rounded-lg bg-foreground/5 p-3"><p className="text-xs font-medium">Исходная идея Автора</p><p className="mt-1 whitespace-pre-wrap break-words text-xs leading-relaxed text-foreground/80">{seed}</p></div>}
+  {concept?.trim()&&<div className="rounded-lg border border-foreground/15 p-3">
+    <p className="text-xs font-medium">Принятая концепция · внутреннее поле</p>
+    <p className="mt-1 whitespace-pre-wrap break-words text-xs leading-relaxed text-foreground/80">{concept}</p>
+    <p className="mt-2 text-[11px] text-foreground/55">Концепция утверждена Автором. Она направляет исследование, но не заменяет проверку фактов.</p>
+  </div>}
   <div className="rounded-lg border border-foreground/10 p-3">
    <label htmlFor="egg-sphere-mode" className="block text-xs font-medium">Режим работы сферы</label>
    <select id="egg-sphere-mode" value={mode??""} disabled={!canManageMode||!db||busy} onChange={event=>void saveMode(event.target.value as ExecutionMode)}
