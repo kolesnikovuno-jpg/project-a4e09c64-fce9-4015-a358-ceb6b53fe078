@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
-import { ArrowLeft, ArrowUpRight, BookOpenText, ChevronDown, CircleDot, Fingerprint, Layers3, Maximize2, Rotate3D, X } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import EggYolkViewer from "./EggYolkViewer";
 import { EGG_SPHERES, type SphereId } from "../../lib/eggEngine";
 
@@ -49,6 +49,33 @@ function conception(project:Project|null){
 const demoSeed="Лёгкое кресло для отдыха, расслабления и медитации. Дерево, фанера, натуральный лён; воздушная форма, мягкий контур, низкая посадка.";
 const demoConcept="Кресло A «Объятие». Полулежачая низкая посадка, мягкая поддержка тела, открытый пространственный контур. Покой и уединение — смысловое ядро. Конструкция и точные пропорции требуют исследования.";
 
+
+/** Reuses the same 26 ms character-by-character reveal as the original Egg page. */
+function YolkTypewriter({title,description,number,side}:{title:string;description:string;number:string;side:"left"|"right"}){
+  const full=title+"\n"+description;
+  const [length,setLength]=useState(0);
+  useEffect(()=>{
+    if(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches){setLength(full.length);return;}
+    setLength(0);
+    let i=0;
+    const timer=window.setInterval(()=>{
+      i=Math.min(full.length,i+1);
+      setLength(i);
+      if(i===full.length)window.clearInterval(timer);
+    },26);
+    return()=>window.clearInterval(timer);
+  },[full]);
+  return <div className="w-full min-w-0 text-left" data-testid={"yolk-"+side+"-typing"}>
+    <p className="mb-3 text-[10px] font-light uppercase tracking-[0.16em] text-foreground/40">{number}</p>
+    <h2 className="min-h-[32px] text-[24px] font-extralight leading-tight tracking-[-0.03em] text-foreground/85" aria-hidden="true">{full.slice(0,Math.min(length,title.length))}</h2>
+    <p className="mt-2 min-h-[70px] text-[13px] font-light leading-[1.8] tracking-[0.01em] text-foreground/65" aria-hidden="true">
+      {full.slice(title.length+1,length)}
+      {length>title.length&&length<full.length&&<span className="unocalc-type-caret" aria-hidden="true">▍</span>}
+    </p>
+    <span className="sr-only" role="status">{title}. {description}</span>
+  </div>;
+}
+
 export default function EggYolkExperience(){
   const [params]=useSearchParams();
   const id=params.get("project");
@@ -87,9 +114,6 @@ export default function EggYolkExperience(){
   },[id,refresh]);
   const concept=useMemo(()=>conception(project),[project]);
   const approved=concept?.status==="accepted";
-  const isDemo=!project;
-  const projectName=project?.title?(project.title.length>90?"Проект EGG · "+brief(project.title,58):project.title):"Кресло A «Объятие»";
-  const mainTitle=project?(project.title?.includes("кресл")?"Кресло · рабочая форма":"Формирующийся продукт"):"Кресло · Объятие";
   const currentText=concept?.text??project?.seed.text??demoConcept;
   const candidateText=concept?.status==="proposed";
   const dna=project?.seed.text??demoSeed;
@@ -97,144 +121,168 @@ export default function EggYolkExperience(){
   const sphereTasks=(project?.tasks??[]).filter(t=>t.sphere===selected);
   const sphereArtifacts=(project?.artifacts??[]).filter(a=>a.sphere===selected);
   const sphereStatus=summarize(sphereTasks);
+  useEffect(()=>{
+    if(!expanded)return;
+    const before=document.body.style.overflow;
+    document.body.style.overflow="hidden";
+    const key=(event:KeyboardEvent)=>{if(event.key==="Escape")setExpanded(false);};
+    window.addEventListener("keydown",key);
+    return()=>{document.body.style.overflow=before;window.removeEventListener("keydown",key);};
+  },[expanded]);
   const approvedWork=(project?.tasks??[]).filter(t=>t.status==="accepted").length;
   const pendingWork=(project?.tasks??[]).filter(t=>t.status==="returned").length;
-  return <div className="min-h-screen bg-[#f4f3ee] text-[#3b403d] dark:bg-[#101615] dark:text-[#e0e3db]" data-testid="yolk-experience">
-    <div className="mx-auto max-w-[1580px] px-3 pb-12 pt-4 sm:px-7 sm:pt-7">
-      <header className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-[#7c8580]/20 pb-5">
-        <div className="flex items-center gap-4 sm:gap-7">
-          <Link to={id?"/egg?project="+encodeURIComponent(id):"/egg/demo"} className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-current/15 px-3 text-[11px] opacity-70 hover:opacity-100"><ArrowLeft size={14}/> К яйцу</Link>
-          <span className="font-light text-xl tracking-[-.075em] sm:text-[27px]">EGG <span className="font-normal text-[#b39260]">/</span> YOLK</span>
-          <span className="hidden border-l border-current/15 pl-5 text-[10px] uppercase tracking-[.22em] opacity-50 sm:block">Product formation / 09</span>
-        </div>
-        <div className="flex items-center gap-3">
-          {project&&<button type="button" onClick={()=>setRefresh(v=>v+1)} className="rounded-full border border-current/15 px-3 py-2 text-xs opacity-70 hover:opacity-100">Обновить состояние</button>}
-          <span className="rounded-full border border-[#b99c6e]/45 bg-[#b99c6e]/10 px-3 py-2 text-[10px] tracking-[.08em]">{project?"ДАННЫЕ EGG":"ДЕМОНСТРАЦИЯ"}</span>
-        </div>
-      </header>
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-4 px-1">
-        <div>
-          <p className="mb-2 text-[10px] uppercase tracking-[.25em] text-[#9b8b72]">09 / Интеграционное ядро</p>
-          <h1 className="font-light text-[34px] leading-[1.1] tracking-[-.045em] sm:text-[48px]">Желток <span className="font-thin text-[#b6aa98]">/</span> форма</h1>
-          <p className="mt-2 max-w-[680px] text-[12px] leading-relaxed opacity-65">Продукт в центре. Восемь сфер по периметру. Выберите сферу, чтобы увидеть её текущий вклад.</p>
-        </div>
-        <div className="flex items-center gap-3 text-[11px] opacity-70">
-          <span>Уровень {project?.level??"—"}</span><span className="h-3 w-px bg-current/20"/><span>Цикл {project?.iteration??"—"}</span>
-          {revision!==null&&<><span className="h-3 w-px bg-current/20"/><span>Rev. {revision}</span></>}
-        </div>
-      </div>
-      <div className="grid items-start gap-3 lg:grid-cols-[minmax(0,1fr)_340px] xl:gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <section aria-label="Центральная модель продукта и восемь сфер" className="relative isolate overflow-hidden rounded-[28px] border border-[#8d9085]/20 bg-[radial-gradient(ellipse_at_50%_36%,#fffef9_0%,#f5f1e8_51%,#ebe9e0_100%)] shadow-[0_20px_90px_rgba(74,67,54,.055)] dark:bg-[radial-gradient(ellipse_at_50%_34%,#333a36_0%,#1c2421_55%,#111a17_100%)]">
-          <div className="pointer-events-none absolute left-6 top-6 z-10 flex flex-col gap-1.5">
-            <span className="text-[10px] uppercase tracking-[.23em] opacity-50">Current object / {project?.iteration??"01"}</span>
-            <span className="max-w-[240px] text-xs font-medium leading-snug sm:max-w-[350px] sm:text-sm">{mainTitle}</span>
-            <span className="text-[10px] text-[#99856b]">{project?(approved?"Концепция принята":candidateText?"Концепция предложена":"Концепция не утверждена"):"Эскизное направление A"}</span>
+
+  const leftCopy=selectedMeta
+    ? brief(EGG_SPHERES[selectedMeta.id].purpose,165)
+    : "Исходная идея Автора остаётся основой всех изменений. Форму развивают восемь взаимосвязанных сфер.";
+  const lastTask=sphereTasks[sphereTasks.length-1];
+  const lastFinding=lastTask?.findings?.[lastTask.findings.length-1]?.text;
+  const rightCopy=selectedMeta
+    ? (sphereTasks.length
+        ? brief(lastFinding??lastTask.question,185)
+        : project ? "В этой сфере пока нет зарегистрированных результатов." : "Это ознакомительный режим. Данные реального проекта здесь не показаны.")
+    : brief(currentText,185);
+  const selectSphere=(sphere:SphereId)=>{
+    setSelected(current=>current===sphere?null:sphere);
+    setExpanded(false);
+    setShowDna(false);
+  };
+  return (
+    <div className="min-h-screen bg-background font-body text-foreground" data-testid="yolk-experience">
+      <main className="mx-auto w-full max-w-[1580px] px-5 pb-10 pt-6 sm:px-7 lg:px-10">
+        <header className="flex flex-wrap items-center justify-between gap-4 pb-5">
+          <div className="flex items-center gap-5">
+            <Link to={id?"/egg?project="+encodeURIComponent(id):"/egg/demo"} className="text-[12px] font-light text-foreground/65 underline-offset-4 hover:underline"><ArrowLeft size={14} className="mr-1 inline"/> К Яйцу</Link>
+            <h1 className="text-[26px] font-extralight leading-none tracking-[-0.04em] text-foreground/85">EGG <span className="text-foreground/30">/</span> YOLK</h1>
           </div>
-          <div className="pointer-events-none absolute right-6 top-6 z-10 text-[10px] uppercase tracking-[.18em] opacity-40">08 / spheres</div>
-          <div className="relative mx-auto aspect-[1/1.04] w-full max-w-[920px] min-h-[430px] sm:aspect-[1.18/1] sm:min-h-[590px]">
-            <div className="pointer-events-none absolute inset-[6%] rounded-full border border-[#b4a68e]/20 sm:inset-[8%]" />
-            <div className="pointer-events-none absolute inset-[16%] rounded-full border border-[#b4a68e]/15 sm:inset-[20%]" />
-            <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
-              {YOLK_SPHERES.map(s=>{const a=s.angle*Math.PI/180,x=500+410*Math.cos(a),y=500+410*Math.sin(a);return <line key={s.id} x1="500" y1="500" x2={x} y2={y} stroke={s.accent} strokeWidth={selected===s.id?1.8:.8} strokeOpacity={selected===s.id ? .26 : .10} strokeDasharray={selected===s.id?"":"4 8"}/>})}
-            </svg>
-            <div className="absolute inset-[20%] sm:inset-[17%]">
-              <EggYolkViewer onFileChange={setLocal3d}/>
+          <div className="flex flex-wrap items-center gap-4 text-[11px] font-light text-foreground/50">
+            <span>{project?"Проект EGG · "+(project.title??"без названия"):"Демонстрация · кресло"}</span>
+            {project&&<button type="button" onClick={()=>setRefresh(v=>v+1)} className="border-b border-foreground/25 pb-1 hover:text-foreground">Обновить</button>}
+          </div>
+        </header>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-foreground/10 pt-4 text-[10px] font-light uppercase tracking-[0.16em] text-foreground/40">
+          <span>Формирующийся объект / 08 сфер</span>
+          <span>Уровень {project?.level??"—"} · Цикл {project?.iteration??"—"}{revision!==null?" · Rev. "+revision:""}</span>
+        </div>
+
+        <div className="mx-auto mt-4 grid w-full items-center gap-x-4 gap-y-6 lg:grid-cols-[minmax(165px,1fr)_minmax(440px,720px)_minmax(165px,1fr)] xl:gap-x-8">
+          <aside className="order-2 min-w-0 self-center pb-1 lg:order-1" aria-label="Название и назначение">
+            <YolkTypewriter key={"left-"+(selected??"dna")} side="left"
+              number={selectedMeta?"Сфера / "+String(YOLK_SPHERES.indexOf(selectedMeta)+1).padStart(2,"0"):"ДНК / исходный замысел"}
+              title={selectedMeta?selectedMeta.name:"ДНК продукта"}
+              description={leftCopy}/>
+            <p className="mt-4 text-[11px] font-light text-foreground/45">{selectedMeta?selectedMeta.tag:"Концепция — постоянный ориентир"}</p>
+          </aside>
+
+          <section className="relative order-1 min-w-0 lg:order-2" aria-label="Крупная пространственная модель и восемь сфер">
+            <div className="relative mx-auto aspect-[760/700] w-full max-w-[720px]" data-testid="yolk-orbit-stage">
+              <div className="absolute inset-[1%] z-0" data-testid="yolk-central-object">
+                <EggYolkViewer onFileChange={setLocal3d}/>
+              </div>
+              <svg viewBox="0 0 760 700" className="pointer-events-none absolute inset-0 z-10 h-full w-full overflow-visible" aria-label="Восемь интерактивных функциональных сфер">
+                <ellipse cx="380" cy="350" rx="290" ry="265" fill="none" stroke="currentColor" strokeOpacity=".16" strokeWidth=".9" vectorEffect="non-scaling-stroke"/>
+                <line x1="380" y1="75" x2="380" y2="625" stroke="currentColor" strokeOpacity=".11" strokeDasharray="4 9" strokeWidth=".7" vectorEffect="non-scaling-stroke"/>
+                {YOLK_SPHERES.map(s=>{
+                  const angle=s.angle*Math.PI/180;
+                  const x=380+290*Math.cos(angle);
+                  const y=350+265*Math.sin(angle);
+                  const active=selected===s.id;
+                  const sphereState=summarize((project?.tasks??[]).filter(t=>t.sphere===s.id));
+                  return <g key={s.id}>
+                    {active&&<line x1="380" y1="350" x2={x} y2={y} stroke="hsl(var(--primary))" strokeOpacity=".23" strokeWidth=".9" strokeDasharray="3 8" vectorEffect="non-scaling-stroke"/>}
+                    <circle cx={x} cy={y} r="10.5"
+                      fill={active?"hsl(var(--primary) / 0.16)":"hsl(var(--background))"}
+                      stroke={active?"hsl(var(--primary))":"currentColor"}
+                      strokeOpacity={active?".95":".72"}
+                      strokeWidth="1.1" vectorEffect="non-scaling-stroke"/>
+                    {project&&sphereState.code!=="none"&&<circle cx={x+9} cy={y-9} r="2.5" fill={sphereState.code==="returned"?"#c49d65":sphereState.code==="accepted"?"hsl(var(--primary))":"currentColor"} opacity=".65"/>}
+                    <circle data-testid={"yolk-orbit-"+s.id} cx={x} cy={y} r="25"
+                      fill="transparent" stroke="none" pointerEvents="all" role="button" tabIndex={0}
+                      aria-label={"Открыть сферу "+s.name} aria-pressed={active}
+                      className="cursor-pointer focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
+                      onClick={()=>selectSphere(s.id)}
+                      onKeyDown={event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();selectSphere(s.id);}}}>
+                      <title>{s.name}</title>
+                    </circle>
+                  </g>;
+                })}
+              </svg>
+              <button type="button" onClick={()=>{setSelected(null);setShowDna(false);setExpanded(false);}}
+                className="absolute bottom-[1%] left-1/2 z-20 -translate-x-1/2 border-b border-foreground/30 pb-1 text-[11px] font-light tracking-[0.03em] text-foreground/65 hover:text-foreground">
+                ДНК / концепт
+              </button>
             </div>
-            {YOLK_SPHERES.map((s,index)=>{
-              const a=s.angle*Math.PI/180;
-              const x=50+41*Math.cos(a),y=50+41*Math.sin(a);
-              const status=summarize((project?.tasks??[]).filter(t=>t.sphere===s.id));
-              const active=selected===s.id;
-              return <button key={s.id} type="button" onClick={()=>{setSelected(s.id);setExpanded(false);setShowDna(false)}} aria-label={"Показать вклад сферы "+s.name} aria-pressed={active}
-                data-testid={"yolk-orbit-"+s.id}
-                style={{left:x+"%",top:y+"%",borderColor:active?s.accent:undefined}}
-                className={"absolute z-20 flex h-[65px] w-[76px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-2xl border bg-[#f8f6ef]/95 px-1 shadow-[0_5px_24px_rgba(60,57,50,.065)] backdrop-blur-sm transition-all hover:scale-[1.05] hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ab7a] dark:bg-[#202b26]/95 sm:h-[78px] sm:w-[98px] "+(active?"border-2 shadow-[0_7px_28px_rgba(176,144,91,.18)]":"border-[#79786e]/20")} >
-                <span className="flex items-center gap-1 text-[10px] opacity-45"><span className="font-mono">{String(index+1).padStart(2,"0")}</span><span className="h-1.5 w-1.5 rounded-full" style={{background:status.code==="returned"?"#b67f50":status.code==="accepted"?"#7b997b":status.code==="working"?"#b9a96b":"#bdbab0"}}/></span>
-                <span className="max-w-full break-words text-center text-[10px] font-medium leading-[1.15] tracking-[-.025em] sm:text-[12px]">{s.name}</span>
-              </button>;
-            })}
-            <button type="button" onClick={()=>{setSelected(null);setExpanded(false);setShowDna(v=>!v)}} className="absolute bottom-[11%] left-1/2 z-20 -translate-x-1/2 rounded-full border border-[#9e8b6d]/30 bg-[#f9f7f0]/90 px-4 py-2 text-[11px] text-[#796649] shadow-sm hover:border-[#9e8b6d] dark:bg-[#28312b]/90 dark:text-[#e9d8b3]">
-              <Fingerprint size={14} className="mr-1.5 inline"/> ДНК / концепт
-            </button>
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#7c8580]/15 px-5 py-3 text-[10px] opacity-60 sm:px-7">
-            <span><Rotate3D size={13} className="mr-1.5 inline"/> Вращение: жест / мышь · Масштаб: колесо</span>
-            <span>{local3d?"GLB только в этом браузере":"Форма условная · геометрия не утверждена"}</span>
+          </section>
+
+          <aside className="order-3 min-w-0 self-center pb-1" aria-label="Краткий вывод и развернутая информация" aria-live="polite">
+            <YolkTypewriter key={"right-"+(selected??"dna")} side="right"
+              number={selectedMeta?(project?sphereStatus.label:"Вклад сферы"):"Формирование / концепция"}
+              title={selectedMeta?"Текущий вклад":approved?"Концепция принята":"Концепция"}
+              description={rightCopy}/>
+            <button type="button" data-testid="yolk-expand" onClick={()=>setExpanded(true)}
+              className="mt-3 border-b border-foreground/35 pb-1 text-left text-[11px] font-light text-foreground/75 hover:text-foreground">Развернуть →</button>
+            {loading&&<p className="mt-4 text-[11px] text-foreground/45" role="status">Читаем проект…</p>}
+            {notice&&<p className="mt-4 text-[11px] leading-relaxed text-foreground/65" role="status">{notice} <Link to="/egg/connect" className="underline underline-offset-4">Войти</Link></p>}
+          </aside>
+        </div>
+
+        <footer className="mt-7 flex flex-wrap justify-between gap-3 border-t border-foreground/10 pt-4 text-[11px] font-light text-foreground/45">
+          <span>Вращение модели — мышь / жест · Масштаб — колесо</span>
+          <span>{local3d?"GLB открыт локально; не сохранён в проекте":"Модель условная · не чертёж"} · {project?"Чтение данных EGG":"Без изменения проектов"}</span>
+        </footer>
+      </main>
+
+      {expanded&&<div className="fixed inset-0 z-[110] flex items-end justify-end bg-black/30 backdrop-blur-[2px] sm:items-stretch" onMouseDown={event=>{if(event.target===event.currentTarget)setExpanded(false);}}>
+        <section role="dialog" aria-modal="true" aria-label={selectedMeta?"Подробнее о сфере "+selectedMeta.name:"ДНК продукта"}
+          data-testid="yolk-expanded" className="flex max-h-[95dvh] w-full max-w-[640px] flex-col overflow-hidden rounded-t-2xl border-l border-foreground/15 bg-background text-foreground shadow-xl sm:max-h-[100dvh] sm:rounded-none">
+          <header className="flex shrink-0 items-center justify-between border-b border-foreground/10 px-6 py-5">
+            <div>
+              <p className="text-[10px] font-light uppercase tracking-[0.16em] text-foreground/45">EGG / YOLK · полная информация</p>
+              <h2 className="mt-2 text-[26px] font-extralight tracking-[-0.03em]">{selectedMeta?selectedMeta.name:"ДНК продукта"}</h2>
+            </div>
+            <button type="button" autoFocus aria-label="Закрыть" onClick={()=>setExpanded(false)}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-foreground/20 text-[22px] font-light">×</button>
+          </header>
+          <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-7 text-[13px] font-light leading-relaxed">
+            {selectedMeta?<>
+              <div><p className="text-[10px] uppercase tracking-[0.12em] text-foreground/40">Назначение сферы</p>
+                <p className="mt-2">{EGG_SPHERES[selectedMeta.id].purpose}</p>
+                <p className="mt-2 text-foreground/60">{EGG_SPHERES[selectedMeta.id].boundary}</p>
+              </div>
+              <div><p className="text-[10px] uppercase tracking-[0.12em] text-foreground/40">Основной вопрос</p>
+                <p className="mt-2">{EGG_SPHERES[selectedMeta.id].question}</p></div>
+              <div><p className="text-[10px] uppercase tracking-[0.12em] text-foreground/40">Задачи и выводы · {sphereTasks.length}</p>
+                {sphereTasks.length?sphereTasks.map(t=><article key={t.id} className="mt-3 border-t border-foreground/10 pt-3">
+                  <p className="text-[11px] text-foreground/50">{t.id} · {stateLabels[t.status]??t.status}</p>
+                  <p className="mt-2 whitespace-pre-wrap">{t.question}</p>
+                  {t.findings?.map(f=><div key={f.id} className="mt-3 border-l border-foreground/20 pl-3">
+                    <p className="text-[10px] text-foreground/50">{f.evidence==="hypothesis"?"Гипотеза":f.evidence==="observation"?"Наблюдение":"Вопрос"} · {f.id}</p>
+                    <p className="mt-1 whitespace-pre-wrap">{f.text}</p>
+                    {Boolean(f.sourceRefs?.length)&&<p className="mt-2 break-all text-[10px] text-foreground/50">Источники: {f.sourceRefs?.join(", ")}</p>}
+                  </div>)}
+                  {Boolean(t.decisions?.length)&&<p className="mt-3 text-[11px] text-foreground/60">Решения: {t.decisions.map(d=>d.outcome).join(", ")}</p>}
+                </article>):<p className="mt-3 text-foreground/55">Результатов пока нет.</p>}
+              </div>
+              <div><p className="text-[10px] uppercase tracking-[0.12em] text-foreground/40">Материалы · {sphereArtifacts.length}</p>
+                {sphereArtifacts.length?sphereArtifacts.map(a=><p key={a.id} className="mt-3">
+                  <span className="text-foreground/50">{a.status==="author_confirmed"?"Подтверждено":"Ожидает подтверждения"} · </span>
+                  {a.webUrl?<a href={a.webUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{a.title}</a>:a.title}
+                </p>):<p className="mt-3 text-foreground/55">Нет зарегистрированных файлов.</p>}
+              </div>
+              {project&&<Link to={"/egg?project="+encodeURIComponent(project.id)+"&start="+selectedMeta.id} className="inline-block border-b border-foreground/35 pb-1">Открыть рабочее пространство сферы ↗</Link>}
+            </>:<>
+              <div><p className="text-[10px] uppercase tracking-[0.12em] text-foreground/40">Концепция / {project?(approved?"утверждена":candidateText?"на рассмотрении":"не утверждена"):"демонстрация"}</p>
+                <p className="mt-3 whitespace-pre-wrap">{currentText}</p></div>
+              <button type="button" onClick={()=>setShowDna(value=>!value)} className="border-b border-foreground/35 pb-1 text-[11px]">{showDna?"Свернуть исходную идею":"Показать исходную идею"}</button>
+              {showDna&&<p className="whitespace-pre-wrap border-l border-foreground/20 pl-4">{dna}</p>}
+              <div className="grid grid-cols-2 gap-3 border-t border-foreground/10 pt-4 text-[11px]">
+                <p>Принято задач: {project?approvedWork:"—"}</p><p>Ждут Автора: {project?pendingWork:"—"}</p>
+              </div>
+              {project&&<Link to={"/egg?project="+encodeURIComponent(project.id)+"&start=idea"} className="inline-block border-b border-foreground/35 pb-1">Перейти к концепции Автора ↗</Link>}
+            </>}
           </div>
         </section>
-        <aside aria-live="polite" className="min-h-[330px] overflow-hidden rounded-[28px] border border-[#8d9085]/20 bg-white/70 shadow-[0_10px_50px_rgba(74,67,54,.035)] dark:bg-white/[.04] lg:sticky lg:top-5" data-testid="yolk-information-panel">
-          <div className="border-b border-current/10 px-5 py-4 sm:px-6">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-[10px] uppercase tracking-[.20em] opacity-50">{selectedMeta?"Сфера / "+String(YOLK_SPHERES.indexOf(selectedMeta)+1).padStart(2,"0"):"Паспорт формы / DNA"}</p>
-              {selected&&<button type="button" onClick={()=>{setSelected(null);setExpanded(false)}} aria-label="Вернуться к ДНК" className="rounded-full p-1 opacity-50 hover:opacity-100"><X size={16}/></button>}
-            </div>
-            <h2 className="mt-2 text-[25px] font-light tracking-[-.04em]">{selectedMeta?selectedMeta.name:"ДНК продукта"}</h2>
-            <p className="mt-1 text-[11px] opacity-60">{selectedMeta?selectedMeta.detail:"Замысел, на который ориентируется формирующаяся форма"}</p>
-          </div>
-          {selectedMeta ? <div className="space-y-4 px-5 py-5 sm:px-6">
-            <div className="flex items-center justify-between gap-2 rounded-xl border border-current/10 px-3 py-3">
-              <div><p className="text-[10px] uppercase tracking-[.13em] opacity-45">Состояние</p><p className="mt-1 text-[12px] font-medium">{project?sphereStatus.label:"Нет серверных данных"}</p></div>
-              <CircleDot size={19} style={{color:selectedMeta.accent}}/>
-            </div>
-            <div>
-              <h3 className="text-[10px] uppercase tracking-[.15em] opacity-45">Задача ядра</h3>
-              <p className="mt-1.5 text-[13px] leading-relaxed">{EGG_SPHERES[selectedMeta.id].question}</p>
-            </div>
-            <div>
-              <h3 className="text-[10px] uppercase tracking-[.15em] opacity-45">Текущий вклад</h3>
-              {sphereTasks.length ? <>
-                <p className="mt-1.5 text-[12px] leading-relaxed opacity-80">{brief(sphereTasks[sphereTasks.length-1].findings?.slice(-1)[0]?.text??sphereTasks[sphereTasks.length-1].question,240)}</p>
-                <p className="mt-2 text-[10px] opacity-45">Задач: {sphereTasks.length} · Принято: {sphereTasks.filter(t=>t.status==="accepted").length}</p>
-              </> : <p className="mt-1.5 text-[12px] leading-relaxed opacity-55">{project?"Результаты пока не зарегистрированы. Это не означает, что сфера завершена.":"В демонстрации нет вымышленных результатов. При входе в проект здесь появятся реальные данные."}</p>}
-            </div>
-            {sphereTasks.some(t=>t.status==="returned")&&<div className="rounded-lg border border-[#b48c54]/25 bg-[#c1a06b]/[.09] p-3 text-[11px]">Есть результат, ожидающий решения Автора.</div>}
-            <button type="button" onClick={()=>setExpanded(v=>!v)} aria-expanded={expanded} className="flex w-full items-center justify-between rounded-xl border border-current/15 px-4 py-3 text-[12px] hover:border-current/35">
-              {expanded?"Свернуть":"Развернуть информацию"} <ChevronDown size={15} className={expanded?"rotate-180 transition-transform":"transition-transform"}/>
-            </button>
-            {expanded&&<div className="space-y-4 border-t border-current/10 pt-4" data-testid="yolk-expanded">
-              <div><h3 className="mb-2 text-[11px] font-medium">Назначение</h3><p className="text-[12px] leading-relaxed opacity-75">{EGG_SPHERES[selectedMeta.id].purpose}</p><p className="mt-2 text-[12px] leading-relaxed opacity-55">{EGG_SPHERES[selectedMeta.id].boundary}</p></div>
-              <div><h3 className="mb-2 text-[11px] font-medium">Задачи и результаты</h3>{sphereTasks.length?sphereTasks.map(t=><div key={t.id} className="mb-3 rounded-lg border border-current/10 p-3">
-                <p className="text-[10px] uppercase tracking-[.12em] opacity-45">{t.id} · {stateLabels[t.status]??t.status}</p>
-                <p className="mt-2 whitespace-pre-wrap text-[12px] leading-relaxed">{t.question}</p>
-                {t.findings?.map(f=><div key={f.id} className="mt-3 border-l-2 border-[#bda27a]/40 pl-3">
-                  <p className="text-[10px] opacity-50">{f.evidence==="hypothesis"?"Гипотеза":f.evidence==="observation"?"Наблюдение":"Вопрос"} · {f.id}</p>
-                  <p className="mt-1 whitespace-pre-wrap text-[12px] leading-relaxed opacity-85">{f.text}</p>
-                  {(f.sourceRefs??[]).length>0&&<p className="mt-1 break-all text-[10px] opacity-50">Источники: {f.sourceRefs?.join(", ")}</p>}
-                </div>)}
-                {t.decisions?.length>0&&<p className="mt-2 text-[11px] opacity-65">Решения: {t.decisions.map(d=>d.outcome).join(", ")}</p>}
-              </div>):<p className="text-[12px] opacity-55">Нет записанных заданий.</p>}</div>
-              <div><h3 className="mb-2 text-[11px] font-medium">Материалы</h3>{sphereArtifacts.length?sphereArtifacts.map(a=><p key={a.id} className="mb-2 text-[12px]"><span className="opacity-50">{a.status==="author_confirmed"?"Подтверждено":"Ожидает подтверждения"}</span>{" · "}{a.webUrl?<a className="underline underline-offset-4" target="_blank" rel="noopener noreferrer" href={a.webUrl}>{a.title}</a>:a.title}</p>):<p className="text-[12px] opacity-55">Нет привязанных файлов этой сферы.</p>}</div>
-            </div>}
-            {project&&<Link to={"/egg?project="+encodeURIComponent(project.id)+"&start="+selectedMeta.id} className="inline-flex items-center gap-1.5 text-[12px] text-[#9d7b4d] underline underline-offset-4">Открыть рабочую сферу <ArrowUpRight size={13}/></Link>}
-          </div> : <div className="space-y-4 px-5 py-5 sm:px-6">
-            {notice&&<p role="status" className="rounded-lg border border-[#b69664]/30 bg-[#c4a976]/10 p-3 text-[11px] leading-relaxed">{notice} <Link to="/egg/connect" className="underline underline-offset-4">Войти</Link></p>}
-            {loading&&<p role="status" className="text-xs opacity-60">Читаем проект…</p>}
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] uppercase tracking-[.14em] opacity-45">Концепция</span>
-              <span className="rounded-full border border-current/15 px-2.5 py-1 text-[10px]">{project?(approved?"Утверждена":candidateText?"На рассмотрении":"Нет принятой"):"Пример"}</span>
-            </div>
-            <p className="text-[13px] leading-[1.8]">{brief(currentText,showDna?10000:245)}</p>
-            {project&&concept&&<p className="text-[10px] opacity-50">{concept.id} · {concept.status}</p>}
-            <button type="button" onClick={()=>setShowDna(v=>!v)} aria-expanded={showDna} className="inline-flex items-center gap-1.5 text-[11px] text-[#977c58] underline underline-offset-4">
-              <BookOpenText size={13}/> {showDna?"Скрыть исходную идею":"Показать исходную идею"}
-            </button>
-            {showDna&&<div className="rounded-xl border border-current/10 bg-current/[.025] p-3">
-              <p className="mb-2 text-[10px] uppercase tracking-[.13em] opacity-50">Первичное зерно</p>
-              <p className="whitespace-pre-wrap text-[12px] leading-relaxed opacity-75">{dna}</p>
-            </div>}
-            <div className="grid grid-cols-2 gap-2 pt-2">
-              <div className="rounded-xl border border-current/10 p-3"><p className="text-[24px] font-light tabular-nums">{project?approvedWork:"—"}</p><p className="text-[10px] opacity-50">Принято задач</p></div>
-              <div className="rounded-xl border border-current/10 p-3"><p className="text-[24px] font-light tabular-nums">{project?pendingWork:"—"}</p><p className="text-[10px] opacity-50">На рассмотрении</p></div>
-            </div>
-            <p className="text-[11px] leading-relaxed opacity-50">Центральная форма — условная пространственная схема, пока не загружен реальный GLB. ДНК задаёт направление, но не определяет конструкцию автоматически.</p>
-            {project&&<Link to={"/egg?project="+encodeURIComponent(project.id)+"&start=idea"} className="inline-flex items-center gap-1.5 text-[12px] text-[#9d7b4d] underline underline-offset-4">К концепции Автора <ArrowUpRight size={13}/></Link>}
-          </div>}
-        </aside>
-      </div>
-      <footer className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-current/10 pt-4 text-[10px] opacity-55">
-        <span>EGG / YOLK · Предварительный интерфейс v0.1</span>
-        <span>{isDemo?"Ознакомительный режим · реальные решения не изменяются":"Данные читаются из EGG · эта вкладка ничего не утверждает"}</span>
-      </footer>
+      </div>}
     </div>
-  </div>;
+  );
 }
