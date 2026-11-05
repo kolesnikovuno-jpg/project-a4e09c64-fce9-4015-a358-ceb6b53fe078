@@ -11,6 +11,7 @@
  */
 import type {EggProject,SphereId} from "./eggEngine.js";
 import {EGG_FLOW_ROUTES,type EggFlowBranch,type EggFlowResult} from "./eggFlowCycle.js";
+import {EGG_IP_SEARCH_CATALOG,getEggLegalSimilaritySubject} from "./eggLegalSimilarity.js";
 
 type Lens={question:string;focus:readonly string[];boundary:string;handoff:string};
 export const EGG_SPHERE_LENSES:Record<SphereId,Lens>={
@@ -39,8 +40,8 @@ export const EGG_SPHERE_LENSES:Record<SphereId,Lens>={
   },
   legal:{
     question:"Какие правовые отношения, возможности, обязанности и ограничения возникают вокруг воплощения идеи?",
-    focus:["юрисдикция и дата действия норм","авторство и лицензирование","безопасность товара и применимые требования","договоры и ответственность","производственные разрешения","трудовые отношения","импорт и логистика","гарантии и защита потребителя","данные и конфиденциальность"],
-    boundary:"Правовые выводы требуют проверяемого источника, юрисдикции и даты. При их отсутствии ставить вопрос; не делать вид, что закон проверен.",
+    focus:["юрисдикция и дата действия норм","поиск похожих форм и промышленных образцов","сравнение патентных решений","товарные знаки, названия и визуальные элементы","авторство и лицензирование","безопасность товара и применимые требования","договоры и ответственность","производственные разрешения","трудовые отношения","импорт и логистика","гарантии и защита потребителя","данные и конфиденциальность"],
+    boundary:"При сходстве форм фиксировать конкретные совпадения и различия, первичные источники, территорию и дату. Сходство НЕ доказывает нарушение, отсутствие найденного совпадения НЕ означает свободу использования. Не объявлять правовую очистку или регистрацию.",
     handoff:"Производство",
   },
   production:{
@@ -103,6 +104,13 @@ export function buildEggSphereBrief(project:EggProject,sphere:SphereId){
     sameBranchContext:completed,
     previousOwnResult:history?{text:cut(history.text,3000),
       unresolvedQuestions:(history.discoveredQuestions??[]).map(q=>q.question)}:null,
+    ...(sphere==="legal"?{legalSimilarity:{
+      ...getEggLegalSimilaritySubject(project),
+      sourceCatalog:EGG_IP_SEARCH_CATALOG,
+      searchStatus:"not_started_by_egg" as const,
+      instructions:"Use the available version of the object and authorized external tools to search for similar designs, logos, names and technical solutions. If the visual model is unavailable, explicitly state the gap. Never report that EGG itself checked a registry. Save source-backed candidate records, not a legal verdict.",
+      evidenceMethod:"record actual search source URL, query and date; for each candidate record exact URL, visual/technical similarities and distinctive differences",
+    }}:{}),
     diagnostics:{
       coreQuestion:lens.question,focus:lens.focus,boundary:lens.boundary,next:lens.handoff,
     },
@@ -124,9 +132,14 @@ export function buildEggSphereIntelligencePrompt(project:EggProject,sphere:Spher
       "Do NOT force questions or produce three variants; return one evolving contribution, and up to six genuinely useful open questions.",
       "Keep observations, hypotheses and open questions separate. Never invent sources, data, tests, laws, prices or certifications.",
       "For legal content: ask for jurisdiction and effective date when missing. Refer to specific legal norms only with real source references.",
+      "LEGAL visual/IP screening: search registered industrial designs for appearance, trademarks for source identifiers, patent publications for technical solutions, and other creative works for possible copyright relevance; these are distinct rights, not interchangeable.",
+      "LEGAL current-cycle isolation: use only form versions in the legalSimilarity brief (from a PREVIOUS synthesized cycle), never pretend to have screened a Design result still emerging in the parallel branch.",
+      "LEGAL if tools allow real searches: list exact databases/URLs, actual query and checked date, actual individual candidate URLs, observed similarities AND differences; never invent found records or extrapolate rights status.",
+      "LEGAL if no verified search access or visual input: report searches=[] and limitations explaining what is missing. Do not claim 'no infringement', 'no similar products', or legal clearance.",
+      "LEGAL optionally include legalSimilarity:{territories:[],searches:[{category,sourceName,sourceUrl,query,searchedAt,scopeNote}],candidates:[{kind,title,sourceUrl,similarity,differences,evidenceNote}],limitations:[]} (only legal sphere).",
       "For Test Drive: a virtual observation is not a physical test. For Commerce: UNOcalc estimates are projections, not certified costs.",
       "Do not alter the DNA, auto-approve conclusions, select another sphere or advance the iteration. Transit is handled by the EGG engine.",
-      'Return JSON: {"text":"one concise main result","evidence":"hypothesis|question","sourceRefs":[],"discoveredQuestions":[{"domain":"topic","question":"...","basis":"why it arose","sourceRefs":[]}]}',
+      'Return JSON: {"text":"one concise main result","evidence":"hypothesis|question","sourceRefs":[],"discoveredQuestions":[{"domain":"topic","question":"...","basis":"why it arose","sourceRefs":[]}]}; for Legal, optional legalSimilarity with evidence-linked screening records, NEVER a clearance decision.',
     ].join("\n"),
     input:JSON.stringify(input),
   };
