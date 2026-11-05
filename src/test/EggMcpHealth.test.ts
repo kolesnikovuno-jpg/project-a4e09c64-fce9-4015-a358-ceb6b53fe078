@@ -32,6 +32,7 @@ describe("EGG MCP health and configuration",()=>{
     expect(result.ok).toBe(false);
     expect(result.checks).toEqual({protocol:true,storageConfigured:false});
     expect(result.toolNames).toContain("egg_propose_concept");
+    expect(result.toolNames).toContain("egg_get_onboarding_protocol");
   });
   it("reports configured protocol without claiming OAuth readiness",async()=>{
     process.env.EGG_SUPABASE_URL="https://test-only.supabase.co/";
