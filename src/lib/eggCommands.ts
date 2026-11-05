@@ -8,6 +8,7 @@ import { z } from "zod";
 import { confirmDriveReference, registerDriveReference } from "./eggArtifacts.js";
 import { startEggFlowCycle, contributeEggFlowSphere, decideEggFlowCycle, EGG_FLOW_ROUTES } from "./eggFlowCycle.js";
 import {buildEggSphereBrief} from "./eggSphereIntelligence.js";
+import {eggLegalSimilaritySchema} from "./eggLegalSimilarity.js";
 import {
   decideFinding, nextIteration, readCore, readSphereStates, returnFinding, recordAuthorSeed, proposeEggSeed,
   routeQuestion, setLevel, startSphereWork,
@@ -77,6 +78,7 @@ export const eggMutationSchema = z.discriminatedUnion("command", [
     sphere,text:valueText,evidence:z.enum(["observation","hypothesis","question"]),
     sourceRefs:z.array(z.string().min(1).max(600)).max(20).optional(),
     discoveredQuestions:diagnosticQuestions.optional(),
+    legalSimilarity:eggLegalSimilaritySchema.optional(),
   }).strict(),
   shared.extend({command:z.literal("decide_flow_cycle"),
     outcome:z.enum(["accept","revise"]),reason:valueText,
@@ -141,7 +143,8 @@ export const runEggMutation = (
         sourceRefs:mutation.sourceRefs,
         discoveredQuestions:mutation.discoveredQuestions?.map(q=>({
           domain:q.domain!,question:q.question!,basis:q.basis,sourceRefs:q.sourceRefs,
-        }))});
+        })),
+        legalSimilarity:mutation.legalSimilarity});
     case "decide_flow_cycle":
       return decideEggFlowCycle(state,{actor,at,outcome:mutation.outcome,
         reason:mutation.reason,addressedSpheres:mutation.addressedSpheres});
