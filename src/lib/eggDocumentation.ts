@@ -37,6 +37,9 @@ const EVENT_NAMES:Record<EggEvent["kind"],string>={
   level_changed:"Уровень изменён",iteration_started:"Новая итерация",
   artifact_registered:"Материал зарегистрирован",artifact_confirmed:"Подтверждение материала",
   concept_proposed:"Предложение концепции",concept_decided:"Решение по концепции",
+  cycle_started:"Цикл запущен",sphere_transited:"Сфера пройдена транзитом",
+  cycle_sphere_completed:"Сфера внесла результат",cycle_synthesized:"Желток согласовал потоки",
+  cycle_decided:"Решение Автора по циклу",
 };
 const txt=(value:unknown)=>typeof value==="string"?value.replace(/\r/g,"").trim():"";
 const encoder=new TextEncoder();
