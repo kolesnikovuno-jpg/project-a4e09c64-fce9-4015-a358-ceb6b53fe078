@@ -65,7 +65,7 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
   const pending = project?.tasks.filter(task => task.status === "returned").length ?? 0;
   return <section className="mx-auto mb-5 mt-5 max-w-[760px] rounded-xl border border-foreground/15 p-4 sm:p-5" aria-label="Серверные результаты EGG">
     <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-      <h2 className="text-sm font-medium">EGG · {isSphere ? (sphereNames[activeSphere ?? ""] ?? activeSphere) : "Серверный проект"}</h2>
+      <h2 className="text-sm font-medium">EGG · {isSphere ? (sphereNames[activeSphere ?? ""] ?? activeSphere) : activeSphere==="author"?"Автор · управление циклом":"Серверный проект"}</h2>
       <div className="flex items-center gap-3"><button type="button" onClick={() => setRefreshKey(value => value + 1)} className="text-xs underline underline-offset-4">Обновить</button><Link to="/egg/connect" className="text-xs underline underline-offset-4">Мои проекты</Link></div>
     </div>
     {!id && <p className="text-sm text-foreground/70">Выберите проект в личном кабинете.</p>}
@@ -84,11 +84,35 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
       {project.seed.text.trim()&&activeSphere==="idea"&&revision!==null&&
         <EggIdeaWorkshop projectId={project.id} seed={project.seed.text} concepts={project.concepts??[]}
           tasks={project.tasks} files={project.artifacts??[]} revision={revision} level={project.level} iteration={project.iteration} onSaved={()=>setRefreshKey(v=>v+1)}/>}
+      {activeSphere==="author"&&<div className="space-y-2 rounded-lg border border-foreground/20 p-3"
+        data-testid="egg-author-focus">
+        <h3 className="text-sm font-medium">Текущая версия EGG · Author + Dynamic Balance</h3>
+        <p className="text-xs leading-relaxed text-foreground/65">
+          Основное действие сейчас — провести первый цикл восьми сфер с ИИ.
+          Старые выводы остаются в истории и не считаются результатом нового цикла.
+        </p>
+        <Link to={"/egg/yolk?project="+encodeURIComponent(project.id)}
+          className="inline-block text-xs underline underline-offset-4">
+          Открыть Желток · визуальная память и напряжения
+        </Link>
+      </div>}
       <EggFlowCyclePanel project={project} revision={revision} authorControls={activeSphere==="author"}
         onSaved={()=>setRefreshKey(v=>v+1)}/>
-      <EggProjectOverview project={project} activeSphere={activeSphere} onSelectSphere={onSelectSphere} />
-      {!isSphere && <EggYolkMonitor project={project} />}
-      {activeSphere==="author"&&<EggDocumentationPanel project={project} revision={revision} origin="author"/>}
+      {activeSphere==="author"
+        ?<details className="rounded-lg border border-foreground/15 p-3" data-testid="egg-author-history">
+          <summary className="cursor-pointer text-xs font-medium">Архив проекта · старые задачи, документация и обзор</summary>
+          <div className="mt-3 space-y-3">
+            <EggProjectOverview project={project} activeSphere={activeSphere}
+              onSelectSphere={onSelectSphere}/>
+            <EggYolkMonitor project={project}/>
+            <EggDocumentationPanel project={project} revision={revision} origin="author"/>
+          </div>
+        </details>
+        :<>
+          <EggProjectOverview project={project} activeSphere={activeSphere}
+            onSelectSphere={onSelectSphere}/>
+          {!isSphere&&<EggYolkMonitor project={project}/>}
+        </>}}
       {isSphere && <button type="button" onClick={() => onSelectSphere(null)} className="mt-2 rounded-full border border-foreground/30 px-3 py-2 text-xs">← К общему обзору</button>}
       {!isSphere && pending === 0 && project.tasks.length > 0 && <p className="text-xs text-foreground/60">Задачи и выводы сохранены в соответствующих сферах. Нажмите на карточку нужной сферы для просмотра.</p>}
       {isSphere && activeSphere && revision!==null && <EggAiHandoff projectId={project.id}
