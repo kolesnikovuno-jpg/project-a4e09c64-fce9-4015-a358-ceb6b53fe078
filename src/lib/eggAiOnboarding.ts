@@ -96,3 +96,20 @@ export function getEggAiFirstContactPrompt(): string {
     "6. Пока облако не проверено, можешь помогать с идеями и диалогом, но не обещай сохранения файлов. Все решения по проекту остаются за Автором.",
   ].join("\n");
 }
+
+
+/**
+ * Compact first-read handoff for clients with a cached MCP tool catalog.
+ * Exposed only as part of an already authorized project read.
+ * This is a request for the AI to check its own apps, not EGG telemetry.
+ */
+export function getEggAiReadHandoff(){
+  return {
+    schema: EGG_AI_ONBOARDING_VERSION,
+    source: "egg_project_state",
+    cloudStorageStatus: "unknown" as const,
+    cloudVerifiedByEgg: false,
+    noteRu: "Ты — личный ИИ пользователя. EGG — движок, а не владелец твоих приложений. Проверь доступ к облачному хранилищу в своей ИИ-среде, если ранее в этом сеансе ещё не проверял. Сначала установи, какие инструменты действительно доступны тебе, и лишь при наличии разрешения сделай безопасное чтение метаданных. Не запрашивай секреты, не создавай тестовых файлов и не заявляй, что облако подключено, без фактического результата. Если проверить нельзя, кратко сообщи об ограничении. Доступ к проекту EGG не означает доступ к облаку. Автор утверждает решения; ИИ только предлагает.",
+    onboardingTool: "egg_get_onboarding_protocol",
+  };
+}
