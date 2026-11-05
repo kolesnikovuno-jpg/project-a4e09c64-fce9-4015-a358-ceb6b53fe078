@@ -203,7 +203,26 @@ export default async function handler(req: Incoming, res: ServerResponse) {
         const row = await getProject(args.projectId, "contribute");
         if (args.expectedRevision !== row.revision)
           throw new ServiceError("revision_conflict", 409);
-        const parsed = eggMutationSchema.parse(args);
+        // Backward-compatible flow result: existing ChatGPT EGG v4 only exposes
+        // egg_contribute_sphere(command=return), so use the flow task ID provided
+        // by egg_get_project_state.flowCompatibility.awaiting. Do NOT infer IDs.
+        let parsed: ReturnType<typeof eggMutationSchema.parse>;
+        if (args.command === "return" && args.taskId.startsWith("flow:")) {
+          const current=row.document.flowCycles?.[row.document.flowCycles.length-1];
+          const match=/^flow:(cycle-[0-9]+):([a-zA-Z]+)$/.exec(args.taskId);
+          if (!current || !match || match[1]!==current.id)
+            throw new ServiceError("invalid_state_transition",400);
+          const station=[...current.first,...current.second].find(v=>v.sphere===match[2]);
+          if (!station || station.status!=="awaiting_result")
+            throw new ServiceError("invalid_state_transition",400);
+          parsed=eggMutationSchema.parse({
+            command:"complete_flow_sphere",projectId:args.projectId,
+            expectedRevision:args.expectedRevision,sphere:station.sphere,
+            text:args.text,evidence:args.evidence,sourceRefs:args.sourceRefs,
+          });
+        } else {
+          parsed=eggMutationSchema.parse(args);
+        }
         let next: EggProject;
         try {
           next = runEggMutation(row.document, parsed, agentFor(row.id), row.owner_id, new Date().toISOString());
@@ -219,7 +238,7 @@ export default async function handler(req: Incoming, res: ServerResponse) {
           throw new ServiceError("revision_conflict", 409);
         return { ok: true, revision: data[0].new_revision,
           project: readEggState(next),
-          note: "AI contribution recorded; Author review is required" };
+          note: "AI sphere contribution recorded; fixed-flow progress and the Yolk synthesis are updated automatically when applicable. Only the Author may decide the integrated cycle." };
       },
       proposeConcept: async (args) => {
         const row=await getProject(args.projectId,"contribute");
