@@ -219,6 +219,7 @@ export default async function handler(req: Incoming, res: ServerResponse) {
             command:"complete_flow_sphere",projectId:args.projectId,
             expectedRevision:args.expectedRevision,sphere:station.sphere,
             text:args.text,evidence:args.evidence,sourceRefs:args.sourceRefs,
+            discoveredQuestions:args.discoveredQuestions,
           });
         } else {
           parsed=eggMutationSchema.parse(args);
