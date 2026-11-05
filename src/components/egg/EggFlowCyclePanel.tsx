@@ -111,7 +111,7 @@ export default function EggFlowCyclePanel({
                        <span className="block text-foreground/50">Открытый вопрос · не подтверждён</span>
                      </li>)}
                    </ul>
-                 </div>
+                 </div>}
               </details>}
             </div>
           </div>)}
