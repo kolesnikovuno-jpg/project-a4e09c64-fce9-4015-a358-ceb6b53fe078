@@ -243,39 +243,39 @@ export const eggIdeaLinks = (orientation: EggOrientation, sphereRadius = 10.5) =
 };
 
 /**
- * Structural links between functional spheres:
- * Marketing (06) → Design, Legal (08) → Production,
- * Design → Test Drive (05), Production → Procurement (07),
- * Test Drive (05) → Commerce, Procurement (07) → Retail,
- * Commerce → Retail closes the last relationship.
- * All endpoints are projected from the same 3D egg orientation.
+ * The two canonical, independent sphere routes. Their last stations,
+ * Commerce and Retail, each converge on the Yolk; they are NOT connected
+ * to one another. Project all endpoints from the same 3D orientation.
  */
 export const eggSupportLinks = (orientation: EggOrientation, sphereRadius = 10.5) => {
   const lower = eggLowerSphereNodes(orientation);
   const axes = eggSectionAxes(orientation);
   const [design, production] = axes[0].nodes;
   const [commerce, retail] = axes[1].nodes;
+  const yolk = projectEggPoint({x: 0, y: EGG_EQUATOR, z: 0}, orientation);
   return [
-    { id: "marketing-design", source: lower[1], target: design },
-    { id: "legal-production", source: lower[3], target: production },
-    { id: "design-test-drive", source: design, target: lower[0] },
-    { id: "production-procurement", source: production, target: lower[2] },
-    { id: "test-drive-commerce", source: lower[0], target: commerce },
-    { id: "procurement-retail", source: lower[2], target: retail },
-    { id: "commerce-retail", source: commerce, target: retail },
-  ].map(({ id, source, target }) => {
+    { id: "marketing-design", source: lower[1], target: design, targetRadius: sphereRadius },
+    { id: "legal-production", source: lower[3], target: production, targetRadius: sphereRadius },
+    { id: "design-test-drive", source: design, target: lower[0], targetRadius: sphereRadius },
+    { id: "production-procurement", source: production, target: lower[2], targetRadius: sphereRadius },
+    { id: "test-drive-commerce", source: lower[0], target: commerce, targetRadius: sphereRadius },
+    { id: "procurement-retail", source: lower[2], target: retail, targetRadius: sphereRadius },
+    { id: "commerce-yolk", source: commerce, target: yolk, targetRadius: 55 },
+    { id: "retail-yolk", source: retail, target: yolk, targetRadius: 55 },
+  ].map(({ id, source, target, targetRadius }) => {
     const dx = target.x - source.x;
     const dy = target.y - source.y;
     const distance = Math.hypot(dx, dy);
-    const trim = Math.min(sphereRadius, distance / 2);
+    const startTrim = Math.min(sphereRadius, distance / 2);
+    const endTrim = Math.min(targetRadius, distance / 2);
     const ux = distance > 0 ? dx / distance : 0;
     const uy = distance > 0 ? dy / distance : 0;
     return {
       id,
-      x1: source.x + ux * trim,
-      y1: source.y + uy * trim,
-      x2: target.x - ux * trim,
-      y2: target.y - uy * trim,
+      x1: source.x + ux * startTrim,
+      y1: source.y + uy * startTrim,
+      x2: target.x - ux * endTrim,
+      y2: target.y - uy * endTrim,
       depth: (source.depth + target.depth) / 2,
     };
   });
