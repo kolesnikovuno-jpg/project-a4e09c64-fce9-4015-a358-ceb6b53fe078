@@ -112,7 +112,7 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
           <EggProjectOverview project={project} activeSphere={activeSphere}
             onSelectSphere={onSelectSphere}/>
           {!isSphere&&<EggYolkMonitor project={project}/>}
-        </>}}
+        </>}
       {isSphere && <button type="button" onClick={() => onSelectSphere(null)} className="mt-2 rounded-full border border-foreground/30 px-3 py-2 text-xs">← К общему обзору</button>}
       {!isSphere && pending === 0 && project.tasks.length > 0 && <p className="text-xs text-foreground/60">Задачи и выводы сохранены в соответствующих сферах. Нажмите на карточку нужной сферы для просмотра.</p>}
       {isSphere && activeSphere && revision!==null && <EggAiHandoff projectId={project.id}
