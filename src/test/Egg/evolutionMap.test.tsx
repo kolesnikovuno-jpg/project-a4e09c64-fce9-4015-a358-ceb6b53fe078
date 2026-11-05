@@ -112,6 +112,8 @@ describe("EGG / iteration Change Map / dynamic balance stage 2",()=>{
     expect(c.deltas.find(d=>d.sphere==="legal")?.status).toBe("inherited");
     expect(c.counts.changedText).toBe(0);
     expect(c.counts.awaiting).toBe(3);
+    expect(c.counts.pendingTransit).toBe(3);
+    expect(c.deltas.find(d=>d.sphere==="retail")?.status).toBe("pending_transit");
     expect(()=>assessment(p,{})).toThrow(/Wait for Yolk/);
     expect(p.flowCycles![1].status).toBe("running");
   });
