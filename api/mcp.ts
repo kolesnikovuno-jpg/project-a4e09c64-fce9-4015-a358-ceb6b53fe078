@@ -242,6 +242,34 @@ export default async function handler(req: Incoming, res: ServerResponse) {
           project: readEggState(next),
           note: "AI sphere contribution recorded; fixed-flow progress and the Yolk synthesis are updated automatically when applicable. Only the Author may decide the integrated cycle." };
       },
+      contributeYolkReview: async (args) => {
+        const row = await getProject(args.projectId, "contribute");
+        if (row.revision !== args.expectedRevision)
+          throw new ServiceError("revision_conflict",409);
+        let next: EggProject;
+        try {
+          const command=eggMutationSchema.parse({
+            command:"contribute_yolk_review",
+            projectId:args.projectId,expectedRevision:args.expectedRevision,
+            synthesisId:args.synthesisId,summary:args.summary,
+            interpretations:args.interpretations,limitations:args.limitations,
+          });
+          next=runEggMutation(row.document,command,agentFor(row.id),
+            row.owner_id,new Date().toISOString());
+        } catch {
+          throw new ServiceError("invalid_state_transition",400);
+        }
+        const {data,error}=await db.rpc("egg_engine_cas_update",{
+          p_project_id:row.id,p_owner_id:row.owner_id,
+          p_expected_revision:row.revision,p_document:next,
+        });
+        if(error)throw new ServiceError("database_unavailable",503);
+        if(!Array.isArray(data)||data.length===0)
+          throw new ServiceError("revision_conflict",409);
+        return {ok:true,revision:data[0].new_revision,
+          project:readEggState(next),
+          note:"Unverified AI semantic review stored against current Yolk synthesis. Human Author alone decides whether to accept or revise the cycle."};
+      },
       proposeConcept: async (args) => {
         const row=await getProject(args.projectId,"contribute");
         if(args.expectedRevision!==row.revision)
