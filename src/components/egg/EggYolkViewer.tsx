@@ -1,6 +1,7 @@
 import { createElement, useEffect, useMemo, useRef, useState, type ChangeEvent, type PointerEvent, type WheelEvent } from "react";
 import { Download, RotateCcw, Upload, X } from "lucide-react";
 import { buildSpatialSketch, createSpatialGlb, type SpatialStage, type SpatialVariant, type Vec3 } from "../../lib/eggSpatialGenerator";
+import type {EggVisualSnapshot} from "../../lib/eggVisualHistory";
 
 type Projection={x:number;y:number;depth:number};
 const STAGES:Array<{id:SpatialStage;label:string}>= [
@@ -26,9 +27,11 @@ function projectPoint(p:Vec3,yaw:number,pitch:number,zoom:number):Projection{
   return {x:300+x*factor,y:315-y*factor,depth};
 }
 export default function EggYolkViewer({
-  onFileChange, onSketchChange, level=1, iteration=1, projectId
+  onFileChange, onSketchChange, level=1, iteration=1, projectId, visualVersion=null
 }:{
   onFileChange?:(fileName:string|null)=>void;
+  /** Existing Author-linked source; never inferred from parametric local study. */
+  visualVersion?:EggVisualSnapshot|null;
   onSketchChange?:(value:{stage:SpatialStage;variant:SpatialVariant;iteration:number})=>void;
   level?:number;
   iteration?:number;
@@ -43,6 +46,12 @@ export default function EggYolkViewer({
   const [fileName,setFileName]=useState("");
   const [fileError,setFileError]=useState("");
   const [viewerReady,setViewerReady]=useState(false);
+  const [showSketch,setShowSketch]=useState(false);
+  const showingBound=!!visualVersion&&!showSketch;
+  const directModel=showingBound&&visualVersion?.media==="model"&&
+    visualVersion.sourceKind==="concept"&&
+    /\.(?:glb|gltf)$/i.test(new URL(visualVersion.url).pathname)
+    ?visualVersion.url:null;
   const pointer=useRef<{x:number;y:number}|null>(null);
   const fileRef=useRef<string|null>(null);
   const sketch=useMemo(()=>buildSpatialSketch(stage,variant,iteration),[stage,variant,iteration]);
@@ -62,9 +71,10 @@ export default function EggYolkViewer({
   },[sketch,yaw,pitch,zoom]);
 
   useEffect(()=>{setStage(stageFromLevel(level));},[level]);
+  useEffect(()=>{setShowSketch(false);},[visualVersion?.id]);
   useEffect(()=>()=>{if(fileRef.current)URL.revokeObjectURL(fileRef.current);},[]);
   useEffect(()=>{
-    if(!fileUrl)return;
+    if(!fileUrl&&!directModel)return;
     if(window.customElements?.get("model-viewer")){setViewerReady(true);return;}
     let script=document.querySelector<HTMLScriptElement>("#egg-yolk-model-viewer");
     if(!script){
@@ -79,7 +89,7 @@ export default function EggYolkViewer({
     script.addEventListener("error",fail);
     window.customElements.whenDefined("model-viewer").then(()=>{if(active)setViewerReady(true)});
     return()=>{active=false;script?.removeEventListener("error",fail)};
-  },[fileUrl]);
+  },[fileUrl,directModel]);
   function dragStart(e:PointerEvent<SVGSVGElement>){
     pointer.current={x:e.clientX,y:e.clientY};
     e.currentTarget.setPointerCapture?.(e.pointerId);
@@ -105,6 +115,7 @@ export default function EggYolkViewer({
     if(fileRef.current)URL.revokeObjectURL(fileRef.current);
     fileRef.current=URL.createObjectURL(file);
     setFileUrl(fileRef.current);setFileName(file.name);
+    setShowSketch(true);
     setViewerReady(Boolean(window.customElements?.get("model-viewer")));
     setFileError("");onFileChange?.(file.name);
   }
@@ -133,15 +144,43 @@ export default function EggYolkViewer({
   const label=STAGES.find(s=>s.id===stage)?.label??"Линии";
   const pts=(points:Projection[])=>points.map(p=>p.x.toFixed(1)+","+p.y.toFixed(1)).join(" ");
   return <div className="relative flex h-full min-h-0 w-full flex-col items-center justify-center" data-testid="yolk-viewer">
-    <div className="absolute inset-x-0 top-[4%] z-20 flex flex-wrap justify-center gap-2 px-2" role="group" aria-label="Уровень пространственной проработки">
+    {!showingBound&&<div className="absolute inset-x-0 top-[4%] z-20 flex flex-wrap justify-center gap-2 px-2" role="group" aria-label="Уровень пространственной проработки">
       {STAGES.map(s=><button key={s.id} type="button" onClick={()=>setStage(s.id)} aria-pressed={stage===s.id}
         data-testid={"yolk-stage-"+s.id}
         className={"min-h-8 rounded-full border px-3 py-1 text-[11px] font-light backdrop-blur-sm transition-colors "+
           (stage===s.id?"border-foreground/55 bg-background/95 text-foreground":"border-foreground/15 bg-background/70 text-foreground/55 hover:border-foreground/40")}>
         {s.label}</button>)}
-    </div>
+    </div>}
     <div className="relative aspect-square w-full max-w-[650px] min-h-0">
-      {!fileUrl?<svg viewBox="0 0 600 600" role="img"
+      {showingBound ? (
+        <div className="relative flex h-full w-full flex-col items-center justify-center"
+          data-testid="yolk-bound-visual">
+          {visualVersion!.media==="image"&&visualVersion!.presentation==="inline_image"
+            ?<img src={visualVersion!.url} alt={visualVersion!.title+" — источник из журнала визуальных версий"}
+              loading="lazy" referrerPolicy="no-referrer"
+              className="max-h-[82%] max-w-[85%] object-contain"
+              data-testid="yolk-bound-image"/>
+            :directModel&&viewerReady
+              ?createElement("model-viewer",{
+                src:directModel,alt:"Авторский источник 3D · "+visualVersion!.title,
+                "camera-controls":true,"touch-action":"pan-y",
+                "shadow-intensity":"0.55",
+                style:{width:"100%",height:"84%",background:"transparent"},
+                "data-testid":"yolk-bound-3d",
+              })
+              :<div className="max-w-[75%] rounded-xl border border-dashed border-foreground/25 bg-background/75 p-5 text-center text-[12px] text-foreground/70"
+                data-testid="yolk-bound-external">
+                {directModel?"Подключение 3D-просмотрщика…":
+                  "Внешняя 3D-модель не встроена. Файл открывается по подтверждённой ссылке."}
+              </div>}
+          <div className="absolute bottom-[17%] left-3 right-3 flex justify-center">
+            <a href={visualVersion!.url} target="_blank" rel="noopener noreferrer"
+              className="rounded-full border border-foreground/35 bg-background/85 px-3 py-2 text-[11px] underline underline-offset-2">
+              Открыть исходный материал
+            </a>
+          </div>
+        </div>
+      ) : !fileUrl?<svg viewBox="0 0 600 600" role="img"
         aria-label={"Поворотный пространственный эскиз кресла: "+label+", вариант "+variant+"; не утверждённый объект"}
         className="h-full w-full cursor-grab select-none touch-none active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         tabIndex={0} onPointerDown={dragStart} onPointerMove={dragMove} onPointerUp={dragStop}
@@ -175,26 +214,31 @@ export default function EggYolkViewer({
         style:{height:"100%",width:"100%",background:"transparent"}
       }):<div className="grid h-full place-items-center text-xs text-foreground/60">Подключаем 3D-просмотрщик…</div>}
     </div>
-    <div className="absolute inset-x-0 bottom-[12%] z-20 flex flex-wrap justify-center gap-1.5 px-2" role="group" aria-label="Линии формообразования">
+    {!showingBound&&<div className="absolute inset-x-0 bottom-[12%] z-20 flex flex-wrap justify-center gap-1.5 px-2" role="group" aria-label="Линии формообразования">
       {VARIANTS.map(v=><button type="button" key={v.id} onClick={()=>setVariant(v.id)}
         aria-pressed={variant===v.id} data-testid={"yolk-variant-"+v.id}
         className={"min-h-8 rounded-full border px-2.5 py-1 text-[10px] font-light backdrop-blur-sm "+
           (variant===v.id?"border-foreground/50 bg-background/95 text-foreground":"border-foreground/15 bg-background/70 text-foreground/55 hover:border-foreground/40")}>
         {v.label}</button>)}
-    </div>
+    </div>}
     <div className="absolute inset-x-2 bottom-[2%] z-20 flex flex-wrap items-center justify-center gap-2 text-[11px]">
-      {!fileUrl&&<button type="button" onClick={()=>{setYaw(-.52);setPitch(-.16);setZoom(1);}}
+      {visualVersion&&<button type="button" onClick={()=>setShowSketch(v=>!v)}
+        data-testid="yolk-visual-mode"
+        className="rounded-full border border-foreground/35 bg-background/95 px-3 py-1.5 text-[11px]">
+        {showingBound?"Исследовательский эскиз":"Версия из истории"}
+      </button>}
+      {!showingBound&&!fileUrl&&<button type="button" onClick={()=>{setYaw(-.52);setPitch(-.16);setZoom(1);}}
         className="inline-flex items-center gap-1 border-b border-foreground/25 pb-1 text-foreground/65 hover:text-foreground">
         <RotateCcw size={12}/> Ракурс</button>}
-      {!fileUrl&&<button type="button" data-testid="yolk-generate-glb" onClick={download}
+      {!showingBound&&!fileUrl&&<button type="button" data-testid="yolk-generate-glb" onClick={download}
         className="inline-flex items-center gap-1 border-b border-foreground/35 pb-1 text-foreground/85 hover:text-foreground">
         <Download size={13}/> Сохранить GLB</button>}
-      {fileUrl&&<button type="button" onClick={remove} className="inline-flex items-center gap-1 border-b border-foreground/25 pb-1 text-foreground/70">
+      {!showingBound&&fileUrl&&<button type="button" onClick={remove} className="inline-flex items-center gap-1 border-b border-foreground/25 pb-1 text-foreground/70">
         <X size={12}/> Убрать GLB</button>}
-      <label className="inline-flex cursor-pointer items-center gap-1 border-b border-foreground/25 pb-1 text-foreground/65 hover:text-foreground">
+      {!showingBound&&<label className="inline-flex cursor-pointer items-center gap-1 border-b border-foreground/25 pb-1 text-foreground/65 hover:text-foreground">
         <Upload size={12}/> {fileUrl?"Заменить GLB":"Открыть GLB"}
         <input aria-label="Открыть свою 3D модель GLB" type="file" accept=".glb,model/gltf-binary" onChange={choose} className="sr-only"/>
-      </label>
+      </label>}
     </div>
     {fileError&&<p role="alert" className="absolute bottom-[22%] left-5 right-5 z-30 rounded bg-background/95 p-2 text-center text-xs text-red-600">{fileError}</p>}
     <span className="sr-only">Три режима: линии, каркас, объём. Три альтернативные пространственные трактовки исходной идеи. Вращайте жестом, масштабируйте колесом. Сохранение GLB выгружает геометрию локально, без утверждения и отправки на сервер.</span>
