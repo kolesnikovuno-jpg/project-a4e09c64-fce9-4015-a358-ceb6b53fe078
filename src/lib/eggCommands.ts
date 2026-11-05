@@ -6,6 +6,7 @@
  */
 import { z } from "zod";
 import { confirmDriveReference, registerDriveReference } from "./eggArtifacts.js";
+import { startEggFlowCycle, contributeEggFlowSphere, decideEggFlowCycle, EGG_FLOW_ROUTES } from "./eggFlowCycle.js";
 import {
   decideFinding, nextIteration, readCore, readSphereStates, returnFinding, recordAuthorSeed, proposeEggSeed,
   routeQuestion, setLevel, startSphereWork,
@@ -58,11 +59,20 @@ export const eggMutationSchema = z.discriminatedUnion("command", [
   shared.extend({
     command: z.literal("set_level"),
     level: z.union([
-      z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6), z.literal(7),
+      z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5),
     ]), reason: valueText,
   }).strict(),
   shared.extend({
     command: z.literal("next_iteration"), reason: valueText,
+  }).strict(),
+  shared.extend({command:z.literal("start_flow_cycle"),brief:z.string().trim().max(3000).optional()}).strict(),
+  shared.extend({command:z.literal("complete_flow_sphere"),
+    sphere,text:valueText,evidence:z.enum(["observation","hypothesis","question"]),
+    sourceRefs:z.array(z.string().min(1).max(600)).max(20).optional(),
+  }).strict(),
+  shared.extend({command:z.literal("decide_flow_cycle"),
+    outcome:z.enum(["accept","revise"]),reason:valueText,
+    addressedSpheres:z.array(sphere).max(8).optional(),
   }).strict(),
   shared.extend({
     command: z.literal("register_file"),
@@ -87,7 +97,8 @@ export type EggPermission = { kind: "author"; ownerId: string } |
 
 export const isAuthorCommand = (command: EggMutation["command"]) =>
   command === "set_seed" || command === "decide" || command === "set_level" || command === "next_iteration" ||
-  command === "confirm_file" || command === "decide_concept" || command === "route_concept_question";
+  command === "confirm_file" || command === "decide_concept" || command === "route_concept_question" ||
+  command === "start_flow_cycle" || command === "decide_flow_cycle";
 
 export const mayAccessEgg = (
   identity: EggPermission, projectId: string, ownerId: string, action: "read" | "contribute" | "author",
@@ -107,7 +118,17 @@ export const runEggMutation = (
         isAuthorCommand(mutation.command) ? "author" : "contribute")) {
     throw new Error("Forbidden");
   }
+  if ((state.flowCycles??[]).length && ["route","start","return","decide"].includes(mutation.command))
+    throw new Error("Legacy task mutations are disabled after fixed-flow cycles begin");
   switch (mutation.command) {
+    case "start_flow_cycle":
+      return startEggFlowCycle(state,{actor,at,brief:mutation.brief});
+    case "complete_flow_sphere":
+      return contributeEggFlowSphere(state,{actor,at,
+        sphere:mutation.sphere,text:mutation.text,evidence:mutation.evidence,sourceRefs:mutation.sourceRefs});
+    case "decide_flow_cycle":
+      return decideEggFlowCycle(state,{actor,at,outcome:mutation.outcome,
+        reason:mutation.reason,addressedSpheres:mutation.addressedSpheres});
     case "propose_seed":
       return proposeEggSeed(state, mutation.seed, at);
     case "set_seed":
@@ -163,6 +184,8 @@ export const readEggState = (state: EggProject) => ({
   tasks: state.tasks,
   files: state.artifacts ?? [],
   events: state.events,
+  flowCycles: state.flowCycles??[],
+  flowModel: {levels:5,poles:["idea","matter"],branches:EGG_FLOW_ROUTES},
 });
 
 export const eggCreateSchema = z.object({
