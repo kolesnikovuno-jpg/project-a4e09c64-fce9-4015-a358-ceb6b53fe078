@@ -9,6 +9,8 @@ import { confirmDriveReference, registerDriveReference } from "./eggArtifacts.js
 import { startEggFlowCycle, contributeEggFlowSphere, decideEggFlowCycle, EGG_FLOW_ROUTES } from "./eggFlowCycle.js";
 import {buildEggSphereBrief} from "./eggSphereIntelligence.js";
 import {eggLegalSimilaritySchema,type EggLegalSimilarityDraft} from "./eggLegalSimilarity.js";
+import {eggYolkReviewDraftSchema,contributeEggYolkReview,buildEggYolkReviewBrief,
+  type EggYolkReviewDraft} from "./eggYolkSemantic.js";
 import {
   decideFinding, nextIteration, readCore, readSphereStates, returnFinding, recordAuthorSeed, proposeEggSeed,
   routeQuestion, setLevel, startSphereWork,
@@ -84,6 +86,12 @@ export const eggMutationSchema = z.discriminatedUnion("command", [
     outcome:z.enum(["accept","revise"]),reason:valueText,
     addressedSpheres:z.array(sphere).max(8).optional(),
   }).strict(),
+  shared.extend({command:z.literal("contribute_yolk_review"),
+    synthesisId:identifier,
+    summary:eggYolkReviewDraftSchema.shape.summary,
+    interpretations:eggYolkReviewDraftSchema.shape.interpretations,
+    limitations:eggYolkReviewDraftSchema.shape.limitations,
+  }).strict(),
   shared.extend({
     command: z.literal("register_file"),
     provider: z.literal("google_drive"),
@@ -150,6 +158,12 @@ export const runEggMutation = (
     case "decide_flow_cycle":
       return decideEggFlowCycle(state,{actor,at,outcome:mutation.outcome,
         reason:mutation.reason,addressedSpheres:mutation.addressedSpheres});
+    case "contribute_yolk_review":
+      return contributeEggYolkReview(state,{actor,at,draft:{
+        synthesisId:mutation.synthesisId,summary:mutation.summary,
+        interpretations:mutation.interpretations,
+        limitations:mutation.limitations,
+      } as EggYolkReviewDraft});
     case "propose_seed":
       return proposeEggSeed(state, mutation.seed, at);
     case "set_seed":
@@ -207,6 +221,10 @@ export const readEggState = (state: EggProject) => ({
   events: state.events,
   flowCycles: state.flowCycles??[],
   flowModel: {levels:5,poles:["idea","matter"],branches:EGG_FLOW_ROUTES},
+  yolkReviewCompatibility: {
+    description:"After both branches reach Yolk, one assigned AI may submit a grounded semantic REVIEW DRAFT using egg_contribute_yolk_review. Only the Author decides the cycle; no autonomous run is performed.",
+    awaiting:buildEggYolkReviewBrief(state),
+  },
   flowCompatibility: {
     description: "Existing egg_contribute_sphere supports command=return for the next active flow visit using the taskId shown here. This is a versioned cycle result, not a legacy task approval.",
     awaiting: (state.flowCycles?.[state.flowCycles.length-1]?.status==="running"
