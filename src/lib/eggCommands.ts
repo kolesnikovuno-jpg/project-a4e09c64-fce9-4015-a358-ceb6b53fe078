@@ -186,6 +186,16 @@ export const readEggState = (state: EggProject) => ({
   events: state.events,
   flowCycles: state.flowCycles??[],
   flowModel: {levels:5,poles:["idea","matter"],branches:EGG_FLOW_ROUTES},
+  flowCompatibility: {
+    description: "Existing egg_contribute_sphere supports command=return for the next active flow visit using the taskId shown here. This is a versioned cycle result, not a legacy task approval.",
+    awaiting: (state.flowCycles?.[state.flowCycles.length-1]?.status==="running"
+      ? [ ...(state.flowCycles[state.flowCycles.length-1].first),
+          ...(state.flowCycles[state.flowCycles.length-1].second)]
+        .filter(v=>v.status==="awaiting_result")
+        .map(v=>({sphere:v.sphere,command:"return" as const,
+          taskId:"flow:"+state.flowCycles![state.flowCycles!.length-1].id+":"+v.sphere}))
+      : []),
+  },
 });
 
 export const eggCreateSchema = z.object({
