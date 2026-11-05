@@ -174,10 +174,21 @@ function flowCycles(project:EggProject):string{
             " из "+station.inherited.cycleId:
             station.status==="transited"?"Транзит без исторического результата.":"Новый вывод отсутствует.",
           ...(station.result?.sourceRefs.length?["Источники: "+station.result.sourceRefs.join("; ")]:[]),
+          ...(station.result?.discoveredQuestions?.length?[
+            "Вопросы, самостоятельно выявленные сферой (не подтверждены):",
+            ...station.result.discoveredQuestions.flatMap(q=>[
+              "- "+q.domain+": "+q.question,
+              ...(q.basis?["  Основание: "+q.basis]:[]),
+              ...(q.sourceRefs.length?["  Ссылки: "+q.sourceRefs.join("; ")]:[]),
+            ]),
+          ]:[]),
           ...(station.requiresRecheck?["**Внимание: унаследованный вывод требует повторной проверки актуальности.**"]:[]),"");
       }
     }
     if(cycle.synthesis)lines.push("### Желток / встреча потоков","",
+      "Открытых вопросов сфер: "+(cycle.synthesis.openQuestions?.length??0),
+      ...(cycle.synthesis.openQuestions??[]).map(q=>"- "+q.sphere+" / "+q.domain+": "+q.question+
+        " ("+q.provenance+" · не подтверждено)"),
       "Коммерция: "+(cycle.synthesis.endpoints.commerce.text??"Нет данных")+
         " · "+cycle.synthesis.endpoints.commerce.status,
       "Ритейл: "+(cycle.synthesis.endpoints.retail.text??"Нет данных")+
