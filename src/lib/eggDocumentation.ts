@@ -6,6 +6,7 @@
 import { EGG_SPHERES, type EggProject, type EggEvent, type SphereId } from "./eggEngine.js";
 import { buildSpatialSketch, createSpatialGlb, type SpatialStage, type SpatialVariant } from "./eggSpatialGenerator.js";
 import {buildEggYolkProductProjection} from "./eggYolkState.js";
+import {buildEggBalanceOverview} from "./eggDynamicBalance.js";
 
 export type PackageOrigin = "author" | "yolk";
 export type VisualDraft = { stage:SpatialStage; variant:SpatialVariant; iteration:number };
@@ -42,6 +43,8 @@ const EVENT_NAMES:Record<EggEvent["kind"],string>={
   cycle_sphere_completed:"Сфера внесла результат",cycle_synthesized:"Желток согласовал потоки",
   cycle_decided:"Решение Автора по циклу",
   yolk_review_recorded:"Черновой смысловой анализ Желтка",
+  balance_tension_recorded:"Новая гипотеза напряжения",
+  balance_tension_decided:"Автор изменил статус напряжения",
 };
 const txt=(value:unknown)=>typeof value==="string"?value.replace(/\r/g,"").trim():"";
 const encoder=new TextEncoder();
@@ -176,6 +179,32 @@ function flowCycles(project:EggProject):string{
       ": "+ch.note+" [источники: "+(ch.sourceResultIds.join(", ")||"нет")+"]"):
       ["Сопоставление ожидает завершённого синтеза."]),
     "","Это карта проверок, а не установление смысловой, юридической или технической совместимости.","");
+  const balance=buildEggBalanceOverview(project);
+  lines.push("## Dynamic Balance v1 · карта напряжений","",
+    "Исходная ДНК Автора: "+balance.core.originalSeed,
+    "Рабочая концепция: "+(balance.core.workingConceptId??"нет"),
+    "Утверждённая концепция: "+(balance.core.approvedConceptId??"отсутствует"),
+    "Смысловая сохранность ДНК требует решения Автора, не подтверждена алгоритмом.",
+    "Непроверенных кандидатов: "+balance.counts.potential+
+      "; под контролем: "+balance.counts.tracked+
+      "; закрыто Автором: "+balance.counts.resolved+".","",
+    "### Обнаруженные вопросы, пока не зарегистрированные в журнале","",
+    ...balance.candidates.flatMap(c=>[
+      "- "+c.title+" ("+c.key+") · аналитическая гипотеза, не дефект",
+      "  Основания: "+c.sourceRefs.join(", "),
+      "  Проверить: "+c.verification,
+      "  Возможные адресаты следующей итерации: "+c.suggestedTargets.join(", "),
+    ]),
+    "","### Журнал и история решений","",
+    ...balance.recorded.flatMap(t=>[
+      "- "+t.title+" · "+t.id+" · "+t.status+" · критичность "+t.severity,
+      "  Источники: "+t.sourceRefs.join(", "),
+      "  Проверка: "+t.verification,
+      ...t.history.map(h=>"  "+h.at+" · "+h.actor+" · "+h.action+
+        " · "+h.reason+
+        (h.verificationRefs.length?" · новые основания: "+h.verificationRefs.join(", "):"")),
+    ]),
+    "","Ни одно напряжение не добавляет новую связь между потоками; повторная итерация назначается только решением Автора.","");
   if(!(project.flowCycles??[]).length)lines.push(
     "Новых потоковых циклов пока нет; исторические задачи сохранены отдельно."
   );
