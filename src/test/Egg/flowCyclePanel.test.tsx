@@ -14,6 +14,8 @@ describe("EGG flow state UI",()=>{
   it("exposes both fixed routes and first author launch without requesting eight independent approvals",()=>{
     render(<EggFlowCyclePanel project={base()} revision={1} authorControls/>);
     expect(screen.getByTestId("start-flow-cycle")).toBeTruthy();
+    expect(screen.getByTestId("yolk-semantic-review")).toBeTruthy();
+    expect(screen.queryByTestId("yolk-copy-ai-brief")).toBeNull();
     expect(screen.getByTestId("yolk-product-passport")).toBeTruthy();
     expect(screen.getByTestId("yolk-version-source").textContent).toContain("Параметрический");
     for(const sphere of ["marketing","design","testDrive","commerce","legal","production","procurement","retail"]){
@@ -36,6 +38,8 @@ describe("EGG flow state UI",()=>{
       p=contributeEggFlowSphere(p,{actor:"ai",sphere,text:"Вывод "+sphere,evidence:"hypothesis",at});
     render(<EggFlowCyclePanel project={p} revision={14} authorControls/>);
     expect(screen.getByTestId("decide-flow-cycle")).toBeTruthy();
+    expect(screen.getByTestId("yolk-copy-ai-brief")).toBeTruthy();
+    expect(screen.queryByTestId("yolk-semantic-draft")).toBeNull();
     expect(screen.getByTestId("yolk-product-passport").textContent).toContain("Новые");
     expect(screen.getByTestId("yolk-passport-design").textContent).toContain("Вывод design");
     expect(screen.getByTestId("yolk-intersection-checks").textContent).toContain("4");
