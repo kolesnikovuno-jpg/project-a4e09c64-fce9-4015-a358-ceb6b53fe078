@@ -70,6 +70,7 @@ export const EGG_AI_ONBOARDING = {
     approve: "Not permitted to the AI.",
     sphereDiagnostics: "When an active fixed-route sphere is awaiting a result, use the diagnostic brief from egg_get_project_state.flowCompatibility.awaiting; discover unasked relevant questions in your own competence and attach them with evidence provenance. Transit visits require no new analysis.",
     iterativeLearning: "Use previous sphere results and Author cycle feedback as context; do not claim automatic model retraining or cross-project transfer.",
+    yolkSemanticReview: "Only after both branches have structurally synthesized, read egg_get_project_state.yolkReviewCompatibility.awaiting. If present, optionally call egg_contribute_yolk_review with referenced result IDs from the synthesis and explicit verification limitations. A review is an unapproved interpretation, never a legal, market, or engineering certification. Only the Author decides the cycle.",
     files: "Store real files with the AI's own authorized storage connector, then optionally register genuine returned references in EGG.",
   },
 } as const;
