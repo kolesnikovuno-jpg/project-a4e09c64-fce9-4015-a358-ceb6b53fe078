@@ -190,6 +190,32 @@ export function registerEggBalanceTension(p:EggProject,input:{
       detail:tension.id+" / "+match.key}],
   };
 }
+export type EggBalanceVerificationSource={id:string;label:string};
+/** A later observation in a relevant sphere, or an Author-acknowledged
+ * file registered later. Even these records are NOT independent certification.
+ */
+export function eligibleEggBalanceVerificationSources(
+  p:EggProject,tension:EggBalanceTension,
+):EggBalanceVerificationSource[]{
+  const related=new Set([...tension.relatedSpheres,...tension.suggestedTargets]);
+  const newer=(s:string)=>Number.isFinite(Date.parse(s)) &&
+    Date.parse(s)>Date.parse(tension.createdAt);
+  return [
+    ...p.tasks.flatMap(t=>related.has(t.sphere)?t.findings
+      .filter(f=>f.evidence==="observation"&&newer(f.submittedAt)&&
+        !tension.sourceRefs.includes(f.id))
+      .map(f=>({id:f.id,label:"Наблюдение · "+t.sphere})) : []),
+    ...(p.flowCycles??[]).flatMap(cycle=>
+      [...cycle.first,...cycle.second].flatMap(v=>related.has(v.sphere)&&v.result &&
+        v.result.evidence==="observation"&&newer(v.result.at)&&
+        !tension.sourceRefs.includes(v.result.id)
+        ?[{id:v.result.id,label:"Наблюдение · "+v.sphere+" · цикл "+cycle.iteration}]
+        :[])),
+    ...(p.artifacts??[]).filter(file=>file.status==="author_confirmed" &&
+      newer(file.confirmedAt??"") && !tension.sourceRefs.includes(file.id))
+      .map(file=>({id:file.id,label:"Подтверждённая Автором ссылка · "+file.title})),
+  ];
+}
 export function decideEggBalanceTension(p:EggProject,input:{
   actor:EggActor;tensionId:string;
   outcome:"track"|"resolve"|"dismiss"|"reopen";
@@ -212,8 +238,9 @@ export function decideEggBalanceTension(p:EggProject,input:{
   if(input.outcome==="resolve"){
     if(current.status!=="tracked")
       throw new EggEngineError("Author must first track the hypothesis before resolving it");
-    if(!refs.length||refs.every(ref=>current.sourceRefs.includes(ref)))
-      throw new EggEngineError("Resolution requires at least one newer independent registered project source");
+    const eligible=new Set(eligibleEggBalanceVerificationSources(p,current).map(x=>x.id));
+    if(!refs.length||refs.some(ref=>!eligible.has(ref)))
+      throw new EggEngineError("Resolution needs a later observation from a relevant sphere or an Author-confirmed new file reference");
   }else if(refs.length){
     throw new EggEngineError("Verification sources are accepted only for a resolution");
   }
