@@ -8,6 +8,7 @@ import { buildSpatialSketch, createSpatialGlb, type SpatialStage, type SpatialVa
 import {buildEggYolkProductProjection} from "./eggYolkState.js";
 import {buildEggBalanceOverview} from "./eggDynamicBalance.js";
 import {buildEggEvolutionOverview} from "./eggEvolution.js";
+import {buildEggVisualHistory} from "./eggVisualHistory.js";
 
 export type PackageOrigin = "author" | "yolk";
 export type VisualDraft = { stage:SpatialStage; variant:SpatialVariant; iteration:number };
@@ -47,6 +48,7 @@ const EVENT_NAMES:Record<EggEvent["kind"],string>={
   balance_tension_recorded:"Новая гипотеза напряжения",
   balance_tension_decided:"Автор изменил статус напряжения",
   evolution_assessed:"Автор оценил изменения между итерациями",
+  visual_version_linked:"Автор связал визуальную версию с состоянием",
 };
 const txt=(value:unknown)=>typeof value==="string"?value.replace(/\r/g,"").trim():"";
 const encoder=new TextEncoder();
@@ -181,6 +183,19 @@ function flowCycles(project:EggProject):string{
       ": "+ch.note+" [источники: "+(ch.sourceResultIds.join(", ")||"нет")+"]"):
       ["Сопоставление ожидает завершённого синтеза."]),
     "","Это карта проверок, а не установление смысловой, юридической или технической совместимости.","");
+  const visualHistory=buildEggVisualHistory(project);
+  lines.push("## Визуальные версии · ссылки на материалы","",
+    "Версии зарегистрированы Автором из существующих источников. Изображения и 3D-файлы не встроены в экспорт.",
+    "Фактические геометрические различия автоматически не вычисляются.",
+    "Исходная версия: "+(visualHistory.baseline?.id??"не зарегистрирована"),
+    ...visualHistory.snapshots.map(v=>
+      "- "+v.id+" / "+(v.cycleId??"baseline")+" / "+v.sourceRef+
+      " / "+v.media+" / "+v.sourceStatus+" / "+v.url+" / "+v.note),
+    ...visualHistory.comparisons.map(v=>
+      "- Цикл "+v.cycleId+": "+(v.before?.id??"визуальная версия до отсутствует")+
+      " → "+(v.after?.id??"новая визуальная версия отсутствует")+
+      "; источники "+v.sourceRelation),
+    "");
   const evolution=buildEggEvolutionOverview(project);
   lines.push("## Карта изменений · ритм итераций","",
     "Метод: сравниваются записи и источники. Это не автоматическая оценка улучшения или сохранения смысловых инвариантов.",
