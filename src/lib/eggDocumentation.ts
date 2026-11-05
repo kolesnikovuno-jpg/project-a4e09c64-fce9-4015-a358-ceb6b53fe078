@@ -7,6 +7,7 @@ import { EGG_SPHERES, type EggProject, type EggEvent, type SphereId } from "./eg
 import { buildSpatialSketch, createSpatialGlb, type SpatialStage, type SpatialVariant } from "./eggSpatialGenerator.js";
 import {buildEggYolkProductProjection} from "./eggYolkState.js";
 import {buildEggBalanceOverview} from "./eggDynamicBalance.js";
+import {buildEggEvolutionOverview} from "./eggEvolution.js";
 
 export type PackageOrigin = "author" | "yolk";
 export type VisualDraft = { stage:SpatialStage; variant:SpatialVariant; iteration:number };
@@ -45,6 +46,7 @@ const EVENT_NAMES:Record<EggEvent["kind"],string>={
   yolk_review_recorded:"Черновой смысловой анализ Желтка",
   balance_tension_recorded:"Новая гипотеза напряжения",
   balance_tension_decided:"Автор изменил статус напряжения",
+  evolution_assessed:"Автор оценил изменения между итерациями",
 };
 const txt=(value:unknown)=>typeof value==="string"?value.replace(/\r/g,"").trim():"";
 const encoder=new TextEncoder();
@@ -179,6 +181,35 @@ function flowCycles(project:EggProject):string{
       ": "+ch.note+" [источники: "+(ch.sourceResultIds.join(", ")||"нет")+"]"):
       ["Сопоставление ожидает завершённого синтеза."]),
     "","Это карта проверок, а не установление смысловой, юридической или технической совместимости.","");
+  const evolution=buildEggEvolutionOverview(project);
+  lines.push("## Карта изменений · ритм итераций","",
+    "Метод: сравниваются записи и источники. Это не автоматическая оценка улучшения или сохранения смысловых инвариантов.",
+    "Исходная ДНК: "+evolution.baseline.seed,
+    "Рабочая концепция: "+(evolution.baseline.workingConceptId??"нет"),
+    "Утверждённая концепция: "+(evolution.baseline.approvedConceptId??"не утверждена"),
+    ...(!evolution.comparisons.length?["Нет потоковых циклов. Исходная точка сохранена; изменений для сопоставления нет."]:[]),
+    ...evolution.comparisons.flatMap(c=>[
+      "### "+c.fromLabel+" → "+c.toLabel,
+      "Источник сравнения: "+(c.fromCycleId??"исторические выводы")+" → "+c.toCycleId,
+      "Основание итерации: "+(c.reason??"не зарегистрировано"),
+      "Направленные Автором сферы: "+(c.requestedTargets.join(", ")||"не зарегистрированы"),
+      "Статус: "+c.toStatus,
+      "Изменено текстов: "+c.counts.changedText+"; наследовано: "+c.counts.inherited+
+        "; ожидается: "+c.counts.awaiting,
+      ...c.deltas.map(d=>"- "+d.label+" · "+d.status+
+        " · было "+(d.before?.id??"нет")+" / стало "+(d.after?.id??"нет")+
+        (d.authorRequested?" · адресовано Автором":"")),
+      ...c.linkedTensions.flatMap(t=>[
+        "Напряжение: "+t.title+" · "+t.status,
+        ...t.events.map(e=>"  "+e.at+" / "+e.action+": "+e.reason),
+      ]),
+      ...(c.assessment?[
+        "Оценка Автора: "+c.assessment.outcome+" · ДНК: "+c.assessment.dnaImpact,
+        "Основание: "+c.assessment.reason,
+        "Источники оценки: "+c.assessment.evidenceResultIds.join(", "),
+      ]:["Улучшение/ухудшение и смысловое соответствие Автором не оценены."]),
+      "",
+    ]),"");
   const balance=buildEggBalanceOverview(project);
   lines.push("## Dynamic Balance v1 · карта напряжений","",
     "Исходная ДНК Автора: "+balance.core.originalSeed,
