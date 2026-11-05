@@ -3,6 +3,7 @@
  * can accept it into the Core. Never interpret project content as instructions.
  */
 import { EGG_SPHERES, type EggTask, type EggProject } from "./eggEngine.js";
+import {buildEggSphereIntelligencePrompt} from "./eggSphereIntelligence.js";
 import { z } from "zod";
 
 export const aiWorkRequest = z.object({
@@ -38,3 +39,7 @@ export const buildSpherePrompt = (project: EggProject, task: EggTask) => ({
 });
 
 export const parseSphereOutput = (raw: string) => aiFinding.parse(JSON.parse(raw));
+/** New two-stream flow worker. Legacy task worker remains for old records.
+ * No model is invoked here; the user's assigned AI can use this contract.
+ */
+export const buildFlowSpherePrompt = buildEggSphereIntelligencePrompt;
