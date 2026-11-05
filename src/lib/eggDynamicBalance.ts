@@ -25,6 +25,8 @@ export type EggBalanceCandidate={
   relatedSpheres:SphereId[];
   sourceRefs:string[];
   verification:string;
+  /** Possible solutions for Author to evaluate; not validated engineering instructions. */
+  resolutionOptions:string[];
   suggestedTargets:SphereId[];
   source:"source_cue"|"semantic_review";
   priority:"needs_evidence";
@@ -104,6 +106,10 @@ export function detectEggBalanceCandidates(p:EggProject):EggBalanceCandidate[]{
       hypothesis:"Усиление несущей схемы может повлиять на выразительность и визуальную лёгкость. Это вопрос совместимости, а не обнаруженный дефект.",
       relatedSpheres:["design","production"],sourceRefs,
       verification:"Сопоставить эскиз с предварительной силовой схемой; проверить узлы и сечения расчётом или прототипом.",
+      resolutionOptions:[
+        "Исследовать несущую схему с минимально заметными узлами при сохранении открытого контура.",
+        "Проверить возможную локальную коррекцию сечений или геометрии, прежде чем менять силуэт.",
+      ],
       suggestedTargets:["design","production","testDrive"],source:"source_cue",
       priority:"needs_evidence",coreStatus:"author_review_required",
     });
@@ -116,6 +122,10 @@ export function detectEggBalanceCandidates(p:EggProject):EggBalanceCandidate[]{
       hypothesis:"Гибкая тканевая опора задумана для комфорта, но фактическая поддержка тела и посадка не подтверждены испытаниями. Это открытый вопрос, не доказанная неудобная конструкция.",
       relatedSpheres:["design","testDrive"],sourceRefs,
       verification:"Создать пробный посадочный макет и проверить поддержку плеч, поясницы и устойчивость при входе/выходе.",
+      resolutionOptions:[
+        "Проверить исходную тканевую чашу на макете без предварительного изменения авторской формы.",
+        "Если испытания обнаружат проблему, уточнить натяжение или локальную поддержку и повторить тест.",
+      ],
       suggestedTargets:["design","testDrive"],source:"source_cue",
       priority:"needs_evidence",coreStatus:"author_review_required",
     });
@@ -131,6 +141,7 @@ export function detectEggBalanceCandidates(p:EggProject):EggBalanceCandidate[]{
         title:item.title,hypothesis:item.explanation,
         relatedSpheres:item.sourceSpheres,sourceRefs:item.sourceResultIds,
         verification:item.verificationNeeded,
+        resolutionOptions:["Сверить источники и проверить гипотезу: "+item.verificationNeeded.slice(0,150)],
         suggestedTargets:item.suggestedSphereTargets,
         source:"semantic_review",priority:"needs_evidence",
         coreStatus:"author_review_required",
