@@ -24,9 +24,16 @@ export const EGG_FIVE_LEVELS=[1,2,3,4,5] as const;
 export const EGG_POLES=["idea","matter"] as const;
 export const EGG_FIXED_ROUTE=Object.values(EGG_FLOW_ROUTES).flat() as SphereId[];
 
+export type EggDiscoveredQuestion={
+  id:string;domain:string;question:string;basis:string;
+  sourceRefs:string[];origin:"sphere";status:"unverified";
+};
+export type EggQuestionDraft={domain:string;question:string;basis?:string;sourceRefs?:string[]};
 export type EggFlowResult={
   id:string; text:string; evidence:EggEvidence; sourceRefs:string[];
   submittedBy:EggActor; at:string;
+  /** Independently detected, unverified questions, never promoted into DNA. */
+  discoveredQuestions?:EggDiscoveredQuestion[];
 };
 export type EggSphereVisit={
   sphere:SphereId; branch:EggFlowBranch; position:number;
@@ -42,6 +49,7 @@ export type EggSynthesisItem={
   resultId:string|null; evidence:EggEvidence|null;
   text:string|null; status:"new"|"inherited"|"missing";
   requiresRecheck:boolean;
+  discoveredQuestions?:EggDiscoveredQuestion[];
 };
 export type EggYolkSynthesis={
   id:string; at:string;
@@ -50,6 +58,9 @@ export type EggYolkSynthesis={
   second:EggSynthesisItem[];
   endpoints:{commerce:EggSynthesisItem;retail:EggSynthesisItem};
   gaps:string[];
+  openQuestions?:Array<{sphere:SphereId;branch:EggFlowBranch;sourceCycleId:string|null;
+    id:string;domain:string;question:string;basis:string;sourceRefs:string[];
+    provenance:"new"|"inherited";requiresRecheck:boolean}>;
   status:"structural_not_expert_verified";
 };
 export type EggFlowCycle={
@@ -110,6 +121,7 @@ function toItem(p:EggFlowProject,cycle:EggFlowCycle,visit:EggSphereVisit):EggSyn
     sphere:visit.sphere,branch:visit.branch,sourceCycleId:cycle.id,
     resultId:visit.result.id,evidence:visit.result.evidence,text:visit.result.text,
     status:"new",requiresRecheck:false,
+    discoveredQuestions:visit.result.discoveredQuestions??[],
   };
   const old=priorResult({
     ...p,flowCycles:(p.flowCycles??[]).filter(c=>c.id!==cycle.id),
@@ -119,6 +131,7 @@ function toItem(p:EggFlowProject,cycle:EggFlowCycle,visit:EggSphereVisit):EggSyn
     sourceCycleId:old?.cycleId??null,resultId:old?.result.id??null,
     evidence:old?.result.evidence??null,text:old?.result.text??null,
     status:old?"inherited":"missing",requiresRecheck:!!visit.requiresRecheck,
+    discoveredQuestions:old?.result.discoveredQuestions??[],
   };
 }
 function synthesize(p:EggFlowProject,cycle:EggFlowCycle,at:string):EggYolkSynthesis{
@@ -133,12 +146,19 @@ function synthesize(p:EggFlowProject,cycle:EggFlowCycle,at:string):EggYolkSynthe
   ];
   if(!active)gaps.push("Утверждённая концепция отсутствует; использовано исходное зерно и доступный черновик.");
   gaps.push("Согласование смысловых и экономических противоречий не подтверждено автоматическим синтезом.");
+  const openQuestions=[...first,...second].flatMap(item=>
+    (item.discoveredQuestions??[]).map(q=>({
+      sphere:item.sphere,branch:item.branch,sourceCycleId:item.sourceCycleId,
+      id:q.id,domain:q.domain,question:q.question,basis:q.basis,
+      sourceRefs:q.sourceRefs,provenance:item.status==="new"?"new" as const:"inherited" as const,
+      requiresRecheck:item.requiresRecheck,
+    })));
   return {
     id:"synthesis-"+p.nextSequence,at,
     dna:{seed:p.seed.text,conceptId:concept?.id??null,conceptText:concept?.text??null},
     first,second,
     endpoints:{commerce:first[3],retail:second[3]},
-    gaps,status:"structural_not_expert_verified",
+    gaps,openQuestions,status:"structural_not_expert_verified",
   };
 }
 /** Advance all consecutive non-relevant spheres. Both routes remain intact and
@@ -201,7 +221,7 @@ export function startEggFlowCycle(p:EggFlowProject,input:{
 /** AI submits actual sphere output. Both branches move in their own order. */
 export function contributeEggFlowSphere(p:EggFlowProject,input:{
   actor:EggActor;sphere:SphereId;text:string;evidence:EggEvidence;
-  sourceRefs?:string[];at:string;
+  sourceRefs?:string[];discoveredQuestions?:EggQuestionDraft[];at:string;
 }):EggFlowProject{
   if(input.actor!=="ai")throw new EggEngineError("Sphere work belongs to AI/assigned sphere agents");
   const at=date(input.at),cycle=current(p);
@@ -221,9 +241,30 @@ export function contributeEggFlowSphere(p:EggFlowProject,input:{
   if(!["observation","hypothesis","question"].includes(input.evidence)||
     !Array.isArray(refs)||refs.length>20||refs.some(r=>typeof r!=="string"||!r.trim()))
     throw new EggEngineError("Invalid evidence or sources");
+  const drafts=input.discoveredQuestions??[];
+  if(!Array.isArray(drafts)||drafts.length>6)
+    throw new EggEngineError("A sphere can discover up to six unverified questions");
+  const seen=new Set<string>();
+  const discoveredQuestions:EggDiscoveredQuestion[]=drafts.map((draft,i)=>{
+    if(!draft||typeof draft.domain!=="string"||!draft.domain.trim()||
+      draft.domain.length>90||typeof draft.question!=="string"||
+      draft.question.trim().length<8||draft.question.length>1000||
+      (draft.basis!==undefined&&(typeof draft.basis!=="string"||draft.basis.length>1200)))
+      throw new EggEngineError("Invalid independently discovered question");
+    const question=draft.question.trim(),key=question.toLocaleLowerCase();
+    if(seen.has(key))throw new EggEngineError("Duplicate discovered question");
+    seen.add(key);
+    const references=draft.sourceRefs??[];
+    if(!Array.isArray(references)||references.length>8||
+      references.some(ref=>typeof ref!=="string"||!ref.trim()||ref.length>600))
+      throw new EggEngineError("Invalid question source references");
+    return {id:"question-"+p.nextSequence+"-"+(i+1),
+      domain:draft.domain.trim(),question,basis:draft.basis?.trim()??"",
+      sourceRefs:[...references],origin:"sphere" as const,status:"unverified" as const};
+  });
   const result:EggFlowResult={
     id:"cycle-result-"+p.nextSequence,text,evidence:input.evidence,
-    sourceRefs:refs,submittedBy:input.actor,at,
+    sourceRefs:refs,submittedBy:input.actor,at,discoveredQuestions,
   };
   const changed=visits.map((v,i)=>i===index?{
     ...v,status:"completed" as const,completedAt:at,result,
