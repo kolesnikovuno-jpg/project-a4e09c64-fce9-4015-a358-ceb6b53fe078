@@ -165,7 +165,7 @@ export default async function handler(req:Request,res:ServerResponse){
         answer=await generate(provider,{
           instructions:"Return only a JSON object with ready set to true. No explanation.",
           input:"Connectivity check for EGG; no project data provided.",
-        },120);
+        },350);
       }catch(e){
         const code=e instanceof Error?e.message:"model_request_failed";
         if(code==="ai_rate_limited")return fail(res,429,"ai_rate_limited");
