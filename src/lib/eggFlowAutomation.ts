@@ -104,5 +104,7 @@ export function parseEggAutomationOutput(step:EggAutomationStep,raw:string){
 export const eggAutomationRequestSchema=z.object({
   projectId:z.string().uuid(),
   expectedRevision:z.number().int().positive(),
+  /** preflight makes one tiny charged model call but never mutates a project. */
+  mode:z.enum(["step","preflight"]).optional(),
 }).strict();
 export const MAX_EGG_AUTOMATION_STEPS=9;
