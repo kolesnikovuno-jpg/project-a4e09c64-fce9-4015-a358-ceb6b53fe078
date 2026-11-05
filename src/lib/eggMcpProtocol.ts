@@ -9,6 +9,13 @@
 import { z } from "zod";
 import { getEggAiOnboardingProtocol } from "./eggAiOnboarding.js";
 
+const discoveryParams=z.array(z.object({
+  domain:z.string().trim().min(1).max(90),
+  question:z.string().trim().min(8).max(1000),
+  basis:z.string().trim().max(1200).optional(),
+  sourceRefs:z.array(z.string().trim().min(1).max(600)).max(8).optional(),
+}).strict()).max(6);
+
 export const eggMcpTools = [
   {
     name: "egg_get_onboarding_protocol",
@@ -35,7 +42,7 @@ export const eggMcpTools = [
   {
     name: "egg_contribute_sphere",
     title: "Contribute to an Egg sphere",
-    description: "Submit a scoped AI question, start work, or return a finding for Author review. Cannot approve decisions or advance iterations. Read state to get expectedRevision and task IDs; retry after revision conflict only after rereading state.",
+    description: "Work within the next active sphere of one of two fixed EGG streams. Read egg_get_project_state.flowCompatibility.awaiting for the exact taskId and independent diagnostic brief. Return ONE result; optionally add discoveredQuestions, up to 6 useful unverified questions discovered within the sphere even when Author did not ask. Legacy task commands remain for old projects. Cannot alter DNA, approve decisions or advance levels.",
     inputSchema: {
       type: "object",
       properties: {
@@ -47,6 +54,15 @@ export const eggMcpTools = [
         question: { type: "string" }, taskId: { type: "string" }, text: { type: "string" },
         evidence: { type: "string", enum: ["observation", "hypothesis", "question"] },
         sourceRefs: { type: "array", items: { type: "string" } },
+        discoveredQuestions: {
+          type:"array",maxItems:6,description:"Optional unresolved questions independently discovered by the working sphere, not verified or approved.",
+          items:{type:"object",properties:{
+            domain:{type:"string",minLength:1,maxLength:90},
+            question:{type:"string",minLength:8,maxLength:1000},
+            basis:{type:"string",maxLength:1200},
+            sourceRefs:{type:"array",maxItems:8,items:{type:"string",minLength:1,maxLength:600}},
+          },required:["domain","question"],additionalProperties:false},
+        },
       },
       required: ["projectId", "expectedRevision", "command"], additionalProperties: false,
     },
@@ -168,7 +184,7 @@ const proposalParams = baseParams.extend({ expectedRevision: z.number().int().po
 const contributeParams = z.discriminatedUnion("command", [
   baseParams.extend({ expectedRevision: z.number().int().positive(), command: z.literal("route"), from: z.enum(["idea", "marketing", "legal", "design", "production", "testDrive", "procurement", "commerce", "retail"]), to: z.enum(["marketing", "legal", "design", "production", "testDrive", "procurement", "commerce", "retail"]), question: z.string().trim().min(1).max(10000) }).strict(),
   baseParams.extend({ expectedRevision: z.number().int().positive(), command: z.literal("start"), taskId: z.string().min(1).max(100) }).strict(),
-  baseParams.extend({ expectedRevision: z.number().int().positive(), command: z.literal("return"), taskId: z.string().min(1).max(100), text: z.string().trim().min(1).max(10000), evidence: z.enum(["observation", "hypothesis", "question"]), sourceRefs: z.array(z.string().min(1).max(600)).max(20).optional() }).strict(),
+  baseParams.extend({ expectedRevision: z.number().int().positive(), command: z.literal("return"), taskId: z.string().min(1).max(100), text: z.string().trim().min(1).max(10000), evidence: z.enum(["observation", "hypothesis", "question"]), sourceRefs: z.array(z.string().min(1).max(600)).max(20).optional(), discoveredQuestions:discoveryParams.optional() }).strict(),
 ]);
 
 export type EggMcpOperations = {
