@@ -9,6 +9,7 @@ import type { EggArtifact } from "./eggArtifacts.js";
 import type { EggFlowCycle } from "./eggFlowCycle.js";
 import type { EggBalanceTension } from "./eggDynamicBalance.js";
 import type { EggEvolutionAssessment } from "./eggEvolution.js";
+import type { EggVisualSnapshot } from "./eggVisualHistory.js";
 
 export const EGG_SPHERES = {
   marketing: {
@@ -139,7 +140,7 @@ export type EggEventKind =
   | "cycle_started" | "sphere_transited" | "cycle_sphere_completed"
   | "cycle_synthesized" | "cycle_decided" | "yolk_review_recorded"
   | "balance_tension_recorded" | "balance_tension_decided"
-  | "evolution_assessed";
+  | "evolution_assessed" | "visual_version_linked";
 export type EggEvent = {
   id: string;
   kind: EggEventKind;
@@ -168,6 +169,8 @@ export type EggProject = {
   balanceTensions?: EggBalanceTension[];
   /** Author's versioned judgments on specific, sourced iteration comparisons. */
   evolutionAssessments?: EggEvolutionAssessment[];
+  /** Author-selected snapshots of actual pre-existing visual references. */
+  visualVersions?: EggVisualSnapshot[];
   events: EggEvent[];
   nextSequence: number;
 };
