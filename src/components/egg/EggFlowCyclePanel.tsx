@@ -103,6 +103,15 @@ export default function EggFlowCyclePanel({
                 <summary className="cursor-pointer text-foreground/70">Вывод</summary>
                 <p className="mt-1 whitespace-pre-wrap text-foreground/70">{visit.result.text}</p>
                 <p className="mt-1 text-foreground/50">{visit.result.evidence}</p>
+                 {!!visit.result.discoveredQuestions?.length&&<div className="mt-2 border-t border-foreground/10 pt-2">
+                   <p className="font-medium">Сфера самостоятельно выявила вопросы</p>
+                   <ul className="mt-1 space-y-1">
+                     {visit.result.discoveredQuestions.map(q=><li key={q.id}>
+                       <strong>{q.domain}:</strong> {q.question}
+                       <span className="block text-foreground/50">Открытый вопрос · не подтверждён</span>
+                     </li>)}
+                   </ul>
+                 </div>
               </details>}
             </div>
           </div>)}
@@ -124,9 +133,18 @@ export default function EggFlowCyclePanel({
            <p className="text-foreground/60">Коммерция: {cycle.synthesis.endpoints.commerce.text??"Нет результата"} · {cycle.synthesis.endpoints.commerce.status}</p>
            <p className="text-foreground/60">Ритейл: {cycle.synthesis.endpoints.retail.text??"Нет результата"} · {cycle.synthesis.endpoints.retail.status}</p>
            <details className="rounded border border-foreground/10 p-2">
-             <summary className="cursor-pointer text-foreground/70">Состав синтеза и открытые вопросы ({cycle.synthesis.gaps.length})</summary>
+             <summary className="cursor-pointer text-foreground/70">Синтез: ограничения ({cycle.synthesis.gaps.length}), вопросы сфер ({cycle.synthesis.openQuestions?.length??0})</summary>
              <ul className="mt-2 space-y-1 text-foreground/65">
                {cycle.synthesis.gaps.map((gap,i)=><li key={i}>— {gap}</li>)}
+               {(cycle.synthesis.openQuestions??[]).map(q=><li key={q.id} className="mt-2 rounded bg-foreground/5 p-2">
+                 <strong>{names[q.sphere]} · {q.domain}</strong>
+                 <p className="mt-1">{q.question}</p>
+                 {q.basis&&<p className="mt-1 text-foreground/55">Основание: {q.basis}</p>}
+                 <p className="mt-1 text-foreground/50">
+                   {q.provenance==="inherited"?"Унаследовано":"Новый вопрос"} · не подтверждено
+                   {q.requiresRecheck?" · проверить актуальность":""}
+                 </p>
+               </li>)}
              </ul>
            </details>
          </div>}
