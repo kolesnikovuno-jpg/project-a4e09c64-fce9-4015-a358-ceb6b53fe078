@@ -122,6 +122,51 @@ function spheres(project:EggProject){
   }
   return lines.join("\n");
 }
+/** Explicit stream itinerary and source provenance across complete / targeted cycles. */
+function flowCycles(project:EggProject):string{
+  const lines=[
+    "# EGG / Потоки, итерации и синтез Желтка","",
+    "Вертикальная модель: Идея → уровни 1–5 → Материя. Идея и Материя не уровни.","",
+    "Стандартный поток 1: Идея → Маркетинг → Дизайн → Тестдрайв → Коммерция → Желток.",
+    "Стандартный поток 2: Идея → Право → Производство → Комплектация → Ритейл → Желток.","",
+    "Оба маршрута неизменны. Транзит означает проход без нового исследования.",
+    "Автоматический синтез объединяет данные, но НЕ доказывает их совместимость.",
+    "Одно решение Автора применяется к результату завершённого цикла.","",
+  ];
+  if(!(project.flowCycles??[]).length)lines.push(
+    "Новых потоковых циклов пока нет; исторические задачи сохранены отдельно."
+  );
+  for(const cycle of project.flowCycles??[]){
+    lines.push("## "+cycle.id+" · уровень "+cycle.level+" · итерация "+cycle.iteration,
+      "","Состояние: "+cycle.status,
+      "Исходный комментарий: "+(cycle.authorBrief||"Первичный полный цикл"),"");
+    for(const key of ["first","second"] as const){
+      lines.push("### "+(key==="first"?"Маркетинг → Дизайн → Тестдрайв → Коммерция":
+        "Право → Производство → Комплектация → Ритейл"),"");
+      for(const station of cycle[key]){
+        lines.push("**"+NAMES[station.sphere]+" · "+station.status+"**","",
+          station.result?station.result.text+" · "+station.result.evidence+
+            " · "+station.result.id:
+          station.inherited?"Транзит · наследован "+station.inherited.resultId+
+            " из "+station.inherited.cycleId:
+            station.status==="transited"?"Транзит без исторического результата.":"Новый вывод отсутствует.",
+          ...(station.result?.sourceRefs.length?["Источники: "+station.result.sourceRefs.join("; ")]:[]),
+          ...(station.requiresRecheck?["**Внимание: унаследованный вывод требует повторной проверки актуальности.**"]:[]),"");
+      }
+    }
+    if(cycle.synthesis)lines.push("### Желток / встреча потоков","",
+      "Коммерция: "+(cycle.synthesis.endpoints.commerce.text??"Нет данных")+
+        " · "+cycle.synthesis.endpoints.commerce.status,
+      "Ритейл: "+(cycle.synthesis.endpoints.retail.text??"Нет данных")+
+        " · "+cycle.synthesis.endpoints.retail.status,
+      "Оговорки:","",...cycle.synthesis.gaps.map(g=>"— "+g),"");
+    if(cycle.decision)lines.push("### Автор / результат цикла","",
+      cycle.decision.outcome+" · "+cycle.decision.reason,
+      "Сферы следующей итерации: "+(cycle.decision.addressedSpheres.join(", ")||"Все сферы следующего уровня"),"");
+  }
+  return lines.join("\n");
+}
+
 function materials(project:EggProject){
   const lines=["# EGG / Реестр материалов","",
     "Внешние файлы не загружены в архив. Включены только ссылки, статусы и метаданные.",""];
@@ -244,6 +289,7 @@ export function buildEggDocumentationBundle(input:{
     "docs/03-memory.md — хронология",
     "docs/04-artifacts.md — ссылки на материалы",
     "docs/05-visual.md — статус пространственных версий",
+    "docs/06-flow-cycles.md — неизменные маршруты, транзит, наследование и синтез",
     "data/project-snapshot.json — исходное состояние EGG",
     "data/manifest.json — машиночитаемый паспорт",
     ...(study?["visual/yolk-study-unapproved.glb — экспериментальная модель"]:[]),"",
@@ -259,6 +305,7 @@ export function buildEggDocumentationBundle(input:{
     {path:"docs/03-memory.md",bytes:bytes(memory(entries))},
     {path:"docs/04-artifacts.md",bytes:bytes(materials(project))},
     {path:"docs/05-visual.md",bytes:bytes(visual(project,study))},
+    {path:"docs/06-flow-cycles.md",bytes:bytes(flowCycles(project))},
     {path:"data/manifest.json",bytes:bytes(JSON.stringify(manifest,null,2)+"\n")},
     {path:"data/project-snapshot.json",bytes:bytes(JSON.stringify(project,null,2)+"\n")},
   ];
