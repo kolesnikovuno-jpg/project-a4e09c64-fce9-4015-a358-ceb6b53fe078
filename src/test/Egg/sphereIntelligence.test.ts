@@ -1,5 +1,5 @@
 import {describe,expect,it} from "vitest";
-import {createEggProject} from "../../lib/eggEngine";
+import {createEggProject,EGG_SPHERES} from "../../lib/eggEngine";
 import {
  startEggFlowCycle,contributeEggFlowSphere,decideEggFlowCycle,currentEggFlowCycle,
 } from "../../lib/eggFlowCycle";
@@ -33,6 +33,10 @@ describe("Independent questions in each EGG sphere",()=>{
   expect(EGG_SPHERE_LENSES.legal.focus).toContain("договоры и ответственность");
   expect(EGG_SPHERE_LENSES.legal.focus).toContain("юрисдикция и дата действия норм");
   expect(EGG_SPHERE_LENSES.commerce.focus).toContain("три уровня качества UNOcalc");
+  expect(EGG_SPHERE_LENSES.retail.question).toContain("Кому, где, как");
+  expect(EGG_SPHERE_LENSES.retail.focus).toContain("соответствие презентации уровню зрелости продукта");
+  expect(EGG_SPHERES.retail.purpose).toContain("Представление");
+  expect(EGG_SPHERES.retail.boundary).toContain("не обязан продавать");
   expect(EGG_SPHERE_LENSES.design.boundary).toContain("Один");
   const p=startEggFlowCycle(base(),{actor:"author",at});
   const prompt=buildEggSphereIntelligencePrompt(p,"legal");
@@ -40,6 +44,18 @@ describe("Independent questions in each EGG sphere",()=>{
   expect(prompt.instructions).toContain("jurisdiction");
   expect(prompt.input).toContain(seed);
   expect(prompt.input).toContain("model retraining");
+ });
+ it("retail presents the current single product without assuming sales or parallel marketing results",()=>{
+   let p=startEggFlowCycle(base(),{actor:"author",at});
+   for(const sphere of ["marketing","legal","design","production","testDrive","procurement","commerce"] as const)
+     p=contribute(p,sphere);
+   const brief=buildEggSphereBrief(p,"retail");
+   expect(brief.sameBranchContext.map(v=>v.sphere)).toEqual(["legal","production","procurement"]);
+   expect(brief.diagnostics.coreQuestion).toContain("Кому");
+   expect(brief.diagnostics.boundary).toContain("не обязан продавать");
+   expect(buildEggSphereIntelligencePrompt(p,"retail").instructions).toContain("concept preview");
+   expect(JSON.stringify(brief)).not.toContain("Предварительный результат marketing");
+   expect(p.flowCycles?.[0].synthesis).toBeUndefined();
  });
  it("never leaks the other branch before Yolk synthesis",()=>{
   let p=startEggFlowCycle(base(),{actor:"author",at});
