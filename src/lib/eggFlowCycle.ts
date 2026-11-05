@@ -14,6 +14,10 @@ import {
   type EggProject,type EggActor,type EggEvidence,type EggEventKind,type SphereId,
   EggEngineError,getActiveConcept,
 } from "./eggEngine.js";
+import {
+  type EggLegalSimilarityDraft,type EggLegalSimilarityReport,
+  validateEggLegalSimilarity,getEggLegalScreeningGaps,
+} from "./eggLegalSimilarity.js";
 
 export const EGG_FLOW_ROUTES={
   first:["marketing","design","testDrive","commerce"],
@@ -34,6 +38,7 @@ export type EggFlowResult={
   submittedBy:EggActor; at:string;
   /** Independently detected, unverified questions, never promoted into DNA. */
   discoveredQuestions?:EggDiscoveredQuestion[];
+  legalSimilarity?:EggLegalSimilarityReport;
 };
 export type EggSphereVisit={
   sphere:SphereId; branch:EggFlowBranch; position:number;
@@ -50,6 +55,7 @@ export type EggSynthesisItem={
   text:string|null; status:"new"|"inherited"|"missing";
   requiresRecheck:boolean;
   discoveredQuestions?:EggDiscoveredQuestion[];
+  legalSimilarity?:EggLegalSimilarityReport;
 };
 export type EggYolkSynthesis={
   id:string; at:string;
@@ -122,6 +128,7 @@ function toItem(p:EggFlowProject,cycle:EggFlowCycle,visit:EggSphereVisit):EggSyn
     resultId:visit.result.id,evidence:visit.result.evidence,text:visit.result.text,
     status:"new",requiresRecheck:false,
     discoveredQuestions:visit.result.discoveredQuestions??[],
+    legalSimilarity:visit.result.legalSimilarity,
   };
   const old=priorResult({
     ...p,flowCycles:(p.flowCycles??[]).filter(c=>c.id!==cycle.id),
@@ -132,6 +139,7 @@ function toItem(p:EggFlowProject,cycle:EggFlowCycle,visit:EggSphereVisit):EggSyn
     evidence:old?.result.evidence??null,text:old?.result.text??null,
     status:old?"inherited":"missing",requiresRecheck:!!visit.requiresRecheck,
     discoveredQuestions:old?.result.discoveredQuestions??[],
+    legalSimilarity:old?.result.legalSimilarity,
   };
 }
 function synthesize(p:EggFlowProject,cycle:EggFlowCycle,at:string):EggYolkSynthesis{
@@ -144,6 +152,16 @@ function synthesize(p:EggFlowProject,cycle:EggFlowCycle,at:string):EggYolkSynthe
     ...[...first,...second].filter(i=>i.status==="missing").map(i=>"Нет результатов: "+i.sphere),
     ...[...first,...second].filter(i=>i.requiresRecheck).map(i=>"Проверить актуальность: "+i.sphere),
   ];
+  const currentDesign=first.find(item=>item.sphere==="design");
+  const legal=second.find(item=>item.sphere==="legal");
+  // Both branches run in parallel. A form produced in THIS iteration cannot
+  // have been searched by Legal in the same iteration: Legal only sees an
+  // earlier, already Yolk-synthesized form.
+  if(currentDesign?.resultId){
+    gaps.push(...getEggLegalScreeningGaps(currentDesign.resultId,legal?.legalSimilarity));
+    if(legal && legal.legalSimilarity?.subject.designResultId!==currentDesign.resultId)
+      legal.requiresRecheck=true;
+  }
   if(!active)gaps.push("Утверждённая концепция отсутствует; использовано исходное зерно и доступный черновик.");
   gaps.push("Согласование смысловых и экономических противоречий не подтверждено автоматическим синтезом.");
   const openQuestions=[...first,...second].flatMap(item=>
@@ -221,7 +239,8 @@ export function startEggFlowCycle(p:EggFlowProject,input:{
 /** AI submits actual sphere output. Both branches move in their own order. */
 export function contributeEggFlowSphere(p:EggFlowProject,input:{
   actor:EggActor;sphere:SphereId;text:string;evidence:EggEvidence;
-  sourceRefs?:string[];discoveredQuestions?:EggQuestionDraft[];at:string;
+  sourceRefs?:string[];discoveredQuestions?:EggQuestionDraft[];
+  legalSimilarity?:EggLegalSimilarityDraft;at:string;
 }):EggFlowProject{
   if(input.actor!=="ai")throw new EggEngineError("Sphere work belongs to AI/assigned sphere agents");
   const at=date(input.at),cycle=current(p);
@@ -262,9 +281,14 @@ export function contributeEggFlowSphere(p:EggFlowProject,input:{
       domain:draft.domain.trim(),question,basis:draft.basis?.trim()??"",
       sourceRefs:[...references],origin:"sphere" as const,status:"unverified" as const};
   });
+  if(input.legalSimilarity!==undefined&&input.sphere!=="legal")
+    throw new EggEngineError("Only Legal sphere may submit rights intersection screening");
+  const legalSimilarity=input.legalSimilarity===undefined?undefined:
+    validateEggLegalSimilarity(input.legalSimilarity,p);
   const result:EggFlowResult={
     id:"cycle-result-"+p.nextSequence,text,evidence:input.evidence,
     sourceRefs:refs,submittedBy:input.actor,at,discoveredQuestions,
+    ...(legalSimilarity?{legalSimilarity}:{}),
   };
   const changed=visits.map((v,i)=>i===index?{
     ...v,status:"completed" as const,completedAt:at,result,
