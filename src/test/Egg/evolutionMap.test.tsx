@@ -175,6 +175,29 @@ describe("EGG / iteration Change Map / dynamic balance stage 2",()=>{
     expect(text).toContain("finding-10");
     expect(text).toContain("Источник сравнения");
   });
+  it("carries unresolved tensions into later comparisons without inventing resolution",()=>{
+    const p=revised();
+    p.balanceTensions=[{
+      id:"balance-fixture",key:"structural_lightness",
+      title:"Лёгкость формы ↔ конструктивная опора",
+      hypothesis:"Не проверена совместимость формы и несущей схемы.",
+      relatedSpheres:["design","production"],sourceRefs:["finding-10"],
+      verification:"Проверить на макете и расчётом.",
+      resolutionOptions:["Сопоставить эскиз и усиление рамы."],
+      suggestedTargets:["design","production"],
+      source:"source_cue",priority:"needs_evidence",coreStatus:"author_review_required",
+      status:"tracked",severity:"medium",createdAt:t1,
+      history:[
+        {at:t1,actor:"ai",action:"registered",reason:"Тестовый источник.",verificationRefs:[]},
+        {at:t1,actor:"author",action:"tracked",reason:"Контролировать до испытания.",verificationRefs:[]},
+      ],
+    }];
+    const view=buildEggEvolutionOverview(p);
+    expect(view.current?.linkedTensions).toMatchObject([{
+      id:"balance-fixture",status:"tracked",events:[],
+    }]);
+    expect(view.current?.assessment).toBeNull();
+  });
   it("accepts honest inconclusive Author judgment without claiming a better product",()=>{
     const p=assessment(completedRevision(),{});
     expect(p.evolutionAssessments![0].outcome).toBe("inconclusive");
