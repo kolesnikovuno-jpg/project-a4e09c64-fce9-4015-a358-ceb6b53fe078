@@ -2,6 +2,7 @@ import {useState} from "react";
 import {createClient} from "@supabase/supabase-js";
 import {EGG_FLOW_ROUTES,currentEggFlowCycle,type EggFlowBranch,type EggSphereVisit} from "../../lib/eggFlowCycle";
 import type {EggProject,SphereId} from "../../lib/eggEngine";
+import EggYolkPassport from "./EggYolkPassport";
 
 const names:Record<SphereId,string>={
   marketing:"Маркетинг",design:"Дизайн",testDrive:"Тестдрайв",commerce:"Коммерция",
@@ -147,6 +148,7 @@ export default function EggFlowCyclePanel({
     </div>
     <div className="mt-4 rounded-lg border border-foreground/15 bg-foreground/[0.025] p-3">
       <h4 className="text-sm font-medium">Желток · встреча потоков</h4>
+      <div className="mt-3"><EggYolkPassport project={project}/></div>
       {!cycle?<p className="mt-2 text-xs text-foreground/65">Синтез будет доступен после полного прохождения обеих ветвей.</p>:
        cycle.status==="running"?<p className="mt-2 text-xs text-foreground/65">
          В работе. До синтеза обе линии должны пройти все четыре станции, включая транзит.
