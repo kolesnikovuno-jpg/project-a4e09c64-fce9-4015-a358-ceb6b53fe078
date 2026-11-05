@@ -8,6 +8,7 @@ import {
   eggAutomationRequestSchema,
 } from "../../lib/eggFlowAutomation";
 import {buildEggSphereBrief} from "../../lib/eggSphereIntelligence";
+import {providerFromEnv} from "../../../api/egg-flow-ai";
 
 const at="2026-11-05T18:50:00Z";
 const base=()=>createEggProject({
@@ -21,6 +22,27 @@ const sphereValue={
     basis:"Данных для подтверждения конструкции недостаточно."}],
 };
 describe("EGG automated execution / author-preserving circulation",()=>{
+ it("selects server-side OIDC from Vercel's runtime request header, with no client secret",()=>{
+   expect(providerFromEnv({VERCEL:"1"} as NodeJS.ProcessEnv,"oidc-test-token"))
+     .toMatchObject({kind:"gateway",model:"openai/gpt-5.4-mini"});
+   expect(providerFromEnv({} as NodeJS.ProcessEnv,"client-faked-header")).toBeNull();
+   expect(providerFromEnv({AI_GATEWAY_API_KEY:"server-key"} as NodeJS.ProcessEnv))
+     .toMatchObject({kind:"gateway"});
+   expect(providerFromEnv({OPENAI_API_KEY:"direct-key"} as NodeJS.ProcessEnv))
+     .toMatchObject({kind:"direct_openai"});
+   expect(providerFromEnv({VERCEL_OIDC_TOKEN:"server-token"} as NodeJS.ProcessEnv))
+     .toMatchObject({kind:"gateway"});
+   expect(eggAutomationRequestSchema.safeParse({
+     projectId:base().id,expectedRevision:1,mode:"preflight",
+   }).success).toBe(true);
+   expect(eggAutomationRequestSchema.safeParse({
+     projectId:base().id,expectedRevision:1,mode:"preflight",actor:"author",
+   }).success).toBe(false);
+   expect(eggAutomationRequestSchema.safeParse({
+     projectId:base().id,expectedRevision:1,mode:"invalid",
+   }).success).toBe(false);
+ });
+
  it("plans interleaved spheres in fixed branch order, then Yolk, then stops",()=>{
    let p=base();
    expect(nextEggAutomationStep(p)).toEqual({kind:"not_started"});
