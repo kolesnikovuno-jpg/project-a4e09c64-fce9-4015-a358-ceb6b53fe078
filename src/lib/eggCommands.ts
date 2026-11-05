@@ -120,6 +120,10 @@ export const runEggMutation = (
   }
   if ((state.flowCycles??[]).length && ["route","start","return","decide"].includes(mutation.command))
     throw new Error("Legacy task mutations are disabled after fixed-flow cycles begin");
+  const currentCycle=state.flowCycles?.[state.flowCycles.length-1];
+  if (currentCycle&&["running","awaiting_author"].includes(currentCycle.status) &&
+      ["propose_concept","decide_concept","route_concept_question"].includes(mutation.command))
+    throw new Error("Concept DNA is locked during a running flow; the Author intervenes after Yolk synthesis");
   switch (mutation.command) {
     case "start_flow_cycle":
       return startEggFlowCycle(state,{actor,at,brief:mutation.brief});
