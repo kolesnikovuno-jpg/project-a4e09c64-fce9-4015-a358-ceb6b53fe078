@@ -79,6 +79,22 @@ export default function EggFlowCyclePanel({
       const {data}=await client.auth.getSession();
       if(!data.session?.access_token)throw Error("auth");
       const token=data.session.access_token;
+      // A real low-token provider check happens BEFORE starting a cycle.
+      // If auth, model access or budget fails, the project stays unchanged.
+      const preflight=await fetch("/api/egg-flow-ai",{method:"POST",headers:{
+        "Content-Type":"application/json",Authorization:"Bearer "+token,
+      },body:JSON.stringify({projectId:project.id,
+        expectedRevision:currentRevision,mode:"preflight"})});
+      const preflightResult=await preflight.json() as {
+        ok:boolean;error?:string;ready?:boolean;model?:string;projectChanged?:boolean;
+      };
+      if(!preflight.ok||!preflightResult.ok||!preflightResult.ready)
+        throw Error(preflightResult.error??"model_request_failed");
+      if(stopAi.current){
+        setAiMessage("Отменено до начала работы. Проект не изменён.");
+        return;
+      }
+      setAiMessage("Доступ к модели "+(preflightResult.model??"ИИ")+" подтверждён.");
       if(startFirst){
         const started=await fetch("/api/egg",{method:"POST",headers:{
           "Content-Type":"application/json",Authorization:"Bearer "+token,
@@ -273,8 +289,10 @@ export default function EggFlowCyclePanel({
     {authorControls&&(canStart||canRunAI||aiBusy)&&<div className="mt-4 space-y-2 border-t border-foreground/10 pt-4"
       data-testid="egg-ai-flow-controls">
       <p className="text-xs text-foreground/70">Один запуск ИИ проводит сферы по двум установленным потокам,
-        затем создаёт черновой анализ Желтка. Тексты проекта передаются внешней модели;
-        вызовы тарифицируются провайдером. Решение Автора не принимается автоматически.</p>
+        затем создаёт черновой анализ Желтка. Перед началом выполняется один небольшой платный
+        запрос для проверки доступа к модели — при ошибке проект не изменяется.
+        Далее тексты проекта передаются внешней модели; вызовы тарифицируются провайдером.
+        Решение Автора не принимается автоматически.</p>
       {(canStart||canRunAI)&&!aiBusy&&<button type="button"
         disabled={busy} onClick={()=>void runAICycle(Boolean(canStart))}
         className="rounded-full border border-foreground/45 px-4 py-2 text-xs disabled:opacity-40"
