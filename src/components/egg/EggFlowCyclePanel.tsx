@@ -5,6 +5,7 @@ import type {EggProject,SphereId} from "../../lib/eggEngine";
 import EggYolkPassport from "./EggYolkPassport";
 import EggYolkSemanticPanel from "./EggYolkSemanticPanel";
 import EggDynamicBalancePanel from "./EggDynamicBalancePanel";
+import EggEvolutionPanel from "./EggEvolutionPanel";
 
 const names:Record<SphereId,string>={
   marketing:"Маркетинг",design:"Дизайн",testDrive:"Тестдрайв",commerce:"Коммерция",
@@ -243,6 +244,8 @@ export default function EggFlowCyclePanel({
       <div className="mt-3 space-y-3">
         <EggYolkPassport project={project}/>
         <EggYolkSemanticPanel project={project}/>
+        <EggEvolutionPanel project={project} revision={revision}
+          authorControls={authorControls} onSaved={onSaved}/>
         <EggDynamicBalancePanel project={project} revision={revision}
           authorControls={authorControls} onSaved={onSaved}
           onSuggestRoute={spheres=>{
