@@ -37,7 +37,7 @@ describe("EGG automated execution / author-preserving circulation",()=>{
      sequence.push(step.sphere);
      const prompt=buildEggAutomationPrompt(p,step);
      expect(prompt.instructions).toContain("AUTOMATED TEXT-ONLY MODE");
-     expect(prompt.instructions).toContain("no").toBeTruthy();
+     expect(prompt.instructions).toContain("No");
      const output=parseEggAutomationOutput(step,JSON.stringify(sphereValue));
      expect(output.kind).toBe("sphere");
      p=contributeEggFlowSphere(p,{actor:"ai",sphere:step.sphere,at,
