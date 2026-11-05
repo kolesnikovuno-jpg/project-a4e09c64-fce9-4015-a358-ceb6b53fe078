@@ -145,6 +145,7 @@ describe("EGG / iteration Change Map / dynamic balance stage 2",()=>{
     const source=comparison.deltas.find(d=>d.sphere==="design")!.after!.id;
     expect(()=>assessment(old,{outcome:"improved",evidenceResultIds:[source]},agent))
       .toThrow(/Forbidden/);
+    expect(()=>assessment(old,{outcome:"worsened",evidenceResultIds:[]})).toThrow(/new result/);
     expect(()=>assessment(old,{outcome:"improved",evidenceResultIds:[]}))
       .toThrow(/new result/);
     expect(()=>assessment(old,{outcome:"improved",evidenceResultIds:["invalid-result"]}))
