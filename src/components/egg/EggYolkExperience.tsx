@@ -279,15 +279,31 @@ export default function EggYolkExperience(){
         </div>
 
         <div className="mx-auto mt-7 max-w-[1040px] space-y-5">
-          {productState&&<div className="space-y-1 text-[11px] leading-relaxed text-foreground/60"
+          {project&&timeline&&<div className="space-y-2 rounded-lg border border-foreground/15 p-3 text-[11px] leading-relaxed text-foreground/65"
             data-testid="yolk-visual-source">
-            <p>{productState.visual.warning}</p>
-            {productState.visual.url&&<a href={productState.visual.url}
-              target="_blank" rel="noopener noreferrer"
-              className="inline-block underline underline-offset-2">
-              Открыть источник визуальной версии: {productState.visual.label}
-            </a>}
-            {productState.synthesisOrigin==="previous"&&<p>Новый цикл идёт. Сведения на орбите относятся к последнему завершённому синтезу.</p>}
+            <p>{timeline.visualNote}</p>
+            {timeline.visual&&<p>Источник: {timeline.visual.id} · {timeline.visual.sourceRef} · {timeline.visual.sourceStatus}.
+              Привязка к итерации не означает утверждения конструкции.</p>}
+            <p>Орбита и центральная версия относятся к выбранному состоянию: {timeline.label}.
+              Нижние рабочие панели показывают текущий проект и могут содержать более поздние записи.</p>
+            <div className="grid gap-2 sm:grid-cols-2" data-testid="yolk-timeline-audit">
+              <div className="rounded border border-foreground/10 p-2">
+                <p className="font-medium">Напряжения на этом этапе · {timeline.tensions.length}</p>
+                {timeline.tensions.length
+                  ?timeline.tensions.map(t=><p key={t.id} className="mt-1">
+                    {t.title} · {t.status} · {t.lastActionAt.slice(0,10)}</p>)
+                  :<p className="mt-1">Зарегистрированных решений по напряжениям пока нет.</p>}
+              </div>
+              <div className="rounded border border-foreground/10 p-2">
+                <p className="font-medium">Решение Автора</p>
+                <p className="mt-1">{timeline.authorDecision
+                  ?(timeline.authorDecision.outcome==="accept"?"Принято: ":"На доработку: ")+
+                    timeline.authorDecision.reason
+                  :"Для выбранного состояния решение не зарегистрировано."}</p>
+                {timeline.semanticReviewStatus==="unverified"&&
+                  <p className="mt-1">Есть смысловой черновик ИИ · без утверждения.</p>}
+              </div>
+            </div>
           </div>}
           {project&&<EggFlowCyclePanel project={project} revision={revision}/>}
           <EggDocumentationPanel project={project} revision={revision} origin="yolk"
@@ -296,7 +312,8 @@ export default function EggYolkExperience(){
 
         <footer className="mt-7 flex flex-wrap justify-between gap-3 border-t border-foreground/10 pt-4 text-[11px] font-light text-foreground/45">
           <span>Вращение модели — мышь / жест · Масштаб — колесо</span>
-          <span>{local3d?"GLB открыт локально; не сохранён в проекте":"Параметрический эскиз · GLB создаётся локально"} · {project?"Чтение данных EGG":"Без изменения проектов"}</span>
+          <span>{timeline?.visual?"Связанный источник из журнала · "+timeline.visual.id:
+            local3d?"GLB открыт локально; не сохранён в проекте":"Параметрический эскиз · GLB создаётся локально"} · {project?"Чтение данных EGG":"Без изменения проектов"}</span>
         </footer>
       </main>
 
@@ -321,7 +338,7 @@ export default function EggYolkExperience(){
                 <p className="mt-2">{EGG_SPHERES[selectedMeta.id].question}</p></div>
               {stateCard?.resultId&&<div data-testid="yolk-sphere-versioned-result">
                 <p className="text-[10px] uppercase tracking-[0.12em] text-foreground/40">
-                  Вклад в синтез · {stateCard.status==="new"?"новый":"наследованный"}
+                  Вывод выбранного состояния · {timelineStatus[stateCard.status]??"Исторический"}
                 </p>
                 <p className="mt-2 whitespace-pre-wrap">{stateCard.summary}</p>
                 <p className="mt-1 text-[11px] text-foreground/55">
@@ -329,7 +346,10 @@ export default function EggYolkExperience(){
                   {stateCard.requiresRecheck?" · требует проверки":""}
                 </p>
               </div>}
-              <div><p className="text-[10px] uppercase tracking-[0.12em] text-foreground/40">Исторические задачи · {sphereTasks.length}</p>
+              {!stateCard?.resultId&&project&&<p className="text-[11px] text-foreground/55">
+                 В выбранном состоянии вывод этой сферы не зарегистрирован.</p>}
+              <div><p className="text-[10px] uppercase tracking-[0.12em] text-foreground/40">
+                Все исторические задачи (не срез выбранной итерации) · {sphereTasks.length}</p>
                 {sphereTasks.length?sphereTasks.map(t=><article key={t.id} className="mt-3 border-t border-foreground/10 pt-3">
                   <p className="text-[11px] text-foreground/50">{t.id} · {stateLabels[t.status]??t.status}</p>
                   <p className="mt-2 whitespace-pre-wrap">{t.question}</p>
