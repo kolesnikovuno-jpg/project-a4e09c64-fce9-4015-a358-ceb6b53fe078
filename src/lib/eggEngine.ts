@@ -7,6 +7,7 @@
  */
 import type { EggArtifact } from "./eggArtifacts.js";
 import type { EggFlowCycle } from "./eggFlowCycle.js";
+import type { EggBalanceTension } from "./eggDynamicBalance.js";
 
 export const EGG_SPHERES = {
   marketing: {
@@ -135,7 +136,8 @@ export type EggEventKind =
   | "artifact_registered" | "artifact_confirmed"
   | "concept_proposed" | "concept_decided"
   | "cycle_started" | "sphere_transited" | "cycle_sphere_completed"
-  | "cycle_synthesized" | "cycle_decided" | "yolk_review_recorded";
+  | "cycle_synthesized" | "cycle_decided" | "yolk_review_recorded"
+  | "balance_tension_recorded" | "balance_tension_decided";
 export type EggEvent = {
   id: string;
   kind: EggEventKind;
@@ -160,6 +162,8 @@ export type EggProject = {
   artifacts?: EggArtifact[];
   /** Fixed-route two-flow cycles; optional for existing legacy projects. */
   flowCycles?: EggFlowCycle[];
+  /** Dynamic Balance v1: source-grounded hypotheses with Author-controlled history. */
+  balanceTensions?: EggBalanceTension[];
   events: EggEvent[];
   nextSequence: number;
 };
