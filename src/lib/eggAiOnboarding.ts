@@ -22,7 +22,7 @@ export const EGG_AI_ONBOARDING = {
       "procurement", "commerce", "retail",
     ],
     author: "Only the human Author may approve or reject a concept, change the approved core or make final decisions.",
-    ai: "The user's AI researches, discusses, makes draft proposals and can use available, authorized tools; it never assumes Author rights.",
+    ai: "The user's AI researches, discusses and independently identifies open questions within an assigned sphere, but only writes unverified drafts; it never assumes Author rights.",
   },
   firstContact: [
     {
@@ -68,6 +68,8 @@ export const EGG_AI_ONBOARDING = {
     read: "Read the permitted project state with egg_get_project_state.",
     propose: "Submit only authorized drafts and contributions; existing project permissions apply.",
     approve: "Not permitted to the AI.",
+    sphereDiagnostics: "When an active fixed-route sphere is awaiting a result, use the diagnostic brief from egg_get_project_state.flowCompatibility.awaiting; discover unasked relevant questions in your own competence and attach them with evidence provenance. Transit visits require no new analysis.",
+    iterativeLearning: "Use previous sphere results and Author cycle feedback as context; do not claim automatic model retraining or cross-project transfer.",
     files: "Store real files with the AI's own authorized storage connector, then optionally register genuine returned references in EGG.",
   },
 } as const;
