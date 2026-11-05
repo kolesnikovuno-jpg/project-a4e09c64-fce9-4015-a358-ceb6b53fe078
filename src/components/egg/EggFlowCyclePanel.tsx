@@ -60,7 +60,7 @@ export default function EggFlowCyclePanel({
       setStatus("Не удалось выполнить действие. Проверьте вход в EGG и повторите.");
     }finally{setBusy(false);}
   }
-  const visits=(branch:EggFlowBranch)=>cycle?.[branch]??EGG_FLOW_ROUTES[branch].map((sphere,position)=>({
+  const visits=(branch:EggFlowBranch):EggSphereVisit[]=>cycle?.[branch]??EGG_FLOW_ROUTES[branch].map((sphere,position)=>({
     branch,sphere,position,mode:"work" as const,status:"pending" as const,
   }));
   return <section className="rounded-xl border border-foreground/15 p-4 sm:p-5"
@@ -93,13 +93,13 @@ export default function EggFlowCyclePanel({
               <p className="mt-1 text-center text-[10px] text-foreground/65">
                 {statusLabels[visit.status]}
               </p>
-              {"inherited" in visit&&visit.inherited&&<p className="mt-1 text-center text-[10px] text-foreground/50">
+              {visit.inherited&&<p className="mt-1 text-center text-[10px] text-foreground/50">
                 Использован прошлый результат
               </p>}
-              {"requiresRecheck" in visit&&visit.requiresRecheck&&<p className="mt-1 text-center text-[10px] text-amber-700 dark:text-amber-300">
+              {visit.requiresRecheck&&<p className="mt-1 text-center text-[10px] text-amber-700 dark:text-amber-300">
                 Проверить актуальность
               </p>}
-              {"result" in visit&&visit.result&&<details className="mt-2 text-[11px]">
+              {visit.result&&<details className="mt-2 text-[11px]">
                 <summary className="cursor-pointer text-foreground/70">Вывод</summary>
                 <p className="mt-1 whitespace-pre-wrap text-foreground/70">{visit.result.text}</p>
                 <p className="mt-1 text-foreground/50">{visit.result.evidence}</p>
