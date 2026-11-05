@@ -8,6 +8,7 @@ import {
 
 const labels:Record<EggEvolutionDeltaStatus,string>={
   awaiting_result:"Ожидается новая работа",
+  pending_transit:"Ожидает транзита по своей ветви",
   new_result:"Новый источник",
   text_changed:"Изменён текст вывода",
   resubmitted_same_text:"Новый источник, тот же текст",
@@ -47,7 +48,7 @@ export default function EggEvolutionPanel({
   const availableSources=comparison
     ?[...new Map(comparison.deltas.flatMap(d=>[d.before,d.after])
       .filter((x):x is NonNullable<typeof x>=>Boolean(x))
-      .map(x=>[x.id,x])).values()]:[];
+      .map(x=>[x.id,x] as const)).values()]:[];
   const selectedHasNewSource=comparison?.deltas.some(d=>
     d.after&&evidence.includes(d.after.id)&&
     ["new_result","resubmitted_same_text","text_changed"].includes(d.status));
@@ -127,7 +128,7 @@ export default function EggEvolutionPanel({
           Исходная ДНК сохранена как запись; сохранение её смысла автоматически не определено.
         </p>
       </div>
-      <div className="grid grid-cols-3 gap-2 text-[11px] text-center">
+      <div className="grid grid-cols-2 gap-2 text-[11px] text-center sm:grid-cols-4">
         <div className="rounded border border-foreground/10 p-2">
           <strong className="block text-base">{comparison.counts.changedText}</strong>
           Изменён текст
@@ -138,7 +139,11 @@ export default function EggEvolutionPanel({
         </div>
         <div className="rounded border border-foreground/10 p-2">
           <strong className="block text-base">{comparison.counts.awaiting}</strong>
-          Без результата
+          Ожидает работы
+        </div>
+        <div className="rounded border border-foreground/10 p-2">
+          <strong className="block text-base">{comparison.counts.pendingTransit}</strong>
+          Ожидает транзита
         </div>
       </div>
       <details className="rounded border border-foreground/10 p-3" open={overview.comparisons.length<2}
