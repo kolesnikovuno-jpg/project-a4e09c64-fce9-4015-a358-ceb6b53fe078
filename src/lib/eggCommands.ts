@@ -138,7 +138,10 @@ export const runEggMutation = (
     case "complete_flow_sphere":
       return contributeEggFlowSphere(state,{actor,at,
         sphere:mutation.sphere,text:mutation.text,evidence:mutation.evidence,
-        sourceRefs:mutation.sourceRefs,discoveredQuestions:mutation.discoveredQuestions});
+        sourceRefs:mutation.sourceRefs,
+        discoveredQuestions:mutation.discoveredQuestions?.map(q=>({
+          domain:q.domain!,question:q.question!,basis:q.basis,sourceRefs:q.sourceRefs,
+        }))});
     case "decide_flow_cycle":
       return decideEggFlowCycle(state,{actor,at,outcome:mutation.outcome,
         reason:mutation.reason,addressedSpheres:mutation.addressedSpheres});
