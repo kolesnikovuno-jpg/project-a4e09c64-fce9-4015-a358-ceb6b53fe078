@@ -4,7 +4,7 @@ import EggNewProject from "../components/egg/EggNewProject";
 import EggProjectActions from "../components/egg/EggProjectActions";
 import { getEggAiFirstContactPrompt } from "../lib/eggAiOnboarding";
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
-import {EGG_AUTH_CALLBACK,EGG_CANONICAL_ACCOUNT,eggAuthOriginMismatch} from "../lib/eggAuthRedirect";
+import {EGG_AUTH_CALLBACK,EGG_CANONICAL_ACCOUNT,eggAuthOriginMismatch,eggAuthBridgeUrl} from "../lib/eggAuthRedirect";
 
 const EGG_MCP_URL = "https://egg.kolesnikov.studio/api/mcp";
 const AI_FIRST_CONTACT_PROMPT = getEggAiFirstContactPrompt();
@@ -51,6 +51,13 @@ export default function EggConnect() {
     return () => { active = false; };
   }, [client, user, refreshProjects]);
   useEffect(() => {
+    const bridge=eggAuthBridgeUrl(
+      window.location.origin,window.location.pathname,window.location.hash);
+    if(bridge){
+      // Keep Supabase's one-time callback fragment on a trusted fixed origin.
+      window.location.replace(bridge);
+      return;
+    }
     let active = true;
     let unsubscribe: (() => void) | undefined;
     (async () => {
