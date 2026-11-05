@@ -174,6 +174,27 @@ export default function EggFlowCyclePanel({
     {!cycle&&<p className="mt-3 text-xs text-foreground/65">
       Новый потоковый цикл ещё не запускался. Старые записи и документы остаются в памяти проекта.
     </p>}
+    {authorControls&&(canStart||canRunAI||aiBusy)&&<div className="mt-4 space-y-3 rounded-lg border border-foreground/25 p-3 sm:p-4"
+      data-testid="egg-ai-flow-controls">
+      <h4 className="text-sm font-medium">Первый запуск · восемь сфер → Желток</h4>
+      <p className="text-xs text-foreground/70">Один запуск ИИ проводит сферы по двум установленным потокам,
+        затем создаёт черновой анализ Желтка. Перед началом выполняется один небольшой платный
+        запрос для проверки доступа к модели — при ошибке проект не изменяется.
+        Далее тексты проекта передаются внешней модели; вызовы тарифицируются провайдером.
+        Решение Автора не принимается автоматически.</p>
+      {(canStart||canRunAI)&&!aiBusy&&<button type="button"
+        disabled={busy} onClick={()=>void runAICycle(Boolean(canStart))}
+        className="w-full rounded-lg bg-foreground px-4 py-3 text-sm font-medium text-background disabled:opacity-40 sm:w-auto"
+        data-testid="egg-ai-run-cycle">
+        {canStart?"Начать цикл с ИИ":"Продолжить цикл ИИ до Желтка"}
+      </button>}
+      {aiBusy&&<button type="button" onClick={()=>{stopAi.current=true;setAiMessage("Останавливаем после текущего шага...")}}
+        className="rounded-full border border-foreground/35 px-4 py-2 text-xs"
+        data-testid="egg-ai-stop-cycle">Остановить после текущего шага</button>}
+      {aiMessage&&<p role="status" data-testid="egg-ai-flow-status"
+        className="text-xs leading-relaxed text-foreground/65">{aiMessage}
+        {aiBusy?" · шагов сохранено: "+aiProgress:""}</p>}
+    </div>}
     <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-4">
       {(["first","second"] as EggFlowBranch[]).map(branch=><div key={branch}
         className="rounded-lg border border-foreground/10 p-2 sm:p-3">
@@ -292,33 +313,15 @@ export default function EggFlowCyclePanel({
          </div>}
        </div>}
     </div>
-    {canStart&&<div className="mt-4">
+    {canStart&&<details className="mt-4 rounded-lg border border-foreground/10 p-3">
+      <summary className="cursor-pointer text-xs text-foreground/65">Ручной режим · без автоматического выполнения сфер</summary>
       <button type="button" disabled={busy||aiBusy} onClick={()=>void send("start_flow_cycle")}
-        className="rounded-full border border-foreground/45 px-4 py-2 text-xs disabled:opacity-40"
+        className="mt-3 rounded-full border border-foreground/45 px-4 py-2 text-xs disabled:opacity-40"
         data-testid="start-flow-cycle">
         {cycle?"Запустить полный цикл следующего уровня":"Начать первый полный цикл"}
       </button>
-    </div>}
-    {authorControls&&(canStart||canRunAI||aiBusy)&&<div className="mt-4 space-y-2 border-t border-foreground/10 pt-4"
-      data-testid="egg-ai-flow-controls">
-      <p className="text-xs text-foreground/70">Один запуск ИИ проводит сферы по двум установленным потокам,
-        затем создаёт черновой анализ Желтка. Перед началом выполняется один небольшой платный
-        запрос для проверки доступа к модели — при ошибке проект не изменяется.
-        Далее тексты проекта передаются внешней модели; вызовы тарифицируются провайдером.
-        Решение Автора не принимается автоматически.</p>
-      {(canStart||canRunAI)&&!aiBusy&&<button type="button"
-        disabled={busy} onClick={()=>void runAICycle(Boolean(canStart))}
-        className="rounded-full border border-foreground/45 px-4 py-2 text-xs disabled:opacity-40"
-        data-testid="egg-ai-run-cycle">
-        {canStart?"Начать цикл с ИИ":"Продолжить цикл ИИ до Желтка"}
-      </button>}
-      {aiBusy&&<button type="button" onClick={()=>{stopAi.current=true;setAiMessage("Останавливаем после текущего шага...")}}
-        className="rounded-full border border-foreground/35 px-4 py-2 text-xs"
-        data-testid="egg-ai-stop-cycle">Остановить после текущего шага</button>}
-      {aiMessage&&<p role="status" data-testid="egg-ai-flow-status"
-        className="text-xs leading-relaxed text-foreground/65">{aiMessage}
-        {aiBusy?" · шагов сохранено: "+aiProgress:""}</p>}
-    </div>}
+      <p className="mt-2 text-[11px] text-foreground/55">В ручном режиме цикл только создаётся; результаты восьми сфер потребуется внести отдельно.</p>
+    </details>}
     {canDecide&&<div className="mt-4 space-y-3 border-t border-foreground/10 pt-4">
       <h4 className="text-sm font-medium">Решение Автора · после синтеза</h4>
       <label className="block text-xs">Результат цикла
