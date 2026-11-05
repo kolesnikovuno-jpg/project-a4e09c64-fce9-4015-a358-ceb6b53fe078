@@ -1,16 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft } from "lucide-react";
 import EggYolkViewer from "./EggYolkViewer";
-import { EGG_SPHERES, type SphereId } from "../../lib/eggEngine";
+import EggDocumentationPanel from "./EggDocumentationPanel";
+import type { VisualDraft } from "../../lib/eggDocumentation";
+import { EGG_SPHERES, type SphereId, type EggProject } from "../../lib/eggEngine";
 
-type Finding={id:string;text:string;evidence:string;sourceRefs?:string[];submittedAt?:string};
-type Decision={id:string;outcome:string;reason:string};
-type Task={id:string;sphere:string;status:string;question:string;findings:Finding[];decisions:Decision[];sourceConceptId?:string};
-type Concept={id:string;status:string;text:string;visualUrl?:string;questions?:Array<{sphere:string;question:string}>;createdAt:string};
-type Artifact={id:string;title:string;mimeType:string;webUrl?:string;sphere?:string;collectionKey:string;status:string};
-type Project={id:string;title?:string;seed:{text:string};level:number;iteration:number;tasks:Task[];concepts?:Concept[];artifacts?:Artifact[]};
+type Project=EggProject;
+type Task=EggProject["tasks"][number];
 type SphereMeta={id:SphereId;name:string;tag:string;detail:string;angle:number;accent:string};
 
 export const YOLK_SPHERES:SphereMeta[]=[
@@ -86,6 +84,10 @@ export default function EggYolkExperience(){
   const [loading,setLoading]=useState(Boolean(id));
   const [notice,setNotice]=useState("");
   const [local3d,setLocal3d]=useState<string|null>(null);
+  const [spatialStudy,setSpatialStudy]=useState<VisualDraft|null>(null);
+  const onSpatialChange=useCallback((next:VisualDraft)=>{
+    setSpatialStudy(prev=>prev&&prev.stage===next.stage&&prev.variant===next.variant&&prev.iteration===next.iteration?prev:next);
+  },[]);
   const [showDna,setShowDna]=useState(false);
   const [refresh,setRefresh]=useState(0);
   useEffect(()=>{
@@ -177,7 +179,7 @@ export default function EggYolkExperience(){
           <section className="relative order-1 min-w-0 lg:order-2" aria-label="Крупная пространственная модель и восемь сфер">
             <div className="relative mx-auto aspect-[760/700] w-full max-w-[720px]" data-testid="yolk-orbit-stage">
               <div className="absolute inset-[1%] z-0" data-testid="yolk-central-object">
-                <EggYolkViewer onFileChange={setLocal3d} level={project?.level??1} iteration={project?.iteration??1} projectId={project?.id}/>
+                <EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange} level={project?.level??1} iteration={project?.iteration??1} projectId={project?.id}/>
               </div>
               <svg viewBox="0 0 760 700" className="pointer-events-none absolute inset-0 z-10 h-full w-full overflow-visible" aria-label="Восемь интерактивных функциональных сфер">
                 <ellipse cx="380" cy="350" rx="290" ry="265" fill="none" stroke="currentColor" strokeOpacity=".16" strokeWidth=".9" vectorEffect="non-scaling-stroke"/>
@@ -224,6 +226,11 @@ export default function EggYolkExperience(){
             {loading&&<p className="mt-4 text-[11px] text-foreground/45" role="status">Читаем проект…</p>}
             {notice&&<p className="mt-4 text-[11px] leading-relaxed text-foreground/65" role="status">{notice} <Link to="/egg/connect" className="underline underline-offset-4">Войти</Link></p>}
           </aside>
+        </div>
+
+        <div className="mx-auto mt-7 max-w-[1040px]">
+          <EggDocumentationPanel project={project} revision={revision} origin="yolk"
+            visual={spatialStudy} externalPreviewOpen={Boolean(local3d)}/>
         </div>
 
         <footer className="mt-7 flex flex-wrap justify-between gap-3 border-t border-foreground/10 pt-4 text-[11px] font-light text-foreground/45">
