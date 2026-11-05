@@ -195,7 +195,8 @@ function flowCycles(project:EggProject):string{
       "Направленные Автором сферы: "+(c.requestedTargets.join(", ")||"не зарегистрированы"),
       "Статус: "+c.toStatus,
       "Изменено текстов: "+c.counts.changedText+"; наследовано: "+c.counts.inherited+
-        "; ожидается: "+c.counts.awaiting,
+        "; ожидает новой работы: "+c.counts.awaiting+
+        "; ожидает транзита: "+c.counts.pendingTransit,
       ...c.deltas.map(d=>"- "+d.label+" · "+d.status+
         " · было "+(d.before?.id??"нет")+" / стало "+(d.after?.id??"нет")+
         (d.authorRequested?" · адресовано Автором":"")),
