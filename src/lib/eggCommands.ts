@@ -8,7 +8,7 @@ import { z } from "zod";
 import { confirmDriveReference, registerDriveReference } from "./eggArtifacts.js";
 import { startEggFlowCycle, contributeEggFlowSphere, decideEggFlowCycle, EGG_FLOW_ROUTES } from "./eggFlowCycle.js";
 import {buildEggSphereBrief} from "./eggSphereIntelligence.js";
-import {eggLegalSimilaritySchema} from "./eggLegalSimilarity.js";
+import {eggLegalSimilaritySchema,type EggLegalSimilarityDraft} from "./eggLegalSimilarity.js";
 import {
   decideFinding, nextIteration, readCore, readSphereStates, returnFinding, recordAuthorSeed, proposeEggSeed,
   routeQuestion, setLevel, startSphereWork,
@@ -144,7 +144,9 @@ export const runEggMutation = (
         discoveredQuestions:mutation.discoveredQuestions?.map(q=>({
           domain:q.domain!,question:q.question!,basis:q.basis,sourceRefs:q.sourceRefs,
         })),
-        legalSimilarity:mutation.legalSimilarity});
+        // Zod has already validated every required nested field at runtime.
+        // NodeNext's non-strict optional inference widens them in the parsed type.
+        legalSimilarity:mutation.legalSimilarity as EggLegalSimilarityDraft | undefined});
     case "decide_flow_cycle":
       return decideEggFlowCycle(state,{actor,at,outcome:mutation.outcome,
         reason:mutation.reason,addressedSpheres:mutation.addressedSpheres});
