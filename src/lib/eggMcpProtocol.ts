@@ -8,6 +8,7 @@
  */
 import { z } from "zod";
 import { getEggAiOnboardingProtocol } from "./eggAiOnboarding.js";
+import {eggLegalSimilaritySchema} from "./eggLegalSimilarity.js";
 
 const discoveryParams=z.array(z.object({
   domain:z.string().trim().min(1).max(90),
@@ -42,7 +43,7 @@ export const eggMcpTools = [
   {
     name: "egg_contribute_sphere",
     title: "Contribute to an Egg sphere",
-    description: "Work within the next active sphere of one of two fixed EGG streams. Read egg_get_project_state.flowCompatibility.awaiting for the exact taskId and independent diagnostic brief. Return ONE result; optionally add discoveredQuestions, up to 6 useful unverified questions discovered within the sphere even when Author did not ask. Legacy task commands remain for old projects. Cannot alter DNA, approve decisions or advance levels.",
+    description: "Work within the next active sphere of the two fixed EGG streams. Read egg_get_project_state.flowCompatibility.awaiting for taskId and diagnostic brief. Return ONE result and optionally up to six unverified questions. Only Legal may attach legalSimilarity: documented queries and linked candidate similarities; never a rights clearance or verified infringement. No DNA changes or level approvals.",
     inputSchema: {
       type: "object",
       properties: {
@@ -54,6 +55,24 @@ export const eggMcpTools = [
         question: { type: "string" }, taskId: { type: "string" }, text: { type: "string" },
         evidence: { type: "string", enum: ["observation", "hypothesis", "question"] },
         sourceRefs: { type: "array", items: { type: "string" } },
+        legalSimilarity:{
+          type:"object",description:"Legal sphere ONLY: source-attributed reported prior-art/design/brand/patent comparison. Requires real references; never certifies infringement or clearance.",
+          properties:{
+            territories:{type:"array",maxItems:8,items:{type:"string",maxLength:100}},
+            searches:{type:"array",maxItems:12,items:{type:"object",properties:{
+              category:{type:"string",enum:["registered_designs","trademarks","patent_publications","market_examples","copyright_materials"]},
+              sourceName:{type:"string"},sourceUrl:{type:"string",format:"uri"},
+              query:{type:"string"},searchedAt:{type:"string",format:"date-time"},
+              scopeNote:{type:"string"},
+            },required:["category","sourceName","sourceUrl","query","searchedAt"],additionalProperties:false}},
+            candidates:{type:"array",maxItems:8,items:{type:"object",properties:{
+              kind:{type:"string",enum:["industrial_design","trademark","patent","copyright","other"]},
+              title:{type:"string"},sourceUrl:{type:"string",format:"uri"},
+              similarity:{type:"string"},differences:{type:"string"},evidenceNote:{type:"string"},
+            },required:["kind","title","sourceUrl","similarity"],additionalProperties:false}},
+            limitations:{type:"array",maxItems:10,items:{type:"string",maxLength:1200}},
+          },required:["territories","limitations"],additionalProperties:false,
+        },
         discoveredQuestions: {
           type:"array",maxItems:6,description:"Optional unresolved questions independently discovered by the working sphere, not verified or approved.",
           items:{type:"object",properties:{
@@ -184,7 +203,7 @@ const proposalParams = baseParams.extend({ expectedRevision: z.number().int().po
 const contributeParams = z.discriminatedUnion("command", [
   baseParams.extend({ expectedRevision: z.number().int().positive(), command: z.literal("route"), from: z.enum(["idea", "marketing", "legal", "design", "production", "testDrive", "procurement", "commerce", "retail"]), to: z.enum(["marketing", "legal", "design", "production", "testDrive", "procurement", "commerce", "retail"]), question: z.string().trim().min(1).max(10000) }).strict(),
   baseParams.extend({ expectedRevision: z.number().int().positive(), command: z.literal("start"), taskId: z.string().min(1).max(100) }).strict(),
-  baseParams.extend({ expectedRevision: z.number().int().positive(), command: z.literal("return"), taskId: z.string().min(1).max(100), text: z.string().trim().min(1).max(10000), evidence: z.enum(["observation", "hypothesis", "question"]), sourceRefs: z.array(z.string().min(1).max(600)).max(20).optional(), discoveredQuestions:discoveryParams.optional() }).strict(),
+  baseParams.extend({ expectedRevision: z.number().int().positive(), command: z.literal("return"), taskId: z.string().min(1).max(100), text: z.string().trim().min(1).max(10000), evidence: z.enum(["observation", "hypothesis", "question"]), sourceRefs: z.array(z.string().min(1).max(600)).max(20).optional(), discoveredQuestions:discoveryParams.optional(), legalSimilarity:eggLegalSimilaritySchema.optional() }).strict(),
 ]);
 
 export type EggMcpOperations = {
