@@ -13,6 +13,7 @@ import { getEggStorageConfig } from "../src/server/eggStorageConfig.js";
 import type { EggProject } from "../src/lib/eggEngine.js";
 import { eggMutationSchema, mayAccessEgg, readEggState, runEggMutation, type EggPermission } from "../src/lib/eggCommands.js";
 import { processEggMcp } from "../src/lib/eggMcpProtocol.js";
+import { getEggAiReadHandoff } from "../src/lib/eggAiOnboarding.js";
 
 type Incoming = IncomingMessage & { body?: unknown };
 type ProjectRow = { id: string; owner_id: string; revision: number; document: EggProject };
@@ -178,7 +179,7 @@ export default async function handler(req: Incoming, res: ServerResponse) {
     const rpc = await processEggMcp(await readJson(req), {
       getState: async (projectId) => {
         const row = await getProject(projectId, "read");
-        return { ok: true, revision: row.revision, project: readEggState(row.document) };
+        return { ok: true, revision: row.revision, project: readEggState(row.document), aiFirstContact: getEggAiReadHandoff() };
       },
       proposeSeed: async (args) => {
         const row = await getProject(args.projectId, "contribute");
