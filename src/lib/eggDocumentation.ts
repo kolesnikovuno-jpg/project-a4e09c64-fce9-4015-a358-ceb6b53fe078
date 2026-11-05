@@ -41,6 +41,7 @@ const EVENT_NAMES:Record<EggEvent["kind"],string>={
   cycle_started:"Цикл запущен",sphere_transited:"Сфера пройдена транзитом",
   cycle_sphere_completed:"Сфера внесла результат",cycle_synthesized:"Желток согласовал потоки",
   cycle_decided:"Решение Автора по циклу",
+  yolk_review_recorded:"Черновой смысловой анализ Желтка",
 };
 const txt=(value:unknown)=>typeof value==="string"?value.replace(/\r/g,"").trim():"";
 const encoder=new TextEncoder();
@@ -220,6 +221,19 @@ function flowCycles(project:EggProject):string{
           ...(station.requiresRecheck?["**Внимание: унаследованный вывод требует повторной проверки актуальности.**"]:[]),"");
       }
     }
+    if(cycle.semanticReview)lines.push("### Желток / смысловая интерпретация ИИ · не утверждена","",
+      "Источник синтеза: "+cycle.semanticReview.sourceSynthesisId,
+      "Статус: "+cycle.semanticReview.status,
+      "Резюме: "+cycle.semanticReview.summary,
+      ...cycle.semanticReview.interpretations.flatMap(item=>[
+        "- "+item.kind+" · "+item.title,
+        "  Описание: "+item.explanation,
+        "  Источники результатов: "+item.sourceResultIds.join(", "),
+        "  Проверить: "+item.verificationNeeded,
+        "  Возможные адресаты: "+(item.suggestedSphereTargets.join(", ")||"не предложены"),
+      ]),
+      ...cycle.semanticReview.limitations.map(note=>"Ограничение: "+note),
+      "Этот результат не утверждает ДНК, реализацию, правомерность или коммерческую состоятельность.","");
     if(cycle.synthesis)lines.push("### Желток / встреча потоков","",
       "Открытых вопросов сфер: "+(cycle.synthesis.openQuestions?.length??0),
       "Проверка сходства, версия формы: "+(cycle.synthesis.second[0]?.legalSimilarity?.subject.designResultId??"не подтверждена"),
