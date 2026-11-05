@@ -8,6 +8,7 @@ import { z } from "zod";
 import { confirmDriveReference, registerDriveReference } from "./eggArtifacts.js";
 import { startEggFlowCycle, contributeEggFlowSphere, decideEggFlowCycle, EGG_FLOW_ROUTES } from "./eggFlowCycle.js";
 import {buildEggSphereBrief} from "./eggSphereIntelligence.js";
+import {buildEggBalanceOverview,registerEggBalanceTension,decideEggBalanceTension} from "./eggDynamicBalance.js";
 import {eggLegalSimilaritySchema,type EggLegalSimilarityDraft} from "./eggLegalSimilarity.js";
 import {eggYolkReviewDraftSchema,contributeEggYolkReview,buildEggYolkReviewBrief,
   type EggYolkReviewDraft} from "./eggYolkSemantic.js";
@@ -86,6 +87,16 @@ export const eggMutationSchema = z.discriminatedUnion("command", [
     outcome:z.enum(["accept","revise"]),reason:valueText,
     addressedSpheres:z.array(sphere).max(8).optional(),
   }).strict(),
+  shared.extend({command:z.literal("record_balance_tension"),
+    key:z.string().trim().min(3).max(160),
+  }).strict(),
+  shared.extend({command:z.literal("decide_balance_tension"),
+    tensionId:identifier,
+    outcome:z.enum(["track","resolve","dismiss","reopen"]),
+    reason:z.string().trim().min(8).max(2000),
+    severity:z.enum(["unassessed","low","medium","high"]).optional(),
+    verificationRefs:z.array(identifier).max(8).optional(),
+  }).strict(),
   shared.extend({command:z.literal("contribute_yolk_review"),
     synthesisId:identifier,
     summary:eggYolkReviewDraftSchema.shape.summary,
@@ -116,7 +127,8 @@ export type EggPermission = { kind: "author"; ownerId: string } |
 export const isAuthorCommand = (command: EggMutation["command"]) =>
   command === "set_seed" || command === "decide" || command === "set_level" || command === "next_iteration" ||
   command === "confirm_file" || command === "decide_concept" || command === "route_concept_question" ||
-  command === "start_flow_cycle" || command === "decide_flow_cycle";
+  command === "start_flow_cycle" || command === "decide_flow_cycle" ||
+  command === "decide_balance_tension";
 
 export const mayAccessEgg = (
   identity: EggPermission, projectId: string, ownerId: string, action: "read" | "contribute" | "author",
@@ -158,6 +170,13 @@ export const runEggMutation = (
     case "decide_flow_cycle":
       return decideEggFlowCycle(state,{actor,at,outcome:mutation.outcome,
         reason:mutation.reason,addressedSpheres:mutation.addressedSpheres});
+    case "record_balance_tension":
+      return registerEggBalanceTension(state,{actor,at,key:mutation.key});
+    case "decide_balance_tension":
+      return decideEggBalanceTension(state,{actor,at,
+        tensionId:mutation.tensionId,outcome:mutation.outcome,
+        reason:mutation.reason,severity:mutation.severity,
+        verificationRefs:mutation.verificationRefs});
     case "contribute_yolk_review":
       return contributeEggYolkReview(state,{actor,at,draft:{
         synthesisId:mutation.synthesisId,summary:mutation.summary,
@@ -220,6 +239,7 @@ export const readEggState = (state: EggProject) => ({
   files: state.artifacts ?? [],
   events: state.events,
   flowCycles: state.flowCycles??[],
+  dynamicBalance:buildEggBalanceOverview(state),
   flowModel: {levels:5,poles:["idea","matter"],branches:EGG_FLOW_ROUTES},
   yolkReviewCompatibility: {
     description:"After both branches reach Yolk, one assigned AI may submit a grounded semantic REVIEW DRAFT using egg_contribute_yolk_review. Only the Author decides the cycle; no autonomous run is performed.",
