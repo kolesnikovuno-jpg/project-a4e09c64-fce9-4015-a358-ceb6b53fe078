@@ -112,6 +112,33 @@ export default function EggFlowCyclePanel({
                      </li>)}
                    </ul>
                  </div>}
+                 {visit.result.legalSimilarity&&<div className="mt-3 space-y-2 border-t border-foreground/10 pt-2" data-testid="legal-ip-screening">
+                   <p className="font-medium">Право · проверка правовых пересечений</p>
+                   <p className="text-foreground/55">
+                     {visit.result.legalSimilarity.status==="no_search_reported"?
+                       "Поиск аналогов ещё не проведён":"Сообщено о поиске; результаты не подтверждены EGG"}
+                   </p>
+                   <p className="text-foreground/55">Сопоставлена версия формы:
+                     {visit.result.legalSimilarity.subject.designResultId??" отсутствует"}
+                   </p>
+                   <p className="text-foreground/55">Территории:
+                     {visit.result.legalSimilarity.territories.join(", ")||" не определены"}
+                   </p>
+                   {visit.result.legalSimilarity.candidates.map((candidate,i)=><div key={i}
+                     className="space-y-1 rounded bg-foreground/5 p-2">
+                     <p className="font-medium">{candidate.title} · возможное пересечение</p>
+                     <p>Сходство: {candidate.similarity}</p>
+                     {candidate.differences&&<p>Отличия: {candidate.differences}</p>}
+                     <a className="underline underline-offset-2 break-all"
+                       href={candidate.sourceUrl} target="_blank" rel="noopener noreferrer">
+                       Источник / сопоставляемый объект
+                     </a>
+                   </div>)}
+                   {visit.result.legalSimilarity.limitations.map((note,i)=><p key={i}
+                     className="text-foreground/55">Ограничение: {note}</p>)}
+                   <p className="text-foreground/55">Сходство не доказывает нарушение прав.
+                     Отсутствие найденного аналога не подтверждает правовую чистоту.</p>
+                 </div>}
               </details>}
             </div>
           </div>)}
@@ -136,6 +163,12 @@ export default function EggFlowCyclePanel({
              <summary className="cursor-pointer text-foreground/70">Синтез: ограничения ({cycle.synthesis.gaps.length}), вопросы сфер ({cycle.synthesis.openQuestions?.length??0})</summary>
              <ul className="mt-2 space-y-1 text-foreground/65">
                {cycle.synthesis.gaps.map((gap,i)=><li key={i}>— {gap}</li>)}
+               {cycle.synthesis.second[0]?.legalSimilarity&&<li className="mt-2 rounded bg-foreground/5 p-2"
+                 data-testid="yolk-ip-review">
+                 Право: зарегистрировано сравнений с аналогами — {cycle.synthesis.second[0].legalSimilarity.candidates.length}.
+                 Проверена версия формы: {cycle.synthesis.second[0].legalSimilarity.subject.designResultId??"нет"}.
+                 Это не юридическое заключение.
+               </li>}
                {(cycle.synthesis.openQuestions??[]).map(q=><li key={q.id} className="mt-2 rounded bg-foreground/5 p-2">
                  <strong>{names[q.sphere]} · {q.domain}</strong>
                  <p className="mt-1">{q.question}</p>
