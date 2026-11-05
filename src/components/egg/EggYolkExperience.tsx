@@ -248,7 +248,7 @@ export default function EggYolkExperience(){
             </a>}
             {productState.synthesisOrigin==="previous"&&<p>Новый цикл идёт. Сведения на орбите относятся к последнему завершённому синтезу.</p>}
           </div>}
-          {project&&<EggFlowCyclePanel project={project} revision={revision}/>
+          {project&&<EggFlowCyclePanel project={project} revision={revision}/>}
           <EggDocumentationPanel project={project} revision={revision} origin="yolk"
             visual={spatialStudy} externalPreviewOpen={Boolean(local3d)}/>
         </div>
