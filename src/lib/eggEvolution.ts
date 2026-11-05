@@ -15,7 +15,7 @@ import {EGG_FIXED_ROUTE,type EggFlowCycle,type EggSphereVisit} from "./eggFlowCy
 import {EGG_YOLK_SPHERE_NAMES} from "./eggYolkState.js";
 
 export type EggEvolutionDeltaStatus=
-  "awaiting_result"|"new_result"|"text_changed"|"resubmitted_same_text"|
+  "awaiting_result"|"pending_transit"|"new_result"|"text_changed"|"resubmitted_same_text"|
   "inherited"|"same_source"|"no_result";
 export type EggEvolutionSource={
   id:string;cycleId:string|null;recordType:"cycle_result"|"legacy_finding";
@@ -41,7 +41,7 @@ export type EggEvolutionComparison={
   reason:string|null;requestedTargets:SphereId[];
   baselineKind:"legacy"|"previous_cycle";
   deltas:EggEvolutionDelta[];
-  counts:{changedText:number;newSources:number;inherited:number;awaiting:number};
+  counts:{changedText:number;newSources:number;inherited:number;awaiting:number;pendingTransit:number};
   core:{
     originalSeed:string;approvedConceptId:string|null;
     workingConceptId:string|null;dnaMeaningAssessedAutomatically:false;
@@ -123,8 +123,9 @@ function compareOne(
     const latest=after.get(sphere)??null;
     let status:EggEvolutionDeltaStatus;
     if(!latest){
-      status=visit?.status==="pending"||visit?.status==="awaiting_result"
-        ?"awaiting_result":"no_result";
+      status=visit?.mode==="transit"&&visit?.status==="pending"
+        ?"pending_transit":visit?.status==="pending"||visit?.status==="awaiting_result"
+          ?"awaiting_result":"no_result";
     }else if(prior?.id===latest.id){
       status=visit?.status==="transited"?"inherited":"same_source";
     }else if(!prior){
@@ -172,6 +173,7 @@ function compareOne(
       newSources:deltas.filter(d=>d.status==="new_result"||d.status==="resubmitted_same_text").length,
       inherited:deltas.filter(d=>d.status==="inherited"||d.status==="same_source").length,
       awaiting:deltas.filter(d=>d.status==="awaiting_result"||d.status==="no_result").length,
+      pendingTransit:deltas.filter(d=>d.status==="pending_transit").length,
     },
     core:{
       originalSeed:project.seed.text,approvedConceptId:active?.id??null,
