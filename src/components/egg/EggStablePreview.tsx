@@ -1,21 +1,39 @@
 import { useEffect, type ReactNode } from "react";
+import { EGG_CANONICAL_ORIGIN } from "../../lib/eggAuthRedirect";
 
 /**
- * EGG sessions are browser-origin scoped. Links to individual Vercel builds
- * must resolve to the stable TEST branch hostname before Supabase Auth starts.
- * Never redirect the production/custom domains.
+ * EGG uses one canonical origin for BOTH project authorization and UI.
+ * Existing Vercel branch/deployment aliases are not allowed to start a
+ * separate Supabase session (localStorage is origin-scoped).
+ *
+ * The target is FIXED and only our known Vercel host patterns qualify.
+ * In particular, a legacy magic-link fragment or PKCE code is preserved
+ * unchanged, so Supabase consumes it on the canonical origin.
  */
-export const EGG_TEST_ORIGIN = "https://project-a4e09c64-fce9-40-git-e8febd-kolesnikovuno-jpgs-projects.vercel.app";
+const EGG_DEPLOYMENT_PREFIX = "project-a4e09c64-fce9-4015-a358-ceb6b53fe078-";
+const EGG_LEGACY_BRANCH_HOST =
+  "project-a4e09c64-fce9-40-git-e8febd-kolesnikovuno-jpgs-projects.vercel.app";
+
+export function eggCanonicalRedirect(location:{
+  protocol:string;hostname:string;pathname:string;search:string;hash:string;
+}):string|null {
+  if(location.protocol!=="https:")return null;
+  const host=location.hostname.toLowerCase();
+  const knownBranch=host===EGG_LEGACY_BRANCH_HOST;
+  const knownDeployment=host.startsWith(EGG_DEPLOYMENT_PREFIX)&&
+    host.endsWith(".vercel.app");
+  if(!knownBranch&&!knownDeployment)return null;
+  const path=location.pathname;
+  if(!/^\/(?:egg(?:\/|$)|(?:ru|uk|en)\/egg(?:\/|$))/.test(path))return null;
+  return EGG_CANONICAL_ORIGIN+path+location.search+location.hash;
+}
 
 export default function EggStablePreview({ children }: { children: ReactNode }) {
-  const hostname = window.location.hostname;
-  const temporaryBuildHost = hostname.startsWith("project-a4e09c64-fce9-4015-a358-ceb6b53fe078-") &&
-    hostname.endsWith(".vercel.app") &&
-    !hostname.endsWith("-kolesnikovuno-jpgs-projects.vercel.app");
-  const destination = temporaryBuildHost
-    ? EGG_TEST_ORIGIN + window.location.pathname + window.location.search + window.location.hash
-    : null;
-  useEffect(() => { if (destination) window.location.replace(destination); }, [destination]);
-  if (destination) return <main className="mx-auto max-w-lg p-8 text-sm text-foreground">Открываем постоянный адрес тестовой версии EGG…</main>;
+  const destination=eggCanonicalRedirect(window.location);
+  useEffect(()=>{if(destination)window.location.replace(destination);},[destination]);
+  if(destination)return <main className="mx-auto max-w-lg p-8 text-sm text-foreground"
+    role="status" data-testid="egg-canonical-redirect">
+    Открываем постоянный адрес EGG…
+  </main>;
   return <>{children}</>;
 }
