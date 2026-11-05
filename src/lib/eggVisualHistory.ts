@@ -59,6 +59,7 @@ const mediaFromUrl=(url:string):EggVisualMedia|null=>{
 function sources(p:EggProject):EggVisualCandidate[]{
   const result:EggVisualCandidate[]=[];
   for(const concept of p.concepts??[]){
+    if(concept.status!=="accepted"&&concept.status!=="proposed")continue;
     const url=safeUrl(concept.visualUrl);
     if(!url)continue;
     const media=mediaFromUrl(url);
