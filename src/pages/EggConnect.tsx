@@ -4,6 +4,7 @@ import EggNewProject from "../components/egg/EggNewProject";
 import EggProjectActions from "../components/egg/EggProjectActions";
 import { getEggAiFirstContactPrompt } from "../lib/eggAiOnboarding";
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
+import {EGG_AUTH_CALLBACK,EGG_CANONICAL_ACCOUNT,eggAuthOriginMismatch} from "../lib/eggAuthRedirect";
 
 const EGG_MCP_URL = "https://egg.kolesnikov.studio/api/mcp";
 const AI_FIRST_CONTACT_PROMPT = getEggAiFirstContactPrompt();
@@ -16,6 +17,7 @@ export default function EggConnect() {
   const [busy, setBusy] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [authIssue, setAuthIssue] = useState("");
+  const isTechnicalOrigin=eggAuthOriginMismatch(window.location.origin);
   const [projects, setProjects] = useState<Array<{ id: string; revision: number; title: string; seed: string; archivedAt?: string | null; level: number; iteration: number; tasks: Array<{id:string;sphere:string;status:string;findings:number}> }> | null>(null);
   const [projectError, setProjectError] = useState("");
   const [refreshProjects, setRefreshProjects] = useState(0);
@@ -128,9 +130,9 @@ export default function EggConnect() {
     setBusy(true);
     const { error } = await client.auth.signInWithOtp({
       email: email.trim(),
-      options: { emailRedirectTo: window.location.origin + "/egg/connect" },
+      options: { emailRedirectTo: EGG_AUTH_CALLBACK },
     });
-    setMessage(error ? (error.status === 429 || /rate limit|too many/i.test(error.message) ? "Превышен лимит отправки писем. Подождите перед повторной попыткой." : `Ошибка входа (${error.status ?? "неизвестно"}): ${error.message}`) : "Проверьте почту: ссылка для входа отправлена.");
+    setMessage(error ? (error.status === 429 || /rate limit|too many/i.test(error.message) ? "Превышен лимит отправки писем. Подождите перед повторной попыткой." : `Ошибка входа (${error.status ?? "неизвестно"}): ${error.message}`) : "Проверьте почту: ссылка для входа отправлена. Откройте её в Safari; вход завершится на egg.kolesnikov.studio.");
     setBusy(false);
   }
   async function signOut() {
@@ -142,6 +144,16 @@ export default function EggConnect() {
     <main className="mx-auto max-w-2xl px-5 py-14 text-foreground">
       <p className="mb-2 text-sm text-muted-foreground">EGG Engine · подключение</p>
       <h1 className="mb-3 text-3xl font-medium">Аккаунт EGG</h1>
+      {isTechnicalOrigin && <section data-testid="egg-auth-canonical-warning"
+        className="mb-5 space-y-2 rounded-lg border border-amber-500/40 bg-amber-500/5 p-4 text-sm"
+        aria-label="Адрес для входа EGG">
+        <p className="font-medium">Вы открыли технический адрес EGG.</p>
+        <p>Браузер хранит вход отдельно для каждого домена.
+          Для постоянного доступа используйте основной адрес.
+          Повторная регистрация не нужна.</p>
+        <a className="inline-block rounded border border-foreground/35 px-3 py-2 underline underline-offset-2"
+          href={EGG_CANONICAL_ACCOUNT}>Открыть основной аккаунт EGG</a>
+      </section>}
       <p className="mb-8 text-muted-foreground">Войдите один раз, выберите свой проект и откройте Яйцо. Подключение ChatGPT настраивается отдельно и не блокирует просмотр проектов.</p>
       <Link to="/egg/demo" className="mb-5 inline-flex rounded-full border border-border px-4 py-2 text-sm">Посмотреть демонстрацию EGG без входа</Link>
       <section className="mb-5 rounded-xl border border-border p-6">
@@ -163,7 +175,10 @@ export default function EggConnect() {
               className="rounded bg-foreground px-4 py-2 text-background disabled:opacity-50">
               {busy ? "Отправляем…" : "Войти или зарегистрироваться по ссылке"}
             </button>
-            <p className="text-sm text-muted-foreground">Вход через Google и Apple запланирован, но пока не настроен.</p>
+            <p className="text-sm text-muted-foreground">Используйте тот же email, что и раньше.
+              Если аккаунт уже существует, регистрация не повторяется.
+              Ссылка для входа одноразовая; откройте последнее письмо в Safari.</p>
+            <p className="text-xs text-muted-foreground">Вход через Google и Apple пока не настроен.</p>
           </div>
         )}
         {authIssue && <p role="alert" className="mt-3 text-sm text-destructive">{authIssue}</p>}
