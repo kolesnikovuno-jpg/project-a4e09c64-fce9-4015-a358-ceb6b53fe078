@@ -11,6 +11,7 @@ import EggYolkMonitor from "./EggYolkMonitor";
 import EggIdeaWorkshop from "./EggIdeaWorkshop";
 import EggAiHandoff from "./EggAiHandoff";
 import EggDocumentationPanel from "./EggDocumentationPanel";
+import EggFlowCyclePanel from "./EggFlowCyclePanel";
 import type { EggProject } from "../../lib/eggEngine";
 import type { AiHandoffSphere } from "../../lib/eggAiHandoff";
 
@@ -83,6 +84,8 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
       {project.seed.text.trim()&&activeSphere==="idea"&&revision!==null&&
         <EggIdeaWorkshop projectId={project.id} seed={project.seed.text} concepts={project.concepts??[]}
           tasks={project.tasks} files={project.artifacts??[]} revision={revision} level={project.level} iteration={project.iteration} onSaved={()=>setRefreshKey(v=>v+1)}/>}
+      <EggFlowCyclePanel project={project} revision={revision} authorControls={activeSphere==="author"}
+        onSaved={()=>setRefreshKey(v=>v+1)}/>
       <EggProjectOverview project={project} activeSphere={activeSphere} onSelectSphere={onSelectSphere} />
       {!isSphere && <EggYolkMonitor project={project} />}
       {activeSphere==="author"&&<EggDocumentationPanel project={project} revision={revision} origin="author"/>}
@@ -96,7 +99,7 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
       {isSphere && activeSphere && <EggSphereWorkspace key={activeSphere} projectId={project.id} sphere={activeSphere} seed={project.seed.text}
         concept={[...(project.concepts??[])].reverse().find(c=>c.status==="accepted")?.text}
         level={project.level} iteration={project.iteration} />}
-      <div className="space-y-3">{project.tasks.filter(task => isSphere && task.sphere === activeSphere).map(task => <div key={task.id} className="rounded-lg border border-foreground/10 p-3 sm:p-4"><p className="text-sm font-medium">{task.sphere} · {task.status}</p><p className="mt-1 text-xs text-foreground/70">{task.question}</p>{task.findings.map(finding => <p key={finding.id} className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed"><span className="text-foreground/50">{finding.evidence}:</span> {finding.text}</p>)}{task.decisions.length > 0 && <p className="mt-2 text-xs">Решений Автора: {task.decisions.length}</p>}{task.status === "returned" && revision !== null && <EggAuthorDecision projectId={project.id} revision={revision} taskId={task.id} onSaved={() => setRefreshKey(value => value + 1)} />}</div>)}</div>
+      <div className="space-y-3">{project.tasks.filter(task => isSphere && task.sphere === activeSphere).map(task => <div key={task.id} className="rounded-lg border border-foreground/10 p-3 sm:p-4"><p className="text-sm font-medium">{task.sphere} · {task.status}</p><p className="mt-1 text-xs text-foreground/70">{task.question}</p>{task.findings.map(finding => <p key={finding.id} className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed"><span className="text-foreground/50">{finding.evidence}:</span> {finding.text}</p>)}{task.decisions.length > 0 && <p className="mt-2 text-xs">Решений Автора: {task.decisions.length}</p>}{!(project.flowCycles?.length) && task.status === "returned" && revision !== null && <EggAuthorDecision projectId={project.id} revision={revision} taskId={task.id} onSaved={() => setRefreshKey(value => value + 1)} />}</div>)}</div>
     </div>}
     {project && <EggProjectChat projectId={project.id} activeSphere={activeSphere} />}
     {project && (!isSphere || activeSphere === "author") && <EggInviteAuthor projectId={project.id} />}
