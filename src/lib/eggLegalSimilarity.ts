@@ -8,6 +8,7 @@
  * Legal. Current-cycle Design cannot leak across the parallel branches.
  */
 import type {EggProject} from "./eggEngine.js";
+import {z} from "zod";
 
 export const EGG_IP_SEARCH_CATALOG = [
   {
@@ -54,6 +55,29 @@ export type EggLegalSimilarityDraft={
   candidates?:EggIpCandidateDraft[];
   limitations:string[];
 };
+/** Single wire contract for REST mutations and MCP validation. */
+const ipUrl=z.string().url().max(1200).refine(value=>
+  /^(https?):\/\//i.test(value),"HTTP(S) URL required");
+export const eggLegalSimilaritySchema=z.object({
+  territories:z.array(z.string().trim().min(1).max(100)).max(8),
+  searches:z.array(z.object({
+    category:z.enum(["registered_designs","trademarks","patent_publications","market_examples","copyright_materials"]),
+    sourceName:z.string().trim().min(2).max(120),
+    sourceUrl:ipUrl,
+    query:z.string().trim().min(2).max(500),
+    searchedAt:z.string().datetime({offset:true}),
+    scopeNote:z.string().trim().max(500).optional(),
+  }).strict()).max(12).optional(),
+  candidates:z.array(z.object({
+    kind:z.enum(["industrial_design","trademark","patent","copyright","other"]),
+    title:z.string().trim().min(2).max(250),
+    sourceUrl:ipUrl,
+    similarity:z.string().trim().min(5).max(1200),
+    differences:z.string().trim().max(1200).optional(),
+    evidenceNote:z.string().trim().max(800).optional(),
+  }).strict()).max(8).optional(),
+  limitations:z.array(z.string().trim().min(1).max(1200)).max(10),
+}).strict();
 export type EggIpSearchRecord=EggIpSearchDraft;
 export type EggIpCandidate=EggIpCandidateDraft & {status:"possible_overlap_unverified"};
 export type EggLegalSimilarityReport={
@@ -115,9 +139,9 @@ const required=(value:string,label:string,min=1,max=1000):string=>{
     throw Error("Invalid legal screening "+label);
   return value.trim();
 };
-const shortArray=(arr:unknown,label:string,max=10):string[]=>{
+const shortArray=(arr:unknown,label:string,max=10,maxChars=100):string[]=>{
   if(!Array.isArray(arr)||arr.length>max)throw Error("Invalid legal screening "+label);
-  return arr.map(value=>required(value,label,1,100));
+  return arr.map(value=>required(value,label,1,maxChars));
 };
 const kinds=["industrial_design","trademark","patent","copyright","other"];
 const categories=["registered_designs","trademarks","patent_publications","market_examples","copyright_materials"];
@@ -128,7 +152,7 @@ export function validateEggLegalSimilarity(
   if(!draft||typeof draft!=="object")throw Error("Invalid legal screening");
   const territories=shortArray(draft.territories,"territory",8);
   const searches=draft.searches??[],candidates=draft.candidates??[];
-  const limitations=shortArray(draft.limitations,"limitations",10).map(t=>required(t,"limitation",1,100));
+  const limitations=shortArray(draft.limitations,"limitations",10,1200);
   if(!Array.isArray(searches)||searches.length>12||!Array.isArray(candidates)||candidates.length>8)
     throw Error("Invalid legal screening number of searches or candidates");
   const validatedSearches=searches.map(s=>{
