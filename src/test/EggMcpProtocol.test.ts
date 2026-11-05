@@ -36,7 +36,7 @@ describe("MCP protocol and external AI handoff", () => {
     const tools = (result.body as any).result.tools;
     expect(tools.map((tool: any) => tool.name)).toEqual([
       "egg_get_onboarding_protocol", "egg_get_project_state", "egg_contribute_sphere", "egg_propose_seed",
-      "egg_propose_concept", "egg_register_field_item", "egg_register_drive_file",
+      "egg_propose_concept", "egg_contribute_yolk_review", "egg_register_field_item", "egg_register_drive_file",
     ]);
     expect(tools.some((tool: any) => /confirm|approve|delete/i.test(tool.name))).toBe(false);
     expect(eggMcpTools.find(tool=>tool.name==="egg_propose_concept")?.annotations.readOnlyHint).toBe(false);
