@@ -11,9 +11,9 @@ const create = () => createEggProject({
 });
 
 describe("Headless Egg engine v0.1", () => {
-  it("keeps eight distinct competences, nine current links and an original Author seed", () => {
+  it("keeps eight distinct competences, eight directed links and an original Author seed", () => {
     expect(Object.keys(EGG_SPHERES)).toHaveLength(8);
-    expect(EGG_EDGES).toHaveLength(9);
+    expect(EGG_EDGES).toHaveLength(8);
     const project = create();
     expect(project.seed.text).toBe("Independent product formation engine");
     expect(project.seed.source).toBe("author");
@@ -27,10 +27,10 @@ describe("Headless Egg engine v0.1", () => {
   it("routes only over existing links unless the Author intervenes directly", () => {
     expect(canRoute("idea", "marketing", "ai")).toBe(true);
     expect(canRoute("idea", "legal", "ai")).toBe(true);
-    expect(canRoute("design", "marketing", "ai")).toBe(true);
+    expect(canRoute("design", "marketing", "ai")).toBe(false);
     expect(canRoute("design", "testDrive", "ai")).toBe(true);
     expect(canRoute("production", "procurement", "ai")).toBe(true);
-    expect(canRoute("commerce", "retail", "ai")).toBe(true);
+    expect(canRoute("commerce", "retail", "ai")).toBe(false);
     expect(canRoute("idea", "design", "ai")).toBe(false);
     expect(canRoute("marketing", "legal", "ai")).toBe(false);
     expect(canRoute("author", "retail", "ai")).toBe(false);
