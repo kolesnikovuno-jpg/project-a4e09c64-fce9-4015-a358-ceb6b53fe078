@@ -157,7 +157,7 @@ export function buildEggYolkProductProjection(project:EggProject):EggYolkProduct
   };
   return {
     cycleId:last?.id??null,level:now?.level??project.level,iteration:now?.iteration??project.iteration,
-    phase:now?.status??"not_started",
+    phase:now?.status==="running"?"in_progress":now?.status??"not_started",
     synthesisOrigin:!synthesis?"none":now?.id===last?.id?"current":"previous",
     dna:{text:project.seed.text,conceptText:active?.text??null,
       conceptId:active?.id??null,conceptStatus:active?"approved":"not_approved"},
