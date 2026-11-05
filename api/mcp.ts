@@ -220,6 +220,7 @@ export default async function handler(req: Incoming, res: ServerResponse) {
             expectedRevision:args.expectedRevision,sphere:station.sphere,
             text:args.text,evidence:args.evidence,sourceRefs:args.sourceRefs,
             discoveredQuestions:args.discoveredQuestions,
+            legalSimilarity:args.legalSimilarity,
           });
         } else {
           parsed=eggMutationSchema.parse(args);
