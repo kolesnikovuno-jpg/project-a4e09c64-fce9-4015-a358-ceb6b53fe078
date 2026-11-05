@@ -7,6 +7,7 @@ import EggDocumentationPanel from "./EggDocumentationPanel";
 import EggFlowCyclePanel from "./EggFlowCyclePanel";
 import type { VisualDraft } from "../../lib/eggDocumentation";
 import { EGG_SPHERES, type SphereId, type EggProject } from "../../lib/eggEngine";
+import {buildEggYolkProductProjection} from "../../lib/eggYolkState";
 
 type Project=EggProject;
 type Task=EggProject["tasks"][number];
@@ -116,6 +117,7 @@ export default function EggYolkExperience(){
     return()=>{active=false};
   },[id,refresh]);
   const concept=useMemo(()=>conception(project),[project]);
+  const productState=useMemo(()=>project?buildEggYolkProductProjection(project):null,[project]);
   const approved=concept?.status==="accepted";
   const currentText=concept?.text??project?.seed.text??demoConcept;
   const candidateText=concept?.status==="proposed";
@@ -124,6 +126,10 @@ export default function EggYolkExperience(){
   const sphereTasks=(project?.tasks??[]).filter(t=>t.sphere===selected);
   const sphereArtifacts=(project?.artifacts??[]).filter(a=>a.sphere===selected);
   const sphereStatus=summarize(sphereTasks);
+  const stateCard=productState?.spheres.find(c=>c.sphere===selected);
+  const sphereVisibleStatus=stateCard?.resultId
+    ?(stateCard.status==="new"?"Новый результат":"Результат предыдущего цикла")
+    :sphereStatus.label;
   useEffect(()=>{
     if(!expanded)return;
     const before=document.body.style.overflow;
@@ -141,9 +147,11 @@ export default function EggYolkExperience(){
   const lastTask=sphereTasks[sphereTasks.length-1];
   const lastFinding=lastTask?.findings?.[lastTask.findings.length-1]?.text;
   const rightCopy=selectedMeta
-    ? (sphereTasks.length
-        ? brief(lastFinding??lastTask.question,185)
-        : project ? "В этой сфере пока нет зарегистрированных результатов." : "Это ознакомительный режим. Данные реального проекта здесь не показаны.")
+    ? (stateCard?.summary
+        ? brief(stateCard.summary,185)
+        :sphereTasks.length
+          ? brief(lastFinding??lastTask.question,185)
+          :project?"В этой сфере пока нет зарегистрированных результатов.":"Это ознакомительный режим. Данные реального проекта здесь не показаны.")
     : brief(currentText,185);
   const selectSphere=(sphere:SphereId)=>{
     setSelected(current=>current===sphere?null:sphere);
@@ -219,7 +227,7 @@ export default function EggYolkExperience(){
 
           <aside className="order-3 min-w-0 self-center pb-1" aria-label="Краткий вывод и развернутая информация" aria-live="polite">
             <YolkTypewriter key={"right-"+(selected??"dna")} side="right"
-              number={selectedMeta?(project?sphereStatus.label:"Вклад сферы"):"Формирование / концепция"}
+              number={selectedMeta?(project?sphereVisibleStatus:"Вклад сферы"):"Формирование / концепция"}
               title={selectedMeta?"Текущий вклад":approved?"Концепция принята":"Концепция"}
               description={rightCopy}/>
             <button type="button" data-testid="yolk-expand" onClick={()=>setExpanded(true)}
@@ -230,7 +238,17 @@ export default function EggYolkExperience(){
         </div>
 
         <div className="mx-auto mt-7 max-w-[1040px] space-y-5">
-          {project&&<EggFlowCyclePanel project={project} revision={revision}/>}
+          {productState&&<div className="space-y-1 text-[11px] leading-relaxed text-foreground/60"
+            data-testid="yolk-visual-source">
+            <p>{productState.visual.warning}</p>
+            {productState.visual.url&&<a href={productState.visual.url}
+              target="_blank" rel="noopener noreferrer"
+              className="inline-block underline underline-offset-2">
+              Открыть источник визуальной версии: {productState.visual.label}
+            </a>}
+            {productState.synthesisOrigin==="previous"&&<p>Новый цикл идёт. Сведения на орбите относятся к последнему завершённому синтезу.</p>}
+          </div>}
+          {project&&<EggFlowCyclePanel project={project} revision={revision}/>
           <EggDocumentationPanel project={project} revision={revision} origin="yolk"
             visual={spatialStudy} externalPreviewOpen={Boolean(local3d)}/>
         </div>
@@ -260,7 +278,17 @@ export default function EggYolkExperience(){
               </div>
               <div><p className="text-[10px] uppercase tracking-[0.12em] text-foreground/40">Основной вопрос</p>
                 <p className="mt-2">{EGG_SPHERES[selectedMeta.id].question}</p></div>
-              <div><p className="text-[10px] uppercase tracking-[0.12em] text-foreground/40">Задачи и выводы · {sphereTasks.length}</p>
+              {stateCard?.resultId&&<div data-testid="yolk-sphere-versioned-result">
+                <p className="text-[10px] uppercase tracking-[0.12em] text-foreground/40">
+                  Вклад в синтез · {stateCard.status==="new"?"новый":"наследованный"}
+                </p>
+                <p className="mt-2 whitespace-pre-wrap">{stateCard.summary}</p>
+                <p className="mt-1 text-[11px] text-foreground/55">
+                  Источник: {stateCard.resultId} · {stateCard.sourceCycleId}
+                  {stateCard.requiresRecheck?" · требует проверки":""}
+                </p>
+              </div>}
+              <div><p className="text-[10px] uppercase tracking-[0.12em] text-foreground/40">Исторические задачи · {sphereTasks.length}</p>
                 {sphereTasks.length?sphereTasks.map(t=><article key={t.id} className="mt-3 border-t border-foreground/10 pt-3">
                   <p className="text-[11px] text-foreground/50">{t.id} · {stateLabels[t.status]??t.status}</p>
                   <p className="mt-2 whitespace-pre-wrap">{t.question}</p>
