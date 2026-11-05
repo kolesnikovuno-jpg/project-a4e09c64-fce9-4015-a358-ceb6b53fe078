@@ -182,7 +182,7 @@ describe("Yolk central historical state synchronization",()=>{
      fireEvent.click(screen.getByRole("button",{name:"Закрыть"}));
      fireEvent.change(screen.getByTestId("yolk-timeline-select"),{target:{value:first}});
      expect(screen.getByTestId("yolk-timeline-stage-status").textContent).toContain("доработку");
-     expect(screen.getByTestId("yolk-timeline-audit").textContent).toContain("Проверить форму");
+     expect(screen.getByTestId("yolk-timeline-audit").textContent).toContain("проверить форму");
      fireEvent.click(screen.getByTestId("yolk-expand"));
      expect(screen.getByTestId("yolk-sphere-versioned-result").textContent)
        .toContain("Новый вывод");
