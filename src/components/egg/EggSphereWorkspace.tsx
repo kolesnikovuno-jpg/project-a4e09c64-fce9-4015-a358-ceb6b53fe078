@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import {EGG_SPHERE_LENSES} from "../../lib/eggSphereIntelligence";
+import type {SphereId} from "../../lib/eggEngine";
 
 type FieldItem = {
   id: string; sphere: string | null; flow: "field" | "work"; origin: "internal" | "external";
@@ -105,6 +107,20 @@ export default function EggSphereWorkspace({ projectId, sphere, seed, concept, l
    <h3 className="text-sm font-medium">Рабочая среда · {sphereLabels[sphere]||sphere}</h3>
    <p className="mt-1 text-xs leading-relaxed text-foreground/65">Два входа: внутреннее поле Яйца и внешние источники. Два выхода: новые сведения для общего поля и рабочие предложения для формирования желтка.</p>
   </div>
+  {EGG_SPHERE_LENSES[sphere as SphereId]&&<div className="rounded-lg border border-foreground/15 p-3" aria-label="Самостоятельная диагностика сферы">
+    <p className="text-xs font-medium">Вопрос, который видит сфера самостоятельно</p>
+    <p className="mt-1 text-xs leading-relaxed">{EGG_SPHERE_LENSES[sphere as SphereId].question}</p>
+    <p className="mt-2 text-[11px] text-foreground/65">
+      Поле внимания: {EGG_SPHERE_LENSES[sphere as SphereId].focus.join(" · ")}
+    </p>
+    <p className="mt-2 text-[11px] text-foreground/60">
+      Граница: {EGG_SPHERE_LENSES[sphere as SphereId].boundary}
+    </p>
+    <p className="mt-2 text-[11px] text-foreground/55">
+      Незаданные Автором вопросы могут быть обнаружены и переданы в Желток как неподтверждённые.
+      Накопление истории не означает автоматического переобучения модели.
+    </p>
+  </div>}
   {seed?.trim() && <div className="rounded-lg bg-foreground/5 p-3"><p className="text-xs font-medium">Исходная идея Автора</p><p className="mt-1 whitespace-pre-wrap break-words text-xs leading-relaxed text-foreground/80">{seed}</p></div>}
   {concept?.trim()&&<div className="rounded-lg border border-foreground/15 p-3">
     <p className="text-xs font-medium">Принятая концепция · внутреннее поле</p>
