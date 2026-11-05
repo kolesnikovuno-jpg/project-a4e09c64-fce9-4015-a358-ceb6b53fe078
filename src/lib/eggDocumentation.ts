@@ -5,6 +5,7 @@
  */
 import { EGG_SPHERES, type EggProject, type EggEvent, type SphereId } from "./eggEngine.js";
 import { buildSpatialSketch, createSpatialGlb, type SpatialStage, type SpatialVariant } from "./eggSpatialGenerator.js";
+import {buildEggYolkProductProjection} from "./eggYolkState.js";
 
 export type PackageOrigin = "author" | "yolk";
 export type VisualDraft = { stage:SpatialStage; variant:SpatialVariant; iteration:number };
@@ -156,6 +157,24 @@ function flowCycles(project:EggProject):string{
     "Автоматический синтез объединяет данные, но НЕ доказывает их совместимость.",
     "Одно решение Автора применяется к результату завершённого цикла.","",
   ];
+  const yolk=buildEggYolkProductProjection(project);
+  lines.push("## Паспорт состояния продукта · версия для Автора","",
+    "ДНК: "+yolk.dna.text,
+    "Принятая концепция: "+(yolk.dna.conceptId??"не зарегистрирована"),
+    "Визуальная версия: "+yolk.visual.label,
+    "Предостережение: "+yolk.visual.warning,
+    "Основание синтеза: "+(yolk.cycleId??"нет")+" ("+yolk.synthesisOrigin+")",
+    "Состояние результатов: новых "+yolk.counts.new+
+      ", унаследованных "+yolk.counts.inherited+
+      ", отсутствующих "+yolk.counts.missing+".","",
+    ...yolk.spheres.map(s=>"- "+s.label+" / "+s.status+" / "+(s.resultId??"нет источника")+
+      ": "+(s.summary??"нет результата")),
+    "",
+    "### Пересечения потоков · на проверку","",
+    ...(yolk.checks.length?yolk.checks.map(ch=>"- "+ch.title+" / "+ch.status+
+      ": "+ch.note+" [источники: "+(ch.sourceResultIds.join(", ")||"нет")+"]"):
+      ["Сопоставление ожидает завершённого синтеза."]),
+    "","Это карта проверок, а не установление смысловой, юридической или технической совместимости.","");
   if(!(project.flowCycles??[]).length)lines.push(
     "Новых потоковых циклов пока нет; исторические задачи сохранены отдельно."
   );
