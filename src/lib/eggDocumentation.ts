@@ -182,11 +182,28 @@ function flowCycles(project:EggProject):string{
               ...(q.sourceRefs.length?["  Ссылки: "+q.sourceRefs.join("; ")]:[]),
             ]),
           ]:[]),
+          ...(station.result?.legalSimilarity?[
+            "### Право · проверка возможных пересечений (без юридического заключения)",
+            "Версия формы: "+(station.result.legalSimilarity.subject.designResultId??"нет идентифицированной"),
+            "Статус: "+station.result.legalSimilarity.status,
+            "Территории: "+(station.result.legalSimilarity.territories.join(", ")||"не указаны"),
+            ...station.result.legalSimilarity.searches.map(s=>
+              "Поиск: "+s.category+" · "+s.sourceName+" · "+s.sourceUrl+
+              " · запрос: "+s.query+" · дата: "+s.searchedAt),
+            ...station.result.legalSimilarity.candidates.flatMap(hit=>[
+              "Возможное пересечение: "+hit.kind+" · "+hit.title+" · "+hit.sourceUrl,
+              "Сходство: "+hit.similarity,
+              "Отличия: "+(hit.differences??"не исследованы"),
+            ]),
+            ...station.result.legalSimilarity.limitations.map(note=>"Ограничение: "+note),
+            "Сходство не означает нарушение прав, а отсутствие совпадений не является правовой очисткой.",
+          ]:[]),
           ...(station.requiresRecheck?["**Внимание: унаследованный вывод требует повторной проверки актуальности.**"]:[]),"");
       }
     }
     if(cycle.synthesis)lines.push("### Желток / встреча потоков","",
       "Открытых вопросов сфер: "+(cycle.synthesis.openQuestions?.length??0),
+      "Проверка сходства, версия формы: "+(cycle.synthesis.second[0]?.legalSimilarity?.subject.designResultId??"не подтверждена"),
       ...(cycle.synthesis.openQuestions??[]).map(q=>"- "+q.sphere+" / "+q.domain+": "+q.question+
         " ("+q.provenance+" · не подтверждено)"),
       "Коммерция: "+(cycle.synthesis.endpoints.commerce.text??"Нет данных")+
