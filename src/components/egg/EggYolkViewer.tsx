@@ -26,9 +26,10 @@ function projectPoint(p:Vec3,yaw:number,pitch:number,zoom:number):Projection{
   return {x:300+x*factor,y:315-y*factor,depth};
 }
 export default function EggYolkViewer({
-  onFileChange, level=1, iteration=1, projectId
+  onFileChange, onSketchChange, level=1, iteration=1, projectId
 }:{
   onFileChange?:(fileName:string|null)=>void;
+  onSketchChange?:(value:{stage:SpatialStage;variant:SpatialVariant;iteration:number})=>void;
   level?:number;
   iteration?:number;
   projectId?:string;
@@ -45,6 +46,7 @@ export default function EggYolkViewer({
   const pointer=useRef<{x:number;y:number}|null>(null);
   const fileRef=useRef<string|null>(null);
   const sketch=useMemo(()=>buildSpatialSketch(stage,variant,iteration),[stage,variant,iteration]);
+  useEffect(()=>{onSketchChange?.({stage,variant,iteration:sketch.iteration});},[stage,variant,sketch.iteration,onSketchChange]);
   const projected=useMemo(()=>{
     const project=(p:Vec3)=>projectPoint(p,yaw,pitch,zoom);
     const quads=sketch.quads.map(q=>{
