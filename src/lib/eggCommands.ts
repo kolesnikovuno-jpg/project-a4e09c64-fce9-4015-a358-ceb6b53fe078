@@ -100,7 +100,7 @@ export const eggMutationSchema = z.discriminatedUnion("command", [
   }).strict(),
   shared.extend({command:z.literal("assess_evolution"),
     toCycleId:identifier,fromCycleId:identifier.nullable(),
-    outcome:z.enum(["improved","compromise","no_change","inconclusive"]),
+    outcome:z.enum(["improved","worsened","compromise","no_change","inconclusive"]),
     dnaImpact:z.enum(["preserved_by_author","at_risk","not_assessed"]),
     reason:z.string().trim().min(12).max(2500),
     evidenceResultIds:z.array(identifier).max(8),
