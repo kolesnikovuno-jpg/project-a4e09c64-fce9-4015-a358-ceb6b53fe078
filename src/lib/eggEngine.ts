@@ -135,7 +135,7 @@ export type EggEventKind =
   | "artifact_registered" | "artifact_confirmed"
   | "concept_proposed" | "concept_decided"
   | "cycle_started" | "sphere_transited" | "cycle_sphere_completed"
-  | "cycle_synthesized" | "cycle_decided";
+  | "cycle_synthesized" | "cycle_decided" | "yolk_review_recorded";
 export type EggEvent = {
   id: string;
   kind: EggEventKind;
