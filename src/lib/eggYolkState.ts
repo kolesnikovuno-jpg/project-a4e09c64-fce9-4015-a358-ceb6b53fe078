@@ -53,7 +53,7 @@ function visualReference(project:EggProject):EggYolkVisualReference{
   const approved=getActiveConcept(project);
   // Only AUTHOR-confirmed Drive references are shown as independent project
   // materials; neither registration nor confirmation proves design approval.
-  if(approved?.visualUrl&&/^https:\/\/[^\\s]+/i.test(approved.visualUrl)){
+  if(approved?.visualUrl&&/^https:\/\/[^\s]+$/i.test(approved.visualUrl)){
     return {type:"approved_concept_image",label:"Изображение принятой концепции",
       url:approved.visualUrl,referenceId:approved.id,approvedForProject:true,
       warning:"Ссылка на концептуальный образ. Не является утверждённой 3D-моделью или доказательством готовности."};
