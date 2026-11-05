@@ -7,6 +7,7 @@
 import { z } from "zod";
 import { confirmDriveReference, registerDriveReference } from "./eggArtifacts.js";
 import { startEggFlowCycle, contributeEggFlowSphere, decideEggFlowCycle, EGG_FLOW_ROUTES } from "./eggFlowCycle.js";
+import {buildEggSphereBrief} from "./eggSphereIntelligence.js";
 import {
   decideFinding, nextIteration, readCore, readSphereStates, returnFinding, recordAuthorSeed, proposeEggSeed,
   routeQuestion, setLevel, startSphereWork,
@@ -20,6 +21,12 @@ const source = z.enum(["idea", "author", "marketing", "legal", "design", "produc
   "testDrive", "procurement", "commerce", "retail"]);
 const sphere = z.enum(["marketing", "legal", "design", "production", "testDrive",
   "procurement", "commerce", "retail"]);
+const diagnosticQuestions=z.array(z.object({
+  domain:z.string().trim().min(1).max(90),
+  question:z.string().trim().min(8).max(1000),
+  basis:z.string().trim().max(1200).optional(),
+  sourceRefs:z.array(z.string().trim().min(1).max(600)).max(8).optional(),
+}).strict()).max(6);
 const shared = z.object({
   projectId: z.string().uuid(),
   expectedRevision: z.number().int().positive(),
@@ -69,6 +76,7 @@ export const eggMutationSchema = z.discriminatedUnion("command", [
   shared.extend({command:z.literal("complete_flow_sphere"),
     sphere,text:valueText,evidence:z.enum(["observation","hypothesis","question"]),
     sourceRefs:z.array(z.string().min(1).max(600)).max(20).optional(),
+    discoveredQuestions:diagnosticQuestions.optional(),
   }).strict(),
   shared.extend({command:z.literal("decide_flow_cycle"),
     outcome:z.enum(["accept","revise"]),reason:valueText,
@@ -129,7 +137,8 @@ export const runEggMutation = (
       return startEggFlowCycle(state,{actor,at,brief:mutation.brief});
     case "complete_flow_sphere":
       return contributeEggFlowSphere(state,{actor,at,
-        sphere:mutation.sphere,text:mutation.text,evidence:mutation.evidence,sourceRefs:mutation.sourceRefs});
+        sphere:mutation.sphere,text:mutation.text,evidence:mutation.evidence,
+        sourceRefs:mutation.sourceRefs,discoveredQuestions:mutation.discoveredQuestions});
     case "decide_flow_cycle":
       return decideEggFlowCycle(state,{actor,at,outcome:mutation.outcome,
         reason:mutation.reason,addressedSpheres:mutation.addressedSpheres});
@@ -197,7 +206,8 @@ export const readEggState = (state: EggProject) => ({
           ...(state.flowCycles[state.flowCycles.length-1].second)]
         .filter(v=>v.status==="awaiting_result")
         .map(v=>({sphere:v.sphere,command:"return" as const,
-          taskId:"flow:"+state.flowCycles![state.flowCycles!.length-1].id+":"+v.sphere}))
+          taskId:"flow:"+state.flowCycles![state.flowCycles!.length-1].id+":"+v.sphere,
+          brief:buildEggSphereBrief(state,v.sphere)}))
       : []),
   },
 });
