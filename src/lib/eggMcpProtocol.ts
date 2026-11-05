@@ -7,8 +7,18 @@
  * prove that an upload succeeded, confirm an Author's decision, or grant access.
  */
 import { z } from "zod";
+import { getEggAiOnboardingProtocol } from "./eggAiOnboarding";
 
 export const eggMcpTools = [
+  {
+    name: "egg_get_onboarding_protocol",
+    title: "Read EGG first-contact protocol and check your AI-side cloud tools",
+    description: "FIRST CONTACT: call once when EGG is connected. Read the Author/EGG/AI roles and check the user's cloud storage in YOUR OWN AI client, not in EGG. If unavailable, notify the user. This tool does not and cannot verify your private connectors. No project ID or credentials required.",
+    inputSchema: {
+      type: "object", properties: {}, additionalProperties: false,
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
   {
     name: "egg_get_project_state",
     title: "Read Egg project",
@@ -204,7 +214,7 @@ export const processEggMcp = async (
         protocolVersion: "2025-06-18",
         capabilities: { tools: { listChanged: false } },
         serverInfo: { name: "egg-engine", version: "0.5.0" },
-        instructions: "Use this server only for a project explicitly authorized by the Author. Upload or create documents with a separate, authorized Google Drive tool BEFORE registering their real file IDs here. Never infer that a registered link is verified.",
+        instructions: "FIRST CONTACT: Call egg_get_onboarding_protocol and check available cloud storage tools in YOUR OWN AI client. EGG is a project engine, not your AI provider or your cloud. If you cannot verify storage, tell the user; never claim a working connector without a real check. Use this server only for an Author-authorized project. For Google Drive file registration, first use a separately authorized Google Drive tool to create or locate the real file. Never infer that a registered link is verified, and never approve Author decisions.",
       }),
     };
   }
@@ -214,12 +224,19 @@ export const processEggMcp = async (
   }
   if (method !== "tools/call") return { status: 200, body: jsonError(id, -32601, "Method not found") };
   const invocation = z.object({
-    name: z.enum(["egg_get_project_state", "egg_register_drive_file", "egg_contribute_sphere", "egg_propose_seed", "egg_register_field_item", "egg_propose_concept"]),
+    name: z.enum(["egg_get_onboarding_protocol", "egg_get_project_state", "egg_register_drive_file", "egg_contribute_sphere", "egg_propose_seed", "egg_register_field_item", "egg_propose_concept"]),
     arguments: z.unknown().optional(),
   }).passthrough().safeParse(params);
   if (!invocation.success) return { status: 200, body: jsonError(id, -32602, "Invalid tool call") };
 
   const { name, arguments: args } = invocation.data;
+  if (name === "egg_get_onboarding_protocol") {
+    // The bootstrap handshake is accessible after MCP authentication; it does
+    // not read any EGG project or enumerate private client-side connectors.
+    if (!z.object({}).strict().safeParse(args ?? {}).success)
+      return { status: 200, body: jsonError(id, -32602, "Invalid tool arguments") };
+    return { status: 200, body: response(id, toolResponse(getEggAiOnboardingProtocol())) };
+  }
   const validation = name === "egg_get_project_state"
     ? baseParams.safeParse(args)
     : name === "egg_contribute_sphere" ? contributeParams.safeParse(args)
