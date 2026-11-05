@@ -9,6 +9,7 @@
 import { z } from "zod";
 import { getEggAiOnboardingProtocol } from "./eggAiOnboarding.js";
 import {eggLegalSimilaritySchema} from "./eggLegalSimilarity.js";
+import {eggYolkReviewDraftSchema} from "./eggYolkSemantic.js";
 
 const discoveryParams=z.array(z.object({
   domain:z.string().trim().min(1).max(90),
@@ -115,6 +116,36 @@ export const eggMcpTools = [
     annotations: {readOnlyHint:false,destructiveHint:false,idempotentHint:false,openWorldHint:false},
   },
   {
+    name:"egg_contribute_yolk_review",
+    title:"Contribute a sourced Yolk interpretation draft",
+    description:"After BOTH EGG streams have synthesized, read egg_get_project_state.yolkReviewCompatibility.awaiting. Contribute at most one unverified semantic interpretation for that exact synthesis, citing real sphere result IDs (for tension/alignment: one from each branch). Never claims legal/technical/market verification; never changes DNA or approves Author decisions.",
+    inputSchema:{
+      type:"object",
+      properties:{
+        projectId:{type:"string",format:"uuid"},
+        expectedRevision:{type:"integer",minimum:1},
+        synthesisId:{type:"string",minLength:1,maxLength:100},
+        summary:{type:"string",minLength:15,maxLength:3000},
+        interpretations:{type:"array",maxItems:8,items:{type:"object",
+          properties:{
+            kind:{type:"string",enum:["alignment","tension","gap","opportunity"]},
+            title:{type:"string",minLength:5,maxLength:150},
+            explanation:{type:"string",minLength:20,maxLength:1500},
+            sourceResultIds:{type:"array",minItems:1,maxItems:8,items:{type:"string",minLength:1,maxLength:100}},
+            suggestedSphereTargets:{type:"array",maxItems:4,items:{type:"string",enum:["marketing","design","testDrive","commerce","legal","production","procurement","retail"]}},
+            verificationNeeded:{type:"string",minLength:5,maxLength:1000},
+          },
+          required:["kind","title","explanation","sourceResultIds","verificationNeeded"],
+          additionalProperties:false,
+        }},
+        limitations:{type:"array",minItems:1,maxItems:8,items:{type:"string",minLength:8,maxLength:1000}},
+      },
+      required:["projectId","expectedRevision","synthesisId","summary","interpretations","limitations"],
+      additionalProperties:false,
+    },
+    annotations:{readOnlyHint:false,destructiveHint:false,idempotentHint:false,openWorldHint:false},
+  },
+  {
     name: "egg_register_field_item",
     title: "Register knowledge or a work proposal",
     description: "Contribute a source-backed research note, question or proposal into the Egg knowledge field, attributed to an external AI agent. Requires a scoped contribute key and a stable operationId. Never modifies Author-approved core, level or iteration; external facts are not automatically verified.",
@@ -200,6 +231,11 @@ const conceptParams = baseParams.extend({
 
 const proposalParams = baseParams.extend({ expectedRevision: z.number().int().positive(), seed: z.string().trim().min(1).max(10000) }).strict();
 
+const yolkReviewParams=baseParams.extend({
+  expectedRevision:z.number().int().positive(),
+  ...eggYolkReviewDraftSchema.shape,
+}).strict();
+
 const contributeParams = z.discriminatedUnion("command", [
   baseParams.extend({ expectedRevision: z.number().int().positive(), command: z.literal("route"), from: z.enum(["idea", "marketing", "legal", "design", "production", "testDrive", "procurement", "commerce", "retail"]), to: z.enum(["marketing", "legal", "design", "production", "testDrive", "procurement", "commerce", "retail"]), question: z.string().trim().min(1).max(10000) }).strict(),
   baseParams.extend({ expectedRevision: z.number().int().positive(), command: z.literal("start"), taskId: z.string().min(1).max(100) }).strict(),
@@ -208,6 +244,8 @@ const contributeParams = z.discriminatedUnion("command", [
 
 export type EggMcpOperations = {
   contributeSphere: (args: z.infer<typeof contributeParams>) => Promise<unknown>;
+  /** Optional for older MCP mocks and deployments. Server implements it. */
+  contributeYolkReview?: (args:z.infer<typeof yolkReviewParams>) => Promise<unknown>;
   getState: (projectId: string) => Promise<unknown>;
   proposeSeed: (args: z.infer<typeof proposalParams>) => Promise<unknown>;
   proposeConcept: (args: z.infer<typeof conceptParams>) => Promise<unknown>;
@@ -259,7 +297,7 @@ export const processEggMcp = async (
   }
   if (method !== "tools/call") return { status: 200, body: jsonError(id, -32601, "Method not found") };
   const invocation = z.object({
-    name: z.enum(["egg_get_onboarding_protocol", "egg_get_project_state", "egg_register_drive_file", "egg_contribute_sphere", "egg_propose_seed", "egg_register_field_item", "egg_propose_concept"]),
+    name: z.enum(["egg_get_onboarding_protocol", "egg_get_project_state", "egg_register_drive_file", "egg_contribute_sphere", "egg_propose_seed", "egg_register_field_item", "egg_propose_concept", "egg_contribute_yolk_review"]),
     arguments: z.unknown().optional(),
   }).passthrough().safeParse(params);
   if (!invocation.success) return { status: 200, body: jsonError(id, -32602, "Invalid tool call") };
@@ -275,6 +313,7 @@ export const processEggMcp = async (
   const validation = name === "egg_get_project_state"
     ? baseParams.safeParse(args)
     : name === "egg_contribute_sphere" ? contributeParams.safeParse(args)
+    : name === "egg_contribute_yolk_review" ? yolkReviewParams.safeParse(args)
     : name === "egg_propose_seed" ? proposalParams.safeParse(args)
     : name === "egg_propose_concept" ? conceptParams.safeParse(args)
     : name === "egg_register_field_item" ? fieldParams.safeParse(args) : registerParams.safeParse(args);
@@ -285,6 +324,10 @@ export const processEggMcp = async (
       ? await operations.getState((validation.data as { projectId: string }).projectId)
       : name === "egg_contribute_sphere"
         ? await operations.contributeSphere(validation.data as z.infer<typeof contributeParams>)
+        : name === "egg_contribute_yolk_review"
+          ? await (operations.contributeYolkReview
+              ? operations.contributeYolkReview(validation.data as z.infer<typeof yolkReviewParams>)
+              : Promise.reject({code:"operation_failed"}))
         : name === "egg_propose_seed"
           ? await operations.proposeSeed(validation.data as z.infer<typeof proposalParams>)
           : name === "egg_propose_concept"
