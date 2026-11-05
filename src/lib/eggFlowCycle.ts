@@ -18,6 +18,7 @@ import {
   type EggLegalSimilarityDraft,type EggLegalSimilarityReport,
   validateEggLegalSimilarity,getEggLegalScreeningGaps,
 } from "./eggLegalSimilarity.js";
+import type {EggYolkSemanticReview} from "./eggYolkSemantic.js";
 
 export const EGG_FLOW_ROUTES={
   first:["marketing","design","testDrive","commerce"],
@@ -75,6 +76,8 @@ export type EggFlowCycle={
   status:"running"|"awaiting_author"|"accepted"|"revision_requested";
   first:EggSphereVisit[];second:EggSphereVisit[];
   synthesis?:EggYolkSynthesis;
+  /** AI's interpretation of a finished synthesis, never an Author decision. */
+  semanticReview?:EggYolkSemanticReview;
   decision?:{outcome:"accept"|"revise";reason:string;at:string;addressedSpheres:SphereId[]};
 };
 export type EggFlowProject=EggProject & {flowCycles?:EggFlowCycle[]};
