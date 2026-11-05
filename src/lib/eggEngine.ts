@@ -6,6 +6,7 @@
  * Pilot rules; not an automated legal/technical/commercial certification.
  */
 import type { EggArtifact } from "./eggArtifacts.js";
+import type { EggFlowCycle } from "./eggFlowCycle.js";
 
 export const EGG_SPHERES = {
   marketing: {
@@ -65,10 +66,12 @@ export type EggEvidence = "observation" | "hypothesis" | "question";
 export type EggTaskStatus = "question" | "working" | "returned" | "accepted" | "revision_requested" | "rejected";
 export type EggDecisionType = "accept" | "revise" | "reject";
 export type EggConceptStatus = "proposed" | "accepted" | "revision_requested" | "rejected";
-export type EggLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+/** Five product maturity levels; Idea and Matter are poles, not levels. */
+export type EggLevel = 1 | 2 | 3 | 4 | 5;
 
-/** Undirected lines are the currently drawn graph. The Author is outside it
- * and can intervene directly; AI cannot use the Author as a routing source.
+/** Forward-only adjacency for the two fixed Idea → Yolk streams.
+ * The Yolk receives Commerce and Retail separately; they are not linked.
+ * Legacy tasks remain in project history without destructive migration.
  */
 export const EGG_EDGES: ReadonlyArray<readonly [Exclude<EggEntry, "author">, SphereId]> = [
   ["idea", "marketing"],
@@ -79,7 +82,6 @@ export const EGG_EDGES: ReadonlyArray<readonly [Exclude<EggEntry, "author">, Sph
   ["production", "procurement"],
   ["testDrive", "commerce"],
   ["procurement", "retail"],
-  ["commerce", "retail"],
 ];
 
 export type EggFinding = {
@@ -131,7 +133,9 @@ export type EggEventKind =
   | "seed_recorded" | "seed_proposed" | "question_routed" | "work_started"
   | "finding_returned" | "author_decision" | "level_changed" | "iteration_started"
   | "artifact_registered" | "artifact_confirmed"
-  | "concept_proposed" | "concept_decided";
+  | "concept_proposed" | "concept_decided"
+  | "cycle_started" | "sphere_transited" | "cycle_sphere_completed"
+  | "cycle_synthesized" | "cycle_decided";
 export type EggEvent = {
   id: string;
   kind: EggEventKind;
@@ -154,6 +158,8 @@ export type EggProject = {
   concepts?: EggConceptVersion[];
   /** External file references. Optional for projects created before v0.3. */
   artifacts?: EggArtifact[];
+  /** Fixed-route two-flow cycles; optional for existing legacy projects. */
+  flowCycles?: EggFlowCycle[];
   events: EggEvent[];
   nextSequence: number;
 };
@@ -264,7 +270,7 @@ export const getActiveConcept = (project: EggProject): EggConceptVersion | undef
 export const canRoute = (from: EggEntry, to: SphereId, actor: EggActor): boolean => {
   if (!assertSphere(to) || (actor !== "author" && actor !== "ai")) return false;
   if (from === "author") return actor === "author";
-  return EGG_EDGES.some(([a, b]) => (a === from && b === to) || (b === from && a === to));
+  return EGG_EDGES.some(([a, b]) => a === from && b === to);
 };
 
 export const routeQuestion = (project: EggProject, params: {
@@ -409,7 +415,8 @@ export const setLevel = (project: EggProject, params: {
   actor: EggActor; level: EggLevel; reason: string; at: string;
 }): EggProject => {
   assertAuthor(params.actor);
-  if (![1, 2, 3, 4, 5, 6, 7].includes(params.level)) throw new EggEngineError("Invalid level");
+  if ((project.flowCycles??[]).length) throw new EggEngineError("Levels advance only after an Author's complete-cycle decision");
+  if (![1, 2, 3, 4, 5].includes(params.level)) throw new EggEngineError("Invalid level");
   if (params.level === project.level) return project;
   if (params.level > project.level + 1) throw new EggEngineError("Cannot skip forward levels");
   const reason = required(params.reason, "Reason");
@@ -424,6 +431,7 @@ export const nextIteration = (project: EggProject, params: {
   actor: EggActor; at: string; reason: string;
 }): EggProject => {
   assertAuthor(params.actor);
+  if ((project.flowCycles??[]).length) throw new EggEngineError("Iterations start only after an Author's complete-cycle revision");
   if (!Number.isSafeInteger(project.iteration + 1)) throw new EggEngineError("Iteration exceeds safe numeric range");
   const updated: EggProject = { ...project, iteration: project.iteration + 1 };
   return pushEvent(updated, {
