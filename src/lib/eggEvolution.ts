@@ -29,7 +29,7 @@ export type EggEvolutionDelta={
 export type EggEvolutionAssessment={
   id:string;fromCycleId:string|null;toCycleId:string;
   createdAt:string;by:"author";
-  outcome:"improved"|"compromise"|"no_change"|"inconclusive";
+  outcome:"improved"|"worsened"|"compromise"|"no_change"|"inconclusive";
   dnaImpact:"preserved_by_author"|"at_risk"|"not_assessed";
   reason:string;
   evidenceResultIds:string[];
@@ -229,7 +229,7 @@ export function recordEggEvolutionAssessment(project:EggProject,input:{
     throw new EggEngineError("Wait for Yolk synthesis before assessing a cycle");
   if((project.evolutionAssessments??[]).some(a=>a.toCycleId===input.toCycleId))
     throw new EggEngineError("Cycle already has an Author assessment");
-  if(!["improved","compromise","no_change","inconclusive"].includes(input.outcome)||
+  if(!["improved","worsened","compromise","no_change","inconclusive"].includes(input.outcome)||
     !["preserved_by_author","at_risk","not_assessed"].includes(input.dnaImpact))
     throw new EggEngineError("Invalid assessment classification");
   if(typeof input.reason!=="string"||input.reason.trim().length<12||input.reason.length>2500)
@@ -241,9 +241,9 @@ export function recordEggEvolutionAssessment(project:EggProject,input:{
     ids.some(id=>!real.has(id)))throw new EggEngineError("Assessment IDs must reference compared sources");
   // A declared improvement must cite at least one new output. Even then,
   // it remains explicitly the Author's judgment, not independent verification.
-  if(input.outcome==="improved"&&!ids.some(id=>comparison.deltas.some(d=>
+  if(["improved","worsened"].includes(input.outcome)&&!ids.some(id=>comparison.deltas.some(d=>
     d.after?.id===id&&["new_result","resubmitted_same_text","text_changed"].includes(d.status))))
-    throw new EggEngineError("Improvement claim needs a new result linked to this comparison");
+    throw new EggEngineError("Quality-change claim needs a new result linked to this comparison");
   const assessment:EggEvolutionAssessment={
     id:"evolution-"+project.nextSequence,
     fromCycleId:input.fromCycleId,toCycleId:input.toCycleId,by:"author",
