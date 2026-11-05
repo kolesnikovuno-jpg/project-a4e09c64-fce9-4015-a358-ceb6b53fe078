@@ -149,7 +149,7 @@ export function buildEggYolkTimeSnapshot(
   return {
     key:cycle?.id??EGG_YOLK_BASELINE,
     label:cycle?"Уровень "+cycle.level+" · итерация "+cycle.iteration:"Исходное состояние",
-    cycleId:cycle?.id??null,level:cycle?.level??1,iteration:cycle?.iteration??1,
+    cycleId:cycle?.id??null,level:cycle?.level??p.level,iteration:cycle?.iteration??p.iteration,
     status:cycle?.status??"baseline",
     authorBrief:cycle?.authorBrief||null,authorDecision:cycle?.decision??null,
     semanticReviewStatus:cycle?.semanticReview?"unverified":"not_recorded",
