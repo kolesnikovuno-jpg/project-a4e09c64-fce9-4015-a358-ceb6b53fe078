@@ -193,6 +193,7 @@ function flowCycles(project:EggProject):string{
       "- "+c.title+" ("+c.key+") · аналитическая гипотеза, не дефект",
       "  Основания: "+c.sourceRefs.join(", "),
       "  Проверить: "+c.verification,
+      ...c.resolutionOptions.map(option=>"  Возможный подход (гипотеза): "+option),
       "  Возможные адресаты следующей итерации: "+c.suggestedTargets.join(", "),
     ]),
     "","### Журнал и история решений","",
@@ -200,6 +201,7 @@ function flowCycles(project:EggProject):string{
       "- "+t.title+" · "+t.id+" · "+t.status+" · критичность "+t.severity,
       "  Источники: "+t.sourceRefs.join(", "),
       "  Проверка: "+t.verification,
+      ...t.resolutionOptions.map(option=>"  Возможный подход (гипотеза): "+option),
       ...t.history.map(h=>"  "+h.at+" · "+h.actor+" · "+h.action+
         " · "+h.reason+
         (h.verificationRefs.length?" · новые основания: "+h.verificationRefs.join(", "):"")),
