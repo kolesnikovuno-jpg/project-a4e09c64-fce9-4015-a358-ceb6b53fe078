@@ -48,14 +48,17 @@ const clean=(s:string)=>s.replace(/[\u0000-\u0008\u000b-\u001f]/g," ");
 
 export function buildEggProductMemory(project:EggProject):MemoryEntry[]{
   const lookup=new Map(project.tasks.map(task=>[task.id,task]));
+  const cycles=new Map((project.flowCycles??[]).map(cycle=>[cycle.id,cycle]));
   const entries:MemoryEntry[]=project.events.map(event=>{
     const task=event.taskId?lookup.get(event.taskId):undefined;
+    const sourceCycle=/cycle-[0-9]+/.exec(event.detail)?.[0];
+    const cycle=sourceCycle?cycles.get(sourceCycle):undefined;
     return {
       id:"event/"+event.id,at:event.at,kind:"event",
       title:EVENT_NAMES[event.kind]??event.kind,
       description:txt(event.detail),
       status:event.actor==="author"?"Автор":"ИИ",
-      sourceId:event.id,level:task?.level??null,iteration:task?.iteration??null,
+      sourceId:event.id,level:task?.level??cycle?.level??null,iteration:task?.iteration??cycle?.iteration??null,
     };
   });
   for(const c of project.concepts??[]){
@@ -66,6 +69,22 @@ export function buildEggProductMemory(project:EggProject):MemoryEntry[]{
       id:"decision/"+c.id,at:c.decision.at,kind:"concept",
       title:"Решение Автора по "+c.id,description:txt(c.decision.reason),
       status:c.decision.outcome,sourceId:c.id,level:c.level,iteration:c.iteration,
+    });
+  }
+  for(const cycle of project.flowCycles??[]){
+    for(const station of [...cycle.first,...cycle.second]){
+      if(station.result)entries.push({
+        id:"flow-result/"+station.result.id,at:station.result.at,kind:"event",
+        title:"Результат "+NAMES[station.sphere]+" · "+cycle.id,
+        description:station.result.text,status:station.result.evidence,
+        sourceId:station.result.id,level:cycle.level,iteration:cycle.iteration,
+      });
+    }
+    if(cycle.decision)entries.push({
+      id:"flow-decision/"+cycle.id,at:cycle.decision.at,kind:"event",
+      title:"Решение Автора · "+cycle.id,description:cycle.decision.reason,
+      status:cycle.decision.outcome,sourceId:cycle.id,
+      level:cycle.level,iteration:cycle.iteration,
     });
   }
   for(const a of project.artifacts??[]){
@@ -89,6 +108,10 @@ export function findDocumentationGaps(project:EggProject):string[]{
   if(reported.length)problems.push("Материалов без подтверждения Автора: "+reported.length+".");
   if(!(project.artifacts??[]).some(a=>a.status==="author_confirmed"))
     problems.push("Нет подтверждённых Автором внешних документов.");
+  const latestCycle=project.flowCycles?.[project.flowCycles.length-1];
+  if(latestCycle?.status==="running")problems.push("Оба потока текущей итерации ещё не завершены.");
+  if(latestCycle?.status==="awaiting_author")problems.push("Синтез Желтка ожидает решения Автора.");
+  if(latestCycle?.synthesis)problems.push(...latestCycle.synthesis.gaps);
   problems.push("Финальный выпуск документации Автором не зарегистрирован.");
   return problems;
 }
@@ -268,8 +291,11 @@ export function buildEggDocumentationBundle(input:{
     ...(study?{visualStudy:{...study,approved:false as const,units:"normalized" as const}}:{}),
     sourceCounts:{
       events:project.events.length,concepts:project.concepts?.length??0,
-      tasks:project.tasks.length,findings:project.tasks.reduce((n,t)=>n+t.findings.length,0),
-      decisions:project.tasks.reduce((n,t)=>n+t.decisions.length,0),
+      tasks:project.tasks.length,
+       findings:project.tasks.reduce((n,t)=>n+t.findings.length,0)+
+         (project.flowCycles??[]).reduce((n,cycle)=>n+[...cycle.first,...cycle.second].filter(v=>Boolean(v.result)).length,0),
+      decisions:project.tasks.reduce((n,t)=>n+t.decisions.length,0)+
+         (project.flowCycles??[]).filter(cycle=>Boolean(cycle.decision)).length,
       materials:project.artifacts?.length??0,memoryEntries:entries.length,
     },gaps:findDocumentationGaps(project),
   };
