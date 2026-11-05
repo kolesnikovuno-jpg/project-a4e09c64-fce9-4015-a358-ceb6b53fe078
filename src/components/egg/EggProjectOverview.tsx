@@ -2,7 +2,7 @@ import { useState } from "react";
 import { EGG_SPHERES, type EggTaskStatus } from "../../lib/eggEngine";
 
 type TaskState = { id: string; sphere: string; status: string };
-type OverviewProject = { level: number; iteration: number; seed: { text: string }; tasks: TaskState[];concepts?:Array<{status:string}> };
+type OverviewProject = { level: number; iteration: number; seed: { text: string }; tasks: TaskState[];concepts?:Array<{status:string}>;flowCycles?:Array<{status:string}> };
 type StatusInfo = { label: string; className: string };
 const names: Record<string, string> = {
   marketing: "Маркетинг", legal: "Право", design: "Дизайн", production: "Производство",
@@ -35,7 +35,8 @@ export default function EggProjectOverview({ project, activeSphere, onSelectSphe
   const running = project.tasks.filter(t => t.status === "working" || t.status === "question");
   const notStarted = Object.keys(EGG_SPHERES).filter(id => !project.tasks.some(t => t.sphere === id));
   let next = "Сформулируйте и утвердите исходную идею — только после этого запускаются сферы.";
-  if (project.seed.text.trim()) {
+  if (project.flowCycles?.length) next = "Текущий цикл идёт по двум постоянным маршрутам. Автор рассматривает результат только после синтеза Желтка. Транзитные сферы сохраняют прошлые данные.";
+  else if (project.seed.text.trim()) {
     if (!(project.concepts??[]).some(c=>c.status==="accepted") && project.tasks.length===0) next = "Сфера «Идея»: сформируйте концепцию из исходного замысла и представьте её Автору на утверждение.";
     else if (waiting.length) next = "Есть результаты для решения Автора. Откройте соответствующую сферу и примите, верните на доработку или отклоните результат.";
     else if (revision.length) next = "Есть задачи на доработке. Уточнения должны вернуться к Автору на повторное рассмотрение.";
@@ -68,10 +69,10 @@ export default function EggProjectOverview({ project, activeSphere, onSelectSphe
     <div className="rounded-lg border border-foreground/15 p-3">
       <p className="mb-1 text-xs font-medium">Текущее действие</p>
       <p className="text-xs leading-relaxed text-foreground/75">{next}</p>
-      {project.seed.text.trim()&&!(project.concepts??[]).some(c=>c.status==="accepted")&&<button type="button"
+      {!project.flowCycles?.length&&project.seed.text.trim()&&!(project.concepts??[]).some(c=>c.status==="accepted")&&<button type="button"
         className="mt-2 rounded-full border border-foreground/35 px-3 py-2 text-xs"
         onClick={()=>onSelectSphere("idea")}>Открыть сферу «Идея»</button>}
-      {waiting.length > 0 && <button type="button" className="mt-2 rounded-full border border-foreground/35 px-3 py-2 text-xs" onClick={() => onSelectSphere(waiting[0].sphere)}>
+      {!project.flowCycles?.length&&waiting.length > 0 && <button type="button" className="mt-2 rounded-full border border-foreground/35 px-3 py-2 text-xs" onClick={() => onSelectSphere(waiting[0].sphere)}>
         Открыть решение · {names[waiting[0].sphere] ?? waiting[0].sphere}
       </button>}
     </div>
