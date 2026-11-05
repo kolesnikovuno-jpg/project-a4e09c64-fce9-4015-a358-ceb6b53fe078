@@ -95,7 +95,7 @@ const uniqueSpheres=(values:SphereId[])=>{
 };
 function makeCycle(p:EggFlowProject,at:string,authorBrief:string,active:SphereId[]):EggFlowCycle{
   const make=(branch:EggFlowBranch):EggSphereVisit[]=>
-    EGG_FLOW_ROUTES[branch].map((sphere,position)=>({
+    EGG_FLOW_ROUTES[branch].map((sphere,position):EggSphereVisit=>({
       sphere,branch,position,mode:active.includes(sphere)?"work":"transit",
       status:"pending",...(active.includes(sphere)&&authorBrief?{instruction:authorBrief}:{}),
     }));
@@ -194,7 +194,7 @@ export function startEggFlowCycle(p:EggFlowProject,input:{
     throw new EggEngineError("Final level already accepted");
   const at=input.at,brief=input.brief?.trim()??"";
   const cycle=makeCycle(p,at,brief,[...EGG_FIXED_ROUTE]);
-  let next={...p,flowCycles:[...(p.flowCycles??[]),cycle]};
+  let next:EggFlowProject={...p,flowCycles:[...(p.flowCycles??[]),cycle]};
   next=event(next,"cycle_started","author",at,cycle.id+" / full");
   return moveTransits(next,at);
 }
