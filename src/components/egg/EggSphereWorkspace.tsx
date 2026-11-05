@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {EGG_SPHERE_LENSES} from "../../lib/eggSphereIntelligence";
+import {EGG_IP_SEARCH_CATALOG} from "../../lib/eggLegalSimilarity";
 import type {SphereId} from "../../lib/eggEngine";
 
 type FieldItem = {
@@ -120,6 +121,25 @@ export default function EggSphereWorkspace({ projectId, sphere, seed, concept, l
       Незаданные Автором вопросы могут быть обнаружены и переданы в Желток как неподтверждённые.
       Накопление истории не означает автоматического переобучения модели.
     </p>
+  </div>}
+  {sphere==="legal"&&<div className="space-y-2 rounded-lg border border-foreground/15 p-3"
+    data-testid="legal-ip-search-workspace">
+    <h4 className="text-xs font-medium">Правовые пересечения · форма / конструкция / бренд</h4>
+    <p className="text-xs text-foreground/65">Сфера может сравнивать изображения и модели с уже
+      существующими изделиями, зарегистрированными образцами, патентными решениями
+      и отличительными элементами брендов. Поиск по реестрам требует фактического доступа.
+      Ссылки ниже открывают официальные базы для самостоятельной или разрешённой ИИ-проверки.</p>
+    <ul className="space-y-2 text-xs">
+      {EGG_IP_SEARCH_CATALOG.map(source=><li key={source.id}>
+        <a href={source.url} target="_blank" rel="noopener noreferrer"
+          className="font-medium underline underline-offset-2">{source.label}</a>
+        <p className="mt-1 text-foreground/60">{source.target}</p>
+      </li>)}
+    </ul>
+    <p className="text-[11px] text-foreground/55">Записывайте конкретный найденный объект, источник,
+      дату, территорию, сходства и отличия. Визуальное сходство — повод для проверки,
+      а не доказательство нарушения. Исследуется только доступная версия формы;
+      новый Дизайн из параллельного потока проверяется на следующей итерации.</p>
   </div>}
   {seed?.trim() && <div className="rounded-lg bg-foreground/5 p-3"><p className="text-xs font-medium">Исходная идея Автора</p><p className="mt-1 whitespace-pre-wrap break-words text-xs leading-relaxed text-foreground/80">{seed}</p></div>}
   {concept?.trim()&&<div className="rounded-lg border border-foreground/15 p-3">
