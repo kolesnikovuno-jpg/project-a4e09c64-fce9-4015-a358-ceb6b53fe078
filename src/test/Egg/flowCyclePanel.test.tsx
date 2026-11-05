@@ -15,6 +15,11 @@ describe("EGG flow state UI",()=>{
     render(<EggFlowCyclePanel project={base()} revision={1} authorControls/>);
     expect(screen.getByTestId("start-flow-cycle")).toBeTruthy();
     expect(screen.getByTestId("egg-ai-run-cycle").textContent).toContain("Начать цикл с ИИ");
+    const aiSection=screen.getByTestId("egg-ai-flow-controls");
+    const flowGraph=screen.getByTestId("flow-visit-marketing");
+    expect(aiSection.compareDocumentPosition(flowGraph) &
+      Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByTestId("egg-ai-run-cycle").className).toContain("bg-foreground");
     expect(screen.getByTestId("yolk-semantic-review")).toBeTruthy();
     expect(screen.queryByTestId("yolk-copy-ai-brief")).toBeNull();
     expect(screen.getByTestId("yolk-product-passport")).toBeTruthy();
