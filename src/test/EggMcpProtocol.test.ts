@@ -35,13 +35,36 @@ describe("MCP protocol and external AI handoff", () => {
     expect(result.status).toBe(200);
     const tools = (result.body as any).result.tools;
     expect(tools.map((tool: any) => tool.name)).toEqual([
-      "egg_get_project_state", "egg_contribute_sphere", "egg_propose_seed",
+      "egg_get_onboarding_protocol", "egg_get_project_state", "egg_contribute_sphere", "egg_propose_seed",
       "egg_propose_concept", "egg_register_field_item", "egg_register_drive_file",
     ]);
     expect(tools.some((tool: any) => /confirm|approve|delete/i.test(tool.name))).toBe(false);
     expect(eggMcpTools.find(tool=>tool.name==="egg_propose_concept")?.annotations.readOnlyHint).toBe(false);
     expect(eggMcpTools.find(tool=>tool.name==="egg_register_drive_file")?.annotations.idempotentHint).toBe(true);
     expect(eggMcpTools[0].annotations.readOnlyHint).toBe(true);
+  });
+
+  it("gives the user's AI a first-contact checklist but makes no claim about private cloud access", async()=>{
+    const ops=operations();
+    const result=await processEggMcp(obj("tools/call",{
+      name:"egg_get_onboarding_protocol",arguments:{},
+    }),ops as any);
+    expect(result.status).toBe(200);
+    const protocol=JSON.parse((result.body as any).result.content[0].text);
+    expect(protocol.ok).toBe(true);
+    expect(protocol.schema).toBe("egg.ai-onboarding/0.1");
+    expect(protocol.storageChecked).toBe(false);
+    expect(protocol.status).toBe("pending_ai_side_verification");
+    expect(protocol.storage.connectedTo).toBe("user_ai_client");
+    expect(protocol.storage.notConnectedTo).toBe("egg_engine");
+    expect(protocol.reporting.defaultStorageState).toBe("unknown");
+    expect(protocol.firstContact.map((step:any)=>step.id)).toContain("check_cloud_storage");
+    expect(protocol.product.spheres).toHaveLength(8);
+    expect(ops.getState).not.toHaveBeenCalled();
+    const invalid=await processEggMcp(obj("tools/call",{
+      name:"egg_get_onboarding_protocol",arguments:{projectId:id}
+    }),ops as any);
+    expect((invalid.body as any).error.code).toBe(-32602);
   });
 
   it("records AI concept drafts without approving them or inventing files", async()=>{
