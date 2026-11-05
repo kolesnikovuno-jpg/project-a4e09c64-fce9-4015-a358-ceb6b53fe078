@@ -8,6 +8,7 @@ import EggFlowCyclePanel from "./EggFlowCyclePanel";
 import type { VisualDraft } from "../../lib/eggDocumentation";
 import { EGG_SPHERES, type SphereId, type EggProject } from "../../lib/eggEngine";
 import {buildEggYolkProductProjection} from "../../lib/eggYolkState";
+import {buildEggYolkTimeSnapshot,eggYolkTimeOptions,EGG_YOLK_BASELINE} from "../../lib/eggYolkTimeline";
 
 type Project=EggProject;
 type Task=EggProject["tasks"][number];
@@ -82,6 +83,7 @@ export default function EggYolkExperience(){
   const [project,setProject]=useState<Project|null>(null);
   const [revision,setRevision]=useState<number|null>(null);
   const [selected,setSelected]=useState<SphereId|null>(null);
+  const [selectedCycleKey,setSelectedCycleKey]=useState<string|null>(null);
   const [expanded,setExpanded]=useState(false);
   const [loading,setLoading]=useState(Boolean(id));
   const [notice,setNotice]=useState("");
@@ -118,6 +120,11 @@ export default function EggYolkExperience(){
   },[id,refresh]);
   const concept=useMemo(()=>conception(project),[project]);
   const productState=useMemo(()=>project?buildEggYolkProductProjection(project):null,[project]);
+  const cycleOptions=useMemo(()=>project?eggYolkTimeOptions(project):[],[project]);
+  const activeCycleKey=selectedCycleKey&&cycleOptions.some(c=>c.key===selectedCycleKey)
+    ?selectedCycleKey:cycleOptions.at(-1)?.key??EGG_YOLK_BASELINE;
+  const timeline=useMemo(()=>project?buildEggYolkTimeSnapshot(project,activeCycleKey):null,
+    [project,activeCycleKey]);
   const approved=concept?.status==="accepted";
   const currentText=concept?.text??project?.seed.text??demoConcept;
   const candidateText=concept?.status==="proposed";
@@ -126,10 +133,16 @@ export default function EggYolkExperience(){
   const sphereTasks=(project?.tasks??[]).filter(t=>t.sphere===selected);
   const sphereArtifacts=(project?.artifacts??[]).filter(a=>a.sphere===selected);
   const sphereStatus=summarize(sphereTasks);
-  const stateCard=productState?.spheres.find(c=>c.sphere===selected);
-  const sphereVisibleStatus=stateCard?.resultId
-    ?(stateCard.status==="new"?"Новый результат":"Результат предыдущего цикла")
-    :sphereStatus.label;
+  const stateCard=timeline?.spheres.find(c=>c.sphere===selected);
+  const timelineStatus:Record<string,string>={
+    new:"Новый вывод этой итерации",
+    inherited:"Унаследован из предыдущего цикла",
+    historical:"Исторический вывод (до потоков)",
+    pending_work:"Ожидается работа сферы",
+    pending_transit:"Ожидается транзит по маршруту",
+    missing:"Результат отсутствует",
+  };
+  const sphereVisibleStatus=stateCard?timelineStatus[stateCard.status]:sphereStatus.label;
   useEffect(()=>{
     if(!expanded)return;
     const before=document.body.style.overflow;
@@ -147,11 +160,12 @@ export default function EggYolkExperience(){
   const lastTask=sphereTasks[sphereTasks.length-1];
   const lastFinding=lastTask?.findings?.[lastTask.findings.length-1]?.text;
   const rightCopy=selectedMeta
-    ? (stateCard?.summary
-        ? brief(stateCard.summary,185)
+    ? (project
+        ?stateCard?.summary?brief(stateCard.summary,185):
+          "Для выбранного состояния нет зарегистрированного вывода этой сферы."
         :sphereTasks.length
-          ? brief(lastFinding??lastTask.question,185)
-          :project?"В этой сфере пока нет зарегистрированных результатов.":"Это ознакомительный режим. Данные реального проекта здесь не показаны.")
+          ?brief(lastFinding??lastTask.question,185)
+          :"Это ознакомительный режим. Данные реального проекта здесь не показаны.")
     : brief(currentText,185);
   const selectSphere=(sphere:SphereId)=>{
     setSelected(current=>current===sphere?null:sphere);
@@ -173,12 +187,31 @@ export default function EggYolkExperience(){
         </header>
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-foreground/10 pt-4 text-[10px] font-light uppercase tracking-[0.16em] text-foreground/40">
           <span>Формирующийся объект / 08 сфер</span>
-          <span>Уровень {project?.level??"—"} · Цикл {project?.iteration??"—"}{revision!==null?" · Rev. "+revision:""}</span>
+          <span>Уровень {timeline?.level??project?.level??"—"} · Итерация {timeline?.iteration??project?.iteration??"—"}{revision!==null?" · Rev. "+revision:""}</span>
         </div>
+        {project&&timeline&&<div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-foreground/15 p-3 text-xs"
+          data-testid="yolk-timeline-controls">
+          <label className="flex min-w-[225px] flex-1 flex-col gap-1.5 text-[11px] text-foreground/65">
+            Состояние продукта · история итераций
+            <select value={activeCycleKey} data-testid="yolk-timeline-select"
+              onChange={e=>{setSelectedCycleKey(e.target.value);setExpanded(false);}}
+              className="min-h-9 w-full rounded-lg border border-foreground/25 bg-background px-3 text-xs text-foreground">
+              {cycleOptions.map(option=><option key={option.key} value={option.key}>
+                {option.label}</option>)}
+            </select>
+          </label>
+          <p className="max-w-[260px] text-[11px] leading-relaxed text-foreground/55" data-testid="yolk-timeline-stage-status">
+            {timeline.status==="baseline"?"Исходное состояние · без завершённых потоковых циклов":
+             timeline.status==="running"?"Цикл идёт · часть выводов ожидается":
+             timeline.status==="awaiting_author"?"Синтез готов · ожидается решение Автора":
+             timeline.status==="accepted"?"Решение Автора: принято":
+             "Решение Автора: направлено на доработку"}
+          </p>
+        </div>}
 
         <div className="mx-auto mt-4 grid w-full items-center gap-x-4 gap-y-6 lg:grid-cols-[minmax(165px,1fr)_minmax(440px,720px)_minmax(165px,1fr)] xl:gap-x-8">
           <aside className="order-2 min-w-0 self-center pb-1 lg:order-1" aria-label="Название и назначение">
-            <YolkTypewriter key={"left-"+(selected??"dna")} side="left"
+            <YolkTypewriter key={"left-"+(selected??"dna")+"-"+activeCycleKey} side="left"
               number={selectedMeta?"Сфера / "+String(YOLK_SPHERES.indexOf(selectedMeta)+1).padStart(2,"0"):"ДНК / исходный замысел"}
               title={selectedMeta?selectedMeta.name:"ДНК продукта"}
               description={leftCopy}/>
@@ -188,7 +221,10 @@ export default function EggYolkExperience(){
           <section className="relative order-1 min-w-0 lg:order-2" aria-label="Крупная пространственная модель и восемь сфер">
             <div className="relative mx-auto aspect-[760/700] w-full max-w-[720px]" data-testid="yolk-orbit-stage">
               <div className="absolute inset-[1%] z-0" data-testid="yolk-central-object">
-                <EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange} level={project?.level??1} iteration={project?.iteration??1} projectId={project?.id}/>
+                <EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
+                  level={timeline?.level??project?.level??1}
+                  iteration={timeline?.iteration??project?.iteration??1}
+                  projectId={project?.id} visualVersion={timeline?.visual??null}/>
               </div>
               <svg viewBox="0 0 760 700" className="pointer-events-none absolute inset-0 z-10 h-full w-full overflow-visible" aria-label="Восемь интерактивных функциональных сфер">
                 <ellipse cx="380" cy="350" rx="290" ry="265" fill="none" stroke="currentColor" strokeOpacity=".16" strokeWidth=".9" vectorEffect="non-scaling-stroke"/>
@@ -198,7 +234,8 @@ export default function EggYolkExperience(){
                   const x=380+290*Math.cos(angle);
                   const y=350+265*Math.sin(angle);
                   const active=selected===s.id;
-                  const sphereState=summarize((project?.tasks??[]).filter(t=>t.sphere===s.id));
+                  const sphereState=timeline?.spheres.find(item=>item.sphere===s.id);
+                  const legacyState=summarize((project?.tasks??[]).filter(t=>t.sphere===s.id));
                   return <g key={s.id}>
                     {active&&<line x1="380" y1="350" x2={x} y2={y} stroke="hsl(var(--primary))" strokeOpacity=".23" strokeWidth=".9" strokeDasharray="3 8" vectorEffect="non-scaling-stroke"/>}
                     <circle cx={x} cy={y} r="10.5"
@@ -206,7 +243,11 @@ export default function EggYolkExperience(){
                       stroke={active?"hsl(var(--primary))":"currentColor"}
                       strokeOpacity={active?".95":".72"}
                       strokeWidth="1.1" vectorEffect="non-scaling-stroke"/>
-                    {project&&sphereState.code!=="none"&&<circle cx={x+9} cy={y-9} r="2.5" fill={sphereState.code==="returned"?"#c49d65":sphereState.code==="accepted"?"hsl(var(--primary))":"currentColor"} opacity=".65"/>}
+                    {project&&sphereState&&sphereState.status!=="missing"&&
+                      sphereState.status!=="pending_transit"&&sphereState.status!=="pending_work"&&
+                      <circle cx={x+9} cy={y-9} r="2.5"
+                        fill={sphereState.status==="new"?"hsl(var(--primary))":"#c49d65"} opacity=".75"/>}
+                    {!project&&legacyState.code!=="none"&&<circle cx={x+9} cy={y-9} r="2.5" fill="currentColor" opacity=".65"/>}
                     <circle data-testid={"yolk-orbit-"+s.id} cx={x} cy={y} r="25"
                       fill="transparent" stroke="none" pointerEvents="all" role="button" tabIndex={0}
                       aria-label={"Открыть сферу "+s.name} aria-pressed={active}
@@ -226,7 +267,7 @@ export default function EggYolkExperience(){
           </section>
 
           <aside className="order-3 min-w-0 self-center pb-1" aria-label="Краткий вывод и развернутая информация" aria-live="polite">
-            <YolkTypewriter key={"right-"+(selected??"dna")} side="right"
+            <YolkTypewriter key={"right-"+(selected??"dna")+"-"+activeCycleKey} side="right"
               number={selectedMeta?(project?sphereVisibleStatus:"Вклад сферы"):"Формирование / концепция"}
               title={selectedMeta?"Текущий вклад":approved?"Концепция принята":"Концепция"}
               description={rightCopy}/>
