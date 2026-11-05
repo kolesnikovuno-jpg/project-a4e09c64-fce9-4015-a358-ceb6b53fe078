@@ -54,8 +54,11 @@ async function readBody(req:Request):Promise<unknown>{
   return JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown;
 }
 type Provider={url:string;key:string;model:string;kind:"gateway"|"direct_openai"};
-function providerFromEnv(env:NodeJS.ProcessEnv):Provider|null{
-  const gatewayKey=env.AI_GATEWAY_API_KEY?.trim()||env.VERCEL_OIDC_TOKEN?.trim();
+/** Vercel injects runtime OIDC on x-vercel-oidc-token, not reliably in env. */
+export function providerFromEnv(env:NodeJS.ProcessEnv,oidcHeader?:string|string[]):Provider|null{
+  const injected=typeof oidcHeader==="string"?oidcHeader.trim():"";
+  const oidc=(env.VERCEL&&injected)||env.VERCEL_OIDC_TOKEN?.trim();
+  const gatewayKey=env.AI_GATEWAY_API_KEY?.trim()||oidc;
   if(gatewayKey)return {
     url:"https://ai-gateway.vercel.sh/v1/responses",key:gatewayKey,kind:"gateway",
     model:env.EGG_AUTOMATION_MODEL?.trim()||"openai/gpt-5.4-mini",
@@ -67,7 +70,8 @@ function providerFromEnv(env:NodeJS.ProcessEnv):Provider|null{
   };
   return null;
 }
-async function generate(model:Provider,prompt:{instructions:string;input:string}):Promise<string>{
+async function generate(model:Provider,prompt:{instructions:string;input:string},
+  maxTokens=2200):Promise<string>{
   if(Buffer.byteLength(prompt.instructions)+Buffer.byteLength(prompt.input)>60000)
     throw Error("ai_context_too_large");
   const controller=new AbortController();
@@ -80,7 +84,7 @@ async function generate(model:Provider,prompt:{instructions:string;input:string}
       signal:controller.signal,
       body:JSON.stringify({
         model:model.model,instructions:prompt.instructions,input:prompt.input,
-        max_output_tokens:2200,store:false,
+        max_output_tokens:maxTokens,store:false,
         text:{format:{type:"json_object"}},
       }),
     });
@@ -151,6 +155,36 @@ export default async function handler(req:Request,res:ServerResponse){
     const project=row.document as EggProject;
     if(project.schema!=="egg.engine/0.1"||project.id!==input.projectId)
       return fail(res,409,"unsupported_project_schema");
+    const provider=providerFromEnv(process.env,req.headers["x-vercel-oidc-token"]);
+    if(!provider)return fail(res,503,"ai_provider_not_configured");
+    if(input.mode==="preflight"){
+      // A single minimal REAL model call validates auth and provider/budget.
+      // Crucially, this runs BEFORE any cycle starts, and saves NOTHING.
+      let answer:string;
+      try{
+        answer=await generate(provider,{
+          instructions:"Return only a JSON object with ready set to true. No explanation.",
+          input:"Connectivity check for EGG; no project data provided.",
+        },120);
+      }catch(e){
+        const code=e instanceof Error?e.message:"model_request_failed";
+        if(code==="ai_rate_limited")return fail(res,429,"ai_rate_limited");
+        if(code==="ai_budget_exhausted")return fail(res,402,"ai_budget_exhausted");
+        if(code==="ai_model_not_authorized")return fail(res,503,"ai_model_not_authorized");
+        if(code==="provider_timeout")return fail(res,502,"provider_timeout");
+        if(code==="model_incomplete")return fail(res,502,"model_incomplete");
+        return fail(res,502,"model_request_failed");
+      }
+      try{
+        const parsed=JSON.parse(answer) as {ready?:unknown};
+        if(parsed?.ready!==true)return fail(res,502,"invalid_ai_output");
+      }catch{return fail(res,502,"invalid_ai_output");}
+      return send(res,200,{
+        ok:true,ready:true,revision:row.revision,
+        provider:provider.kind,model:provider.model,
+        projectChanged:false,chargedModelCheck:true,
+      });
+    }
     let step:ReturnType<typeof nextEggAutomationStep>;
     try{step=nextEggAutomationStep(project);}
     catch{return fail(res,409,"invalid_state_transition");}
@@ -158,8 +192,6 @@ export default async function handler(req:Request,res:ServerResponse){
     if(step.kind==="done")return send(res,200,{
       ok:true,revision:row.revision,done:true,completed:{kind:"done"},next:step,
     });
-    const provider=providerFromEnv(process.env);
-    if(!provider)return fail(res,503,"ai_provider_not_configured");
     const prompt=buildEggAutomationPrompt(project,step);
     let raw:string;
     try{raw=await generate(provider,prompt);}
