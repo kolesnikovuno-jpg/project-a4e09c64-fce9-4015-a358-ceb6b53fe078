@@ -4,6 +4,7 @@ import {EGG_FLOW_ROUTES,currentEggFlowCycle,type EggFlowBranch,type EggSphereVis
 import type {EggProject,SphereId} from "../../lib/eggEngine";
 import EggYolkPassport from "./EggYolkPassport";
 import EggYolkSemanticPanel from "./EggYolkSemanticPanel";
+import EggDynamicBalancePanel from "./EggDynamicBalancePanel";
 
 const names:Record<SphereId,string>={
   marketing:"Маркетинг",design:"Дизайн",testDrive:"Тестдрайв",commerce:"Коммерция",
@@ -242,6 +243,12 @@ export default function EggFlowCyclePanel({
       <div className="mt-3 space-y-3">
         <EggYolkPassport project={project}/>
         <EggYolkSemanticPanel project={project}/>
+        <EggDynamicBalancePanel project={project} revision={revision}
+          authorControls={authorControls} onSaved={onSaved}
+          onSuggestRoute={spheres=>{
+            setOutcome("revise");setTargets([...new Set(spheres)]);
+            setStatus("Сферы подставлены в решение. Укажи основание и подтверди доработку сам.");
+          }}/>
       </div>
       {!cycle?<p className="mt-2 text-xs text-foreground/65">Синтез будет доступен после полного прохождения обеих ветвей.</p>:
        cycle.status==="running"?<p className="mt-2 text-xs text-foreground/65">
