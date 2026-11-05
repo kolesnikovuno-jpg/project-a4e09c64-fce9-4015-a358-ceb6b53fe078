@@ -14,6 +14,7 @@ describe("EGG flow state UI",()=>{
   it("exposes both fixed routes and first author launch without requesting eight independent approvals",()=>{
     render(<EggFlowCyclePanel project={base()} revision={1} authorControls/>);
     expect(screen.getByTestId("start-flow-cycle")).toBeTruthy();
+    expect(screen.getByTestId("egg-ai-run-cycle").textContent).toContain("Начать цикл с ИИ");
     expect(screen.getByTestId("yolk-semantic-review")).toBeTruthy();
     expect(screen.queryByTestId("yolk-copy-ai-brief")).toBeNull();
     expect(screen.getByTestId("yolk-product-passport")).toBeTruthy();
@@ -31,6 +32,7 @@ describe("EGG flow state UI",()=>{
     expect(screen.getByTestId("flow-visit-design").textContent).toContain("Требуется работа");
     expect(screen.queryByTestId("decide-flow-cycle")).toBeNull();
     expect(screen.queryByTestId("start-flow-cycle")).toBeNull();
+    expect(screen.queryByTestId("egg-ai-run-cycle")).toBeNull();
   });
   it("makes only whole-cycle decision available after the Yolk receives Commerce and Retail",()=>{
     let p=startEggFlowCycle(base(),{actor:"author",at});
@@ -38,6 +40,7 @@ describe("EGG flow state UI",()=>{
       p=contributeEggFlowSphere(p,{actor:"ai",sphere,text:"Вывод "+sphere,evidence:"hypothesis",at});
     render(<EggFlowCyclePanel project={p} revision={14} authorControls/>);
     expect(screen.getByTestId("decide-flow-cycle")).toBeTruthy();
+    expect(screen.getByTestId("egg-ai-run-cycle").textContent).toContain("Продолжить цикл ИИ");
     expect(screen.getByTestId("yolk-copy-ai-brief")).toBeTruthy();
     expect(screen.queryByTestId("yolk-semantic-draft")).toBeNull();
     expect(screen.getByTestId("yolk-product-passport").textContent).toContain("Новые");
