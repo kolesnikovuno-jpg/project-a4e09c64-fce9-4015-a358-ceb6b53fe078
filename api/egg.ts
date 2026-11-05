@@ -17,7 +17,7 @@ import { ZodError } from "zod";
 import { exportEggManifest } from "../src/lib/eggArtifacts.js";
 import { createEggProject, EggEngineError, type EggProject } from "../src/lib/eggEngine.js";
 import {
-  eggCommandSchema, eggMutationSchema, mayAccessEgg, readEggState,
+  eggCommandSchema, eggMutationSchema, isAuthorCommand, mayAccessEgg, readEggState,
   runEggMutation, type EggPermission,
 } from "../src/lib/eggCommands.js";
 
@@ -285,10 +285,10 @@ export default async function handler(req: Request, res: Response) {
     }
 
     const mutation = eggMutationSchema.parse(input);
+    // Centralize role checks; future Author-only commands must not accidentally
+    // receive the weaker project-level contribute permission.
     const project = await checkedProject(db, mutation.projectId, identity,
-      mutation.command === "set_seed" || mutation.command === "decide" || mutation.command === "set_level" ||
-      mutation.command === "next_iteration" || mutation.command === "confirm_file" || mutation.command === "decide_concept" || mutation.command === "route_concept_question"
-        ? "author" : "contribute");
+      isAuthorCommand(mutation.command) ? "author" : "contribute");
     if (mutation.expectedRevision !== project.revision)
       throw new RequestFailure(409, "revision_conflict");
     const next = runEggMutation(project.document, mutation, identity, project.owner_id, at);
