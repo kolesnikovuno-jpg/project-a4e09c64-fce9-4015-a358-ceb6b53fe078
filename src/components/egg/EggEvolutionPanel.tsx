@@ -18,6 +18,7 @@ const labels:Record<EggEvolutionDeltaStatus,string>={
 };
 const outcomeLabels:Record<EggEvolutionAssessment["outcome"],string>={
   improved:"Улучшение по оценке Автора",
+  worsened:"Ухудшение по оценке Автора",
   compromise:"Компромисс по оценке Автора",
   no_change:"Существенных изменений не установлено Автором",
   inconclusive:"Недостаточно данных для оценки",
@@ -56,7 +57,7 @@ export default function EggEvolutionPanel({
   async function recordAssessment(){
     if(!authorControls||revision===null||busy||!comparison||comparison.assessment||
       comparison.toStatus==="running"||reason.trim().length<12)return;
-    if(outcome==="improved"&&!selectedHasNewSource)return;
+    if(["improved","worsened"].includes(outcome)&&!selectedHasNewSource)return;
     setBusy(true);setMessage("");
     try{
       const config=await fetch("/api/egg-config",{cache:"no-store"});
@@ -230,7 +231,7 @@ export default function EggEvolutionPanel({
               rows={3} maxLength={2500} placeholder="Основания, компромиссы и оставшиеся вопросы"/>
           </label>
           <button type="button" disabled={busy||reason.trim().length<12||
-            outcome==="improved"&&!selectedHasNewSource}
+            ["improved","worsened"].includes(outcome)&&!selectedHasNewSource}
             onClick={()=>void recordAssessment()}
             className="rounded-full border border-foreground/35 px-3 py-2 text-xs disabled:opacity-40"
             data-testid="egg-evolution-save">
