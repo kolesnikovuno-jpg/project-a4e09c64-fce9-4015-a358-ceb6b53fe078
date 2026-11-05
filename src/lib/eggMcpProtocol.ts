@@ -7,7 +7,7 @@
  * prove that an upload succeeded, confirm an Author's decision, or grant access.
  */
 import { z } from "zod";
-import { getEggAiOnboardingProtocol } from "./eggAiOnboarding";
+import { getEggAiOnboardingProtocol } from "./eggAiOnboarding.js";
 
 export const eggMcpTools = [
   {
