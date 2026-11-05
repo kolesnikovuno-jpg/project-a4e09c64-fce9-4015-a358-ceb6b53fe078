@@ -148,15 +148,21 @@ function compareOne(
   // rewritten to make a present closed tension appear resolved in the past.
   const endTime=now.decision?.at??now.synthesis?.at??null;
   const until=endTime?Date.parse(endTime):Infinity;
-  const linkedTensions=(project.balanceTensions??[])
-    .filter(t=>t.history.some(e=>{
-      const at=Date.parse(e.at);return at>=startTime&&at<=until;
-    })).map(t=>({
+  const linkedTensions=(project.balanceTensions??[]).flatMap(t=>{
+    const known=t.history.filter(e=>Date.parse(e.at)<=until);
+    const last=known.at(-1);
+    if(!last)return [];
+    const active=["registered","tracked","reopened"].includes(last.action);
+    const during=known.filter(e=>Date.parse(e.at)>=startTime);
+    // Open tensions persist even without an event in this specific cycle.
+    // Resolved and dismissed tensions appear only when their status changed here.
+    if(!active&&!during.length)return [];
+    return [{
       id:t.id,title:t.title,source:"registered" as const,
-      status:t.history.filter(e=>Date.parse(e.at)<=until).at(-1)?.action??"registered",
-      events:t.history.filter(e=>Date.parse(e.at)>=startTime&&Date.parse(e.at)<=until)
-        .map(e=>({at:e.at,action:e.action,reason:e.reason})),
-    }));
+      status:last.action,
+      events:during.map(e=>({at:e.at,action:e.action,reason:e.reason})),
+    }];
+  });
   const assessment=[...(project.evolutionAssessments??[])].reverse()
     .find(a=>a.toCycleId===now.id&&a.fromCycleId===(previous?.id??null))??null;
   return {
