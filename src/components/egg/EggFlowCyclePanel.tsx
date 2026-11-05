@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useRef,useState} from "react";
 import {createClient} from "@supabase/supabase-js";
 import {EGG_FLOW_ROUTES,currentEggFlowCycle,type EggFlowBranch,type EggSphereVisit} from "../../lib/eggFlowCycle";
 import type {EggProject,SphereId} from "../../lib/eggEngine";
@@ -32,12 +32,16 @@ export default function EggFlowCyclePanel({
   const [busy,setBusy]=useState(false);
   const [status,setStatus]=useState("");
   const [historyOpen,setHistoryOpen]=useState(false);
+  const [aiBusy,setAiBusy]=useState(false);
+  const [aiMessage,setAiMessage]=useState("");
+  const [aiProgress,setAiProgress]=useState(0);
+  const stopAi=useRef(false);
   const canStart=authorControls&&revision!==null&&project.seed.text.trim()&&
     (!cycle || cycle.status==="accepted"&&cycle.level<5);
   const canDecide=authorControls&&revision!==null&&cycle?.status==="awaiting_author";
   const cycles=project.flowCycles??[];
   async function send(command:"start_flow_cycle"|"decide_flow_cycle"){
-    if(!authorControls||revision===null||busy)return;
+    if(!authorControls||revision===null||busy||aiBusy)return;
     if(command==="decide_flow_cycle"&&(!remark.trim()||(outcome==="revise"&&!targets.length)))return;
     setBusy(true);setStatus("");
     try{
@@ -62,6 +66,76 @@ export default function EggFlowCyclePanel({
       setStatus("Не удалось выполнить действие. Проверьте вход в EGG и повторите.");
     }finally{setBusy(false);}
   }
+  const runAICycle=async(startFirst:boolean)=>{
+    if(!authorControls||revision===null||busy||aiBusy)return;
+    stopAi.current=false;setAiBusy(true);setAiProgress(0);
+    setAiMessage("Проверяем доступ и готовим запрос...");
+    let completed=0;let currentRevision=revision;let didStart=false;
+    try{
+      const response=await fetch("/api/egg-config",{cache:"no-store"});
+      if(!response.ok)throw Error("config");
+      const cfg=await response.json() as {supabaseUrl:string;publishableKey:string};
+      const client=createClient(cfg.supabaseUrl,cfg.publishableKey);
+      const {data}=await client.auth.getSession();
+      if(!data.session?.access_token)throw Error("auth");
+      const token=data.session.access_token;
+      if(startFirst){
+        const started=await fetch("/api/egg",{method:"POST",headers:{
+          "Content-Type":"application/json",Authorization:"Bearer "+token,
+        },body:JSON.stringify({
+          command:"start_flow_cycle",projectId:project.id,expectedRevision:currentRevision,
+        })});
+        if(!started.ok)throw Error(started.status===409?"revision_conflict":"start_failed");
+        const value=await started.json() as {revision:number};
+        if(!Number.isSafeInteger(value.revision))throw Error("invalid_response");
+        currentRevision=value.revision;didStart=true;
+      }
+      for(let i=0;i<9;i++){
+        if(stopAi.current)break;
+        setAiMessage("ИИ выполняет шаг "+(i+1)+" из 9 (включая Желток)...");
+        const result=await fetch("/api/egg-flow-ai",{method:"POST",headers:{
+          "Content-Type":"application/json",Authorization:"Bearer "+token,
+        },body:JSON.stringify({projectId:project.id,expectedRevision:currentRevision})});
+        const value=await result.json() as {
+          ok:boolean;error?:string;revision:number;done?:boolean;
+          completed?:{kind:string;sphere?:SphereId};next?:{kind:string};
+        };
+        if(!result.ok||!value.ok)throw Error(value.error??"model_request_failed");
+        if(!Number.isSafeInteger(value.revision))throw Error("invalid_response");
+        currentRevision=value.revision;
+        if(value.completed?.kind==="sphere"||value.completed?.kind==="yolk")completed++;
+        setAiProgress(completed);
+        if(value.done||value.next?.kind==="done")break;
+        if(i===8)throw Error("step_limit");
+      }
+      setAiMessage(stopAi.current
+        ?"Остановлено после шага "+completed+". Сохранённые результаты можно продолжить позднее."
+        :"Цикл ИИ доведён до Желтка. Теперь ожидается решение Автора.");
+    }catch(err){
+      const code=err instanceof Error?err.message:"model_request_failed";
+      const errors:Record<string,string>={
+        auth:"Требуется войти в аккаунт EGG.",
+        revision_conflict:"Проект изменился. Обновите состояние и повторите запуск.",
+        ai_provider_not_configured:"Нет подключённого сервера ИИ. Настройте Vercel AI Gateway или серверный API-ключ.",
+        ai_model_not_authorized:"Нет доступа к модели через провайдера ИИ. Проверьте AI Gateway.",
+        ai_budget_exhausted:"Для вызовов модели недостаточно средств или исчерпан бюджет AI Gateway.",
+        ai_rate_limited:"Превышен лимит запросов к ИИ. Продолжите позже.",
+        model_request_failed:"Провайдер модели недоступен. Пройденные шаги сохранены.",
+        model_incomplete:"Модель не завершила ответ. Шаг не записан; можно повторить.",
+        invalid_ai_output:"ИИ вернул несоответствующий схеме ответ. Шаг не записан; можно повторить.",
+        provider_timeout:"Ответ модели превысил допустимое время. Шаг не записан; можно повторить.",
+        ai_context_too_large:"Контекст проекта слишком объёмный для автоматического шага.",
+        step_limit:"Лимит шагов достигнут. Обновите состояние и продолжите.",
+      };
+      setAiMessage((errors[code]??"Не удалось выполнить следующий шаг ИИ ("+code+").")+
+        (completed||didStart?" Уже записанные результаты сохранены.":""));
+    }finally{
+      setAiBusy(false);onSaved?.();
+    }
+  };
+  const canRunAI=authorControls&&revision!==null&&(
+    cycle?.status==="running"||cycle?.status==="awaiting_author"&&!cycle.semanticReview
+  );
   const visits=(branch:EggFlowBranch):EggSphereVisit[]=>cycle?.[branch]??EGG_FLOW_ROUTES[branch].map((sphere,position)=>({
     branch,sphere,position,mode:"work" as const,status:"pending" as const,
   }));
@@ -190,11 +264,29 @@ export default function EggFlowCyclePanel({
        </div>}
     </div>
     {canStart&&<div className="mt-4">
-      <button type="button" disabled={busy} onClick={()=>void send("start_flow_cycle")}
+      <button type="button" disabled={busy||aiBusy} onClick={()=>void send("start_flow_cycle")}
         className="rounded-full border border-foreground/45 px-4 py-2 text-xs disabled:opacity-40"
         data-testid="start-flow-cycle">
         {cycle?"Запустить полный цикл следующего уровня":"Начать первый полный цикл"}
       </button>
+    </div>}
+    {authorControls&&(canStart||canRunAI||aiBusy)&&<div className="mt-4 space-y-2 border-t border-foreground/10 pt-4"
+      data-testid="egg-ai-flow-controls">
+      <p className="text-xs text-foreground/70">Один запуск ИИ проводит сферы по двум установленным потокам,
+        затем создаёт черновой анализ Желтка. Тексты проекта передаются внешней модели;
+        вызовы тарифицируются провайдером. Решение Автора не принимается автоматически.</p>
+      {(canStart||canRunAI)&&!aiBusy&&<button type="button"
+        disabled={busy} onClick={()=>void runAICycle(Boolean(canStart))}
+        className="rounded-full border border-foreground/45 px-4 py-2 text-xs disabled:opacity-40"
+        data-testid="egg-ai-run-cycle">
+        {canStart?"Начать цикл с ИИ":"Продолжить цикл ИИ до Желтка"}
+      </button>}
+      {aiBusy&&<button type="button" onClick={()=>{stopAi.current=true;setAiMessage("Останавливаем после текущего шага...")}}
+        className="rounded-full border border-foreground/35 px-4 py-2 text-xs"
+        data-testid="egg-ai-stop-cycle">Остановить после текущего шага</button>}
+      {aiMessage&&<p role="status" data-testid="egg-ai-flow-status"
+        className="text-xs leading-relaxed text-foreground/65">{aiMessage}
+        {aiBusy?" · шагов сохранено: "+aiProgress:""}</p>}
     </div>}
     {canDecide&&<div className="mt-4 space-y-3 border-t border-foreground/10 pt-4">
       <h4 className="text-sm font-medium">Решение Автора · после синтеза</h4>
@@ -220,7 +312,7 @@ export default function EggFlowCyclePanel({
         className="block w-full rounded border border-foreground/20 bg-background p-3 text-xs"
         aria-label="Итоговые замечания Автора"
         placeholder="Замечание к итоговому синтезу или основание принятия"/>
-      <button type="button" disabled={busy||!remark.trim()||(outcome==="revise"&&!targets.length)}
+      <button type="button" disabled={busy||aiBusy||!remark.trim()||(outcome==="revise"&&!targets.length)}
         onClick={()=>void send("decide_flow_cycle")}
         className="rounded-full border border-foreground/45 px-4 py-2 text-xs disabled:opacity-40"
         data-testid="decide-flow-cycle">
