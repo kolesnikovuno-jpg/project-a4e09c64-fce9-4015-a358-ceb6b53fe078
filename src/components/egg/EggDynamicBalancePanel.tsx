@@ -81,8 +81,16 @@ export default function EggDynamicBalancePanel({project,revision,authorControls=
         <p>Источники: {item.sourceRefs.join(", ")} · {item.source==="semantic_review"
           ?"интерпретация ИИ":"текстовые признаки существующих материалов"}</p>
         <p>Проверка: {item.verification}</p>
-        <p>Предлагаемый маршрут: {item.suggestedTargets.map(s=>names[s]).join(" → ")}</p>
-        {tension&&<p>Приоритет: {priorities[tension.severity]}</p>}
+        <p>Предлагаемые сферы следующей итерации: {item.suggestedTargets.map(s=>names[s]).join(", ")}</p>
+        <p>Критичность: {priorities[tension?.severity??"unassessed"]}</p>
+        {!!item.resolutionOptions?.length&&<details className="mt-1">
+          <summary className="cursor-pointer">Возможные подходы ({item.resolutionOptions.length})</summary>
+          <ul className="mt-1 list-disc space-y-1 pl-4">
+            {item.resolutionOptions.map((option,i)=><li key={i}>{option}</li>)}
+          </ul>
+        </details>}
+        {tension?.status==="tracked"&&independent.length>0&&
+          <p>Есть новые основания для авторского рассмотрения: {independent.map(s=>s.id).join(", ")}</p>}
         <p className="text-[10px]">Сохранение ДНК не подтверждено автоматически.</p>
       </div>
       {tension&&<details className="rounded border border-foreground/10 p-2"
