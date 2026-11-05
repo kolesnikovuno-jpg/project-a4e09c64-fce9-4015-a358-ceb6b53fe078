@@ -168,7 +168,7 @@ describe("EGG / iteration Change Map / dynamic balance stage 2",()=>{
     });
     const text=new TextDecoder().decode(report.files.find(f=>f.path==="docs/06-flow-cycles.md")!.bytes);
     expect(text).toContain("Карта изменений");
-    expect(text).toContain("Автор рассмотрел").toBe(false);
+    expect(text).not.toContain("Автор рассмотрел");
     expect(text).toContain("Форма стала ближе");
     expect(text).toContain("finding-10");
     expect(text).toContain("Источник сравнения");
