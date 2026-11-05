@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft } from "lucide-react";
 import EggYolkViewer from "./EggYolkViewer";
 import EggDocumentationPanel from "./EggDocumentationPanel";
+import EggFlowCyclePanel from "./EggFlowCyclePanel";
 import type { VisualDraft } from "../../lib/eggDocumentation";
 import { EGG_SPHERES, type SphereId, type EggProject } from "../../lib/eggEngine";
 
@@ -228,7 +229,8 @@ export default function EggYolkExperience(){
           </aside>
         </div>
 
-        <div className="mx-auto mt-7 max-w-[1040px]">
+        <div className="mx-auto mt-7 max-w-[1040px] space-y-5">
+          {project&&<EggFlowCyclePanel project={project} revision={revision}/>}
           <EggDocumentationPanel project={project} revision={revision} origin="yolk"
             visual={spatialStudy} externalPreviewOpen={Boolean(local3d)}/>
         </div>
