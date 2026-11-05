@@ -21,6 +21,18 @@ export default function EggConnect() {
   const [refreshProjects, setRefreshProjects] = useState(0);
   const [memberships, setMemberships] = useState<Array<{project_id:string;role:string;spheres:string[]}>>([]);
   const [inviteFeedback, setInviteFeedback] = useState("");
+  const [mcpHealth, setMcpHealth] = useState<"checking"|"ready"|"outdated"|"unavailable">("checking");
+  async function checkMcpHealth(){
+    setMcpHealth("checking");
+    try{
+      const response=await fetch("/api/mcp-health",{cache:"no-store"});
+      const payload=await response.json() as {ok?:boolean;toolNames?:unknown};
+      if(!response.ok || payload.ok!==true){setMcpHealth("unavailable");return;}
+      setMcpHealth(Array.isArray(payload.toolNames) &&
+        payload.toolNames.includes("egg_get_onboarding_protocol") ? "ready" : "outdated");
+    }catch{setMcpHealth("unavailable");}
+  }
+  useEffect(()=>{void checkMcpHealth();},[]);
   useEffect(() => {
     if (!client || !user) { setProjects(null); return; }
     let active = true;
@@ -166,6 +178,28 @@ export default function EggConnect() {
         <button className="mt-3 rounded border border-border px-4 py-2" onClick={() => {
           navigator.clipboard.writeText(EGG_MCP_URL).then(() => setMessage("Адрес MCP скопирован.")).catch(() => setMessage("Не удалось скопировать адрес."));
         }}>Скопировать адрес подключения</button>
+        <div className="mt-5 rounded-xl border border-border p-4" data-testid="egg-mcp-server-health">
+          <h3 className="text-sm font-medium">Проверка EGG · обновление инструментов</h3>
+          <p className="mt-2 text-sm" role="status" data-testid="egg-mcp-server-status">
+            {mcpHealth==="checking" ? "Проверяем инструменты сервера EGG…" :
+              mcpHealth==="ready" ? "Сервер EGG поддерживает новый протокол знакомства ИИ." :
+              mcpHealth==="outdated" ? "Сервер EGG доступен, но новый инструмент пока не объявлен." :
+              "Не удалось подтвердить готовность сервера EGG. Попробуйте повторить проверку."}
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+            Это проверка <strong>сервера EGG</strong>, а не подключений в ChatGPT. Если ваш ИИ
+            по-прежнему видит старый набор инструментов, откройте настройки его плагина EGG,
+            выберите «Обновить / Refresh» и начните новый чат. Если обновления нет,
+            создайте новое тестовое подключение, сохранив старое до проверки.
+            Облако при этом переподключать не нужно.
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <button type="button" onClick={()=>void checkMcpHealth()}
+              className="rounded border border-border px-3 py-2 text-xs">Повторить проверку</button>
+            <a href="https://chatgpt.com/plugins" target="_blank" rel="noopener noreferrer"
+              className="text-xs underline underline-offset-4">Открыть настройки плагинов ChatGPT</a>
+          </div>
+        </div>
         <div className="mt-5 border-t border-border pt-4" data-testid="egg-ai-first-contact">
           <h3 className="text-sm font-medium">Первый контакт · сигнал для вашего ИИ</h3>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
