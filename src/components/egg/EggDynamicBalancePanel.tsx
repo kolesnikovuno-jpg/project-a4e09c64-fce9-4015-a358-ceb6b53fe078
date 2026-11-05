@@ -2,7 +2,8 @@ import {useState} from "react";
 import {createClient} from "@supabase/supabase-js";
 import type {EggProject,SphereId} from "../../lib/eggEngine";
 import {
-  buildEggBalanceOverview,type EggBalanceCandidate,type EggBalanceSeverity,
+  buildEggBalanceOverview,eligibleEggBalanceVerificationSources,
+  type EggBalanceCandidate,type EggBalanceSeverity,
   type EggBalanceTension,
 } from "../../lib/eggDynamicBalance";
 
@@ -35,13 +36,7 @@ export default function EggDynamicBalancePanel({project,revision,authorControls=
   const [verificationRef,setVerificationRef]=useState("");
   const [showClosed,setShowClosed]=useState(false);
 
-  const allSources=[
-    ...project.tasks.flatMap(t=>t.findings.map(f=>({id:f.id,label:"Исторический вывод · "+t.sphere}))),
-    ...(project.flowCycles??[]).flatMap(c=>[...c.first,...c.second].flatMap(
-      v=>v.result?[{id:v.result.id,label:"Цикл "+c.iteration+" · "+names[v.sphere]}]:[])),
-    ...(project.artifacts??[]).filter(f=>f.status==="author_confirmed")
-      .map(f=>({id:f.id,label:"Зарегистрированный файл · "+f.title})),
-  ];
+  const lastCycle=project.flowCycles?.slice(-1)[0];
 
   async function mutate(command:Record<string,unknown>){
     if(saving||!authorControls||revision===null)return;
@@ -73,7 +68,7 @@ export default function EggDynamicBalancePanel({project,revision,authorControls=
   function renderCard(item:EggBalanceCandidate,tension?:EggBalanceTension){
     const name=tension?.status?"Журнал · "+labels[tension.status]:
       "Предварительная гипотеза · не сохранена";
-    const independent=allSources.filter(s=>!item.sourceRefs.includes(s.id));
+    const independent=tension?eligibleEggBalanceVerificationSources(project,tension):[];
     return <article key={item.key} className="rounded-lg border border-foreground/15 p-3 space-y-2"
       data-testid={"egg-balance-"+item.key}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
@@ -113,7 +108,7 @@ export default function EggDynamicBalancePanel({project,revision,authorControls=
               data-testid={"egg-balance-author-"+item.key}>
               {editing===tension.id?"Скрыть решение":"Решение Автора"}
             </button>
-            {onSuggestRoute&&project.flowCycles?.at(-1)?.status==="awaiting_author"&&
+            {onSuggestRoute&&lastCycle?.status==="awaiting_author"&&
               item.suggestedTargets.length>0&&<button type="button"
                 onClick={()=>onSuggestRoute(item.suggestedTargets)}
                 className="rounded border border-foreground/20 px-2 py-1 text-[11px]"
@@ -135,7 +130,7 @@ export default function EggDynamicBalancePanel({project,revision,authorControls=
                 placeholder="Почему нужна проверка, отклонение или закрытие?" maxLength={2000}/>
             </label>
             {tension.status==="tracked"&&<label className="block text-[11px]">
-              Новый источник для закрытия (должен отличаться от исходных)
+              Результат проверки (новое наблюдение или подтверждённый файл)
               <select className="mt-1 w-full rounded border border-foreground/20 bg-background p-2"
                 value={verificationRef} onChange={e=>setVerificationRef(e.target.value)}>
                 <option value="">Не выбран — закрытие недоступно</option>
