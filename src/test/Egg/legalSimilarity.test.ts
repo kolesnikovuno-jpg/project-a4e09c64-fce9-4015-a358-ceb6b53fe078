@@ -50,7 +50,7 @@ describe("EGG Legal prior-art and form overlap screening",()=>{
   expect(legal.legalSimilarity?.searchStatus).toBe("not_started_by_egg");
   expect(legal.legalSimilarity?.designResultId).toBeNull();
   expect(legal.legalSimilarity?.sourceCatalog).toHaveLength(3);
-  expect(buildEggSphereIntelligencePrompt(p,"legal").instructions).toContain("prior-art");
+  expect(buildEggSphereIntelligencePrompt(p,"legal").instructions).toContain("registered industrial designs");
  });
  it("keeps this-cycle new Design invisible to parallel Legal, flags missing screening in Yolk",()=>{
   let p=startEggFlowCycle(base(),{actor:"author",at});
