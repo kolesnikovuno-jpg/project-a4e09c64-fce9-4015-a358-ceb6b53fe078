@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import EggNewProject from "../components/egg/EggNewProject";
 import EggProjectActions from "../components/egg/EggProjectActions";
+import { getEggAiFirstContactPrompt } from "../lib/eggAiOnboarding";
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 
 const EGG_MCP_URL = "https://egg.kolesnikov.studio/api/mcp";
+const AI_FIRST_CONTACT_PROMPT = getEggAiFirstContactPrompt();
 
 export default function EggConnect() {
   const [client, setClient] = useState<SupabaseClient | null>(null);
@@ -158,13 +160,40 @@ export default function EggConnect() {
         {!user && window.location.hash.startsWith("#egg-invite=") && <p className="mt-3 text-sm">Войдите с почтой, на которую вас пригласили. После входа приглашение будет принято автоматически.</p>}
       </section>
       <section className="mb-5 rounded-xl border border-border p-6">
-        <h2 className="mb-3 text-xl font-medium">Подключение ChatGPT · настройка</h2>
-        <p className="mb-3 text-sm text-muted-foreground">Откройте настройки приложений ChatGPT и добавьте EGG как доступный MCP-коннектор, если такая возможность есть в вашем аккаунте. При запросе разрешения войдите в EGG и подтвердите доступ.</p>
+        <h2 className="mb-3 text-xl font-medium">Подключение личного ИИ</h2>
+        <p className="mb-3 text-sm text-muted-foreground">Подключите EGG через MCP в своём ИИ-клиенте, если он поддерживает пользовательские MCP-подключения. Например, в настройках приложений ChatGPT. При запросе авторизации войдите в EGG и подтвердите доступ.</p>
         <div className="break-all rounded-lg bg-muted p-3 font-mono text-xs">{EGG_MCP_URL}</div>
         <button className="mt-3 rounded border border-border px-4 py-2" onClick={() => {
           navigator.clipboard.writeText(EGG_MCP_URL).then(() => setMessage("Адрес MCP скопирован.")).catch(() => setMessage("Не удалось скопировать адрес."));
         }}>Скопировать адрес подключения</button>
-        <p className="mt-3 text-sm text-muted-foreground">Автоматическая установка приложения в ChatGPT пока не поддерживается этим сайтом. Доступность пользовательских MCP-коннекторов зависит от настроек ChatGPT.</p>
+        <div className="mt-5 border-t border-border pt-4" data-testid="egg-ai-first-contact">
+          <h3 className="text-sm font-medium">Первый контакт · сигнал для вашего ИИ</h3>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            При подключении EGG сообщает ИИ о структуре движка и предлагает вызвать
+            <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">egg_get_onboarding_protocol</code>.
+            Затем ИИ должен проверить наличие облачного хранилища <strong>в своей собственной среде</strong>.
+            Если проверить доступ нельзя, он должен прямо об этом сказать и предложить настройку.
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            EGG не получает доступ к облаку ИИ и не знает его фактический статус. Проверка зависит
+            от возможностей и разрешений вашего ИИ-клиента. Для обсуждения идей облако необязательно;
+            для сохранения файлов и версий оно потребуется.
+          </p>
+          <button type="button" data-testid="egg-copy-ai-onboarding"
+            className="mt-3 rounded border border-border px-4 py-2 text-sm hover:border-foreground/40"
+            onClick={()=>{
+              navigator.clipboard.writeText(AI_FIRST_CONTACT_PROMPT)
+                .then(()=>setMessage("Инструкция для личного ИИ скопирована. Вставьте её в его чат при первом подключении."))
+                .catch(()=>setMessage("Не удалось скопировать. Откройте текст инструкции ниже и скопируйте его вручную."));
+            }}>Скопировать инструкцию для моего ИИ</button>
+          <details className="mt-3 text-sm">
+            <summary className="cursor-pointer text-muted-foreground">Показать инструкцию для ручного переноса</summary>
+            <textarea readOnly value={AI_FIRST_CONTACT_PROMPT} aria-label="Инструкция первого подключения для личного ИИ"
+              rows={11} onFocus={e=>e.target.select()}
+              className="mt-2 w-full resize-y rounded border border-border bg-background p-3 text-xs leading-relaxed"/>
+          </details>
+        </div>
+        <p className="mt-3 text-sm text-muted-foreground">EGG не устанавливает приложения в чужой ИИ автоматически. Доступность MCP-коннекторов определяется вашим ИИ-клиентом.</p>
       </section>
       {user && memberships.length>0 && <section className="mb-5 rounded-xl border border-border p-6">
         <h2 className="mb-3 text-xl font-medium">Проекты, куда меня пригласили</h2>
