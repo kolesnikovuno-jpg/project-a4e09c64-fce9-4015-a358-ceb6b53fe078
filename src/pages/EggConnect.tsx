@@ -137,9 +137,9 @@ export default function EggConnect() {
     setBusy(true);
     const { error } = await client.auth.signInWithOtp({
       email: email.trim(),
-      options: { emailRedirectTo: EGG_AUTH_CALLBACK },
+      options: { emailRedirectTo: isTechnicalOrigin ? window.location.origin + "/egg/connect" : EGG_AUTH_CALLBACK },
     });
-    setMessage(error ? (error.status === 429 || /rate limit|too many/i.test(error.message) ? "Превышен лимит отправки писем. Подождите перед повторной попыткой." : `Ошибка входа (${error.status ?? "неизвестно"}): ${error.message}`) : "Проверьте почту: ссылка для входа отправлена. Откройте её в Safari; вход завершится на egg.kolesnikov.studio.");
+    setMessage(error ? (error.status === 429 || /rate limit|too many/i.test(error.message) ? "Превышен лимит отправки писем. Подождите перед повторной попыткой." : `Ошибка входа (${error.status ?? "неизвестно"}): ${error.message}`) : isTechnicalOrigin ? "Письмо отправлено. Для входа в тестовую сборку Supabase должен разрешать её адрес в Auth Redirect URLs; иначе ссылка вернёт на основной сайт." : "Проверьте почту: ссылка для входа отправлена. Откройте её в Safari; вход завершится на egg.kolesnikov.studio.");
     setBusy(false);
   }
   async function signOut() {
@@ -157,7 +157,7 @@ export default function EggConnect() {
         <p className="font-medium">Вы открыли технический адрес EGG.</p>
         <p>Браузер хранит вход отдельно для каждого домена.
           Для постоянного доступа используйте основной адрес.
-          Повторная регистрация не нужна.</p>
+          Повторная регистрация не нужна. Тестовая сборка использует отдельный сеанс входа; её адрес должен быть разрешён в Supabase Auth Redirect URLs.</p>
         <a className="inline-block rounded border border-foreground/35 px-3 py-2 underline underline-offset-2"
           href={EGG_CANONICAL_ACCOUNT}>Открыть основной аккаунт EGG</a>
       </section>}
