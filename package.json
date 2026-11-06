@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "egg:verify": "vitest run src/test/Egg src/test/UnoEggFilePanel.test.tsx src/test/UnoEggScreenSmoke.test.tsx && tsc --noEmit --target ES2020 --module NodeNext --moduleResolution NodeNext --skipLibCheck api/egg.ts api/mcp.ts api/egg-flow-ai.ts src/server/eggStorageConfig.ts && vite build"
+    "egg:verify": "vitest run src/test/Egg src/test/UnoEggFilePanel.test.tsx src/test/UnoEggScreenSmoke.test.tsx && tsc --noEmit --target ES2020 --module NodeNext --moduleResolution NodeNext --skipLibCheck api/egg.ts api/mcp.ts api/egg-flow-ai.ts api/egg-idea-ai.ts src/server/eggStorageConfig.ts && vite build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
