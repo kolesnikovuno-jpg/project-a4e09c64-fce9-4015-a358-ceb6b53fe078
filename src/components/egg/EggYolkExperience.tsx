@@ -161,7 +161,10 @@ export default function EggYolkExperience(){
       if(error)throw Error("Не удалось сохранить сообщение");
       setIdeaBrief(authorDraft.trim());setIdeaTargets(["design","production"]);setIdeaRationale("");setIdeaConflict("");setIdeaClarification(false);setIdeaReady(true);
       setAuthorDraft("");setAuthorFeedback("Указание сохранено. Сфера Идея подготовила входное задание для проверки Автором; автоматический смысловой синтез пока не выполнялся.");
-    }catch(error){setAuthorFeedback(error instanceof Error?error.message:"Не удалось отправить сообщение");}
+    }catch(error){
+      setIdeaBrief(authorDraft.trim());setIdeaTargets(["design","production"]);setIdeaReady(true);
+      setAuthorFeedback("Сообщение не сохранено в общем канале: "+(error instanceof Error?error.message:"ошибка отправки")+". Задание подготовлено только в текущей вкладке. Скопируйте его для ChatGPT перед закрытием страницы.");
+    }
     finally{setAuthorSending(false);}
   }
   useEffect(()=>{
