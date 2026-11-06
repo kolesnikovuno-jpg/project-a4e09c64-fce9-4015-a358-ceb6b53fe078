@@ -1,6 +1,6 @@
 /**
  * Author-triggered, one-task-at-a-time AI pilot.
- * Requires an independent Egg Supabase instance and Vercel AI Gateway OIDC (or a scoped AI_GATEWAY_API_KEY).
+ * Requires an independent Egg Supabase instance and OPENAI_API_KEY server secret.
  * No browser-visible API keys, no agent authority to approve, no auto-loop.
  */
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -23,8 +23,8 @@ export default async function handler(req: Request, res: ServerResponse) {
   if (req.method !== "POST") return send(res, 405, { ok: false, error: "method_not_allowed" });
   // Permit same-origin Author UI calls; cross-origin browser requests remain blocked.\n  if (req.headers.origin) {\n    let sameOrigin = false;\n    try {\n      const origin = new URL(req.headers.origin);\n      sameOrigin = origin.protocol === "https:" &&\n        origin.host === String(req.headers["x-forwarded-host"] || req.headers.host || "");\n    } catch { /* invalid origin */ }\n    if (!sameOrigin) return send(res, 403, { ok: false, error: "cross_origin_forbidden" });\n  }
   const config = getEggStorageConfig(process.env);
-  const gatewayToken = process.env.AI_GATEWAY_API_KEY?.trim() || process.env.VERCEL_OIDC_TOKEN?.trim();
-  if (!config || !gatewayToken) return send(res, 503, { ok: false, error: "ai_worker_not_configured" });
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  if (!config || !apiKey) return send(res, 503, { ok: false, error: "ai_worker_not_configured" });
   const bearer = /^Bearer\s+(\S+)$/i.exec(String(req.headers.authorization ?? ""));
   if (!bearer || bearer[1].startsWith("egg_v1_"))
     return send(res, 401, { ok: false, error: "author_session_required" });
@@ -79,12 +79,12 @@ export default async function handler(req: Request, res: ServerResponse) {
     const timeout = setTimeout(() => controller.abort(), 25000);
     let generated: unknown;
     try {
-      const response = await fetch("https://ai-gateway.vercel.sh/v1/responses", {
+      const response = await fetch("https://api.openai.com/v1/responses", {
         method: "POST",
-        headers: { Authorization: "Bearer " + gatewayToken, "Content-Type": "application/json" },
+        headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
         signal: controller.signal,
         body: JSON.stringify({
-          model: process.env.EGG_AI_MODEL || "openai/gpt-4.1-mini",
+          model: process.env.EGG_AI_MODEL || "gpt-6-luna",
           instructions: prompt.instructions,
           input: prompt.input,
           max_output_tokens: 1200,
@@ -92,7 +92,7 @@ export default async function handler(req: Request, res: ServerResponse) {
           text: { format: { type: "json_object" } },
         }),
       });
-      if (!response.ok) return send(res, response.status === 401 || response.status === 403 ? 503 : 502, { ok: false, error: response.status === 401 || response.status === 403 ? "ai_gateway_auth_failed" : response.status === 402 ? "ai_gateway_credits_required" : response.status === 429 ? "ai_gateway_rate_limited" : "model_request_failed" });
+      if (!response.ok) return send(res, 502, { ok: false, error: "model_request_failed" });
       generated = await response.json();
     } finally { clearTimeout(timeout); }
     const result = generated as {
