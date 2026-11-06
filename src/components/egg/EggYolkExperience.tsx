@@ -102,26 +102,25 @@ export default function EggYolkExperience(){
   const [ideaTargets,setIdeaTargets]=useState<SphereId[]>([]);
   const [ideaReady,setIdeaReady]=useState(false);
   const [ideaBusy,setIdeaBusy]=useState(false);
-  const [ideaAnalyzing,setIdeaAnalyzing]=useState(false);
   const [ideaRationale,setIdeaRationale]=useState("");
   const [ideaConflict,setIdeaConflict]=useState("");
   const [ideaClarification,setIdeaClarification]=useState(false);
-  async function analyzeIdea(){
-    if(!project||!ideaBrief.trim()||ideaAnalyzing)return;
-    setIdeaAnalyzing(true);setAuthorFeedback("");
+  async function copyIdeaForChatGPT(){
+    if(!project||!ideaBrief.trim())return;
+    const instruction = [
+      "Работай через подключённый EGG v4.0, без отдельного AI API.",
+      "Прочитай состояние проекта "+project.id+" перед любым изменением.",
+      "Исходную ДНК не изменяй. Не утверждай решения за Автора.",
+      "Задание Автора: "+ideaBrief.trim(),
+      "Предложи обоснованный выбор сфер и следующий шаг; отдели факты от гипотез.",
+      "Записывай результаты в EGG только как предложения для проверки Автором."
+    ].join("\\n");
     try{
-      const cfg=await (await fetch("/api/egg-config",{cache:"no-store"})).json() as {supabaseUrl:string;publishableKey:string};
-      const client=createClient(cfg.supabaseUrl,cfg.publishableKey);
-      const {data}=await client.auth.getSession();
-      if(!data.session?.access_token)throw Error("Необходим вход в EGG");
-      const response=await fetch("/api/egg-idea-ai",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+data.session.access_token},body:JSON.stringify({projectId:project.id,instruction:ideaBrief})});
-      if(!response.ok)throw Error("Синтез Идеи недоступен. Можно уточнить задание вручную.");
-      const result=await response.json() as {proposal:{brief:string;rationale:string;activeSpheres:SphereId[];dnaConflict:string;needsAuthorClarification:boolean}};
-      setIdeaBrief(result.proposal.brief);setIdeaTargets(result.proposal.activeSpheres);
-      setIdeaRationale(result.proposal.rationale);setIdeaConflict(result.proposal.dnaConflict);
-      setIdeaClarification(result.proposal.needsAuthorClarification);
-    }catch(error){setAuthorFeedback(error instanceof Error?error.message:"Ошибка синтеза Идеи");}
-    finally{setIdeaAnalyzing(false);}
+      await navigator.clipboard.writeText(instruction);
+      setAuthorFeedback("Задание скопировано. Вставьте его в диалог ChatGPT с подключённым EGG v4.0. Передача на сайт автоматически не происходит.");
+    }catch{
+      setAuthorFeedback("Не удалось скопировать автоматически. Скопируйте задание вручную и отправьте в ChatGPT с EGG v4.0.");
+    }
   }
   async function sendIdeaToWork(){
     if(!project||revision===null||!ideaReady||!ideaBrief.trim()||!ideaTargets.length||ideaBusy)return;
@@ -138,7 +137,7 @@ export default function EggYolkExperience(){
       },body:JSON.stringify({command:"start_flow_cycle",projectId:project.id,
         expectedRevision:revision,brief:ideaBrief.trim().slice(0,3000),activeSpheres:ideaTargets})});
       if(!response.ok)throw Error(response.status===409?"Проект изменился. Обновите состояние.":"Нельзя запустить цикл: проверьте текущий статус проекта.");
-      setIdeaReady(false);setIdeaBrief("");setAuthorFeedback("Задание передано в цикл EGG. Выбранные сферы работают по существующим правилам маршрутизации; ИИ запускается отдельно.");
+      setIdeaReady(false);setIdeaBrief("");setAuthorFeedback("Задание передано в цикл EGG. Выбранные сферы работают по существующим правилам маршрутизации; Результаты ChatGPT поступают через подключённый EGG v4.0, не через сайт.");
       setRefresh(value=>value+1);
     }catch(error){setAuthorFeedback(error instanceof Error?error.message:"Не удалось начать цикл");}
     finally{setIdeaBusy(false);}
@@ -367,13 +366,13 @@ export default function EggYolkExperience(){
           </form>
           {ideaReady&&<div className="mt-3 rounded-xl border border-foreground/20 p-3" data-testid="yolk-idea-gate">
             <p className="text-xs font-medium">Идея · входной синтез</p>
-            <p className="mt-1 text-[11px] text-foreground/60">Исходная ДНК сохраняется. Уточните формулировку задания перед передачей в работу. Вы можете выполнить синтез с ИИ или сформировать задание вручную; решение остаётся за Автором.</p>
+            <p className="mt-1 text-[11px] text-foreground/60">Исходная ДНК сохраняется. Уточните формулировку задания перед передачей в работу. Для анализа через ChatGPT скопируйте задание и отправьте его в диалог с подключённым EGG v4.0. Автоматический вызов отдельного ИИ отключён; решение остаётся за Автором.</p>
             <textarea value={ideaBrief} onChange={event=>{setIdeaBrief(event.target.value);setIdeaClarification(false);setIdeaRationale("");setIdeaConflict("");}} maxLength={3000} rows={3} aria-label="Задание сферы Идея" className="mt-2 w-full rounded-lg border border-foreground/20 bg-background p-2 text-sm"/>
-            <button type="button" onClick={()=>void analyzeIdea()} disabled={ideaAnalyzing||!ideaBrief.trim()} className="mt-2 rounded-lg border border-foreground/30 px-3 py-2 text-xs disabled:opacity-40">{ideaAnalyzing?"Идея анализирует…":"Синтезировать с ИИ"}</button>
+            <button type="button" onClick={()=>void copyIdeaForChatGPT()} disabled={!ideaBrief.trim()} className="mt-2 rounded-lg border border-foreground/30 px-3 py-2 text-xs disabled:opacity-40">Скопировать задание для ChatGPT</button>
             {ideaRationale&&<p className="mt-2 text-xs">Основание выбора: {ideaRationale}</p>}
             {ideaConflict&&<p className="mt-2 text-xs">Конфликт с ДНК: {ideaConflict}</p>}
             {ideaClarification&&<p className="mt-2 text-xs font-medium">Требуется уточнение Автора перед запуском.</p>}
-            <p className="mt-3 text-[11px] text-foreground/60">Выберите сферы для работы. До запуска ИИ Дизайн и Производство отмечены как исходные варианты, после анализа отмеченные сферы — предложение ИИ, которое можно изменить.</p>
+            <p className="mt-3 text-[11px] text-foreground/60">Выберите сферы для работы. Дизайн и Производство отмечены как исходные варианты. Измените выбор вручную или после анализа в ChatGPT.</p>
             <div className="mt-2 flex flex-wrap gap-2">{YOLK_SPHERES.map(s=><label key={s.id} className="flex items-center gap-1.5 rounded-full border border-foreground/20 px-2.5 py-1.5 text-[11px]"><input type="checkbox" checked={ideaTargets.includes(s.id)} onChange={e=>setIdeaTargets(prev=>e.target.checked?[...prev,s.id]:prev.filter(v=>v!==s.id))}/>{s.name}</label>)}</div>
             <div className="mt-2 flex flex-wrap gap-2">
               <button type="button" onClick={()=>void sendIdeaToWork()} disabled={!ideaBrief.trim()||!ideaTargets.length||ideaBusy||revision===null||ideaClarification} className="rounded-lg border border-foreground/40 px-3 py-2 text-xs disabled:opacity-40">{ideaBusy?"Передача…":"Подтвердить → в работу"}</button>
@@ -381,7 +380,7 @@ export default function EggYolkExperience(){
             </div>
           </div>}
           {authorFeedback&&<p className="mt-2 text-xs text-foreground/65" role="status">{authorFeedback}</p>}
-          <p className="mt-2 text-[11px] leading-relaxed text-foreground/50">Указание поступает в сферу Идея для проверки Автором, затем в цикл EGG. ИИ может предложить синтез и выбор сфер; окончательное подтверждение остаётся за Автором.</p>
+          <p className="mt-2 text-[11px] leading-relaxed text-foreground/50">Указание поступает в сферу Идея для проверки Автором, затем в цикл EGG. ChatGPT анализирует проект через EGG v4.0 в отдельном диалоге; сайт не вызывает ИИ самостоятельно. Окончательное подтверждение остаётся за Автором.</p>
         </section>
         <div className="mx-auto mt-7 max-w-[1040px] space-y-5">
           {project&&timeline&&<div className="space-y-2 rounded-lg border border-foreground/15 p-3 text-[11px] leading-relaxed text-foreground/65"
