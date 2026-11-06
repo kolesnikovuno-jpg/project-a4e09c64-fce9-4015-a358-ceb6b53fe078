@@ -99,10 +99,11 @@ export default function EggYolkExperience(){
   const [authorFeedback,setAuthorFeedback]=useState("");
   const [spherePopup,setSpherePopup]=useState(false);
   const [ideaBrief,setIdeaBrief]=useState("");
+  const [ideaTargets,setIdeaTargets]=useState<SphereId[]>([]);
   const [ideaReady,setIdeaReady]=useState(false);
   const [ideaBusy,setIdeaBusy]=useState(false);
   async function sendIdeaToWork(){
-    if(!project||revision===null||!ideaReady||!ideaBrief.trim()||ideaBusy)return;
+    if(!project||revision===null||!ideaReady||!ideaBrief.trim()||!ideaTargets.length||ideaBusy)return;
     setIdeaBusy(true);setAuthorFeedback("");
     try{
       const cfgResponse=await fetch("/api/egg-config",{cache:"no-store"});
@@ -114,9 +115,9 @@ export default function EggYolkExperience(){
       const response=await fetch("/api/egg",{method:"POST",headers:{
         "Content-Type":"application/json",Authorization:"Bearer "+data.session.access_token,
       },body:JSON.stringify({command:"start_flow_cycle",projectId:project.id,
-        expectedRevision:revision,brief:ideaBrief.trim().slice(0,3000)})});
+        expectedRevision:revision,brief:ideaBrief.trim().slice(0,3000),activeSpheres:ideaTargets})});
       if(!response.ok)throw Error(response.status===409?"Проект изменился. Обновите состояние.":"Нельзя запустить цикл: проверьте текущий статус проекта.");
-      setIdeaReady(false);setIdeaBrief("");setAuthorFeedback("Задание передано в цикл EGG. Сферы работают по существующим правилам маршрутизации; ИИ запускается отдельно.");
+      setIdeaReady(false);setIdeaBrief("");setAuthorFeedback("Задание передано в цикл EGG. Выбранные сферы работают по существующим правилам маршрутизации; ИИ запускается отдельно.");
       setRefresh(value=>value+1);
     }catch(error){setAuthorFeedback(error instanceof Error?error.message:"Не удалось начать цикл");}
     finally{setIdeaBusy(false);}
@@ -138,7 +139,7 @@ export default function EggYolkExperience(){
         channel_id:channel.id,sender_id:user.id,body:authorDraft.trim(),
       });
       if(error)throw Error("Не удалось сохранить сообщение");
-      setIdeaBrief(authorDraft.trim());setIdeaReady(true);
+      setIdeaBrief(authorDraft.trim());setIdeaTargets(["design","production"]);setIdeaReady(true);
       setAuthorDraft("");setAuthorFeedback("Указание сохранено. Сфера Идея подготовила входное задание для проверки Автором; автоматический смысловой синтез пока не выполнялся.");
     }catch(error){setAuthorFeedback(error instanceof Error?error.message:"Не удалось отправить сообщение");}
     finally{setAuthorSending(false);}
@@ -345,8 +346,10 @@ export default function EggYolkExperience(){
             <p className="text-xs font-medium">Идея · входной синтез</p>
             <p className="mt-1 text-[11px] text-foreground/60">Исходная ДНК сохраняется. Уточните формулировку задания перед передачей в работу. Это авторская проверка, не автоматический анализ ИИ.</p>
             <textarea value={ideaBrief} onChange={event=>setIdeaBrief(event.target.value)} maxLength={3000} rows={3} aria-label="Задание сферы Идея" className="mt-2 w-full rounded-lg border border-foreground/20 bg-background p-2 text-sm"/>
+            <p className="mt-3 text-[11px] text-foreground/60">Выберите сферы для работы. Дизайн и Производство предложены как начальные, но это не результат анализа ИИ.</p>
+            <div className="mt-2 flex flex-wrap gap-2">{YOLK_SPHERES.map(s=><label key={s.id} className="flex items-center gap-1.5 rounded-full border border-foreground/20 px-2.5 py-1.5 text-[11px]"><input type="checkbox" checked={ideaTargets.includes(s.id)} onChange={e=>setIdeaTargets(prev=>e.target.checked?[...prev,s.id]:prev.filter(v=>v!==s.id))}/>{s.name}</label>)}</div>
             <div className="mt-2 flex flex-wrap gap-2">
-              <button type="button" onClick={()=>void sendIdeaToWork()} disabled={!ideaBrief.trim()||ideaBusy||revision===null} className="rounded-lg border border-foreground/40 px-3 py-2 text-xs disabled:opacity-40">{ideaBusy?"Передача…":"Подтвердить → в работу"}</button>
+              <button type="button" onClick={()=>void sendIdeaToWork()} disabled={!ideaBrief.trim()||!ideaTargets.length||ideaBusy||revision===null} className="rounded-lg border border-foreground/40 px-3 py-2 text-xs disabled:opacity-40">{ideaBusy?"Передача…":"Подтвердить → в работу"}</button>
               <button type="button" onClick={()=>setIdeaReady(false)} className="rounded-lg border border-foreground/20 px-3 py-2 text-xs">Отложить</button>
             </div>
           </div>}
