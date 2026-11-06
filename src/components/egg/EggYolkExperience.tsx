@@ -94,6 +94,31 @@ export default function EggYolkExperience(){
   },[]);
   const [showDna,setShowDna]=useState(false);
   const [refresh,setRefresh]=useState(0);
+  const [authorDraft,setAuthorDraft]=useState("");
+  const [authorSending,setAuthorSending]=useState(false);
+  const [authorFeedback,setAuthorFeedback]=useState("");
+  const [spherePopup,setSpherePopup]=useState(false);
+  async function submitAuthorMessage(){
+    if(!project||!authorDraft.trim()||authorSending)return;
+    setAuthorSending(true);setAuthorFeedback("");
+    try{
+      const cfgResponse=await fetch("/api/egg-config",{cache:"no-store"});
+      if(!cfgResponse.ok)throw Error("Сервер EGG недоступен");
+      const cfg=await cfgResponse.json() as {supabaseUrl:string;publishableKey:string};
+      const client=createClient(cfg.supabaseUrl,cfg.publishableKey);
+      const {data:{user},error:authError}=await client.auth.getUser();
+      if(authError||!user)throw Error("Войдите в аккаунт EGG");
+      const {data:channel,error:channelError}=await client.from("egg_chat_channels")
+        .select("id").eq("project_id",project.id).eq("kind","general").limit(1).maybeSingle();
+      if(channelError||!channel)throw Error("Общий канал проекта недоступен");
+      const {error}=await client.from("egg_chat_messages").insert({
+        channel_id:channel.id,sender_id:user.id,body:authorDraft.trim(),
+      });
+      if(error)throw Error("Не удалось сохранить сообщение");
+      setAuthorDraft("");setAuthorFeedback("Сообщение сохранено в общем чате проекта. Для запуска цикла используйте управление ниже.");
+    }catch(error){setAuthorFeedback(error instanceof Error?error.message:"Не удалось отправить сообщение");}
+    finally{setAuthorSending(false);}
+  }
   useEffect(()=>{
     if(!id){setProject(null);setRevision(null);setLoading(false);return;}
     let active=true;
@@ -170,6 +195,7 @@ export default function EggYolkExperience(){
   const selectSphere=(sphere:SphereId)=>{
     setSelected(current=>current===sphere?null:sphere);
     setExpanded(false);
+    setSpherePopup(true);
     setShowDna(false);
   };
   return (
@@ -278,6 +304,22 @@ export default function EggYolkExperience(){
           </aside>
         </div>
 
+        {selectedMeta&&spherePopup&&<div className="fixed inset-x-4 bottom-4 z-40 mx-auto max-w-[430px] rounded-2xl border border-foreground/20 bg-background/95 p-4 shadow-xl backdrop-blur-md sm:bottom-8" role="dialog" aria-label={"Состояние сферы "+selectedMeta.name} data-testid="yolk-sphere-popup">
+          <div className="flex items-center justify-between gap-3"><h2 className="text-base font-medium">{selectedMeta.name}</h2><button type="button" onClick={()=>setSpherePopup(false)} aria-label="Закрыть сведения о сфере" className="rounded-full border border-foreground/20 px-3 py-1">×</button></div>
+          <p className="mt-2 text-xs text-foreground/60">{sphereVisibleStatus}</p>
+          <p className="mt-2 text-sm leading-relaxed">{rightCopy}</p>
+          <p className="mt-2 text-xs text-foreground/55">Влияние на форму: {selectedMeta.tag}. Конкретные изменения требуют подтверждённой связи с моделью.</p>
+          <button type="button" onClick={()=>{setSpherePopup(false);setExpanded(true)}} className="mt-3 border-b border-foreground/35 text-xs">Вся история и параметры →</button>
+        </div>}
+        <section className="mx-auto mt-5 max-w-[700px] rounded-2xl border border-foreground/15 bg-background/90 p-3 sm:p-4" aria-label="Диалог Автора" data-testid="yolk-author-dialog">
+          <div className="mb-2 flex items-center justify-between gap-2"><h2 className="text-xs font-medium">Автор → EGG</h2><span className="text-[10px] text-foreground/50">Направление развития формы</span></div>
+          <form onSubmit={event=>{event.preventDefault();void submitAuthorMessage()}} className="flex items-end gap-2">
+            <textarea value={authorDraft} onChange={event=>setAuthorDraft(event.target.value)} rows={2} maxLength={4000} disabled={!project||authorSending} placeholder={project?"Что изменить, исследовать или сохранить в форме?":"Откройте проект, чтобы отправить сообщение"} aria-label="Указание Автора" className="min-h-[64px] min-w-0 flex-1 resize-y rounded-xl border border-foreground/20 bg-background px-3 py-2 text-sm outline-none focus:border-foreground/50"/>
+            <button type="submit" disabled={!project||!authorDraft.trim()||authorSending} className="rounded-xl border border-foreground/35 px-4 py-3 text-xs disabled:opacity-40">{authorSending?"Отправка…":"Отправить"}</button>
+          </form>
+          {authorFeedback&&<p className="mt-2 text-xs text-foreground/65" role="status">{authorFeedback}</p>}
+          <p className="mt-2 text-[11px] leading-relaxed text-foreground/50">Сообщение сохраняется в проекте, но само по себе не запускает ИИ. Цикл и авторские решения управляются отдельно; автоматический выбор сфер ещё не подключён.</p>
+        </section>
         <div className="mx-auto mt-7 max-w-[1040px] space-y-5">
           {project&&timeline&&<div className="space-y-2 rounded-lg border border-foreground/15 p-3 text-[11px] leading-relaxed text-foreground/65"
             data-testid="yolk-visual-source">
@@ -305,7 +347,7 @@ export default function EggYolkExperience(){
               </div>
             </div>
           </div>}
-          {project&&<EggFlowCyclePanel project={project} revision={revision}/>}
+          {project&&<EggFlowCyclePanel project={project} revision={revision} authorControls onSaved={()=>setRefresh(v=>v+1)}/>}
           <EggDocumentationPanel project={project} revision={revision} origin="yolk"
             visual={spatialStudy} externalPreviewOpen={Boolean(local3d)}/>
         </div>
