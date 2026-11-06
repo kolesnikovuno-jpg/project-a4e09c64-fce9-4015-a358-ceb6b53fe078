@@ -223,7 +223,7 @@ function moveTransits(p:EggFlowProject,at:string):EggFlowProject{
 }
 /** Author initiates a first/full cycle on the current level. */
 export function startEggFlowCycle(p:EggFlowProject,input:{
-  actor:EggActor;at:string;brief?:string;
+  actor:EggActor;at:string;brief?:string;activeSpheres?:SphereId[];
 }):EggFlowProject{
   assertAuthor(input.actor);date(input.at);
   if(!p.seed.text.trim())throw new EggEngineError("Concept DNA / Author seed is required");
@@ -234,9 +234,11 @@ export function startEggFlowCycle(p:EggFlowProject,input:{
   if((p.flowCycles??[]).length&&current(p).level===5&&current(p).status==="accepted")
     throw new EggEngineError("Final level already accepted");
   const at=input.at,brief=input.brief?.trim()??"";
-  const cycle=makeCycle(p,at,brief,[...EGG_FIXED_ROUTE]);
+  const active=input.activeSpheres?uniqueSpheres(input.activeSpheres):[...EGG_FIXED_ROUTE];
+  if(!active.length)throw new EggEngineError("At least one sphere must be active");
+  const cycle=makeCycle(p,at,brief,active);
   let next:EggFlowProject={...p,flowCycles:[...(p.flowCycles??[]),cycle]};
-  next=event(next,"cycle_started","author",at,cycle.id+" / full");
+  next=event(next,"cycle_started","author",at,cycle.id+" / "+active.join(","));
   return moveTransits(next,at);
 }
 /** AI submits actual sphere output. Both branches move in their own order. */
