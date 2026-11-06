@@ -232,6 +232,30 @@ export default async function handler(req: Request, res: Response) {
     }
 
     const raw = await readJson(req);
+    // Repair the Author's general channel through the authenticated server,
+    // without exposing service credentials or changing the Egg project revision.
+    if (raw && typeof raw === "object" && !Array.isArray(raw) &&
+        (raw as Record<string, unknown>).command === "ensure_author_channel") {
+      const projectId = (raw as Record<string, unknown>).projectId;
+      if (typeof projectId !== "string" || !uuid(projectId))
+        throw new RequestFailure(400, "invalid_project_id");
+      if (identity.kind !== "author") throw new RequestFailure(403, "author_required");
+      const project = await checkedProject(db, projectId, identity, "author");
+      const channels = db.from("egg_chat_channels" as never);
+      const { data: existing, error: lookupError } = await channels
+        .select("id").eq("project_id", project.id).eq("kind", "general").limit(1).maybeSingle();
+      if (lookupError) throw new RequestFailure(503, "channel_lookup_failed");
+      if (existing) {
+        respond(res, 200, { ok: true, channelId: (existing as { id: string }).id });
+        return;
+      }
+      const { data: created, error: createError } = await db.from("egg_chat_channels" as never)
+        .insert({ project_id: project.id, kind: "general", created_by: identity.ownerId } as never)
+        .select("id").single();
+      if (createError || !created) throw new RequestFailure(503, "channel_creation_failed");
+      respond(res, 201, { ok: true, channelId: (created as { id: string }).id });
+      return;
+    }
     const parsed = eggCommandSchema.safeParse(raw);
     if (!parsed.success) throw new RequestFailure(400, "invalid_command");
     const input = parsed.data;
