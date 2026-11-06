@@ -253,10 +253,12 @@ export default function EggYolkExperience(){
             <h1 className="text-[26px] font-extralight leading-none tracking-[-0.04em] text-foreground/85">EGG <span className="text-foreground/30">/</span> YOLK</h1>
           </div>
           <div className="flex flex-wrap items-center gap-4 text-[11px] font-light text-foreground/50">
-            <span>{project?"Проект EGG · "+(project.title??"без названия"):"Демонстрация · кресло"}</span>
+            <span>{project?"Проект EGG · "+(project.title??"без названия"):id?"Проект не загружен":"Демонстрация · кресло"}</span>
             {project&&<button type="button" onClick={()=>setRefresh(v=>v+1)} className="border-b border-foreground/25 pb-1 hover:text-foreground">Обновить</button>}
           </div>
         </header>
+        {id&&!project&&!loading&&<div role="alert" className="mt-5 rounded-xl border border-amber-600/35 bg-amber-500/5 p-4 text-sm text-foreground/85"><p className="font-medium">Данные проекта не загружены</p><p className="mt-2">{notice||"Не удалось получить состояние проекта."} Демонстрационная форма ниже не является состоянием вашего проекта.</p><div className="mt-3 flex flex-wrap gap-4"><Link to="/egg/connect" className="underline underline-offset-4">Войти в EGG на этом адресе</Link><button type="button" onClick={()=>setRefresh(v=>v+1)} className="underline underline-offset-4">Повторить загрузку</button></div></div>}
+
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-foreground/10 pt-4 text-[10px] font-light uppercase tracking-[0.16em] text-foreground/40">
           <span>Формирующийся объект / 08 сфер</span>
           <span>Уровень {timeline?.level??project?.level??"—"} · Итерация {timeline?.iteration??project?.iteration??"—"}{revision!==null?" · Rev. "+revision:""}</span>
