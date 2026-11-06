@@ -4,14 +4,14 @@ import {createClient} from "@supabase/supabase-js";
 import {z} from "zod";
 import {getEggStorageConfig} from "../src/server/eggStorageConfig.js";
 import {providerFromEnv} from "./egg-flow-ai.js";
-import {EGG_SPHERES} from "../src/lib/eggEngine.js";
+
 export const config={maxDuration:60};
 type Request=IncomingMessage&{body?:unknown};
 const inputSchema=z.object({projectId:z.string().uuid(),instruction:z.string().trim().min(3).max(3000)}).strict();
 const resultSchema=z.object({
   brief:z.string().trim().min(5).max(3000),
   rationale:z.string().trim().min(5).max(1200),
-  activeSpheres:z.array(z.enum(EGG_SPHERES)).min(1).max(8),
+  activeSpheres:z.array(z.enum(["marketing","legal","design","production","testDrive","procurement","commerce","retail"])).min(1).max(8),
   dnaConflict:z.string().max(1200),
   needsAuthorClarification:z.boolean(),
 }).strict();
