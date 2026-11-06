@@ -152,6 +152,13 @@ export default function EggYolkExperience(){
       const client=createClient(cfg.supabaseUrl,cfg.publishableKey);
       const {data:{user},error:authError}=await client.auth.getUser();
       if(authError||!user)throw Error("Войдите в аккаунт EGG");
+      const {data:sessionData}=await client.auth.getSession();
+      if(!sessionData.session?.access_token)throw Error("Войдите в аккаунт EGG");
+      const channelReady=await fetch("/api/egg",{
+        method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+sessionData.session.access_token},
+        body:JSON.stringify({command:"ensure_author_channel",projectId:project.id}),
+      });
+      if(!channelReady.ok)throw Error("Не удалось подготовить общий канал проекта");
       const {data:channel,error:channelError}=await client.from("egg_chat_channels")
         .select("id").eq("project_id",project.id).eq("kind","general").limit(1).maybeSingle();
       if(channelError||!channel)throw Error("Общий канал проекта недоступен");
