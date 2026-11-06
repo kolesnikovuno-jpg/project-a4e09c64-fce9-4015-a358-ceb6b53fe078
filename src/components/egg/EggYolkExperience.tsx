@@ -98,6 +98,29 @@ export default function EggYolkExperience(){
   const [authorSending,setAuthorSending]=useState(false);
   const [authorFeedback,setAuthorFeedback]=useState("");
   const [spherePopup,setSpherePopup]=useState(false);
+  const [ideaBrief,setIdeaBrief]=useState("");
+  const [ideaReady,setIdeaReady]=useState(false);
+  const [ideaBusy,setIdeaBusy]=useState(false);
+  async function sendIdeaToWork(){
+    if(!project||revision===null||!ideaReady||!ideaBrief.trim()||ideaBusy)return;
+    setIdeaBusy(true);setAuthorFeedback("");
+    try{
+      const cfgResponse=await fetch("/api/egg-config",{cache:"no-store"});
+      if(!cfgResponse.ok)throw Error("Сервер EGG недоступен");
+      const cfg=await cfgResponse.json() as {supabaseUrl:string;publishableKey:string};
+      const client=createClient(cfg.supabaseUrl,cfg.publishableKey);
+      const {data}=await client.auth.getSession();
+      if(!data.session?.access_token)throw Error("Войдите в аккаунт EGG");
+      const response=await fetch("/api/egg",{method:"POST",headers:{
+        "Content-Type":"application/json",Authorization:"Bearer "+data.session.access_token,
+      },body:JSON.stringify({command:"start_flow_cycle",projectId:project.id,
+        expectedRevision:revision,brief:ideaBrief.trim().slice(0,3000)})});
+      if(!response.ok)throw Error(response.status===409?"Проект изменился. Обновите состояние.":"Нельзя запустить цикл: проверьте текущий статус проекта.");
+      setIdeaReady(false);setIdeaBrief("");setAuthorFeedback("Задание передано в цикл EGG. Сферы работают по существующим правилам маршрутизации; ИИ запускается отдельно.");
+      setRefresh(value=>value+1);
+    }catch(error){setAuthorFeedback(error instanceof Error?error.message:"Не удалось начать цикл");}
+    finally{setIdeaBusy(false);}
+  }
   async function submitAuthorMessage(){
     if(!project||!authorDraft.trim()||authorSending)return;
     setAuthorSending(true);setAuthorFeedback("");
@@ -115,7 +138,8 @@ export default function EggYolkExperience(){
         channel_id:channel.id,sender_id:user.id,body:authorDraft.trim(),
       });
       if(error)throw Error("Не удалось сохранить сообщение");
-      setAuthorDraft("");setAuthorFeedback("Сообщение сохранено в общем чате проекта. Для запуска цикла используйте управление ниже.");
+      setIdeaBrief(authorDraft.trim());setIdeaReady(true);
+      setAuthorDraft("");setAuthorFeedback("Указание сохранено. Сфера Идея подготовила входное задание для проверки Автором; автоматический смысловой синтез пока не выполнялся.");
     }catch(error){setAuthorFeedback(error instanceof Error?error.message:"Не удалось отправить сообщение");}
     finally{setAuthorSending(false);}
   }
@@ -317,8 +341,17 @@ export default function EggYolkExperience(){
             <textarea value={authorDraft} onChange={event=>setAuthorDraft(event.target.value)} rows={2} maxLength={4000} disabled={!project||authorSending} placeholder={project?"Что изменить, исследовать или сохранить в форме?":"Откройте проект, чтобы отправить сообщение"} aria-label="Указание Автора" className="min-h-[64px] min-w-0 flex-1 resize-y rounded-xl border border-foreground/20 bg-background px-3 py-2 text-sm outline-none focus:border-foreground/50"/>
             <button type="submit" disabled={!project||!authorDraft.trim()||authorSending} className="rounded-xl border border-foreground/35 px-4 py-3 text-xs disabled:opacity-40">{authorSending?"Отправка…":"Отправить"}</button>
           </form>
+          {ideaReady&&<div className="mt-3 rounded-xl border border-foreground/20 p-3" data-testid="yolk-idea-gate">
+            <p className="text-xs font-medium">Идея · входной синтез</p>
+            <p className="mt-1 text-[11px] text-foreground/60">Исходная ДНК сохраняется. Уточните формулировку задания перед передачей в работу. Это авторская проверка, не автоматический анализ ИИ.</p>
+            <textarea value={ideaBrief} onChange={event=>setIdeaBrief(event.target.value)} maxLength={3000} rows={3} aria-label="Задание сферы Идея" className="mt-2 w-full rounded-lg border border-foreground/20 bg-background p-2 text-sm"/>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button type="button" onClick={()=>void sendIdeaToWork()} disabled={!ideaBrief.trim()||ideaBusy||revision===null} className="rounded-lg border border-foreground/40 px-3 py-2 text-xs disabled:opacity-40">{ideaBusy?"Передача…":"Подтвердить → в работу"}</button>
+              <button type="button" onClick={()=>setIdeaReady(false)} className="rounded-lg border border-foreground/20 px-3 py-2 text-xs">Отложить</button>
+            </div>
+          </div>}
           {authorFeedback&&<p className="mt-2 text-xs text-foreground/65" role="status">{authorFeedback}</p>}
-          <p className="mt-2 text-[11px] leading-relaxed text-foreground/50">Сообщение сохраняется в проекте, но само по себе не запускает ИИ. Цикл и авторские решения управляются отдельно; автоматический выбор сфер ещё не подключён.</p>
+          <p className="mt-2 text-[11px] leading-relaxed text-foreground/50">Указание поступает в сферу Идея для проверки Автором, затем в цикл EGG. Автоматический синтез Идеи и динамическая маршрутизация пока не подключены.</p>
         </section>
         <div className="mx-auto mt-7 max-w-[1040px] space-y-5">
           {project&&timeline&&<div className="space-y-2 rounded-lg border border-foreground/15 p-3 text-[11px] leading-relaxed text-foreground/65"
