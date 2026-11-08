@@ -1,3 +1,4 @@
+import { Component, type ErrorInfo, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -106,6 +107,22 @@ const EggEntryRedirect = () => {
   return <Navigate to={projectId ? `/egg/yolk${search}${hash}` : `/egg/connect${search}${hash}`} replace />;
 };
 
+/** A rendering exception must never leave the authenticated EGG page blank. */
+class EggRenderBoundary extends Component<{children:ReactNode},{failed:boolean}> {
+  state={failed:false};
+  static getDerivedStateFromError(){return {failed:true};}
+  componentDidCatch(error:Error, info:ErrorInfo){console.error("EGG render failed",error,info.componentStack);}
+  render(){
+    if(!this.state.failed)return this.props.children;
+    return <main className="mx-auto max-w-xl p-8 text-foreground">
+      <h1 className="text-2xl">Не удалось отобразить Яйцо</h1>
+      <p className="mt-4 text-sm">Данные проекта не изменены. Ошибка произошла при отображении интерфейса.</p>
+      <a href="/egg/connect" className="mt-5 inline-block underline">Вернуться к проектам</a>
+      <button className="ml-5 underline" onClick={()=>window.location.reload()}>Повторить</button>
+    </main>;
+  }
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -157,7 +174,7 @@ const App = () => (
           <Route path="/egg/connect" element={<EggStablePreview><EggConnect /></EggStablePreview>} />
           <Route path="/egg/collab" element={<EggStablePreview><EggCollaboration /></EggStablePreview>} />
           <Route path="/egg/demo" element={<EggStablePreview><EggDemo /></EggStablePreview>} />
-          <Route path="/egg/yolk" element={<EggStablePreview><EggYolkExperience /></EggStablePreview>} />
+          <Route path="/egg/yolk" element={<EggRenderBoundary><EggStablePreview><EggYolkExperience /></EggStablePreview></EggRenderBoundary>} />
 
           {/* Internal operator workspace */}
           <Route path="/operator/login" element={<OperatorLogin />} />
