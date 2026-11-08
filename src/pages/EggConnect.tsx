@@ -128,12 +128,12 @@ export default function EggConnect() {
     const invited = /^#egg-invite=([a-zA-Z0-9_-]{43})$/.exec(window.location.hash);
     if (invited) window.localStorage.setItem("egg.pendingInvite", invited[1]);
     setBusy(true);
-    // Never issue one-time login links to ephemeral Vercel deployment hosts.\n    const callbackUrl = EGG_AUTH_CALLBACK;
+    // Never issue one-time login links to ephemeral Vercel deployment hosts.\n    const callbackUrl = window.location.hostname === "egg-test.kolesnikov.studio"\n      ? "https://egg-test.kolesnikov.studio/egg/connect" : EGG_AUTH_CALLBACK;
     const { error } = await client.auth.signInWithOtp({
       email: email.trim(),
       options: { emailRedirectTo: callbackUrl },
     });
-    setMessage(error ? (error.status === 429 || /rate limit|too many/i.test(error.message) ? "Превышен лимит отправки писем. Подождите перед повторной попыткой." : `Ошибка входа (${error.status ?? "неизвестно"}): ${error.message}`) : "Письмо отправлено. Ссылка ведёт на постоянный адрес egg.kolesnikov.studio. Вход на временном адресе Vercel отдельно не переносится.");
+    setMessage(error ? (error.status === 429 || /rate limit|too many/i.test(error.message) ? "Превышен лимит отправки писем. Подождите перед повторной попыткой." : `Ошибка входа (${error.status ?? "неизвестно"}): ${error.message}`) : "Письмо отправлено. Откройте последнее письмо в Safari на том же устройстве.");
     setBusy(false);
   }
   async function signOut() {
