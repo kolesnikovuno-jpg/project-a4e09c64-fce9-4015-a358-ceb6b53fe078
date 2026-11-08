@@ -68,7 +68,6 @@ export default function EggConnect() {
             persistSession: true,
             autoRefreshToken: true,
             detectSessionInUrl: true,
-            storageKey: "egg-test-auth-session",
           },
         });
         if (!active) return;
