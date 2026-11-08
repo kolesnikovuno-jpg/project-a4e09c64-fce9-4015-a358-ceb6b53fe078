@@ -18,6 +18,8 @@ export default function EggConnect() {
   const [otpCode, setOtpCode] = useState("");
   const [password, setPassword] = useState("");
   const [passwordBusy, setPasswordBusy] = useState(false);
+  const [recoveryMode, setRecoveryMode] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
   const [otpRequested, setOtpRequested] = useState(false);
   const [otpBusy, setOtpBusy] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
@@ -86,7 +88,8 @@ export default function EggConnect() {
         setClient(auth);
         if (initialSession.session) setUser(initialSession.session.user);
         if (sessionError) setAuthIssue("Не удалось сохранить сеанс EGG. Откройте ссылку в Safari в обычной вкладке.");
-        const { data: listener } = auth.auth.onAuthStateChange((_event, session) => {
+        const { data: listener } = auth.auth.onAuthStateChange((event, session) => {
+          if (event === "PASSWORD_RECOVERY") setRecoveryMode(true);
           if (active) { setUser(session?.user ?? null); if (session) setAuthIssue(""); }
         });
         unsubscribe = () => listener.subscription.unsubscribe();
@@ -229,6 +232,28 @@ export default function EggConnect() {
       setPasswordBusy(false);
     }
   }
+  async function requestPasswordRecovery() {
+    if (!client || !email.trim()) return;
+    setPasswordBusy(true);
+    try {
+      const { error } = await client.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: "https://egg-test.kolesnikov.studio/egg/connect",
+      });
+      setMessage(error ? "Не удалось отправить восстановление: " + error.message :
+        "Письмо восстановления отправлено. Оно должно вернуть вас на egg-test.kolesnikov.studio/egg/connect.");
+    } catch (error) {
+      setMessage("Ошибка восстановления: " + (error instanceof Error ? error.message : String(error)));
+    } finally { setPasswordBusy(false); }
+  }
+  async function saveRecoveredPassword() {
+    if (!client || newPassword.length < 12) return;
+    setPasswordBusy(true);
+    try {
+      const { error } = await client.auth.updateUser({ password: newPassword });
+      if (error) setMessage("Не удалось установить пароль: " + error.message);
+      else { setNewPassword(""); setRecoveryMode(false); setMessage("Пароль установлен. Вы вошли в EGG."); }
+    } finally { setPasswordBusy(false); }
+  }
   async function signOut() {
     if (!client) return;
     await client.auth.signOut();
@@ -278,6 +303,20 @@ export default function EggConnect() {
               </button>
               <p className="text-xs text-muted-foreground">Если аккаунт создавался по ссылке и пароля нет, сначала задайте пароль для существующего пользователя в панели Supabase. Новый аккаунт создавать не нужно.</p>
             </div>
+            <button type="button" disabled={!client || passwordBusy || !email.trim()}
+              onClick={requestPasswordRecovery} className="text-left text-sm underline underline-offset-4 disabled:opacity-50">
+              Установить или восстановить пароль по письму
+            </button>
+            {recoveryMode && <div className="space-y-2 rounded-lg border border-border p-3">
+              <label htmlFor="egg-new-password" className="block text-sm font-medium">Новый пароль (не менее 12 символов)</label>
+              <input id="egg-new-password" type="password" autoComplete="new-password"
+                value={newPassword} onChange={event=>setNewPassword(event.target.value)}
+                className="w-full rounded border border-border bg-background p-3"/>
+              <button type="button" disabled={passwordBusy || newPassword.length < 12}
+                onClick={saveRecoveredPassword} className="rounded bg-foreground px-4 py-2 text-background disabled:opacity-50">
+                Сохранить новый пароль
+              </button>
+            </div>}
             <button disabled={!client || busy || !email.trim()} onClick={sendLink}
               className="rounded bg-foreground px-4 py-2 text-background disabled:opacity-50">
               {busy ? "Отправляем…" : "Войти или зарегистрироваться по ссылке"}
