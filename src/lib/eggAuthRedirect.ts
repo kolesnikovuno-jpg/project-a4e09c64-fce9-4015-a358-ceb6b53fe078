@@ -5,12 +5,12 @@
  *
  * Supabase Auth must allow this exact callback in its Redirect URLs.
  */
-export const EGG_CANONICAL_ORIGIN="https://egg.kolesnikov.studio";
+export const EGG_CANONICAL_ORIGIN="https://egg.kolesnikov.studio";\nexport const EGG_TEST_ORIGIN="https://egg-test.kolesnikov.studio";
 export const EGG_AUTH_CALLBACK=EGG_CANONICAL_ORIGIN+"/egg/connect";
 export const EGG_CANONICAL_ACCOUNT=EGG_AUTH_CALLBACK;
 
 export function eggAuthOriginMismatch(origin:string):boolean{
-  try{return new URL(origin).origin!==EGG_CANONICAL_ORIGIN;}
+  try{return ![EGG_CANONICAL_ORIGIN,EGG_TEST_ORIGIN].includes(new URL(origin).origin);}
   catch{return true;}
 }
 
