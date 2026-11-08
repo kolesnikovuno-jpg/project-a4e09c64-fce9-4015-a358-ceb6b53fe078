@@ -15,6 +15,9 @@ export default function EggConnect() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpRequested, setOtpRequested] = useState(false);
+  const [otpBusy, setOtpBusy] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [authIssue, setAuthIssue] = useState("");
   const isTechnicalOrigin=eggAuthOriginMismatch(window.location.origin);
@@ -153,7 +156,8 @@ export default function EggConnect() {
       } else {
         const error = result.error;
         if (!error) {
-          setMessage("Диагностика AUTH_OK: Supabase принял запрос. Проверьте последнее письмо в Safari.");
+          setOtpRequested(true);
+          setMessage("Письмо отправлено. Введите шестизначный код из письма ниже. Не переходите по ссылкам подтверждения.");
         } else {
           const status = error.status ?? "нет HTTP-кода";
           const code = "code" in error && typeof error.code === "string" ? error.code : "нет кода";
@@ -166,6 +170,34 @@ export default function EggConnect() {
     } finally {
       if (timeout) clearTimeout(timeout);
       setBusy(false);
+    }
+  }
+  async function verifyEmailCode() {
+    if (!client || !/^[0-9]{6}$/.test(otpCode) || !email.trim()) return;
+    setOtpBusy(true);
+    setMessage("");
+    try {
+      const { data, error } = await client.auth.verifyOtp({
+        email: email.trim(),
+        token: otpCode,
+        type: "email",
+      });
+      if (error) {
+        setMessage("Код не принят (" + (error.status ?? "без HTTP-кода") + "): " + error.message);
+      } else if (data.session) {
+        setUser(data.session.user);
+        setOtpRequested(false);
+        setOtpCode("");
+        setAuthIssue("");
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        setMessage("Вход подтверждён.");
+      } else {
+        setMessage("Код проверен, но сеанс не получен. Обновите страницу.");
+      }
+    } catch (error) {
+      setMessage("Ошибка проверки кода: " + (error instanceof Error ? error.message : String(error)));
+    } finally {
+      setOtpBusy(false);
     }
   }
   async function signOut() {
@@ -208,6 +240,19 @@ export default function EggConnect() {
               className="rounded bg-foreground px-4 py-2 text-background disabled:opacity-50">
               {busy ? "Отправляем…" : "Войти или зарегистрироваться по ссылке"}
             </button>
+            {otpRequested && (
+              <div className="space-y-2 rounded-lg border border-border p-3">
+                <label htmlFor="egg-otp-code" className="block text-sm">Шестизначный код из письма</label>
+                <input id="egg-otp-code" type="text" inputMode="numeric" autoComplete="one-time-code"
+                  maxLength={6} value={otpCode} onChange={event => setOtpCode(event.target.value.replace(/\\D/g, "").slice(0, 6))}
+                  className="w-full rounded border border-border bg-background p-3 tracking-widest"
+                  placeholder="000000" />
+                <button disabled={otpBusy || !/^[0-9]{6}$/.test(otpCode)} onClick={verifyEmailCode}
+                  className="rounded bg-foreground px-4 py-2 text-background disabled:opacity-50">
+                  {otpBusy ? "Проверяем…" : "Подтвердить код"}
+                </button>
+              </div>
+            )}
             <p className="text-sm text-muted-foreground">Используйте тот же email, что и раньше.
               Если аккаунт уже существует, регистрация не повторяется.
               Ссылка для входа одноразовая; откройте последнее письмо в Safari.</p>
