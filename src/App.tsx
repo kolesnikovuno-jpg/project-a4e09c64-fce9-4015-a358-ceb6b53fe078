@@ -78,7 +78,7 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   // Previous landing (architectural research) kept for backward compatibility
   { path: "research", element: <Index /> },
   { path: "unocalc", element: <UnoCalcEgg /> },
-  { path: "egg", element: <EggStablePreview><UnoCalcEgg eggBrand /></EggStablePreview> },
+  { path: "egg", element: <EggEntryRedirect /> },
   { path: "unocalc/model", element: <UnoObjectModel /> },
   { path: "unocalc/about", element: <UnoCalcAbout /> },
   { path: "unocalc/lab", element: <UnoLab /> },
@@ -95,6 +95,16 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   { path: "semantic", element: <Semantic /> },
   { path: "semantic/about", element: <SemanticAbout /> },
 ];
+
+/** Existing /ru/egg?project=... bookmarks must open the live EGG project,
+ * not the retired manual-routing experiment. Preserve query and hash.
+ */
+const EggEntryRedirect = () => {
+  const { search, hash } = useLocation();
+  const params = new URLSearchParams(search);
+  const projectId = params.get("project");
+  return <Navigate to={projectId ? `/egg/yolk${search}${hash}` : `/egg/connect${search}${hash}`} replace />;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
