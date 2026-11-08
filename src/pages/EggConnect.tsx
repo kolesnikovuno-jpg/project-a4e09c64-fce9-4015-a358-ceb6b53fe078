@@ -128,7 +128,9 @@ export default function EggConnect() {
     const invited = /^#egg-invite=([a-zA-Z0-9_-]{43})$/.exec(window.location.hash);
     if (invited) window.localStorage.setItem("egg.pendingInvite", invited[1]);
     setBusy(true);
-    // Never issue one-time login links to ephemeral Vercel deployment hosts.\n    const callbackUrl = window.location.hostname === "egg-test.kolesnikov.studio"\n      ? "https://egg-test.kolesnikov.studio/egg/connect" : EGG_AUTH_CALLBACK;
+    // Never issue one-time login links to ephemeral Vercel deployment hosts.
+    const callbackUrl = window.location.hostname === "egg-test.kolesnikov.studio"
+      ? "https://egg-test.kolesnikov.studio/egg/connect" : EGG_AUTH_CALLBACK;
     let timeout: ReturnType<typeof setTimeout> | undefined;
     try {
       const result = await Promise.race([
