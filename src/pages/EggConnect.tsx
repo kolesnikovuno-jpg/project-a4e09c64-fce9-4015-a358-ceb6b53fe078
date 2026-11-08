@@ -63,7 +63,14 @@ export default function EggConnect() {
         const response = await fetch("/api/egg-config", { cache: "no-store" });
         if (!response.ok) throw new Error("config");
         const config = await response.json() as { supabaseUrl: string; publishableKey: string };
-        const auth = createClient(config.supabaseUrl, config.publishableKey);
+        const auth = createClient(config.supabaseUrl, config.publishableKey, {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+            storageKey: "egg-test-auth-session",
+          },
+        });
         if (!active) return;
         // The client detects Supabase's magic-link URL callback during initialization.
         // The session must finish initializing before the sign-up form can appear.
