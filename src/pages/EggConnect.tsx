@@ -16,6 +16,8 @@ export default function EggConnect() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordBusy, setPasswordBusy] = useState(false);
   const [otpRequested, setOtpRequested] = useState(false);
   const [otpBusy, setOtpBusy] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
@@ -200,6 +202,27 @@ export default function EggConnect() {
       setOtpBusy(false);
     }
   }
+  async function signInWithPassword() {
+    if (!client || !email.trim() || !password) return;
+    setPasswordBusy(true);
+    setMessage("");
+    try {
+      const { data, error } = await client.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) {
+        setMessage("Вход по паролю: " + error.message + ". Если пароль ещё не установлен, его нужно задать для существующего аккаунта в Supabase.");
+      } else if (data.user) {
+        setUser(data.user);
+        setPassword("");
+        setOtpRequested(false);
+        setAuthIssue("");
+        setMessage("Вход выполнен.");
+      }
+    } catch (error) {
+      setMessage("Ошибка соединения: " + (error instanceof Error ? error.message : String(error)));
+    } finally {
+      setPasswordBusy(false);
+    }
+  }
   async function signOut() {
     if (!client) return;
     await client.auth.signOut();
@@ -236,6 +259,19 @@ export default function EggConnect() {
             <input id="egg-connect-email" type="email" autoComplete="email" value={email}
               onChange={event => setEmail(event.target.value)}
               className="w-full rounded border border-border bg-background p-3" placeholder="you@example.com" />
+            <div className="space-y-2 rounded-lg border border-border p-3">
+              <label htmlFor="egg-connect-password" className="block text-sm font-medium">Вход по паролю (без письма)</label>
+              <input id="egg-connect-password" type="password" autoComplete="current-password"
+                value={password} onChange={event => setPassword(event.target.value)}
+                className="w-full rounded border border-border bg-background p-3"
+                placeholder="Пароль существующего аккаунта" />
+              <button disabled={!client || passwordBusy || !email.trim() || !password}
+                onClick={signInWithPassword}
+                className="rounded bg-foreground px-4 py-2 text-background disabled:opacity-50">
+                {passwordBusy ? "Проверяем…" : "Войти по паролю"}
+              </button>
+              <p className="text-xs text-muted-foreground">Если аккаунт создавался по ссылке и пароля нет, сначала задайте пароль для существующего пользователя в панели Supabase. Новый аккаунт создавать не нужно.</p>
+            </div>
             <button disabled={!client || busy || !email.trim()} onClick={sendLink}
               className="rounded bg-foreground px-4 py-2 text-background disabled:opacity-50">
               {busy ? "Отправляем…" : "Войти или зарегистрироваться по ссылке"}
