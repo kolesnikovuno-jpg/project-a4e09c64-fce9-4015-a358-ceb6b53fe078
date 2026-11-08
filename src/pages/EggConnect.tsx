@@ -129,12 +129,29 @@ export default function EggConnect() {
     if (invited) window.localStorage.setItem("egg.pendingInvite", invited[1]);
     setBusy(true);
     // Never issue one-time login links to ephemeral Vercel deployment hosts.\n    const callbackUrl = window.location.hostname === "egg-test.kolesnikov.studio"\n      ? "https://egg-test.kolesnikov.studio/egg/connect" : EGG_AUTH_CALLBACK;
-    const { error } = await client.auth.signInWithOtp({
-      email: email.trim(),
-      options: { emailRedirectTo: callbackUrl },
-    });
-    setMessage(error ? (error.status === 429 || /rate limit|too many/i.test(error.message) ? "Превышен лимит отправки писем. Подождите перед повторной попыткой." : `Ошибка входа (${error.status ?? "неизвестно"}): ${error.message}`) : "Письмо отправлено. Откройте последнее письмо в Safari на том же устройстве.");
-    setBusy(false);
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const result = await Promise.race([
+        client.auth.signInWithOtp({
+          email: email.trim(),
+          options: { emailRedirectTo: callbackUrl },
+        }).then(({ error }) => ({ kind: "response" as const, error })),
+        new Promise<{ kind: "timeout" }>(resolve => {
+          timeout = setTimeout(() => resolve({ kind: "timeout" }), 20000);
+        }),
+      ]);
+      if (result.kind === "timeout") {
+        setMessage("Сервер авторизации не ответил за 20 секунд. Проверьте почту: письмо могло быть отправлено. Не нажимайте повторно сразу, чтобы избежать ограничения отправки.");
+      } else {
+        const error = result.error;
+        setMessage(error ? (error.status === 429 || /rate limit|too many/i.test(error.message) ? "Превышен лимит отправки писем. Подождите перед повторной попыткой." : `Ошибка входа (${error.status ?? "неизвестно"}): ${error.message}`) : "Письмо отправлено. Откройте последнее письмо в Safari на том же устройстве.");
+      }
+    } catch {
+      setMessage("Не удалось связаться с сервером авторизации. Проверьте почту перед повторной попыткой.");
+    } finally {
+      if (timeout) clearTimeout(timeout);
+      setBusy(false);
+    }
   }
   async function signOut() {
     if (!client) return;
