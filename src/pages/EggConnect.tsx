@@ -137,19 +137,32 @@ export default function EggConnect() {
         client.auth.signInWithOtp({
           email: email.trim(),
           options: { emailRedirectTo: callbackUrl },
-        }).then(({ error }) => ({ kind: "response" as const, error })),
+        }).then(({ error }) => ({ kind: "response" as const, error }))
+          .catch((error: unknown) => ({ kind: "exception" as const, error })),
         new Promise<{ kind: "timeout" }>(resolve => {
           timeout = setTimeout(() => resolve({ kind: "timeout" }), 20000);
         }),
       ]);
       if (result.kind === "timeout") {
-        setMessage("Сервер авторизации не ответил за 20 секунд. Проверьте почту: письмо могло быть отправлено. Не нажимайте повторно сразу, чтобы избежать ограничения отправки.");
+        setMessage("Диагностика AUTH_TIMEOUT: запрос не завершился за 20 секунд. Проверьте почту перед повторной попыткой.");
+      } else if (result.kind === "exception") {
+        const error = result.error;
+        const name = error instanceof Error ? error.name : "UnknownError";
+        const detail = error instanceof Error ? error.message : String(error);
+        setMessage("Диагностика AUTH_EXCEPTION (" + name.slice(0, 60) + "): " + detail.slice(0, 220));
       } else {
         const error = result.error;
-        setMessage(error ? (error.status === 429 || /rate limit|too many/i.test(error.message) ? "Превышен лимит отправки писем. Подождите перед повторной попыткой." : `Ошибка входа (${error.status ?? "неизвестно"}): ${error.message}`) : "Письмо отправлено. Откройте последнее письмо в Safari на том же устройстве.");
+        if (!error) {
+          setMessage("Диагностика AUTH_OK: Supabase принял запрос. Проверьте последнее письмо в Safari.");
+        } else {
+          const status = error.status ?? "нет HTTP-кода";
+          const code = "code" in error && typeof error.code === "string" ? error.code : "нет кода";
+          setMessage("Диагностика AUTH_RESPONSE: HTTP " + status + ", " + code + ". " + error.message.slice(0, 220));
+        }
       }
-    } catch {
-      setMessage("Не удалось связаться с сервером авторизации. Проверьте почту перед повторной попыткой.");
+    } catch (error) {
+      const detail = error instanceof Error ? error.name + ": " + error.message : String(error);
+      setMessage("Диагностика AUTH_UNEXPECTED: " + detail.slice(0, 220));
     } finally {
       if (timeout) clearTimeout(timeout);
       setBusy(false);
