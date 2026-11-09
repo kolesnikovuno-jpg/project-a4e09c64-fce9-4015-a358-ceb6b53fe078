@@ -30,7 +30,8 @@
 </head>
 
   <body>
-    <div id="root"><div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.9)"></div></div>
+    <div id="root"><main style="min-height:100vh;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:24px;background:#faf9f6;color:#292b29;font:16px/1.6 system-ui,sans-serif"><div style="max-width:520px"><h1 style="font-size:22px;font-weight:500">EGG · Загрузка интерфейса</h1><p>Если эта надпись остаётся на экране, приложение не запустилось. Проект и его данные не изменены.</p><p><a href="/egg/connect" style="color:inherit;text-decoration:underline">Вернуться ко входу</a></p><p id="egg-boot-error" style="font-size:13px;overflow-wrap:anywhere"></p></div></main></div>
+    <script>window.addEventListener("error",function(e){var p=document.getElementById("egg-boot-error");if(p)p.textContent="Ошибка загрузки: "+(e.message||e.target&&e.target.src||"неизвестная ошибка");},true);window.addEventListener("unhandledrejection",function(e){var p=document.getElementById("egg-boot-error");if(p)p.textContent="Ошибка запуска: "+String(e.reason&&e.reason.message||e.reason||"неизвестная ошибка");});</script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
