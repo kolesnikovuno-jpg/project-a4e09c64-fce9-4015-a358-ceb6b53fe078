@@ -38,7 +38,7 @@ export default function EggYolkViewer({
   projectId?:string;
   minimalControls?:boolean;
 }){
-  const [stage,setStage]=useState<SpatialStage>(()=>stageFromLevel(level));
+  const [stage,setStage]=useState<SpatialStage>(()=>minimalControls?"volume":stageFromLevel(level));
   const [variant,setVariant]=useState<SpatialVariant>("A");
   const [yaw,setYaw]=useState(-.52);
   const [pitch,setPitch]=useState(-.16);
@@ -71,7 +71,7 @@ export default function EggYolkViewer({
     return {quads,paths};
   },[sketch,yaw,pitch,zoom]);
 
-  useEffect(()=>{setStage(stageFromLevel(level));},[level]);
+  useEffect(()=>{setStage(minimalControls?"volume":stageFromLevel(level));},[level,minimalControls]);
   useEffect(()=>{setShowSketch(false);},[visualVersion?.id]);
   useEffect(()=>()=>{if(fileRef.current)URL.revokeObjectURL(fileRef.current);},[]);
   useEffect(()=>{
@@ -222,7 +222,7 @@ export default function EggYolkViewer({
           (variant===v.id?"border-foreground/50 bg-background/95 text-foreground":"border-foreground/15 bg-background/70 text-foreground/55 hover:border-foreground/40")}>
         {v.label}</button>)}
     </div>}
-    <div className={(minimalControls?"hidden":"flex")+" absolute inset-x-2 bottom-[2%] z-20 flex flex-wrap items-center justify-center gap-2 text-[11px]">
+    <div className={(minimalControls?"hidden":"flex")+" absolute inset-x-2 bottom-[2%] z-20 flex flex-wrap items-center justify-center gap-2 text-[11px]"}>
       {visualVersion&&<button type="button" onClick={()=>setShowSketch(v=>!v)}
         data-testid="yolk-visual-mode"
         className="rounded-full border border-foreground/35 bg-background/95 px-3 py-1.5 text-[11px]">
