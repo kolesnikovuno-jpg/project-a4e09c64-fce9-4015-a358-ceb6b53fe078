@@ -258,7 +258,7 @@ export default function EggYolkExperience(){
       <main className="mx-auto w-full max-w-[1580px] px-5 pb-10 pt-6 sm:px-7 lg:px-10">
         <header className="flex flex-wrap items-center justify-between gap-4 pb-5">
           <div className="flex items-center gap-5">
-            <Link to={id?"/egg?project="+encodeURIComponent(id):"/egg/demo"} className="text-[12px] font-light text-foreground/65 underline-offset-4 hover:underline"><ArrowLeft size={14} className="mr-1 inline"/> К Яйцу</Link>
+            <Link to={id?"/ru/egg?project="+encodeURIComponent(id):"/egg/demo"} className="text-[12px] font-light text-foreground/65 underline-offset-4 hover:underline"><ArrowLeft size={14} className="mr-1 inline"/> К Яйцу</Link>
             <h1 className="text-[26px] font-extralight leading-none tracking-[-0.04em] text-foreground/85">EGG <span className="text-foreground/30">/</span> YOLK</h1>
           </div>
           <div className="flex flex-wrap items-center gap-4 text-[11px] font-light text-foreground/50">
@@ -481,7 +481,7 @@ export default function EggYolkExperience(){
                   {a.webUrl?<a href={a.webUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{a.title}</a>:a.title}
                 </p>):<p className="mt-3 text-foreground/55">Нет зарегистрированных файлов.</p>}
               </div>
-              {project&&<Link to={"/egg?project="+encodeURIComponent(project.id)+"&start="+selectedMeta.id} className="inline-block border-b border-foreground/35 pb-1">Открыть рабочее пространство сферы ↗</Link>}
+              {project&&<Link to={"/ru/egg?project="+encodeURIComponent(project.id)+"&start="+selectedMeta.id} className="inline-block border-b border-foreground/35 pb-1">Открыть рабочее пространство сферы ↗</Link>}
             </>:<>
               <div><p className="text-[10px] uppercase tracking-[0.12em] text-foreground/40">Концепция / {project?(approved?"утверждена":candidateText?"на рассмотрении":"не утверждена"):"демонстрация"}</p>
                 <p className="mt-3 whitespace-pre-wrap">{currentText}</p></div>
@@ -490,7 +490,7 @@ export default function EggYolkExperience(){
               <div className="grid grid-cols-2 gap-3 border-t border-foreground/10 pt-4 text-[11px]">
                 <p>Принято задач: {project?approvedWork:"—"}</p><p>Ждут Автора: {project?pendingWork:"—"}</p>
               </div>
-              {project&&<Link to={"/egg?project="+encodeURIComponent(project.id)+"&start=idea"} className="inline-block border-b border-foreground/35 pb-1">Перейти к концепции Автора ↗</Link>}
+              {project&&<Link to={"/ru/egg?project="+encodeURIComponent(project.id)+"&start=idea"} className="inline-block border-b border-foreground/35 pb-1">Перейти к концепции Автора ↗</Link>}
             </>}
           </div>
         </section>
