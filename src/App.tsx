@@ -89,7 +89,7 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   // Previous landing (architectural research) kept for backward compatibility
   { path: "research", element: <Index /> },
   { path: "unocalc", element: <UnoCalcEgg /> },
-  { path: "egg", element: <EggEntryRedirect /> },
+  { path: "egg", element: <EggRenderBoundary><EggStablePreview><UnoCalcEgg eggBrand /></EggStablePreview></EggRenderBoundary> },
   { path: "unocalc/model", element: <UnoObjectModel /> },
   { path: "unocalc/about", element: <UnoCalcAbout /> },
   { path: "unocalc/lab", element: <UnoLab /> },
