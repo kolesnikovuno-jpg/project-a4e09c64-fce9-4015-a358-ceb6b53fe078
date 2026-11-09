@@ -1,3 +1,4 @@
+import {randomUUID} from "node:crypto";
 import type {IncomingMessage,ServerResponse} from "node:http";
 import {createClient} from "@supabase/supabase-js";
 import {getEggStorageConfig} from "../src/server/eggStorageConfig.js";
@@ -16,6 +17,7 @@ export default async function handler(req:IncomingMessage & {body?:unknown},res:
  const db=createClient(cfg.url,cfg.serviceKey,{auth:{persistSession:false,autoRefreshToken:false}});
  try{
   const url=new URL(req.url||"/","https://local.invalid");
+  if(req.method==="POST"&&Number(req.headers["content-length"]||0)>12000)return send(413,{ok:false,error:"body_too_large"});
   const raw=req.method==="POST"?(typeof req.body==="string"?JSON.parse(req.body):req.body):null;
   const data=raw&&typeof raw==="object"&&!Array.isArray(raw)?raw as Record<string,unknown>:null;
   const projectId=req.method==="GET"?url.searchParams.get("projectId"):data?.projectId;
@@ -34,7 +36,7 @@ export default async function handler(req:IncomingMessage & {body?:unknown},res:
   const f=fragment as Record<string,unknown>;
   if(typeof f.id!=="string"||!/^[0-9a-f-]{36}$/i.test(f.id)||typeof f.note!=="string"||f.note.length>2000||!["x","y","w","h"].every(k=>typeof f[k]==="number"&&Number.isFinite(f[k])&&Number(f[k])>=0&&Number(f[k])<=1000))return send(400,{ok:false,error:"invalid_fragment"});
   const content=JSON.stringify({kind:"canvas_fragment",fragment:{id:f.id,x:f.x,y:f.y,w:f.w,h:f.h,note:f.note}});
-  const {data:inserted,error}=await db.from("egg_field_items").insert({project_id:projectId,sphere:null,flow:"field",origin:"internal",source_kind:"human",title:"Холст / фрагмент "+f.id,content,claim_type:"proposal",actor_kind:"user",created_by:user.id,operation_id:"canvas_"+crypto.randomUUID().replace(/-/g,"")}).select("id").single();
+  const {data:inserted,error}=await db.from("egg_field_items").insert({project_id:projectId,sphere:null,flow:"field",origin:"internal",source_kind:"human",title:"Холст / фрагмент "+f.id,content,claim_type:"proposal",actor_kind:"user",created_by:user.id,operation_id:"canvas_"+randomUUID().replace(/-/g,"")}).select("id").single();
   if(error)return send(503,{ok:false,error:"fragment_save_failed"});
   return send(201,{ok:true,id:inserted.id});
  }catch{return send(400,{ok:false,error:"invalid_request"});}
