@@ -86,7 +86,7 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
           tasks={project.tasks} files={project.artifacts??[]} revision={revision} level={project.level} iteration={project.iteration} onSaved={()=>setRefreshKey(v=>v+1)}/>}
       {activeSphere==="author"&&<div className="space-y-2 rounded-lg border border-foreground/20 p-3"
         data-testid="egg-author-focus">
-        <h3 className="text-sm font-medium">Текущая версия EGG · Author + Dynamic Balance</h3>
+        <h3 className="text-sm font-medium">Автор · управление развитием проекта</h3>
         <p className="text-xs leading-relaxed text-foreground/65">
           Основное действие сейчас — провести первый цикл восьми сфер с ИИ.
           Старые выводы остаются в истории и не считаются результатом нового цикла.
@@ -100,7 +100,7 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
         onSaved={()=>setRefreshKey(v=>v+1)}/>
       {activeSphere==="author"
         ?<details className="rounded-lg border border-foreground/15 p-3" data-testid="egg-author-history">
-          <summary className="cursor-pointer text-xs font-medium">Архив проекта · старые задачи, документация и обзор</summary>
+          <summary className="cursor-pointer text-xs font-medium">История, документация и обзор проекта</summary>
           <div className="mt-3 space-y-3">
             <EggProjectOverview project={project} activeSphere={activeSphere}
               onSelectSphere={onSelectSphere}/>
