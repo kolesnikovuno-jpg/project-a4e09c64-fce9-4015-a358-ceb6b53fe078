@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
-import { ArrowLeft, Dna, History, MessageCircle, FileText } from "lucide-react";
+import { ArrowLeft, Dna, History, MessageCircle, FileText, Layers3, Info, X } from "lucide-react";
 import EggYolkViewer from "./EggYolkViewer";
 import EggDocumentationPanel from "./EggDocumentationPanel";
 import EggFlowCyclePanel from "./EggFlowCyclePanel";
@@ -99,6 +99,8 @@ export default function EggYolkExperience(){
   const [authorSending,setAuthorSending]=useState(false);
   const [authorFeedback,setAuthorFeedback]=useState("");
   const [spherePopup,setSpherePopup]=useState(false);
+  const [showLayers,setShowLayers]=useState(false);
+  const [showInfo,setShowInfo]=useState(false);
   const [ideaBrief,setIdeaBrief]=useState("");
   const [ideaTargets,setIdeaTargets]=useState<SphereId[]>([]);
   const [ideaReady,setIdeaReady]=useState(false);
@@ -317,6 +319,30 @@ export default function EggYolkExperience(){
           </aside>
         </div>
 
+        <nav className="fixed bottom-5 left-4 right-4 z-30 flex items-end justify-between gap-3 pointer-events-none sm:bottom-7 sm:left-7 sm:right-7" aria-label="Управление Желтком">
+          <button type="button" aria-label="Слои" aria-expanded={showLayers} data-testid="yolk-layers-toggle"
+            onClick={()=>{setShowLayers(v=>!v);setShowInfo(false);setSpherePopup(false);}}
+            className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-foreground/15 bg-background/85 text-foreground/70 shadow-sm backdrop-blur-md"><Layers3 size={19}/></button>
+          <button type="button" aria-label="Информация" aria-expanded={showInfo} data-testid="yolk-info-toggle"
+            onClick={()=>{setShowInfo(v=>!v);setShowLayers(false);setSpherePopup(false);}}
+            className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-foreground/15 bg-background/85 text-foreground/70 shadow-sm backdrop-blur-md"><Info size={19}/></button>
+        </nav>
+        {showLayers&&<section className="fixed bottom-20 left-4 z-40 w-[min(330px,calc(100vw-32px))] rounded-2xl border border-foreground/15 bg-background/95 p-4 shadow-lg backdrop-blur-md sm:bottom-24 sm:left-7" aria-label="Слои Желтка" data-testid="yolk-layers-panel">
+          <div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-medium">Восемь сфер</h2><button type="button" aria-label="Закрыть слои" onClick={()=>setShowLayers(false)}><X size={16}/></button></div>
+          <div className="grid grid-cols-2 gap-2">
+            {YOLK_SPHERES.map(s=><button key={s.id} type="button" data-testid={"yolk-layer-"+s.id}
+              onClick={()=>{selectSphere(s.id);setShowLayers(false);}}
+              className="rounded-xl border border-foreground/15 px-3 py-3 text-left text-xs text-foreground/75 hover:border-foreground/40">
+              <span className="block">{s.name}</span><span className="mt-1 block text-[10px] text-foreground/45">{s.tag}</span>
+            </button>)}
+          </div>
+        </section>}
+        {showInfo&&<section className="fixed bottom-20 right-4 z-40 w-[min(360px,calc(100vw-32px))] rounded-2xl border border-foreground/15 bg-background/95 p-4 shadow-lg backdrop-blur-md sm:bottom-24 sm:right-7" aria-label="Информация об объекте" data-testid="yolk-info-panel">
+          <div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-medium">Концепция</h2><button type="button" aria-label="Закрыть информацию" onClick={()=>setShowInfo(false)}><X size={16}/></button></div>
+          <p className="text-xs leading-relaxed text-foreground/75">{brief(currentText,300)}</p>
+          <p className="mt-3 text-[11px] text-foreground/50">{approved?"Принято Автором":candidateText?"Предложено, ожидает решения":"Исследовательская форма · не утверждена"}</p>
+          <button type="button" onClick={()=>{setShowInfo(false);setSelected(null);setExpanded(true)}} className="mt-3 border-b border-foreground/35 text-xs">Подробнее →</button>
+        </section>}
         {selectedMeta&&spherePopup&&<div className="fixed inset-x-4 bottom-4 z-40 mx-auto max-w-[430px] rounded-2xl border border-foreground/20 bg-background/95 p-4 shadow-xl backdrop-blur-md sm:bottom-8" role="dialog" aria-label={"Состояние сферы "+selectedMeta.name} data-testid="yolk-sphere-popup">
           <div className="flex items-center justify-between gap-3"><h2 className="text-base font-medium">{selectedMeta.name}</h2><button type="button" onClick={()=>setSpherePopup(false)} aria-label="Закрыть сведения о сфере" className="rounded-full border border-foreground/20 px-3 py-1">×</button></div>
           <p className="mt-2 text-xs text-foreground/60">{sphereVisibleStatus}</p>
