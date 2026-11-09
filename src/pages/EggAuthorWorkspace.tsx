@@ -78,9 +78,12 @@ export default function EggAuthorWorkspace(){
  const add=(e:ChangeEvent<HTMLInputElement>)=>{
   const fs=Array.from(e.target.files??[]).slice(0,6);e.target.value="";
   fs.forEach(async f=>{
-   if(!["image/png","image/jpeg","image/webp"].includes(f.type)||f.size>3*1024*1024){setNotice("Допустимы PNG, JPEG или WebP до 3 МБ.");return;}
+   if(!["image/png","image/jpeg","image/webp"].includes(f.type)||f.size>3*1024*1024){setNotice("Файл не добавлен: нужен PNG, JPEG или WebP до 3 МБ. Для HEIC выбери экспорт в JPEG.");return;}
    const imageId=crypto.randomUUID(),placement={id:imageId,x:80+(images.length%4)*85,y:70+(images.length%3)*60,w:280,h:210};
-   if(!storageReady||!tokenRef.current){setNotice("Для сохранения изображения в облаке требуется вход в EGG.");return;}
+   const localUrl=URL.createObjectURL(f);
+   setImages(current=>[...current,{...placement,src:localUrl}]);
+   setNotice("Изображение добавлено на холст. Сохранение в EGG…");
+   if(!storageReady||!tokenRef.current){setNotice("Изображение на холсте, но облако недоступно. Экспортируй черновик.");return;}
    try{
     const headers={"Content-Type":"application/json",Authorization:"Bearer "+tokenRef.current};
     const signedResponse=await fetch("/api/egg",{method:"POST",headers,body:JSON.stringify({command:"media_upload",projectId:id,imageId,mime:f.type})});
@@ -94,10 +97,9 @@ export default function EggAuthorWorkspace(){
     if(error)throw error;
     const registered=await fetch("/api/egg",{method:"POST",headers,body:JSON.stringify({command:"media_register",projectId:id,imageId,path:signed.path,...placement})});
     if(!registered.ok)throw Error("Изображение загружено, но регистрация в проекте не удалась");
-    const url=URL.createObjectURL(f);
-    setImages(current=>[...current,{...placement,src:url,path:signed.path}]);
+    setImages(current=>current.map(im=>im.id===imageId?{...im,path:signed.path}:im));
     setNotice("Изображение сохранено в облаке EGG.");
-   }catch(err){setNotice(err instanceof Error?err.message:"Ошибка загрузки изображения");}
+   }catch(err){setNotice("Изображение видно на холсте, но не сохранено в облаке: "+(err instanceof Error?err.message:"ошибка загрузки"));}
   });
  };
  const payload={version:2,project:id,text,images,marks,findings,fragments,exportedAt:new Date().toISOString()};
@@ -129,7 +131,7 @@ export default function EggAuthorWorkspace(){
    <div className="mt-2 flex items-center justify-between text-[11px] text-foreground/50"><span>Изображений: {images.length} · линий: {marks.length}</span><button type="button" onClick={()=>{if(active)setImages(v=>v.filter(im=>im.id!==active));setActive(null);}} disabled={!active} className="flex items-center gap-1 disabled:opacity-35"><Trash2 size={13}/> Удалить выбранное</button></div>
    </section>
    <section className="flex min-w-0 flex-col gap-3">{selectedFragment&&fragments.some(f=>f.id===selectedFragment)&&<div className="rounded-xl border border-amber-700/30 p-3"><h3 className="mb-2 text-xs font-medium">Выбранный фрагмент</h3><p className="mb-2 break-all text-[10px] text-foreground/50">ID: {selectedFragment}</p><textarea aria-label="Заметка к фрагменту" value={fragments.find(f=>f.id===selectedFragment)?.note??""} onChange={e=>setFragments(v=>v.map(f=>f.id===selectedFragment?{...f,note:e.target.value}:f))} placeholder="Что именно требуется исследовать в этой области?" className="min-h-20 w-full rounded-lg border border-foreground/15 bg-transparent p-2 text-xs"/><button type="button" onClick={()=>{setFragments(v=>v.filter(f=>f.id!==selectedFragment));setSelectedFragment(null);}} className="mt-2 text-xs text-foreground/60">Удалить выделение</button></div>}<h2 className="text-xs text-foreground/60">Замысел / свободная формулировка</h2><textarea aria-label="Замысел Автора" value={text} onChange={e=>setText(e.target.value)} placeholder="С чего начинается идея? Что важно сохранить? Какие образы, ощущения, функции или ограничения уже известны?" className="min-h-[240px] w-full flex-1 resize-y rounded-2xl border border-foreground/15 bg-transparent p-4 text-sm leading-relaxed outline-none focus:border-foreground/45"/>
-    <p className="text-[11px] leading-relaxed text-foreground/55">Холст и изображения пока сохраняются в браузере. Фрагменты и их заметки синхронизируются с EGG при доступной авторизации. {bridgeStatus}.</p>
+    <p className="text-[11px] leading-relaxed text-foreground/55">Черновик холста хранится в браузере. Изображения загружаются в EGG после выбора; рисунки пока локальные. Фрагменты и заметки синхронизируются при авторизации. {bridgeStatus}.</p>
     <button type="button" onClick={()=>setShowTransfer(v=>!v)} className="flex items-center justify-center gap-2 rounded-xl border border-foreground/30 px-4 py-3 text-sm"><Copy size={15}/> Перейти к обсуждению с ИИ</button>
     {showTransfer&&<div className="rounded-xl border border-foreground/15 p-3 text-xs leading-relaxed"><p>1. Скопируйте контекст. 2. Откройте ChatGPT и вставьте его в диалог. 3. При необходимости приложите изображения или экспорт холста. 4. Вернувшись, сохраните вывод ниже.</p><div className="mt-3 flex flex-wrap gap-3"><button type="button" onClick={()=>void copy()} className="rounded-lg border border-foreground/25 px-3 py-2">Скопировать контекст</button><a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" className="rounded-lg border border-foreground/25 px-3 py-2">Открыть ChatGPT ↗</a></div><p className="mt-2 text-foreground/55">Это ручной переход, не автоматическая синхронизация с чатом.</p></div>}
     <div className="rounded-xl border border-foreground/15 p-3"><h3 className="mb-2 text-xs font-medium">Вернуть итог обсуждения на холст</h3><textarea value={discussion} onChange={e=>setDiscussion(e.target.value)} aria-label="Итог обсуждения с ИИ" placeholder="Вставьте сюда выбранный вывод из диалога. Он останется рабочей заметкой до вашего утверждения." className="min-h-24 w-full resize-y rounded-lg border border-foreground/15 bg-transparent p-2 text-xs"/><button type="button" disabled={!discussion.trim()} onClick={addFinding} className="mt-2 rounded-lg border border-foreground/25 px-3 py-2 text-xs disabled:opacity-40">Добавить вывод</button>{findings.length>0&&<div className="mt-3 space-y-2">{findings.map((f,i)=><div key={f.id} className="rounded-lg bg-foreground/5 p-2"><div className="flex justify-between gap-2"><span className="text-[10px] text-foreground/55">Заметка {i+1}</span><button type="button" onClick={()=>setFindings(v=>v.filter(x=>x.id!==f.id))} aria-label="Удалить заметку" className="text-foreground/55"><Trash2 size={13}/></button></div><p className="mt-1 whitespace-pre-wrap text-xs">{f.text}</p></div>)}</div>}</div>
