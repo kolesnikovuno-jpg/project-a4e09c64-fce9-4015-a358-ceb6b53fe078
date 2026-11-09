@@ -1,4 +1,4 @@
-import { createElement, useEffect, useMemo, useRef, useState, type ChangeEvent, type PointerEvent, type WheelEvent } from "react";
+import { createElement, useEffect, useMemo, useRef, useState, type ChangeEvent, type PointerEvent, type WheelEvent, type TouchEvent } from "react";
 import { Download, RotateCcw, Upload, X } from "lucide-react";
 import { buildSpatialSketch, createSpatialGlb, type SpatialStage, type SpatialVariant, type Vec3 } from "../../lib/eggSpatialGenerator";
 import type {EggVisualSnapshot} from "../../lib/eggVisualHistory";
@@ -55,6 +55,7 @@ export default function EggYolkViewer({
     ?visualVersion.url:null;
   const pointers=useRef(new Map<number,{x:number;y:number}>());
   const pinchDistance=useRef<number|null>(null);
+  const touchDistance=useRef<number|null>(null);
   const clampZoom=(value:number)=>Math.max(.5,Math.min(2.5,value));
   const fileRef=useRef<string|null>(null);
   const sketch=useMemo(()=>buildSpatialSketch(stage,variant,iteration),[stage,variant,iteration]);
@@ -94,6 +95,7 @@ export default function EggYolkViewer({
     return()=>{active=false;script?.removeEventListener("error",fail)};
   },[fileUrl,directModel]);
   function dragStart(e:PointerEvent<SVGSVGElement>){
+    if(e.pointerType==="touch")return;
     pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(pointers.current.size===2){
       const [a,b]=[...pointers.current.values()];
@@ -102,6 +104,7 @@ export default function EggYolkViewer({
     e.currentTarget.setPointerCapture?.(e.pointerId);
   }
   function dragMove(e:PointerEvent<SVGSVGElement>){
+    if(e.pointerType==="touch")return;
     const previous=pointers.current.get(e.pointerId);
     if(!previous)return;
     pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -118,8 +121,45 @@ export default function EggYolkViewer({
     setPitch(value=>Math.max(-.7,Math.min(.7,value+dy*.006)));
   }
   function dragStop(e:PointerEvent<SVGSVGElement>){
+    if(e.pointerType==="touch")return;
     pointers.current.delete(e.pointerId);
     pinchDistance.current=null;
+  }
+  function touchStart(e:TouchEvent<SVGSVGElement>){
+    if(e.touches.length===2){
+      const a=e.touches[0],b=e.touches[1];
+      touchDistance.current=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+    }else{
+      touchDistance.current=null;
+      if(e.touches.length===1) pointers.current.set(-1,{x:e.touches[0].clientX,y:e.touches[0].clientY});
+    }
+  }
+  function touchMove(e:TouchEvent<SVGSVGElement>){
+    if(e.touches.length===2){
+      e.preventDefault();
+      const a=e.touches[0],b=e.touches[1];
+      const distance=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+      if(touchDistance.current!==null&&touchDistance.current>0){
+        const ratio=distance/touchDistance.current;
+        setZoom(value=>clampZoom(value*ratio));
+      }
+      touchDistance.current=distance;
+      pointers.current.delete(-1);
+    }else if(e.touches.length===1){
+      e.preventDefault();
+      const t=e.touches[0],prev=pointers.current.get(-1);
+      if(prev){
+        setYaw(value=>value+(t.clientX-prev.x)*.012);
+        setPitch(value=>Math.max(-.7,Math.min(.7,value+(t.clientY-prev.y)*.006)));
+      }
+      pointers.current.set(-1,{x:t.clientX,y:t.clientY});
+      touchDistance.current=null;
+    }
+  }
+  function touchEnd(e:TouchEvent<SVGSVGElement>){
+    touchDistance.current=null;
+    pointers.current.delete(-1);
+    if(e.touches.length===1)pointers.current.set(-1,{x:e.touches[0].clientX,y:e.touches[0].clientY});
   }
   function wheel(e:WheelEvent<SVGSVGElement>){
     setZoom(value=>clampZoom(value*Math.exp(-e.deltaY*.001)));
@@ -170,7 +210,7 @@ export default function EggYolkViewer({
           (stage===s.id?"border-foreground/55 bg-background/95 text-foreground":"border-foreground/15 bg-background/70 text-foreground/55 hover:border-foreground/40")}>
         {s.label}</button>)}
     </div>}
-    <div className="relative aspect-square w-full max-w-[650px] min-h-0">
+    <div className="relative aspect-square w-full min-h-0 overflow-visible">
       {showingBound ? (
         <div className="relative flex h-full w-full flex-col items-center justify-center"
           data-testid="yolk-bound-visual">
@@ -201,9 +241,9 @@ export default function EggYolkViewer({
         </div>
       ) : !fileUrl?<svg viewBox="0 0 600 600" role="img"
         aria-label={"Поворотный пространственный эскиз кресла: "+label+", вариант "+variant+"; не утверждённый объект"}
-        className="h-full w-full cursor-grab select-none touch-none active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="h-full w-full overflow-visible cursor-grab select-none touch-none active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{overflow:"visible",touchAction:"none"}}
         tabIndex={0} onPointerDown={dragStart} onPointerMove={dragMove} onPointerUp={dragStop}
-        onPointerCancel={dragStop} onLostPointerCapture={dragStop} onWheel={wheel}
+        onPointerCancel={dragStop} onLostPointerCapture={dragStop} onTouchStart={touchStart} onTouchMove={touchMove} onTouchEnd={touchEnd} onTouchCancel={touchEnd} onWheel={wheel}
         onKeyDown={e=>{
           if(e.key==="ArrowLeft"){e.preventDefault();setYaw(v=>v-.14);}
           if(e.key==="ArrowRight"){e.preventDefault();setYaw(v=>v+.14);}
