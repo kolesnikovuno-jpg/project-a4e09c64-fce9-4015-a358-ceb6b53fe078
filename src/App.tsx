@@ -31,6 +31,7 @@ import EggOAuthConsent from "./pages/EggOAuthConsent";
 import EggConnect from "./pages/EggConnect";
 import EggStablePreview from "./components/egg/EggStablePreview";
 import EggYolkExperience from "./components/egg/EggYolkExperience";
+import EggAuthorWorkspace from "./pages/EggAuthorWorkspace";
 import EggCollaboration from "./pages/EggCollaboration";
 import EggDemo from "./pages/EggDemo";
 import OperatorCases from "./pages/OperatorCases";
@@ -174,6 +175,7 @@ const App = () => (
           <Route path="/egg/connect" element={<EggStablePreview><EggConnect /></EggStablePreview>} />
           <Route path="/egg/collab" element={<EggStablePreview><EggCollaboration /></EggStablePreview>} />
           <Route path="/egg/demo" element={<EggStablePreview><EggDemo /></EggStablePreview>} />
+          <Route path="/egg/author" element={<EggAuthorWorkspace />} />
           <Route path="/egg/yolk" element={<EggRenderBoundary><EggStablePreview><EggYolkExperience /></EggStablePreview></EggRenderBoundary>} />
 
           {/* Internal operator workspace */}
