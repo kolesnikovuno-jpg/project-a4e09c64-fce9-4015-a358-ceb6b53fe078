@@ -27,7 +27,7 @@ function projectPoint(p:Vec3,yaw:number,pitch:number,zoom:number):Projection{
   return {x:300+x*factor,y:315-y*factor,depth};
 }
 export default function EggYolkViewer({
-  onFileChange, onSketchChange, level=1, iteration=1, projectId, visualVersion=null
+  onFileChange, onSketchChange, level=1, iteration=1, projectId, visualVersion=null, minimalControls=false
 }:{
   onFileChange?:(fileName:string|null)=>void;
   /** Existing Author-linked source; never inferred from parametric local study. */
@@ -36,6 +36,7 @@ export default function EggYolkViewer({
   level?:number;
   iteration?:number;
   projectId?:string;
+  minimalControls?:boolean;
 }){
   const [stage,setStage]=useState<SpatialStage>(()=>stageFromLevel(level));
   const [variant,setVariant]=useState<SpatialVariant>("A");
@@ -144,7 +145,7 @@ export default function EggYolkViewer({
   const label=STAGES.find(s=>s.id===stage)?.label??"Линии";
   const pts=(points:Projection[])=>points.map(p=>p.x.toFixed(1)+","+p.y.toFixed(1)).join(" ");
   return <div className="relative flex h-full min-h-0 w-full flex-col items-center justify-center" data-testid="yolk-viewer">
-    {!showingBound&&<div className="absolute inset-x-0 top-[4%] z-20 flex flex-wrap justify-center gap-2 px-2" role="group" aria-label="Уровень пространственной проработки">
+    {!minimalControls&&!showingBound&&<div className="absolute inset-x-0 top-[4%] z-20 flex flex-wrap justify-center gap-2 px-2" role="group" aria-label="Уровень пространственной проработки">
       {STAGES.map(s=><button key={s.id} type="button" onClick={()=>setStage(s.id)} aria-pressed={stage===s.id}
         data-testid={"yolk-stage-"+s.id}
         className={"min-h-8 rounded-full border px-3 py-1 text-[11px] font-light backdrop-blur-sm transition-colors "+
@@ -214,14 +215,14 @@ export default function EggYolkViewer({
         style:{height:"100%",width:"100%",background:"transparent"}
       }):<div className="grid h-full place-items-center text-xs text-foreground/60">Подключаем 3D-просмотрщик…</div>}
     </div>
-    {!showingBound&&<div className="absolute inset-x-0 bottom-[12%] z-20 flex flex-wrap justify-center gap-1.5 px-2" role="group" aria-label="Линии формообразования">
+    {!minimalControls&&!showingBound&&<div className="absolute inset-x-0 bottom-[12%] z-20 flex flex-wrap justify-center gap-1.5 px-2" role="group" aria-label="Линии формообразования">
       {VARIANTS.map(v=><button type="button" key={v.id} onClick={()=>setVariant(v.id)}
         aria-pressed={variant===v.id} data-testid={"yolk-variant-"+v.id}
         className={"min-h-8 rounded-full border px-2.5 py-1 text-[10px] font-light backdrop-blur-sm "+
           (variant===v.id?"border-foreground/50 bg-background/95 text-foreground":"border-foreground/15 bg-background/70 text-foreground/55 hover:border-foreground/40")}>
         {v.label}</button>)}
     </div>}
-    <div className="absolute inset-x-2 bottom-[2%] z-20 flex flex-wrap items-center justify-center gap-2 text-[11px]">
+    <div className={(minimalControls?"hidden":"flex")+" absolute inset-x-2 bottom-[2%] z-20 flex flex-wrap items-center justify-center gap-2 text-[11px]">
       {visualVersion&&<button type="button" onClick={()=>setShowSketch(v=>!v)}
         data-testid="yolk-visual-mode"
         className="rounded-full border border-foreground/35 bg-background/95 px-3 py-1.5 text-[11px]">
