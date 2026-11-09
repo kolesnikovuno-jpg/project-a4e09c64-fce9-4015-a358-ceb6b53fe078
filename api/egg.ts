@@ -201,7 +201,15 @@ export default async function handler(req: Request, res: Response) {
           .select("id,title,content,source_kind,claim_type,created_at,actor_kind,operation_id")
           .eq("project_id",projectId).order("created_at",{ascending:false}).limit(250);
         if(error)throw new RequestFailure(503,"field_read_failed");
-        respond(res,200,{ok:true,items});return;
+        const media=items?.filter((x:{content:string})=>x.content.includes('"kind":"canvas_image"'))??[];
+        const signed:Record<string,string>={};
+        for(const item of media){try{
+          const value=JSON.parse(item.content) as {kind:string;image:{path:string;id:string}};
+          if(value.kind!=="canvas_image"||!value.image?.path?.startsWith(projectId+"/"))continue;
+          const result=await db.storage.from("egg-author-media").createSignedUrl(value.image.path,3600);
+          if(result.data?.signedUrl)signed[value.image.id]=result.data.signedUrl;
+        }catch{}}
+        respond(res,200,{ok:true,items,signed});return;
       }
       if (url.searchParams.get("list") === "1") {
         if (identity.kind !== "author") throw new RequestFailure(403, "author_required");
@@ -264,6 +272,36 @@ export default async function handler(req: Request, res: Response) {
       if (createError || !created) throw new RequestFailure(503, "channel_creation_failed");
       respond(res, 201, { ok: true, channelId: (created as { id: string }).id });
       return;
+    }
+    if(raw&&typeof raw==="object"&&!Array.isArray(raw)&&["media_upload","media_register"].includes(String((raw as Record<string,unknown>).command))){
+      const input=raw as Record<string,unknown>;
+      if(identity.kind!=="author")throw new RequestFailure(403,"author_required");
+      const projectId=String(input.projectId||"");
+      await checkedProject(db,projectId,identity,"author");
+      const imageId=String(input.imageId||"");
+      if(!uuid(imageId))throw new RequestFailure(400,"invalid_image_id");
+      if(input.command==="media_upload"){
+        const mime=String(input.mime||"");
+        if(!["image/png","image/jpeg","image/webp"].includes(mime))throw new RequestFailure(400,"invalid_media_type");
+        const path=projectId+"/"+imageId+"."+({ "image/png":"png","image/jpeg":"jpg","image/webp":"webp" } as Record<string,string>)[mime];
+        const {data,error}=await db.storage.from("egg-author-media").createSignedUploadUrl(path);
+        if(error||!data)throw new RequestFailure(503,"media_upload_unavailable");
+        respond(res,200,{ok:true,path,token:data.token});return;
+      }
+      const path=String(input.path||"");
+      if(!new RegExp("^"+projectId+"/"+imageId+"\\\\.(png|jpg|webp)$").test(path))throw new RequestFailure(400,"invalid_media_path");
+      const x=Number(input.x),y=Number(input.y),w=Number(input.w),h=Number(input.h);
+      if(![x,y,w,h].every(n=>Number.isFinite(n)&&n>=0&&n<=1000))throw new RequestFailure(400,"invalid_media_geometry");
+      const {data:existing,error:lookupError}=await db.storage.from("egg-author-media").info(path);
+      if(lookupError||!existing)throw new RequestFailure(400,"media_not_uploaded");
+      const content=JSON.stringify({kind:"canvas_image",image:{id:imageId,path,x,y,w,h}});
+      const {error}=await db.from("egg_field_items" as never).insert({
+        project_id:projectId,sphere:null,flow:"field",origin:"internal",source_kind:"human",
+        title:"Холст / изображение "+imageId,content,claim_type:"proposal",
+        actor_kind:"user",created_by:identity.ownerId,operation_id:"media_"+imageId.replace(/-/g,""),
+      } as never);
+      if(error)throw new RequestFailure(503,"media_register_failed");
+      respond(res,201,{ok:true});return;
     }
     if(raw&&typeof raw==="object"&&!Array.isArray(raw)&&(raw as Record<string,unknown>).command==="save_fragment"){
       const input=raw as Record<string,unknown>;
