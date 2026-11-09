@@ -6,6 +6,7 @@ import {ArrowLeft,ImagePlus,Pencil,Eraser,Download,Copy,Trash2,Undo2} from "luci
 type Mark={points:{x:number;y:number}[];color:string;size:number};
 type Fragment={id:string;x:number;y:number;w:number;h:number;note:string;createdAt:string};
 type BoardImage={id:string;src:string;x:number;y:number;w:number;h:number;path?:string};
+const isPersistentImage=(im:BoardImage)=>Boolean(im.path);
 const keyFor=(id:string)=>"egg-author-draft-"+id;
 export default function EggAuthorWorkspace(){
  const [params]=useSearchParams();
@@ -33,8 +34,8 @@ export default function EggAuthorWorkspace(){
  const drawing=useRef(false);
  const drag=useRef<{id:string;x:number;y:number;ox:number;oy:number}|null>(null);
  const file=useRef<HTMLInputElement>(null);
- useEffect(()=>{try{const saved=JSON.parse(localStorage.getItem(keyFor(id))??"null");if(saved){setText(saved.text??"");setImages(saved.images??[]);setMarks(saved.marks??[]);setFindings(saved.findings??[]);setFragments(saved.fragments??[]);}}catch{}},[id]);
- useEffect(()=>{const t=window.setTimeout(()=>{try{localStorage.setItem(keyFor(id),JSON.stringify({text,images,marks,findings,fragments}));}catch{setNotice("Недостаточно памяти браузера для сохранения. Экспортируйте черновик.");}},400);return()=>clearTimeout(t);},[id,text,images,marks,findings,fragments]);
+ useEffect(()=>{try{const saved=JSON.parse(localStorage.getItem(keyFor(id))??"null");if(saved){setText(saved.text??"");setImages((saved.images??[]).filter((im:BoardImage)=>!im.src?.startsWith("blob:")));setMarks(saved.marks??[]);setFindings(saved.findings??[]);setFragments(saved.fragments??[]);}}catch{}},[id]);
+ useEffect(()=>{const t=window.setTimeout(()=>{try{localStorage.setItem(keyFor(id),JSON.stringify({text,images:images.filter(im=>!im.src.startsWith("blob:")).map(im=>im.path?{...im,src:""}:im),marks,findings,fragments}));}catch{setNotice("Недостаточно памяти браузера для сохранения. Экспортируйте черновик.");}},400);return()=>clearTimeout(t);},[id,text,images,marks,findings,fragments]);
  useEffect(()=>{let cancelled=false;let timer:number|undefined;
   const refresh=async()=>{try{
    const cfgResponse=await fetch("/api/egg-config",{cache:"no-store"});
@@ -50,7 +51,16 @@ export default function EggAuthorWorkspace(){
    if(cancelled)return;
    const remoteImages:BoardImage[]=[];
    for(const item of body.items){try{const v=JSON.parse(item.content) as {kind?:string;image?:BoardImage};if(v.kind==="canvas_image"&&v.image&&body.signed?.[v.image.id])remoteImages.push({...v.image,src:body.signed[v.image.id]});}catch{}}
-   setImages(current=>{const known=new Set(current.map(x=>x.id));const fresh=remoteImages.filter(x=>!known.has(x.id));return fresh.length?[...current,...fresh]:current;});
+   setImages(current=>{
+    const remote=new Map(remoteImages.map(im=>[im.id,im]));
+    const merged=current.map(im=>{
+      const cloud=remote.get(im.id);
+      if(!cloud)return im;
+      remote.delete(im.id);
+      return {...im,src:cloud.src,path:cloud.path};
+    });
+    return [...merged,...remote.values()];
+   });
    setRemoteFindings(body.items.filter(x=>x.actor_kind==="agent"||!x.content.includes('"kind":"canvas_fragment"')));
    const latest=new Map<string,Fragment>();
    for(const item of body.items){try{const parsed=JSON.parse(item.content) as {kind?:string;fragment?:Fragment};if(parsed.kind==="canvas_fragment"&&parsed.fragment&&!latest.has(parsed.fragment.id))latest.set(parsed.fragment.id,parsed.fragment);}catch{}}
@@ -151,7 +161,7 @@ export default function EggAuthorWorkspace(){
    <div className="mt-2 flex items-center justify-between text-[11px] text-foreground/50"><span>Изображений: {images.length} · линий: {marks.length}</span><button type="button" onClick={()=>{if(active)setImages(v=>v.filter(im=>im.id!==active));setActive(null);}} disabled={!active} className="flex items-center gap-1 disabled:opacity-35"><Trash2 size={13}/> Удалить выбранное</button></div>
    </section>
    <section className="flex min-w-0 flex-col gap-3">{selectedFragment&&fragments.some(f=>f.id===selectedFragment)&&<div className="rounded-xl border border-amber-700/30 p-3"><h3 className="mb-2 text-xs font-medium">Выбранный фрагмент</h3><p className="mb-2 break-all text-[10px] text-foreground/50">ID: {selectedFragment}</p><textarea aria-label="Заметка к фрагменту" value={fragments.find(f=>f.id===selectedFragment)?.note??""} onChange={e=>setFragments(v=>v.map(f=>f.id===selectedFragment?{...f,note:e.target.value}:f))} placeholder="Что именно требуется исследовать в этой области?" className="min-h-20 w-full rounded-lg border border-foreground/15 bg-transparent p-2 text-xs"/><button type="button" onClick={()=>{setFragments(v=>v.filter(f=>f.id!==selectedFragment));setSelectedFragment(null);}} className="mt-2 text-xs text-foreground/60">Удалить выделение</button></div>}<h2 className="text-xs text-foreground/60">Замысел / свободная формулировка</h2><textarea aria-label="Замысел Автора" value={text} onChange={e=>setText(e.target.value)} placeholder="С чего начинается идея? Что важно сохранить? Какие образы, ощущения, функции или ограничения уже известны?" className="min-h-[240px] w-full flex-1 resize-y rounded-2xl border border-foreground/15 bg-transparent p-4 text-sm leading-relaxed outline-none focus:border-foreground/45"/>
-    <p className="text-[11px] leading-relaxed text-foreground/55">Черновик холста хранится в браузере. Изображения загружаются в EGG после выбора; рисунки пока локальные. Фрагменты и заметки синхронизируются при авторизации. {bridgeStatus}.</p>
+    <p className="text-[11px] leading-relaxed text-foreground/55">Черновик холста хранится в браузере. Изображения с подтверждённым сохранением загружаются из EGG; рисунки пока локальные. Фрагменты и заметки синхронизируются при авторизации. {bridgeStatus}.</p>
     <button type="button" onClick={()=>setShowTransfer(v=>!v)} className="flex items-center justify-center gap-2 rounded-xl border border-foreground/30 px-4 py-3 text-sm"><Copy size={15}/> Перейти к обсуждению с ИИ</button>
     {showTransfer&&<div className="rounded-xl border border-foreground/15 p-3 text-xs leading-relaxed"><p>1. Скопируйте контекст. 2. Откройте ChatGPT и вставьте его в диалог. 3. При необходимости приложите изображения или экспорт холста. 4. Вернувшись, сохраните вывод ниже.</p><div className="mt-3 flex flex-wrap gap-3"><button type="button" onClick={()=>void copy()} className="rounded-lg border border-foreground/25 px-3 py-2">Скопировать контекст</button><a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" className="rounded-lg border border-foreground/25 px-3 py-2">Открыть ChatGPT ↗</a></div><p className="mt-2 text-foreground/55">Это ручной переход, не автоматическая синхронизация с чатом.</p></div>}
     <div className="rounded-xl border border-foreground/15 p-3"><h3 className="mb-2 text-xs font-medium">Вернуть итог обсуждения на холст</h3><textarea value={discussion} onChange={e=>setDiscussion(e.target.value)} aria-label="Итог обсуждения с ИИ" placeholder="Вставьте сюда выбранный вывод из диалога. Он останется рабочей заметкой до вашего утверждения." className="min-h-24 w-full resize-y rounded-lg border border-foreground/15 bg-transparent p-2 text-xs"/><button type="button" disabled={!discussion.trim()} onClick={addFinding} className="mt-2 rounded-lg border border-foreground/25 px-3 py-2 text-xs disabled:opacity-40">Добавить вывод</button>{findings.length>0&&<div className="mt-3 space-y-2">{findings.map((f,i)=><div key={f.id} className="rounded-lg bg-foreground/5 p-2"><div className="flex justify-between gap-2"><span className="text-[10px] text-foreground/55">Заметка {i+1}</span><button type="button" onClick={()=>setFindings(v=>v.filter(x=>x.id!==f.id))} aria-label="Удалить заметку" className="text-foreground/55"><Trash2 size={13}/></button></div><p className="mt-1 whitespace-pre-wrap text-xs">{f.text}</p></div>)}</div>}</div>
