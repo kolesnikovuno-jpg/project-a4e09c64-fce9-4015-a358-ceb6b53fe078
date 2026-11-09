@@ -6,7 +6,6 @@ import {ArrowLeft,ImagePlus,Pencil,Eraser,Download,Copy,Trash2,Undo2} from "luci
 type Mark={points:{x:number;y:number}[];color:string;size:number};
 type Fragment={id:string;x:number;y:number;w:number;h:number;note:string;createdAt:string};
 type BoardImage={id:string;src:string;x:number;y:number;w:number;h:number;path?:string};
-const isPersistentImage=(im:BoardImage)=>Boolean(im.path);
 const keyFor=(id:string)=>"egg-author-draft-"+id;
 export default function EggAuthorWorkspace(){
  const [params]=useSearchParams();
