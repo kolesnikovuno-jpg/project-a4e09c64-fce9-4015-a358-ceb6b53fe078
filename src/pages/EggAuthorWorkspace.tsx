@@ -75,9 +75,29 @@ export default function EggAuthorWorkspace(){
  const down=(e:PointerEvent<HTMLDivElement>)=>{if(tool==="select"){const p=xy(e);regionStart.current=p;setRegion({...p,w:0,h:0});e.currentTarget.setPointerCapture(e.pointerId);return;}if(tool==="move")return;if((e.target as HTMLElement).closest("[data-board-image]"))return;const p=xy(e);drawing.current=true;e.currentTarget.setPointerCapture(e.pointerId);if(tool==="erase"){setMarks(v=>v.filter(m=>!m.points.some(q=>Math.hypot(q.x-p.x,q.y-p.y)<24)));return;}setMarks(v=>[...v,{points:[p],color:"#8b654e",size:3}]);};
  const move=(e:PointerEvent<HTMLDivElement>)=>{if(tool==="select"&&regionStart.current){const p=xy(e),a=regionStart.current;setRegion({x:Math.min(a.x,p.x),y:Math.min(a.y,p.y),w:Math.abs(p.x-a.x),h:Math.abs(p.y-a.y)});return;}if(drag.current){const p=xy(e),d=drag.current;setImages(v=>v.map(im=>im.id===d.id?{...im,x:Math.max(0,Math.min(850,d.ox+p.x-d.x)),y:Math.max(0,Math.min(520,d.oy+p.y-d.y))}:im));return;}if(!drawing.current||tool!=="pen")return;const p=xy(e);setMarks(v=>v.map((m,i)=>i===v.length-1?{...m,points:[...m.points,p]}:m));};
  const stop=()=>{if(regionStart.current&&region&&region.w>15&&region.h>15){const f={...region,id:crypto.randomUUID(),note:"",createdAt:new Date().toISOString()};setFragments(v=>[...v,f]);setSelectedFragment(f.id);}regionStart.current=null;setRegion(null);drawing.current=false;drag.current=null;};
+ const normalizePhoto=async(file:File):Promise<File>=>{
+  if(["image/jpeg","image/png","image/webp"].includes(file.type))return file;
+  const isHeic=/\\.(heic|heif)$/i.test(file.name)||/image\\/(heic|heif)/i.test(file.type);
+  if(!isHeic)throw Error("Неподдерживаемый формат фотографии");
+  const url=URL.createObjectURL(file);
+  try{
+   const image=new Image();image.src=url;
+   await image.decode();
+   const canvas=document.createElement("canvas");
+   canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
+   const ctx=canvas.getContext("2d");if(!ctx)throw Error("Недоступно преобразование изображения");
+   ctx.drawImage(image,0,0);
+   const blob=await new Promise<Blob|null>(resolve=>canvas.toBlob(resolve,"image/jpeg",0.86));
+   if(!blob)throw Error("Не удалось преобразовать фотографию");
+   return new File([blob],file.name.replace(/\\.(heic|heif)$/i,"")+".jpg",{type:"image/jpeg"});
+  }catch{throw Error("Safari не смог преобразовать HEIC. Выбери фото через «Поделиться» → «Сохранить в Файлы» в JPEG или используй JPEG.");}
+  finally{URL.revokeObjectURL(url);}
+ };
  const add=(e:ChangeEvent<HTMLInputElement>)=>{
   const fs=Array.from(e.target.files??[]).slice(0,6);e.target.value="";
-  fs.forEach(async f=>{
+  fs.forEach(async original=>{
+   let f:File;
+   try{f=await normalizePhoto(original);}catch(err){setNotice(err instanceof Error?err.message:"Формат не поддерживается");return;}
    if(!["image/png","image/jpeg","image/webp"].includes(f.type)||f.size>3*1024*1024){setNotice("Файл не добавлен: нужен PNG, JPEG или WebP до 3 МБ. Для HEIC выбери экспорт в JPEG.");return;}
    const imageId=crypto.randomUUID(),placement={id:imageId,x:80+(images.length%4)*85,y:70+(images.length%3)*60,w:280,h:210};
    const localUrl=URL.createObjectURL(f);
@@ -111,7 +131,7 @@ export default function EggAuthorWorkspace(){
   <header className="mx-auto mb-5 flex max-w-6xl items-center justify-between gap-3"><Link to={"/egg/yolk"+(params.get("project")?"?project="+encodeURIComponent(id):"")} className="flex items-center gap-2 text-xs text-foreground/65"><ArrowLeft size={15}/> Желток</Link><h1 className="text-sm font-light tracking-widest">EGG / АВТОР</h1><button type="button" onClick={exportDraft} className="flex items-center gap-1 text-xs"><Download size={15}/> Экспорт</button></header>
   <div className="mx-auto grid max-w-6xl gap-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,1fr)]">
    <section className="min-w-0"><div className="mb-2 flex flex-wrap items-center justify-between gap-2"><h2 className="text-xs text-foreground/60">Визуальный холст · референсы и пометки</h2><div className="flex gap-2">
-    <input ref={file} type="file" accept="image/*" multiple className="hidden" onChange={add}/>
+    <input ref={file} type="file" accept="image/*,.heic,.heif" multiple className="hidden" onChange={add}/>
     <button type="button" aria-label="Добавить изображения" onClick={()=>file.current?.click()} className="rounded-full border border-foreground/20 p-2"><ImagePlus size={17}/></button>
     <button type="button" aria-label="Рисовать" aria-pressed={tool==="pen"} onClick={()=>setTool("pen")} className={"rounded-full border p-2 "+(tool==="pen"?"border-foreground/70":"border-foreground/20")}><Pencil size={17}/></button>
     <button type="button" aria-label="Перемещать изображения" aria-pressed={tool==="move"} onClick={()=>setTool("move")} className={"rounded-full border px-3 py-2 text-xs "+(tool==="move"?"border-foreground/70":"border-foreground/20")}>Двигать</button>
