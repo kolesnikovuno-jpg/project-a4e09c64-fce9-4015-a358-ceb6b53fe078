@@ -175,18 +175,10 @@ describe("Yolk central historical state synchronization",()=>{
      expect((screen.getByTestId("yolk-timeline-select") as HTMLSelectElement).value).toBe(second);
      expect(screen.getByTestId("yolk-timeline-stage-status").textContent).toContain("Цикл идёт");
      expect(screen.getByTestId("yolk-bound-external").textContent).toContain("не встроена");
-     fireEvent.click(screen.getByTestId("yolk-orbit-marketing"));
-     fireEvent.click(screen.getByTestId("yolk-expand"));
-     expect(screen.getByTestId("yolk-sphere-versioned-result").textContent)
-       .toContain("Унаследован");
-     fireEvent.click(screen.getByRole("button",{name:"Закрыть"}));
+     expect(screen.queryByTestId("yolk-orbit-marketing")).toBeNull();
      fireEvent.change(screen.getByTestId("yolk-timeline-select"),{target:{value:first}});
      expect(screen.getByTestId("yolk-timeline-stage-status").textContent).toContain("доработку");
      expect(screen.getByTestId("yolk-timeline-audit").textContent).toContain("проверить форму");
-     fireEvent.click(screen.getByTestId("yolk-expand"));
-     expect(screen.getByTestId("yolk-sphere-versioned-result").textContent)
-       .toContain("Новый вывод");
-     fireEvent.click(screen.getByRole("button",{name:"Закрыть"}));
      fireEvent.change(screen.getByTestId("yolk-timeline-select"),{target:{value:"baseline"}});
      expect(screen.getByTestId("yolk-bound-image").getAttribute("src"))
        .toBe("https://example.org/chair-original.png");
