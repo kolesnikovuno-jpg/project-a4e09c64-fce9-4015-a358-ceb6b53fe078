@@ -131,6 +131,42 @@ export default function EggAuthorWorkspace(){
    }catch(err){setNotice("Изображение видно на холсте, но не сохранено в облаке: "+(err instanceof Error?err.message:"ошибка загрузки"));}
   });
  };
+ const exportFragmentImage=async()=>{
+  const f=fragments.find(item=>item.id===selectedFragment);
+  if(!f)return;
+  const scale=2,canvas=document.createElement("canvas");
+  canvas.width=Math.max(1,Math.round(f.w*scale));canvas.height=Math.max(1,Math.round(f.h*scale));
+  const ctx=canvas.getContext("2d");if(!ctx){setNotice("Экспорт недоступен");return;}
+  ctx.fillStyle="#f4f0e8";ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.scale(scale,scale);ctx.translate(-f.x,-f.y);
+  let drawn=0;
+  for(const im of images){
+   if(im.x+im.w<f.x||im.y+im.h<f.y||im.x>f.x+f.w||im.y>f.y+f.h||!im.src)continue;
+   try{
+    const response=await fetch(im.src);
+    if(!response.ok)throw Error("image_unavailable");
+    const blob=await response.blob();
+    const bitmap=await createImageBitmap(blob);
+    const ratio=Math.min(im.w/bitmap.width,im.h/bitmap.height);
+    const w=bitmap.width*ratio,h=bitmap.height*ratio;
+    ctx.drawImage(bitmap,im.x+(im.w-w)/2,im.y+(im.h-h)/2,w,h);
+    bitmap.close();drawn++;
+   }catch{setNotice("Не все изображения доступны. Обновите холст и повторите экспорт.");return;}
+  }
+  for(const mark of marks){
+   if(!mark.points.length)continue;
+   ctx.beginPath();ctx.strokeStyle=mark.color;ctx.lineWidth=mark.size;ctx.lineCap="round";ctx.lineJoin="round";
+   mark.points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
+  }
+  if(!drawn&&!marks.length){setNotice("В выбранной области нет доступного изображения или рисунка.");return;}
+  canvas.toBlob(blob=>{
+   if(!blob){setNotice("Не удалось создать PNG");return;}
+   const url=URL.createObjectURL(blob),a=document.createElement("a");
+   a.href=url;a.download="EGG-fragment-"+f.id.slice(0,8)+".png";a.click();
+   window.setTimeout(()=>URL.revokeObjectURL(url),2000);
+   setNotice("Фрагмент экспортирован в PNG. Прикрепите его к сообщению в ChatGPT вместе с заметкой.");
+  },"image/png");
+ };
  const payload={version:2,project:id,text,images,marks,findings,fragments,exportedAt:new Date().toISOString()};
  const transferText=()=>["EGG — контекст Автора","Проект: "+id,"Замысел:",text||"(пока не сформулирован)","Выводы предыдущих обсуждений:",...findings.map((f,i)=>String(i+1)+". "+f.text),"Фрагменты холста:",...fragments.map((f,i)=>String(i+1)+". ID "+f.id+"; область "+[f.x,f.y,f.w,f.h].map(Math.round).join(", ")+"; заметка: "+(f.note||"нет")),"Визуальные материалы: "+images.length+" изображений, "+marks.length+" линий. Для визуального анализа приложите экспорт холста.","Задача: исследуй замысел, сохрани авторское ядро, отдели факты от гипотез и предложи варианты. Не утверждай решения вместо Автора."].join("\n\n");
  const addFinding=()=>{const value=discussion.trim();if(!value)return;setFindings(v=>[...v,{id:crypto.randomUUID(),text:value,createdAt:new Date().toISOString()}]);setDiscussion("");setNotice("Итог обсуждения добавлен в материалы Автора. Он не утверждён как концепция.");};
@@ -159,7 +195,7 @@ export default function EggAuthorWorkspace(){
    </div>
    <div className="mt-2 flex items-center justify-between text-[11px] text-foreground/50"><span>Изображений: {images.length} · линий: {marks.length}</span><button type="button" onClick={()=>{if(active)setImages(v=>v.filter(im=>im.id!==active));setActive(null);}} disabled={!active} className="flex items-center gap-1 disabled:opacity-35"><Trash2 size={13}/> Удалить выбранное</button></div>
    </section>
-   <section className="flex min-w-0 flex-col gap-3">{selectedFragment&&fragments.some(f=>f.id===selectedFragment)&&<div className="rounded-xl border border-amber-700/30 p-3"><h3 className="mb-2 text-xs font-medium">Выбранный фрагмент</h3><p className="mb-2 break-all text-[10px] text-foreground/50">ID: {selectedFragment}</p><textarea aria-label="Заметка к фрагменту" value={fragments.find(f=>f.id===selectedFragment)?.note??""} onChange={e=>setFragments(v=>v.map(f=>f.id===selectedFragment?{...f,note:e.target.value}:f))} placeholder="Что именно требуется исследовать в этой области?" className="min-h-20 w-full rounded-lg border border-foreground/15 bg-transparent p-2 text-xs"/><button type="button" onClick={()=>{setFragments(v=>v.filter(f=>f.id!==selectedFragment));setSelectedFragment(null);}} className="mt-2 text-xs text-foreground/60">Удалить выделение</button></div>}<h2 className="text-xs text-foreground/60">Замысел / свободная формулировка</h2><textarea aria-label="Замысел Автора" value={text} onChange={e=>setText(e.target.value)} placeholder="С чего начинается идея? Что важно сохранить? Какие образы, ощущения, функции или ограничения уже известны?" className="min-h-[240px] w-full flex-1 resize-y rounded-2xl border border-foreground/15 bg-transparent p-4 text-sm leading-relaxed outline-none focus:border-foreground/45"/>
+   <section className="flex min-w-0 flex-col gap-3">{selectedFragment&&fragments.some(f=>f.id===selectedFragment)&&<div className="rounded-xl border border-amber-700/30 p-3"><h3 className="mb-2 text-xs font-medium">Выбранный фрагмент</h3><p className="mb-2 break-all text-[10px] text-foreground/50">ID: {selectedFragment}</p><textarea aria-label="Заметка к фрагменту" value={fragments.find(f=>f.id===selectedFragment)?.note??""} onChange={e=>setFragments(v=>v.map(f=>f.id===selectedFragment?{...f,note:e.target.value}:f))} placeholder="Что именно требуется исследовать в этой области?" className="min-h-20 w-full rounded-lg border border-foreground/15 bg-transparent p-2 text-xs"/><button type="button" onClick={()=>void exportFragmentImage()} className="mt-2 mr-3 rounded-lg border border-foreground/25 px-3 py-2 text-xs">Сохранить фрагмент PNG для ChatGPT</button><button type="button" onClick={()=>{setFragments(v=>v.filter(f=>f.id!==selectedFragment));setSelectedFragment(null);}} className="mt-2 text-xs text-foreground/60">Удалить выделение</button></div>}<h2 className="text-xs text-foreground/60">Замысел / свободная формулировка</h2><textarea aria-label="Замысел Автора" value={text} onChange={e=>setText(e.target.value)} placeholder="С чего начинается идея? Что важно сохранить? Какие образы, ощущения, функции или ограничения уже известны?" className="min-h-[240px] w-full flex-1 resize-y rounded-2xl border border-foreground/15 bg-transparent p-4 text-sm leading-relaxed outline-none focus:border-foreground/45"/>
     <p className="text-[11px] leading-relaxed text-foreground/55">Черновик холста хранится в браузере. Изображения с подтверждённым сохранением загружаются из EGG; рисунки пока локальные. Фрагменты и заметки синхронизируются при авторизации. {bridgeStatus}.</p>
     <button type="button" onClick={()=>setShowTransfer(v=>!v)} className="flex items-center justify-center gap-2 rounded-xl border border-foreground/30 px-4 py-3 text-sm"><Copy size={15}/> Перейти к обсуждению с ИИ</button>
     {showTransfer&&<div className="rounded-xl border border-foreground/15 p-3 text-xs leading-relaxed"><p>1. Скопируйте контекст. 2. Откройте ChatGPT и вставьте его в диалог. 3. При необходимости приложите изображения или экспорт холста. 4. Вернувшись, сохраните вывод ниже.</p><div className="mt-3 flex flex-wrap gap-3"><button type="button" onClick={()=>void copy()} className="rounded-lg border border-foreground/25 px-3 py-2">Скопировать контекст</button><a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" className="rounded-lg border border-foreground/25 px-3 py-2">Открыть ChatGPT ↗</a></div><p className="mt-2 text-foreground/55">Это ручной переход, не автоматическая синхронизация с чатом.</p></div>}
