@@ -298,7 +298,7 @@ export default async function handler(req: Request, res: Response) {
       const {error}=await db.from("egg_field_items" as never).insert({
         project_id:projectId,sphere:null,flow:"field",origin:"internal",source_kind:"human",
         title:"Холст / изображение "+imageId,content,claim_type:"proposal",
-        actor_kind:"user",created_by:identity.ownerId,operation_id:"media_"+imageId.replace(/-/g,""),
+        actor_kind:"user",created_by:identity.ownerId,operation_id:null,
       } as never);
       if(error)throw new RequestFailure(503,"media_register_failed");
       respond(res,201,{ok:true});return;
