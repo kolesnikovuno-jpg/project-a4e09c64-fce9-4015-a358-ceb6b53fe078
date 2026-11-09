@@ -60,7 +60,11 @@ export default function EggAuthorWorkspace(){
     });
     return [...merged,...remote.values()];
    });
-   setRemoteFindings(body.items.filter(x=>x.actor_kind==="agent"||!x.content.includes('"kind":"canvas_fragment"')));
+   setRemoteFindings(body.items.filter(item=>{
+    if(item.content.includes('"kind":"canvas_fragment"')||item.content.includes('"kind":"canvas_image"'))return false;
+    if(item.title.startsWith("Проверка канала")||item.title.startsWith("Холст /"))return false;
+    return item.actor_kind==="agent";
+   }));
    const latest=new Map<string,Fragment>();
    for(const item of body.items){try{const parsed=JSON.parse(item.content) as {kind?:string;fragment?:Fragment};if(parsed.kind==="canvas_fragment"&&parsed.fragment&&!latest.has(parsed.fragment.id))latest.set(parsed.fragment.id,parsed.fragment);}catch{}}
    setFragments(current=>{const localIds=new Set(current.map(f=>f.id));return [...current,...Array.from(latest.values()).filter(f=>!localIds.has(f.id))];});
@@ -200,7 +204,17 @@ export default function EggAuthorWorkspace(){
     <button type="button" onClick={()=>setShowTransfer(v=>!v)} className="flex items-center justify-center gap-2 rounded-xl border border-foreground/30 px-4 py-3 text-sm"><Copy size={15}/> Перейти к обсуждению с ИИ</button>
     {showTransfer&&<div className="rounded-xl border border-foreground/15 p-3 text-xs leading-relaxed"><p>1. Скопируйте контекст. 2. Откройте ChatGPT и вставьте его в диалог. 3. При необходимости приложите изображения или экспорт холста. 4. Вернувшись, сохраните вывод ниже.</p><div className="mt-3 flex flex-wrap gap-3"><button type="button" onClick={()=>void copy()} className="rounded-lg border border-foreground/25 px-3 py-2">Скопировать контекст</button><a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" className="rounded-lg border border-foreground/25 px-3 py-2">Открыть ChatGPT ↗</a></div><p className="mt-2 text-foreground/55">Это ручной переход, не автоматическая синхронизация с чатом.</p></div>}
     <div className="rounded-xl border border-foreground/15 p-3"><h3 className="mb-2 text-xs font-medium">Вернуть итог обсуждения на холст</h3><textarea value={discussion} onChange={e=>setDiscussion(e.target.value)} aria-label="Итог обсуждения с ИИ" placeholder="Вставьте сюда выбранный вывод из диалога. Он останется рабочей заметкой до вашего утверждения." className="min-h-24 w-full resize-y rounded-lg border border-foreground/15 bg-transparent p-2 text-xs"/><button type="button" disabled={!discussion.trim()} onClick={addFinding} className="mt-2 rounded-lg border border-foreground/25 px-3 py-2 text-xs disabled:opacity-40">Добавить вывод</button>{findings.length>0&&<div className="mt-3 space-y-2">{findings.map((f,i)=><div key={f.id} className="rounded-lg bg-foreground/5 p-2"><div className="flex justify-between gap-2"><span className="text-[10px] text-foreground/55">Заметка {i+1}</span><button type="button" onClick={()=>setFindings(v=>v.filter(x=>x.id!==f.id))} aria-label="Удалить заметку" className="text-foreground/55"><Trash2 size={13}/></button></div><p className="mt-1 whitespace-pre-wrap text-xs">{f.text}</p></div>)}</div>}</div>
-    {remoteFindings.length>0&&<div className="rounded-xl border border-foreground/15 p-3"><h3 className="mb-2 text-xs font-medium">Материалы из EGG · обновление каждые 20 секунд</h3>{remoteFindings.slice(0,15).map(f=><div key={f.id} className="mb-2 rounded-lg bg-foreground/5 p-2"><p className="text-[10px] text-foreground/55">{f.title}</p><p className="mt-1 whitespace-pre-wrap break-words text-xs">{f.content.slice(0,1000)}</p></div>)}</div>}
+    {remoteFindings.length>0&&<div className="rounded-xl border border-foreground/15 p-3"><h3 className="mb-2 text-xs font-medium">Материалы из EGG · обновление каждые 20 секунд</h3>{remoteFindings.slice(0,15).map(f=>{
+     const match=f.content.match(/Связанный фрагмент холста:\\s*([0-9a-f-]{36})/i);
+     const linked=match?.[1];
+     const summary=f.content.replace(/Связанный фрагмент холста:\\s*[0-9a-f-]{36}\\.\\s*/i,"").replace(/Статус: рабочее предложение ИИ, НЕ утверждено Автором\\.\\s*/i,"").trim();
+     return <div key={f.id} className="mb-2 rounded-lg border border-foreground/10 bg-foreground/5 p-3">
+      <p className="text-xs font-medium">{f.title}</p>
+      <p className="mt-1 text-[10px] text-foreground/50">Предложение ИИ · ожидает решения Автора</p>
+      {linked&&<button type="button" className="mt-2 rounded-lg border border-foreground/20 px-2 py-1 text-[11px]" onClick={()=>{setSelectedFragment(linked);setTool("move");board.current?.scrollIntoView({behavior:"smooth",block:"center"});}}>Показать связанный фрагмент</button>}
+      <p className="mt-2 whitespace-pre-wrap break-words text-xs leading-relaxed">{summary.slice(0,1300)}</p>
+     </div>;
+    })}</div>}
     <button type="button" onClick={exportDraft} className="rounded-xl bg-foreground px-4 py-3 text-sm text-background">Сохранить пакет для сферы Идеи (JSON)</button>
     {notice&&<p role="status" className="text-xs text-foreground/65">{notice}</p>}
    </section>
