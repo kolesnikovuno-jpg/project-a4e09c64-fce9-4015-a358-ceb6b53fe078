@@ -27,13 +27,13 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
   const openSphere = (sphere: string) => { setActiveSphere(sphere); setPanelOpen(true); };
   const authorFocus = eggBrand && hasProject && panelOpen && activeSphere === "author";
   useEffect(() => {
-    if (!panelOpen) return;
+    if (!panelOpen || authorFocus) return;
     const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setPanelOpen(false); };
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKey);
     return () => { document.body.style.overflow = previous; window.removeEventListener("keydown", onKey); };
-  }, [panelOpen]);
+  }, [panelOpen, authorFocus]);
   return (
     <div
       className="min-h-screen bg-background font-body text-foreground"
