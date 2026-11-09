@@ -67,6 +67,16 @@ const RedirectToDefaultLocale = () => {
   return <Navigate to={target + search + hash} replace />;
 };
 
+/** Existing /ru/egg?project=... bookmarks must open the live EGG project,
+ * not the retired manual-routing experiment. Preserve query and hash.
+ */
+const EggEntryRedirect = () => {
+  const { search, hash } = useLocation();
+  const params = new URLSearchParams(search);
+  const projectId = params.get("project");
+  return <Navigate to={projectId ? `/egg/yolk${search}${hash}` : `/egg/connect${search}${hash}`} replace />;
+};
+
 // Pages that exist under each locale prefix.
 const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   // Kolesnikov.studio — new information architecture
@@ -96,16 +106,6 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   { path: "semantic", element: <Semantic /> },
   { path: "semantic/about", element: <SemanticAbout /> },
 ];
-
-/** Existing /ru/egg?project=... bookmarks must open the live EGG project,
- * not the retired manual-routing experiment. Preserve query and hash.
- */
-const EggEntryRedirect = () => {
-  const { search, hash } = useLocation();
-  const params = new URLSearchParams(search);
-  const projectId = params.get("project");
-  return <Navigate to={projectId ? `/egg/yolk${search}${hash}` : `/egg/connect${search}${hash}`} replace />;
-};
 
 /** A rendering exception must never leave the authenticated EGG page blank. */
 class EggRenderBoundary extends Component<{children:ReactNode},{failed:boolean}> {
