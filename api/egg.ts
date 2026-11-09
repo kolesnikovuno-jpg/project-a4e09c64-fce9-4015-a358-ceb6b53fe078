@@ -194,6 +194,15 @@ export default async function handler(req: Request, res: Response) {
 
     if (req.method === "GET") {
       const url = new URL(req.url || "/", "https://local.invalid");
+      if(url.searchParams.get("canvas")==="1"){
+        const projectId=url.searchParams.get("projectId")||"";
+        await checkedProject(db,projectId,identity,"read");
+        const {data:items,error}=await db.from("egg_field_items" as never)
+          .select("id,title,content,source_kind,claim_type,created_at,actor_kind,operation_id")
+          .eq("project_id",projectId).order("created_at",{ascending:false}).limit(250);
+        if(error)throw new RequestFailure(503,"field_read_failed");
+        respond(res,200,{ok:true,items});return;
+      }
       if (url.searchParams.get("list") === "1") {
         if (identity.kind !== "author") throw new RequestFailure(403, "author_required");
         const { data, error } = await db.from("egg_engine_projects")
@@ -255,6 +264,27 @@ export default async function handler(req: Request, res: Response) {
       if (createError || !created) throw new RequestFailure(503, "channel_creation_failed");
       respond(res, 201, { ok: true, channelId: (created as { id: string }).id });
       return;
+    }
+    if(raw&&typeof raw==="object"&&!Array.isArray(raw)&&(raw as Record<string,unknown>).command==="save_fragment"){
+      const input=raw as Record<string,unknown>;
+      if(identity.kind!=="author")throw new RequestFailure(403,"author_required");
+      const projectId=input.projectId;
+      if(typeof projectId!=="string")throw new RequestFailure(400,"invalid_project_id");
+      await checkedProject(db,projectId,identity,"author");
+      const f=input.fragment;
+      if(!f||typeof f!=="object"||Array.isArray(f))throw new RequestFailure(400,"invalid_fragment");
+      const fragment=f as Record<string,unknown>;
+      if(typeof fragment.id!=="string"||!uuid(fragment.id)||typeof fragment.note!=="string"||fragment.note.length>2000||
+        !["x","y","w","h"].every(k=>typeof fragment[k]==="number"&&Number.isFinite(fragment[k])&&Number(fragment[k])>=0&&Number(fragment[k])<=1000))
+        throw new RequestFailure(400,"invalid_fragment");
+      const content=JSON.stringify({kind:"canvas_fragment",fragment:{id:fragment.id,x:fragment.x,y:fragment.y,w:fragment.w,h:fragment.h,note:fragment.note}});
+      const {data:inserted,error}=await db.from("egg_field_items" as never).insert({
+        project_id:projectId,sphere:null,flow:"field",origin:"internal",source_kind:"human",
+        title:"Холст / фрагмент "+fragment.id,content,claim_type:"proposal",
+        actor_kind:"user",created_by:identity.ownerId,operation_id:"canvas_"+randomUUID().replace(/-/g,""),
+      } as never).select("id").single();
+      if(error||!inserted)throw new RequestFailure(503,"fragment_save_failed");
+      respond(res,201,{ok:true,id:(inserted as {id:string}).id});return;
     }
     const parsed = eggCommandSchema.safeParse(raw);
     if (!parsed.success) throw new RequestFailure(400, "invalid_command");
