@@ -256,23 +256,13 @@ export default function EggYolkExperience(){
   };
   return (
     <div className="min-h-screen bg-background font-body text-foreground" data-testid="yolk-experience">
-      <main className="mx-auto w-full max-w-[1580px] px-5 pb-10 pt-6 sm:px-7 lg:px-10">
-        <header className="flex flex-wrap items-center justify-between gap-4 pb-5">
-          <div className="flex items-center gap-5">
-            <Link to={id?"/ru/egg?project="+encodeURIComponent(id):"/egg/demo"} className="text-[12px] font-light text-foreground/65 underline-offset-4 hover:underline"><ArrowLeft size={14} className="mr-1 inline"/> К Яйцу</Link>
-            <h1 className="text-[26px] font-extralight leading-none tracking-[-0.04em] text-foreground/85">EGG <span className="text-foreground/30">/</span> YOLK</h1>
-          </div>
-          <div className="flex flex-wrap items-center gap-4 text-[11px] font-light text-foreground/50">
-            <span>{project?"Проект EGG · "+(project.title??"без названия"):id?"Проект не загружен":"Демонстрация · кресло"}</span>
-            {project&&<button type="button" onClick={()=>setRefresh(v=>v+1)} className="border-b border-foreground/25 pb-1 hover:text-foreground">Обновить</button>}
-          </div>
-        </header>
+      <main className="mx-auto flex min-h-screen w-full max-w-[1580px] flex-col px-4 pb-4 pt-3 sm:px-6">
+        <div className="flex items-center gap-3 text-[11px] font-light text-foreground/60">
+          <Link to={id?"/ru/egg?project="+encodeURIComponent(id):"/egg/demo"} className="inline-flex items-center gap-1 underline-offset-4 hover:underline"><ArrowLeft size={13}/> Назад</Link>
+          <h1 className="text-[13px] font-light tracking-[0.04em] text-foreground/65">EGG / YOLK</h1>
+        </div>
         {id&&!project&&!loading&&<div role="alert" className="mt-5 rounded-xl border border-amber-600/35 bg-amber-500/5 p-4 text-sm text-foreground/85"><p className="font-medium">Данные проекта не загружены</p><p className="mt-2">{notice||"Не удалось получить состояние проекта."} Демонстрационная форма ниже не является состоянием вашего проекта.</p><div className="mt-3 flex flex-wrap gap-4"><Link to="/egg/connect" className="underline underline-offset-4">Войти в EGG на этом адресе</Link><button type="button" onClick={()=>setRefresh(v=>v+1)} className="underline underline-offset-4">Повторить загрузку</button></div></div>}
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-foreground/10 pt-4 text-[10px] font-light uppercase tracking-[0.16em] text-foreground/40">
-          <span>Формирующийся объект / 08 сфер</span>
-          <span>Уровень {timeline?.level??project?.level??"—"} · Итерация {timeline?.iteration??project?.iteration??"—"}{revision!==null?" · Rev. "+revision:""}</span>
-        </div>
         {project&&timeline&&<div className={(utilityPanel==="history"?"flex":"hidden")+" mt-4 flex-wrap items-center justify-between gap-3 rounded-xl border border-foreground/15 p-3 text-xs"}
           data-testid="yolk-timeline-controls">
           <label className="flex min-w-[225px] flex-1 flex-col gap-1.5 text-[11px] text-foreground/65">
@@ -293,7 +283,7 @@ export default function EggYolkExperience(){
           </p>
         </div>}
 
-        <div className="mx-auto mt-2 grid w-full grid-cols-1 items-center gap-2">
+        <div className="mx-auto flex w-full flex-1 items-center justify-center">
           <aside className="hidden order-2 min-w-0 self-center pb-1 lg:order-1" aria-label="Название и назначение">
             <YolkTypewriter key={"left-"+(selected??"dna")+"-"+activeCycleKey} side="left"
               number={selectedMeta?"Сфера / "+String(YOLK_SPHERES.indexOf(selectedMeta)+1).padStart(2,"0"):"ДНК / исходный замысел"}
@@ -302,47 +292,15 @@ export default function EggYolkExperience(){
             <p className="mt-4 text-[11px] font-light text-foreground/45">{selectedMeta?selectedMeta.tag:"Концепция — постоянный ориентир"}</p>
           </aside>
 
-          <section className="relative order-1 mx-auto w-full max-w-[960px] min-w-0 lg:order-2" aria-label="Крупная пространственная модель и восемь сфер">
-            <div className="relative mx-auto aspect-[760/700] w-full max-w-[900px]" data-testid="yolk-orbit-stage">
+          <section className="relative mx-auto w-full max-w-[min(88vw,78vh,900px)] min-w-0" aria-label="Крупная пространственная модель и восемь сфер">
+            <div className="relative mx-auto aspect-square w-full" data-testid="yolk-orbit-stage">
               <div className="absolute inset-[1%] z-0" data-testid="yolk-central-object">
                 <EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
                   level={timeline?.level??project?.level??1}
                   iteration={timeline?.iteration??project?.iteration??1}
                   projectId={project?.id} visualVersion={timeline?.visual??null} minimalControls/>
               </div>
-              <svg viewBox="0 0 760 700" className="pointer-events-none absolute inset-0 z-10 h-full w-full overflow-visible" aria-label="Восемь интерактивных функциональных сфер">
-                <ellipse cx="380" cy="350" rx="290" ry="265" fill="none" stroke="currentColor" strokeOpacity=".16" strokeWidth=".9" vectorEffect="non-scaling-stroke"/>
-                <line x1="380" y1="75" x2="380" y2="625" stroke="currentColor" strokeOpacity=".11" strokeDasharray="4 9" strokeWidth=".7" vectorEffect="non-scaling-stroke"/>
-                {YOLK_SPHERES.map(s=>{
-                  const angle=s.angle*Math.PI/180;
-                  const x=380+290*Math.cos(angle);
-                  const y=350+265*Math.sin(angle);
-                  const active=selected===s.id;
-                  const sphereState=timeline?.spheres.find(item=>item.sphere===s.id);
-                  const legacyState=summarize((project?.tasks??[]).filter(t=>t.sphere===s.id));
-                  return <g key={s.id}>
-                    {active&&<line x1="380" y1="350" x2={x} y2={y} stroke="hsl(var(--primary))" strokeOpacity=".23" strokeWidth=".9" strokeDasharray="3 8" vectorEffect="non-scaling-stroke"/>}
-                    <circle cx={x} cy={y} r="10.5"
-                      fill={active?"hsl(var(--primary) / 0.16)":"hsl(var(--background))"}
-                      stroke={active?"hsl(var(--primary))":"currentColor"}
-                      strokeOpacity={active?".95":".72"}
-                      strokeWidth="1.1" vectorEffect="non-scaling-stroke"/>
-                    {project&&sphereState&&sphereState.status!=="missing"&&
-                      sphereState.status!=="pending_transit"&&sphereState.status!=="pending_work"&&
-                      <circle cx={x+9} cy={y-9} r="2.5"
-                        fill={sphereState.status==="new"?"hsl(var(--primary))":"#c49d65"} opacity=".75"/>}
-                    {!project&&legacyState.code!=="none"&&<circle cx={x+9} cy={y-9} r="2.5" fill="currentColor" opacity=".65"/>}
-                    <circle data-testid={"yolk-orbit-"+s.id} cx={x} cy={y} r="25"
-                      fill="transparent" stroke="none" pointerEvents="all" role="button" tabIndex={0}
-                      aria-label={"Открыть сферу "+s.name} aria-pressed={active}
-                      className="cursor-pointer focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
-                      onClick={()=>selectSphere(s.id)}
-                      onKeyDown={event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();selectSphere(s.id);}}}>
-                      <title>{s.name}</title>
-                    </circle>
-                  </g>;
-                })}
-              </svg>
+
 
             </div>
           </section>
