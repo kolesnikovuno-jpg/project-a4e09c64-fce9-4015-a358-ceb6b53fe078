@@ -293,18 +293,7 @@ export default function EggYolkExperience(){
           </p>
         </div>}
 
-        <nav aria-label="Инструменты Желтка" className="mx-auto mt-3 flex max-w-[960px] items-center justify-between gap-2 rounded-2xl border border-foreground/10 px-3 py-2">
-  <div className="flex gap-1">
-    <button type="button" title="ДНК" aria-label="ДНК" onClick={()=>{setSelected(null);setExpanded(true)}} className="rounded-xl p-3 hover:bg-foreground/10"><Dna size={19}/></button>
-    <button type="button" title="История" aria-label="История" onClick={()=>setUtilityPanel(v=>v==="history"?null:"history")} className="rounded-xl p-3 hover:bg-foreground/10"><History size={19}/></button>
-  </div>
-  <span className="text-[10px] uppercase tracking-widest text-foreground/45">Объект · Желток</span>
-  <div className="flex gap-1">
-    <button type="button" title="Автор" aria-label="Автор" onClick={()=>setUtilityPanel(v=>v==="author"?null:"author")} className="rounded-xl p-3 hover:bg-foreground/10"><MessageCircle size={19}/></button>
-    <button type="button" title="Материалы" aria-label="Материалы" onClick={()=>setUtilityPanel(v=>v==="work"?null:"work")} className="rounded-xl p-3 hover:bg-foreground/10"><FileText size={19}/></button>
-  </div>
-</nav>
-<div className="mx-auto mt-2 grid w-full grid-cols-1 items-center gap-2">
+        <div className="mx-auto mt-2 grid w-full grid-cols-1 items-center gap-2">
           <aside className="hidden order-2 min-w-0 self-center pb-1 lg:order-1" aria-label="Название и назначение">
             <YolkTypewriter key={"left-"+(selected??"dna")+"-"+activeCycleKey} side="left"
               number={selectedMeta?"Сфера / "+String(YOLK_SPHERES.indexOf(selectedMeta)+1).padStart(2,"0"):"ДНК / исходный замысел"}
@@ -319,7 +308,7 @@ export default function EggYolkExperience(){
                 <EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
                   level={timeline?.level??project?.level??1}
                   iteration={timeline?.iteration??project?.iteration??1}
-                  projectId={project?.id} visualVersion={timeline?.visual??null}/>
+                  projectId={project?.id} visualVersion={timeline?.visual??null} minimalControls/>
               </div>
               <svg viewBox="0 0 760 700" className="pointer-events-none absolute inset-0 z-10 h-full w-full overflow-visible" aria-label="Восемь интерактивных функциональных сфер">
                 <ellipse cx="380" cy="350" rx="290" ry="265" fill="none" stroke="currentColor" strokeOpacity=".16" strokeWidth=".9" vectorEffect="non-scaling-stroke"/>
@@ -354,10 +343,7 @@ export default function EggYolkExperience(){
                   </g>;
                 })}
               </svg>
-              <button type="button" onClick={()=>{setSelected(null);setShowDna(false);setExpanded(false);}}
-                className="absolute right-[5%] top-[12%] z-20 border-b border-foreground/30 pb-1 text-[11px] font-light tracking-[0.03em] text-foreground/65 hover:text-foreground">
-                ДНК / концепт
-              </button>
+
             </div>
           </section>
 
