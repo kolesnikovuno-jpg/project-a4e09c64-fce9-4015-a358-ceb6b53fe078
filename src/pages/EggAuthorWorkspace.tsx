@@ -5,7 +5,7 @@ import {ArrowLeft,ImagePlus,Pencil,Eraser,Download,Copy,Trash2,Undo2} from "luci
 
 type Mark={points:{x:number;y:number}[];color:string;size:number};
 type Fragment={id:string;x:number;y:number;w:number;h:number;note:string;createdAt:string};
-type BoardImage={id:string;src:string;x:number;y:number;w:number;h:number};
+type BoardImage={id:string;src:string;x:number;y:number;w:number;h:number;path?:string};
 const keyFor=(id:string)=>"egg-author-draft-"+id;
 export default function EggAuthorWorkspace(){
  const [params]=useSearchParams();
@@ -28,6 +28,7 @@ export default function EggAuthorWorkspace(){
  const tokenRef=useRef<string|null>(null);
  const sentRef=useRef<Record<string,string>>({});
  const readyRef=useRef(false);
+ const [storageReady,setStorageReady]=useState(false);
  const board=useRef<HTMLDivElement>(null);
  const drawing=useRef(false);
  const drag=useRef<{id:string;x:number;y:number;ox:number;oy:number}|null>(null);
@@ -45,14 +46,17 @@ export default function EggAuthorWorkspace(){
    tokenRef.current=data.session.access_token;
    const response=await fetch("/api/egg?canvas=1&projectId="+encodeURIComponent(id),{headers:{Authorization:"Bearer "+tokenRef.current},cache:"no-store"});
    if(!response.ok)throw Error("Не удалось получить материалы проекта");
-   const body=await response.json() as {items:Array<{id:string;title:string;content:string;actor_kind:string;created_at:string}>};
+   const body=await response.json() as {items:Array<{id:string;title:string;content:string;actor_kind:string;created_at:string}>;signed?:Record<string,string>};
    if(cancelled)return;
+   const remoteImages:BoardImage[]=[];
+   for(const item of body.items){try{const v=JSON.parse(item.content) as {kind?:string;image?:BoardImage};if(v.kind==="canvas_image"&&v.image&&body.signed?.[v.image.id])remoteImages.push({...v.image,src:body.signed[v.image.id]});}catch{}}
+   setImages(current=>{const known=new Set(current.map(x=>x.id));const fresh=remoteImages.filter(x=>!known.has(x.id));return fresh.length?[...current,...fresh]:current;});
    setRemoteFindings(body.items.filter(x=>x.actor_kind==="agent"||!x.content.includes('"kind":"canvas_fragment"')));
    const latest=new Map<string,Fragment>();
    for(const item of body.items){try{const parsed=JSON.parse(item.content) as {kind?:string;fragment?:Fragment};if(parsed.kind==="canvas_fragment"&&parsed.fragment&&!latest.has(parsed.fragment.id))latest.set(parsed.fragment.id,parsed.fragment);}catch{}}
    setFragments(current=>{const localIds=new Set(current.map(f=>f.id));return [...current,...Array.from(latest.values()).filter(f=>!localIds.has(f.id))];});
    for(const f of latest.values())sentRef.current[f.id]=JSON.stringify(f);
-   readyRef.current=true;setBridgeStatus("Связь с EGG установлена");
+   readyRef.current=true;setStorageReady(true);setBridgeStatus("Связь с EGG установлена");
   }catch(e){if(!cancelled)setBridgeStatus(e instanceof Error?e.message:"Связь с EGG недоступна");}};
   void refresh();timer=window.setInterval(()=>void refresh(),20000);
   return()=>{cancelled=true;if(timer)window.clearInterval(timer);};
@@ -71,7 +75,31 @@ export default function EggAuthorWorkspace(){
  const down=(e:PointerEvent<HTMLDivElement>)=>{if(tool==="select"){const p=xy(e);regionStart.current=p;setRegion({...p,w:0,h:0});e.currentTarget.setPointerCapture(e.pointerId);return;}if(tool==="move")return;if((e.target as HTMLElement).closest("[data-board-image]"))return;const p=xy(e);drawing.current=true;e.currentTarget.setPointerCapture(e.pointerId);if(tool==="erase"){setMarks(v=>v.filter(m=>!m.points.some(q=>Math.hypot(q.x-p.x,q.y-p.y)<24)));return;}setMarks(v=>[...v,{points:[p],color:"#8b654e",size:3}]);};
  const move=(e:PointerEvent<HTMLDivElement>)=>{if(tool==="select"&&regionStart.current){const p=xy(e),a=regionStart.current;setRegion({x:Math.min(a.x,p.x),y:Math.min(a.y,p.y),w:Math.abs(p.x-a.x),h:Math.abs(p.y-a.y)});return;}if(drag.current){const p=xy(e),d=drag.current;setImages(v=>v.map(im=>im.id===d.id?{...im,x:Math.max(0,Math.min(850,d.ox+p.x-d.x)),y:Math.max(0,Math.min(520,d.oy+p.y-d.y))}:im));return;}if(!drawing.current||tool!=="pen")return;const p=xy(e);setMarks(v=>v.map((m,i)=>i===v.length-1?{...m,points:[...m.points,p]}:m));};
  const stop=()=>{if(regionStart.current&&region&&region.w>15&&region.h>15){const f={...region,id:crypto.randomUUID(),note:"",createdAt:new Date().toISOString()};setFragments(v=>[...v,f]);setSelectedFragment(f.id);}regionStart.current=null;setRegion(null);drawing.current=false;drag.current=null;};
- const add=(e:ChangeEvent<HTMLInputElement>)=>{const fs=Array.from(e.target.files??[]).slice(0,6);e.target.value="";fs.forEach(f=>{if(!f.type.startsWith("image/")||f.size>3*1024*1024){setNotice("Допустимы изображения до 3 МБ.");return;}const reader=new FileReader();reader.onload=()=>{const src=String(reader.result);setImages(v=>[...v,{id:crypto.randomUUID(),src,x:80+(v.length%4)*85,y:70+(v.length%3)*60,w:280,h:210}]);};reader.readAsDataURL(f);});};
+ const add=(e:ChangeEvent<HTMLInputElement>)=>{
+  const fs=Array.from(e.target.files??[]).slice(0,6);e.target.value="";
+  fs.forEach(async f=>{
+   if(!["image/png","image/jpeg","image/webp"].includes(f.type)||f.size>3*1024*1024){setNotice("Допустимы PNG, JPEG или WebP до 3 МБ.");return;}
+   const imageId=crypto.randomUUID(),placement={id:imageId,x:80+(images.length%4)*85,y:70+(images.length%3)*60,w:280,h:210};
+   if(!storageReady||!tokenRef.current){setNotice("Для сохранения изображения в облаке требуется вход в EGG.");return;}
+   try{
+    const headers={"Content-Type":"application/json",Authorization:"Bearer "+tokenRef.current};
+    const signedResponse=await fetch("/api/egg",{method:"POST",headers,body:JSON.stringify({command:"media_upload",projectId:id,imageId,mime:f.type})});
+    if(!signedResponse.ok)throw Error("Не удалось подготовить загрузку");
+    const signed=await signedResponse.json() as {path:string;token:string};
+    const cfgResponse=await fetch("/api/egg-config",{cache:"no-store"});
+    if(!cfgResponse.ok)throw Error("Конфигурация недоступна");
+    const cfg=await cfgResponse.json() as {supabaseUrl:string;publishableKey:string};
+    const client=createClient(cfg.supabaseUrl,cfg.publishableKey);
+    const {error}=await client.storage.from("egg-author-media").uploadToSignedUrl(signed.path,signed.token,f,{contentType:f.type});
+    if(error)throw error;
+    const registered=await fetch("/api/egg",{method:"POST",headers,body:JSON.stringify({command:"media_register",projectId:id,imageId,path:signed.path,...placement})});
+    if(!registered.ok)throw Error("Изображение загружено, но регистрация в проекте не удалась");
+    const url=URL.createObjectURL(f);
+    setImages(current=>[...current,{...placement,src:url,path:signed.path}]);
+    setNotice("Изображение сохранено в облаке EGG.");
+   }catch(err){setNotice(err instanceof Error?err.message:"Ошибка загрузки изображения");}
+  });
+ };
  const payload={version:2,project:id,text,images,marks,findings,fragments,exportedAt:new Date().toISOString()};
  const transferText=()=>["EGG — контекст Автора","Проект: "+id,"Замысел:",text||"(пока не сформулирован)","Выводы предыдущих обсуждений:",...findings.map((f,i)=>String(i+1)+". "+f.text),"Фрагменты холста:",...fragments.map((f,i)=>String(i+1)+". ID "+f.id+"; область "+[f.x,f.y,f.w,f.h].map(Math.round).join(", ")+"; заметка: "+(f.note||"нет")),"Визуальные материалы: "+images.length+" изображений, "+marks.length+" линий. Для визуального анализа приложите экспорт холста.","Задача: исследуй замысел, сохрани авторское ядро, отдели факты от гипотез и предложи варианты. Не утверждай решения вместо Автора."].join("\n\n");
  const addFinding=()=>{const value=discussion.trim();if(!value)return;setFindings(v=>[...v,{id:crypto.randomUUID(),text:value,createdAt:new Date().toISOString()}]);setDiscussion("");setNotice("Итог обсуждения добавлен в материалы Автора. Он не утверждён как концепция.");};
