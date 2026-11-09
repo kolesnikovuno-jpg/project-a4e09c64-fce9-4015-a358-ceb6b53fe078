@@ -53,7 +53,9 @@ export default function EggYolkViewer({
     visualVersion.sourceKind==="concept"&&
     /\.(?:glb|gltf)$/i.test(new URL(visualVersion.url).pathname)
     ?visualVersion.url:null;
-  const pointer=useRef<{x:number;y:number}|null>(null);
+  const pointers=useRef(new Map<number,{x:number;y:number}>());
+  const pinchDistance=useRef<number|null>(null);
+  const clampZoom=(value:number)=>Math.max(.5,Math.min(2.5,value));
   const fileRef=useRef<string|null>(null);
   const sketch=useMemo(()=>buildSpatialSketch(stage,variant,iteration),[stage,variant,iteration]);
   useEffect(()=>{onSketchChange?.({stage,variant,iteration:sketch.iteration});},[stage,variant,sketch.iteration,onSketchChange]);
@@ -92,19 +94,35 @@ export default function EggYolkViewer({
     return()=>{active=false;script?.removeEventListener("error",fail)};
   },[fileUrl,directModel]);
   function dragStart(e:PointerEvent<SVGSVGElement>){
-    pointer.current={x:e.clientX,y:e.clientY};
+    pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pointers.current.size===2){
+      const [a,b]=[...pointers.current.values()];
+      pinchDistance.current=Math.hypot(a.x-b.x,a.y-b.y);
+    }
     e.currentTarget.setPointerCapture?.(e.pointerId);
   }
   function dragMove(e:PointerEvent<SVGSVGElement>){
-    if(!pointer.current)return;
-    const dx=e.clientX-pointer.current.x,dy=e.clientY-pointer.current.y;
-    pointer.current={x:e.clientX,y:e.clientY};
-    setYaw(v=>v+dx*.012);
-    setPitch(v=>Math.max(-.7,Math.min(.7,v+dy*.006)));
+    const previous=pointers.current.get(e.pointerId);
+    if(!previous)return;
+    pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pointers.current.size>=2){
+      const [a,b]=[...pointers.current.values()];
+      const distance=Math.hypot(a.x-b.x,a.y-b.y);
+      if(pinchDistance.current!==null&&pinchDistance.current>0)
+        setZoom(value=>clampZoom(value*distance/pinchDistance.current!));
+      pinchDistance.current=distance;
+      return;
+    }
+    const dx=e.clientX-previous.x,dy=e.clientY-previous.y;
+    setYaw(value=>value+dx*.012);
+    setPitch(value=>Math.max(-.7,Math.min(.7,value+dy*.006)));
   }
-  function dragStop(){pointer.current=null;}
+  function dragStop(e:PointerEvent<SVGSVGElement>){
+    pointers.current.delete(e.pointerId);
+    pinchDistance.current=null;
+  }
   function wheel(e:WheelEvent<SVGSVGElement>){
-    setZoom(v=>Math.max(.68,Math.min(1.7,v+(e.deltaY<0?.07:-.07))));
+    setZoom(value=>clampZoom(value*Math.exp(-e.deltaY*.001)));
   }
   async function choose(e:ChangeEvent<HTMLInputElement>){
     const file=e.currentTarget.files?.[0];e.currentTarget.value="";
@@ -242,6 +260,6 @@ export default function EggYolkViewer({
       </label>}
     </div>
     {fileError&&<p role="alert" className="absolute bottom-[22%] left-5 right-5 z-30 rounded bg-background/95 p-2 text-center text-xs text-red-600">{fileError}</p>}
-    <span className="sr-only">Три режима: линии, каркас, объём. Три альтернативные пространственные трактовки исходной идеи. Вращайте жестом, масштабируйте колесом. Сохранение GLB выгружает геометрию локально, без утверждения и отправки на сервер.</span>
+    <span className="sr-only">Три режима: линии, каркас, объём. Три альтернативные пространственные трактовки исходной идеи. Вращайте одним пальцем, приближайте и отдаляйте двумя пальцами или колесом мыши. Сохранение GLB выгружает геометрию локально, без утверждения и отправки на сервер.</span>
   </div>;
 }
