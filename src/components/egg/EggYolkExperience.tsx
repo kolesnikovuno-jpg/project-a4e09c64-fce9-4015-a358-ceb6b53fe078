@@ -273,7 +273,7 @@ export default function EggYolkExperience(){
           <span>Формирующийся объект / 08 сфер</span>
           <span>Уровень {timeline?.level??project?.level??"—"} · Итерация {timeline?.iteration??project?.iteration??"—"}{revision!==null?" · Rev. "+revision:""}</span>
         </div>
-        {project&&timeline&&<div className={(utilityPanel==="history"?"flex":"hidden")+" mt-4 flex-wrap items-center justify-between gap-3 rounded-xl border border-foreground/15 p-3 text-xs"
+        {project&&timeline&&<div className={(utilityPanel==="history"?"flex":"hidden")+" mt-4 flex-wrap items-center justify-between gap-3 rounded-xl border border-foreground/15 p-3 text-xs"}
           data-testid="yolk-timeline-controls">
           <label className="flex min-w-[225px] flex-1 flex-col gap-1.5 text-[11px] text-foreground/65">
             Состояние продукта · история итераций
