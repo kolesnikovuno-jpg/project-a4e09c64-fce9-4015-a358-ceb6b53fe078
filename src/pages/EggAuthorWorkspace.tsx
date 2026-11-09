@@ -43,7 +43,7 @@ export default function EggAuthorWorkspace(){
    const {data}=await client.auth.getSession();
    if(!data.session?.access_token)throw Error("Требуется вход в EGG");
    tokenRef.current=data.session.access_token;
-   const response=await fetch("/api/egg-canvas?projectId="+encodeURIComponent(id),{headers:{Authorization:"Bearer "+tokenRef.current},cache:"no-store"});
+   const response=await fetch("/api/egg?canvas=1&projectId="+encodeURIComponent(id),{headers:{Authorization:"Bearer "+tokenRef.current},cache:"no-store"});
    if(!response.ok)throw Error("Не удалось получить материалы проекта");
    const body=await response.json() as {items:Array<{id:string;title:string;content:string;actor_kind:string;created_at:string}>};
    if(cancelled)return;
@@ -61,7 +61,7 @@ export default function EggAuthorWorkspace(){
   const pending=fragments.filter(f=>JSON.stringify(f)!==sentRef.current[f.id]);
   if(!pending.length)return;
   const timer=window.setTimeout(async()=>{for(const fragment of pending){const snapshot=JSON.stringify(fragment);try{
-   const response=await fetch("/api/egg-canvas",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+tokenRef.current},body:JSON.stringify({command:"save_fragment",projectId:id,fragment})});
+   const response=await fetch("/api/egg",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+tokenRef.current},body:JSON.stringify({command:"save_fragment",projectId:id,fragment})});
    if(!response.ok)throw Error("Сохранение в EGG не удалось");
    sentRef.current[fragment.id]=snapshot;setBridgeStatus("Фрагменты синхронизированы с EGG");
   }catch{setBridgeStatus("Нет синхронизации: фрагменты остались в браузере");break;}}},1400);
