@@ -63,6 +63,55 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
   const isSphere = activeSphere && !["author", "idea", "matter"].includes(activeSphere);
   const sphereNames: Record<string, string> = { marketing: "Маркетинг", legal: "Право", design: "Дизайн", production: "Производство", testDrive: "Тестдрайв", procurement: "Комплектация", commerce: "Коммерция", retail: "Ритейл" };
   const pending = project?.tasks.filter(task => task.status === "returned").length ?? 0;
+  // The Author has a dedicated workspace. Do not reuse the legacy all-spheres modal body.
+  if (activeSphere === "author") return <section className="mx-auto w-full max-w-[1040px] space-y-5 py-5" data-testid="egg-author-workspace">
+    <header className="flex flex-wrap items-start justify-between gap-4 border-b border-foreground/15 pb-5">
+      <div>
+        <p className="text-[11px] uppercase tracking-[0.18em] text-foreground/45">EGG / Автор</p>
+        <h2 className="mt-2 text-2xl font-light tracking-tight">Управление развитием продукта</h2>
+        <p className="mt-2 text-sm text-foreground/60">{project?.title || "Проект EGG"}</p>
+      </div>
+      <div className="flex flex-wrap gap-3 text-xs">
+        <button type="button" onClick={()=>setRefreshKey(v=>v+1)} className="rounded-full border border-foreground/20 px-4 py-2">Обновить</button>
+        <Link to="/egg/connect" className="rounded-full border border-foreground/20 px-4 py-2">Проекты</Link>
+      </div>
+    </header>
+    {!project&&<p role="status" className="rounded-xl border border-foreground/15 p-5 text-sm">{status||"Загружаем состояние проекта…"}</p>}
+    {project&&<>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="rounded-xl border border-foreground/15 p-4"><p className="text-[11px] text-foreground/50">Этап</p><p className="mt-2 text-xl">Уровень {project.level} · Итерация {project.iteration}</p></div>
+        <div className="rounded-xl border border-foreground/15 p-4"><p className="text-[11px] text-foreground/50">Задачи сфер</p><p className="mt-2 text-xl">{project.tasks.length} <span className="text-xs text-foreground/55">в истории</span></p></div>
+        <div className="rounded-xl border border-foreground/15 p-4"><p className="text-[11px] text-foreground/50">Ожидают решения</p><p className="mt-2 text-xl">{pending}</p></div>
+      </div>
+      <section className="rounded-xl border border-foreground/15 p-4 sm:p-6">
+        <p className="text-[11px] uppercase tracking-[0.14em] text-foreground/45">01 / ДНК · исходная идея</p>
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground/80">{project.seed.text||"Исходная идея ещё не сформирована"}</p>
+        {!project.seed.text.trim()&&revision!==null&&<EggSeedStart projectId={project.id} revision={revision} proposal={project.seedProposal?.text} onSaved={()=>setRefreshKey(v=>v+1)}/>}
+        <div className="mt-4 flex flex-wrap gap-4 text-xs">
+          <button type="button" className="underline underline-offset-4" onClick={()=>onSelectSphere("idea")}>Открыть сферу Идея</button>
+          <Link className="underline underline-offset-4" to={"/egg/yolk?project="+encodeURIComponent(project.id)}>Открыть Желток</Link>
+        </div>
+      </section>
+      <section className="rounded-xl border border-foreground/15 p-4 sm:p-6">
+        <p className="mb-3 text-[11px] uppercase tracking-[0.14em] text-foreground/45">02 / Циклы · решения Автора</p>
+        <EggFlowCyclePanel project={project} revision={revision} authorControls onSaved={()=>setRefreshKey(v=>v+1)}/>
+      </section>
+      <section className="rounded-xl border border-foreground/15 p-4 sm:p-6">
+        <p className="mb-3 text-[11px] uppercase tracking-[0.14em] text-foreground/45">03 / Диалог проекта</p>
+        <EggProjectChat projectId={project.id} activeSphere="author"/>
+      </section>
+      <details className="rounded-xl border border-foreground/15 p-4 sm:p-6">
+        <summary className="cursor-pointer text-sm">Архив · обзор, документы, материалы</summary>
+        <div className="mt-5 space-y-4">
+          <EggProjectOverview project={project} activeSphere="author" onSelectSphere={onSelectSphere}/>
+          <EggYolkMonitor project={project}/>
+          <EggDocumentationPanel project={project} revision={revision} origin="author"/>
+          <EggInviteAuthor projectId={project.id}/>
+        </div>
+      </details>
+      <p className="text-[11px] text-foreground/45">Состояние сервера · ревизия {revision??"—"}{lastUpdated?" · обновлено "+lastUpdated:""}. Неподтверждённые предложения не считаются решениями Автора.</p>
+    </>}
+  </section>;
   return <section className="mx-auto mb-5 mt-5 max-w-[760px] rounded-xl border border-foreground/15 p-4 sm:p-5" aria-label="Серверные результаты EGG">
     <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
       <h2 className="text-sm font-medium">EGG · {isSphere ? (sphereNames[activeSphere ?? ""] ?? activeSphere) : activeSphere==="author"?"Автор · управление циклом":"Серверный проект"}</h2>
