@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Dna, History, MessageCircle, FileText } from "lucide-react";
 import EggYolkViewer from "./EggYolkViewer";
 import EggDocumentationPanel from "./EggDocumentationPanel";
 import EggFlowCyclePanel from "./EggFlowCyclePanel";
@@ -83,6 +83,7 @@ export default function EggYolkExperience(){
   const [project,setProject]=useState<Project|null>(null);
   const [revision,setRevision]=useState<number|null>(null);
   const [selected,setSelected]=useState<SphereId|null>(null);
+  const [utilityPanel,setUtilityPanel]=useState<"author"|"history"|"work"|null>(null);
   const [selectedCycleKey,setSelectedCycleKey]=useState<string|null>(null);
   const [expanded,setExpanded]=useState(false);
   const [loading,setLoading]=useState(Boolean(id));
@@ -272,7 +273,7 @@ export default function EggYolkExperience(){
           <span>Формирующийся объект / 08 сфер</span>
           <span>Уровень {timeline?.level??project?.level??"—"} · Итерация {timeline?.iteration??project?.iteration??"—"}{revision!==null?" · Rev. "+revision:""}</span>
         </div>
-        {project&&timeline&&<div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-foreground/15 p-3 text-xs"
+        {utilityPanel==="history"&&project&&timeline&&<div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-foreground/15 p-3 text-xs"
           data-testid="yolk-timeline-controls">
           <label className="flex min-w-[225px] flex-1 flex-col gap-1.5 text-[11px] text-foreground/65">
             Состояние продукта · история итераций
@@ -292,8 +293,19 @@ export default function EggYolkExperience(){
           </p>
         </div>}
 
-        <div className="mx-auto mt-4 grid w-full items-center gap-x-4 gap-y-6 lg:grid-cols-[minmax(165px,1fr)_minmax(440px,720px)_minmax(165px,1fr)] xl:gap-x-8">
-          <aside className="order-2 min-w-0 self-center pb-1 lg:order-1" aria-label="Название и назначение">
+        <nav aria-label="Инструменты Желтка" className="mx-auto mt-3 flex max-w-[960px] items-center justify-between gap-2 rounded-2xl border border-foreground/10 px-3 py-2">
+  <div className="flex gap-1">
+    <button type="button" title="ДНК" aria-label="ДНК" onClick={()=>{setSelected(null);setExpanded(true)}} className="rounded-xl p-3 hover:bg-foreground/10"><Dna size={19}/></button>
+    <button type="button" title="История" aria-label="История" onClick={()=>setUtilityPanel(v=>v==="history"?null:"history")} className="rounded-xl p-3 hover:bg-foreground/10"><History size={19}/></button>
+  </div>
+  <span className="text-[10px] uppercase tracking-widest text-foreground/45">Объект · Желток</span>
+  <div className="flex gap-1">
+    <button type="button" title="Автор" aria-label="Автор" onClick={()=>setUtilityPanel(v=>v==="author"?null:"author")} className="rounded-xl p-3 hover:bg-foreground/10"><MessageCircle size={19}/></button>
+    <button type="button" title="Материалы" aria-label="Материалы" onClick={()=>setUtilityPanel(v=>v==="work"?null:"work")} className="rounded-xl p-3 hover:bg-foreground/10"><FileText size={19}/></button>
+  </div>
+</nav>
+<div className="mx-auto mt-2 grid w-full grid-cols-1 items-center gap-2">
+          <aside className="hidden order-2 min-w-0 self-center pb-1 lg:order-1" aria-label="Название и назначение">
             <YolkTypewriter key={"left-"+(selected??"dna")+"-"+activeCycleKey} side="left"
               number={selectedMeta?"Сфера / "+String(YOLK_SPHERES.indexOf(selectedMeta)+1).padStart(2,"0"):"ДНК / исходный замысел"}
               title={selectedMeta?selectedMeta.name:"ДНК продукта"}
@@ -301,8 +313,8 @@ export default function EggYolkExperience(){
             <p className="mt-4 text-[11px] font-light text-foreground/45">{selectedMeta?selectedMeta.tag:"Концепция — постоянный ориентир"}</p>
           </aside>
 
-          <section className="relative order-1 min-w-0 lg:order-2" aria-label="Крупная пространственная модель и восемь сфер">
-            <div className="relative mx-auto aspect-[760/700] w-full max-w-[720px]" data-testid="yolk-orbit-stage">
+          <section className="relative order-1 mx-auto w-full max-w-[960px] min-w-0 lg:order-2" aria-label="Крупная пространственная модель и восемь сфер">
+            <div className="relative mx-auto aspect-[760/700] w-full max-w-[900px]" data-testid="yolk-orbit-stage">
               <div className="absolute inset-[1%] z-0" data-testid="yolk-central-object">
                 <EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
                   level={timeline?.level??project?.level??1}
@@ -349,7 +361,7 @@ export default function EggYolkExperience(){
             </div>
           </section>
 
-          <aside className="order-3 min-w-0 self-center pb-1" aria-label="Краткий вывод и развернутая информация" aria-live="polite">
+          <aside className="hidden order-3 min-w-0 self-center pb-1" aria-label="Краткий вывод и развернутая информация" aria-live="polite">
             <YolkTypewriter key={"right-"+(selected??"dna")+"-"+activeCycleKey} side="right"
               number={selectedMeta?(project?sphereVisibleStatus:"Вклад сферы"):"Формирование / концепция"}
               title={selectedMeta?"Текущий вклад":approved?"Концепция принята":"Концепция"}
@@ -368,7 +380,7 @@ export default function EggYolkExperience(){
           <p className="mt-2 text-xs text-foreground/55">Влияние на форму: {selectedMeta.tag}. Конкретные изменения требуют подтверждённой связи с моделью.</p>
           <button type="button" onClick={()=>{setSpherePopup(false);setExpanded(true)}} className="mt-3 border-b border-foreground/35 text-xs">Вся история и параметры →</button>
         </div>}
-        <section className="mx-auto mt-5 max-w-[700px] rounded-2xl border border-foreground/15 bg-background/90 p-3 sm:p-4" aria-label="Диалог Автора" data-testid="yolk-author-dialog">
+        <section className={(utilityPanel==="author"?"block":"hidden")+" mx-auto mt-5 max-w-[700px] rounded-2xl border border-foreground/15 bg-background/90 p-3 sm:p-4"} aria-label="Диалог Автора" data-testid="yolk-author-dialog">
           <div className="mb-2 flex items-center justify-between gap-2"><h2 className="text-xs font-medium">Автор → EGG</h2><span className="text-[10px] text-foreground/50">Направление развития формы</span></div>
           <form onSubmit={event=>{event.preventDefault();void submitAuthorMessage()}} className="flex items-end gap-2">
             <textarea value={authorDraft} onChange={event=>setAuthorDraft(event.target.value)} rows={2} maxLength={4000} disabled={!project||authorSending} placeholder={project?"Что изменить, исследовать или сохранить в форме?":"Откройте проект, чтобы отправить сообщение"} aria-label="Указание Автора" className="min-h-[64px] min-w-0 flex-1 resize-y rounded-xl border border-foreground/20 bg-background px-3 py-2 text-sm outline-none focus:border-foreground/50"/>
@@ -392,7 +404,7 @@ export default function EggYolkExperience(){
           {authorFeedback&&<p className="mt-2 text-xs text-foreground/65" role="status">{authorFeedback}</p>}
           <p className="mt-2 text-[11px] leading-relaxed text-foreground/50">Указание поступает в сферу Идея для проверки Автором, затем в цикл EGG. ChatGPT анализирует проект через EGG v4.0 в отдельном диалоге; сайт не вызывает ИИ самостоятельно. Окончательное подтверждение остаётся за Автором.</p>
         </section>
-        <div className="mx-auto mt-7 max-w-[1040px] space-y-5">
+        <div className={(utilityPanel==="work"?"block":"hidden")+" mx-auto mt-7 max-w-[1040px] space-y-5"}>
           {project&&timeline&&<div className="space-y-2 rounded-lg border border-foreground/15 p-3 text-[11px] leading-relaxed text-foreground/65"
             data-testid="yolk-visual-source">
             <p>{timeline.visualNote}</p>
