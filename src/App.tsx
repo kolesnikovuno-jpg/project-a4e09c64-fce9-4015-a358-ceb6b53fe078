@@ -77,6 +77,22 @@ const EggEntryRedirect = () => {
   return <Navigate to={projectId ? `/egg/yolk${search}${hash}` : `/egg/connect${search}${hash}`} replace />;
 };
 
+/** A rendering exception must never leave the authenticated EGG page blank. */
+class EggRenderBoundary extends Component<{children:ReactNode},{failed:boolean}> {
+  state={failed:false};
+  static getDerivedStateFromError(){return {failed:true};}
+  componentDidCatch(error:Error, info:ErrorInfo){console.error("EGG render failed",error,info.componentStack);}
+  render(){
+    if(!this.state.failed)return this.props.children;
+    return <main className="mx-auto max-w-xl p-8 text-foreground">
+      <h1 className="text-2xl">Не удалось отобразить Яйцо</h1>
+      <p className="mt-4 text-sm">Данные проекта не изменены. Ошибка произошла при отображении интерфейса.</p>
+      <a href="/egg/connect" className="mt-5 inline-block underline">Вернуться к проектам</a>
+      <button className="ml-5 underline" onClick={()=>window.location.reload()}>Повторить</button>
+    </main>;
+  }
+}
+
 // Pages that exist under each locale prefix.
 const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   // Kolesnikov.studio — new information architecture
@@ -106,22 +122,6 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   { path: "semantic", element: <Semantic /> },
   { path: "semantic/about", element: <SemanticAbout /> },
 ];
-
-/** A rendering exception must never leave the authenticated EGG page blank. */
-class EggRenderBoundary extends Component<{children:ReactNode},{failed:boolean}> {
-  state={failed:false};
-  static getDerivedStateFromError(){return {failed:true};}
-  componentDidCatch(error:Error, info:ErrorInfo){console.error("EGG render failed",error,info.componentStack);}
-  render(){
-    if(!this.state.failed)return this.props.children;
-    return <main className="mx-auto max-w-xl p-8 text-foreground">
-      <h1 className="text-2xl">Не удалось отобразить Яйцо</h1>
-      <p className="mt-4 text-sm">Данные проекта не изменены. Ошибка произошла при отображении интерфейса.</p>
-      <a href="/egg/connect" className="mt-5 inline-block underline">Вернуться к проектам</a>
-      <button className="ml-5 underline" onClick={()=>window.location.reload()}>Повторить</button>
-    </main>;
-  }
-}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
