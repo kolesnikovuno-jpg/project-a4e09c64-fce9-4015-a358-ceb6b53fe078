@@ -289,7 +289,7 @@ export default async function handler(req: Request, res: Response) {
         respond(res,200,{ok:true,path,token:data.token});return;
       }
       const path=String(input.path||"");
-      if(!new RegExp("^"+projectId+"/"+imageId+"\\\\.(png|jpg|webp)$").test(path))throw new RequestFailure(400,"invalid_media_path");
+      if(![projectId+"/"+imageId+".png",projectId+"/"+imageId+".jpg",projectId+"/"+imageId+".webp"].includes(path))throw new RequestFailure(400,"invalid_media_path");
       const x=Number(input.x),y=Number(input.y),w=Number(input.w),h=Number(input.h);
       if(![x,y,w,h].every(n=>Number.isFinite(n)&&n>=0&&n<=1000))throw new RequestFailure(400,"invalid_media_geometry");
       const {data:existing,error:lookupError}=await db.storage.from("egg-author-media").info(path);
