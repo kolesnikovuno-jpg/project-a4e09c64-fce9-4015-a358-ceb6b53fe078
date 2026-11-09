@@ -319,7 +319,7 @@ export default async function handler(req: Request, res: Response) {
       const {data:inserted,error}=await db.from("egg_field_items" as never).insert({
         project_id:projectId,sphere:null,flow:"field",origin:"internal",source_kind:"human",
         title:"Холст / фрагмент "+fragment.id,content,claim_type:"proposal",
-        actor_kind:"user",created_by:identity.ownerId,operation_id:"canvas_"+randomUUID().replace(/-/g,""),
+        actor_kind:"user",created_by:identity.ownerId,operation_id:null,
       } as never).select("id").single();
       if(error||!inserted)throw new RequestFailure(503,"fragment_save_failed");
       respond(res,201,{ok:true,id:(inserted as {id:string}).id});return;
