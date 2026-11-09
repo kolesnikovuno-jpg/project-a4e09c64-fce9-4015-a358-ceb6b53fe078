@@ -43,8 +43,8 @@ describe("EGG Yolk: match the main Egg visual system",()=>{
   it("does not claim the demo illustration is an approved physical object",()=>{
     show();
     expect(screen.getByText(/Параметрический эскиз · GLB создаётся локально/)).toBeTruthy();
-    expect(screen.getByTestId("yolk-stage-volume").getAttribute("aria-pressed")).toBe("true");
-    expect(screen.getByTestId("yolk-stage-gesture").closest('[role="group"]')?.className).toContain("hidden");
+    expect(screen.queryByTestId("yolk-stage-volume")).toBeNull();
+    expect(screen.getByRole("img",{name:/Объём/})).toBeTruthy();
     expect(screen.getByTestId("yolk-generate-glb").parentElement?.className).toContain("hidden");
     expect(screen.queryByRole("button",{name:"ДНК / концепт"})).toBeNull();
   });
