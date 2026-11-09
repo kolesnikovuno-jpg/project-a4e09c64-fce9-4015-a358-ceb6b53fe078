@@ -37,19 +37,15 @@ describe("EGG Yolk: match the main Egg visual system",()=>{
     expect(screen.getByRole("dialog",{name:"Подробнее о сфере Материя"})).toBeTruthy();
     expect(screen.getByText("Назначение сферы")).toBeTruthy();
     fireEvent.click(screen.getByRole("button",{name:"Закрыть"}));
-    fireEvent.click(screen.getByRole("button",{name:"ДНК / концепт"}));
-    expect(screen.getByTestId("yolk-left-typing").textContent).toContain("ДНК продукта");
+    expect(screen.queryByRole("button",{name:"ДНК / концепт"})).toBeNull();
   });
 
   it("does not claim the demo illustration is an approved physical object",()=>{
     show();
     expect(screen.getByText(/Параметрический эскиз · GLB создаётся локально/)).toBeTruthy();
-    expect(screen.getByTestId("yolk-stage-gesture").getAttribute("aria-pressed")).toBe("true");
-    fireEvent.click(screen.getByTestId("yolk-stage-frame"));
-    expect(screen.getByTestId("yolk-stage-frame").getAttribute("aria-pressed")).toBe("true");
-    fireEvent.click(screen.getByTestId("yolk-variant-B"));
-    expect(screen.getByTestId("yolk-variant-B").getAttribute("aria-pressed")).toBe("true");
-    expect(screen.getByTestId("yolk-generate-glb")).toBeTruthy();
-    expect(screen.getByRole("button",{name:"ДНК / концепт"})).toBeTruthy();
+    expect(screen.getByTestId("yolk-stage-volume").getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByTestId("yolk-stage-gesture").closest('[role="group"]')?.className).toContain("hidden");
+    expect(screen.getByTestId("yolk-generate-glb").parentElement?.className).toContain("hidden");
+    expect(screen.queryByRole("button",{name:"ДНК / концепт"})).toBeNull();
   });
 });
