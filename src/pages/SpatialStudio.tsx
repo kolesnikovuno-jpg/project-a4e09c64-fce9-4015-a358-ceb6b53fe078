@@ -12,6 +12,9 @@ export default function SpatialStudio() {
  const [video,setVideo] = useState<string|null>(null);
  const [fileName,setFileName] = useState("");
  const [recording,setRecording] = useState(false);
+ const [processing,setProcessing] = useState(false);
+ const [frames,setFrames] = useState<string[]>([]);
+ const [progress,setProgress] = useState("");
  const [error,setError] = useState("");
  const input = useRef<HTMLInputElement>(null);
  const preview = useRef<HTMLVideoElement>(null);
@@ -34,7 +37,31 @@ export default function SpatialStudio() {
      r.start();setRecording(true);
    } catch(e){setError(e instanceof Error?e.message:String(e))}
  };
- const load=(f?:File)=>{if(!f)return;setError("");setVideo(old=>{if(old)URL.revokeObjectURL(old);return URL.createObjectURL(f)});setFileName(f.name)};
+ const load=(f?:File)=>{if(!f)return;setFrames([]);setError("");setVideo(old=>{if(old)URL.revokeObjectURL(old);return URL.createObjectURL(f)});setFileName(f.name)};
+ const extractFrames = async () => {
+  if(!video || processing)return;
+  setProcessing(true);setError("");setFrames([]);setProgress(tr("Анализ видео…","Аналіз відео…","Reading video…"));
+  const v=document.createElement("video");v.preload="auto";v.muted=true;v.playsInline=true;v.src=video;
+  try{
+   await new Promise<void>((resolve,reject)=>{v.onloadedmetadata=()=>resolve();v.onerror=()=>reject(new Error("Cannot decode video"));v.load()});
+   const duration=v.duration;if(!Number.isFinite(duration)||duration<=0)throw new Error("Video duration unavailable");
+   const count=Math.min(24,Math.max(4,Math.ceil(duration*1.5)));
+   const width=Math.min(960,v.videoWidth||960),height=Math.round(width*(v.videoHeight||720)/(v.videoWidth||960));
+   const canvas=document.createElement("canvas");canvas.width=width;canvas.height=height;
+   const ctx=canvas.getContext("2d");if(!ctx)throw new Error("Canvas unavailable");
+   const output:string[]=[];
+   for(let i=0;i<count;i++){
+    const t=Math.max(0.01,Math.min(duration-0.02,(i+.5)*duration/count));
+    await new Promise<void>((resolve,reject)=>{const timer=window.setTimeout(()=>reject(new Error("Video seek timed out")),8000);v.onseeked=()=>{clearTimeout(timer);resolve()};v.onerror=()=>{clearTimeout(timer);reject(new Error("Video seek failed"))};v.currentTime=t});
+    ctx.drawImage(v,0,0,width,height);output.push(canvas.toDataURL("image/jpeg",.82));
+    setProgress(`${i+1} / ${count}`);
+   }
+   setFrames(output);setProgress(tr("Кадры подготовлены. Это ещё не 3D-реконструкция.","Кадри підготовлено. Це ще не 3D-реконструкція.","Frames prepared. This is not 3D reconstruction yet."));
+  }catch(e){setError(e instanceof Error?e.message:String(e));setProgress("")}finally{v.removeAttribute("src");v.load();setProcessing(false)}
+ };
+ const downloadFrames=()=>{
+  frames.forEach((url,i)=>{const a=document.createElement("a");a.href=url;a.download=`spatial-frame-${String(i+1).padStart(3,"0")}.jpg`;a.click()});
+ };
  const point=(e:React.PointerEvent<SVGSVGElement>)=>{const p=svg.current!.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const matrix=svg.current!.getScreenCTM();return matrix?p.matrixTransform(matrix.inverse()):{x:0,y:0}};
  const exportScene=()=>{const data={format:"spatial-studio-concept-v1",room:{width:5,height:4,units:"illustrative"},objects:items,sourceVideo:fileName||null,notice:"Concept plan only. Not a CAD reconstruction or measured geometry."};const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="spatial-concept.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
  return <div style={{minHeight:"100dvh",background:"#f3f1ed",color:"#252622",fontFamily:"system-ui,sans-serif",padding:"24px clamp(16px,4vw,56px)"}}>
@@ -55,6 +82,13 @@ export default function SpatialStudio() {
  {recording&&<p role="status" style={{color:"#9d3327",fontSize:13}}>● REC — {tr("Идёт запись","Триває запис","Recording")}</p>}
  {!recording&&(video?<video controls playsInline src={video} style={{width:"100%",maxHeight:280,background:"#181818",borderRadius:6}}/>:<div style={{height:200,display:"grid",placeItems:"center",background:"#e8e5df",borderRadius:6,color:"#777"}}>{tr("Нет видео","Немає відео","No video yet")}</div>)}
  {fileName&&<p style={{fontSize:12,overflowWrap:"anywhere"}}>{fileName}</p>}
+ <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid #e0dbd2"}}>
+ <h3 style={{fontSize:14,fontWeight:500,margin:"0 0 8px"}}>{tr("Подготовка к реконструкции","Підготовка до реконструкції","Prepare reconstruction input")}</h3>
+ <p style={{fontSize:12,opacity:.65}}>{tr("Извлекает кадры локально на iPad. Для создания 3D потребуется отдельный GPU-сервер.","Витягує кадри локально на iPad. Для 3D потрібен окремий GPU-сервер.","Extracts frames locally. Actual 3D reconstruction requires a separate GPU backend.")}</p>
+ <button style={btn} disabled={!video||recording||processing} onClick={extractFrames}>{processing?tr("Обработка…","Обробка…","Processing…"):tr("Подготовить кадры для 3D","Підготувати кадри для 3D","Prepare frames for 3D")}</button>
+ {progress&&<p role="status" style={{fontSize:12}}>{progress}</p>}
+ {frames.length>0&&<><div style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:5,margin:"12px 0"}}>{frames.slice(0,12).map((src,i)=><img key={i} src={src} alt={`Frame ${i+1}`} style={{width:"100%",borderRadius:3}}/>)}</div><p style={{fontSize:12}}>{frames.length} {tr("кадров","кадрів","frames")}</p><button style={btn} onClick={downloadFrames}>{tr("Сохранить кадры JPEG","Зберегти кадри JPEG","Save JPEG frames")}</button></>}
+ </div>
  </section>
  <section style={{background:"#fff",border:"1px solid #ddd8cf",padding:20,borderRadius:12}}>
  <h2 style={{fontSize:18,fontWeight:500,margin:"0 0 8px"}}>02 / {tr("Пространственная схема","Просторова схема","Spatial sketch")}</h2>
