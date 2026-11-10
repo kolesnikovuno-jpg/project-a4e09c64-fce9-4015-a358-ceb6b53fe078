@@ -129,7 +129,12 @@ export default function SpatialStudio() {
  </div>
  </section></div>
  <section style={{background:"#fff",border:"1px solid #ddd8cf",padding:20,borderRadius:12,marginTop:20}}>
- <h2 style={{fontSize:18,fontWeight:500,margin:"0 0 8px"}}>03 / Gaussian Splatting · 3D Viewer</h2>
+ <h2 style={{fontSize:18,fontWeight:500,margin:"0 0 8px"}}>03 / {tr("3D-редактор помещения","3D-редактор приміщення","3D Room Editor")}</h2>
+ <p style={{fontSize:13,opacity:.65,lineHeight:1.5}}>{tr("Настоящая интерактивная 3D-геометрия: добавляй предметы, перемещай по полу, вращай, масштабируй и загружай собственные .glb. Комната демонстрационная, не реконструирована из видео.","Справжня інтерактивна 3D-геометрія: додавай об'єкти, пересувай, обертай та завантажуй .glb. Кімната демонстраційна.","Interactive 3D geometry: add, drag, rotate, scale and import .glb models. Room geometry is illustrative, not reconstructed.")}</p>
+ <iframe title="Interactive 3D room editor" src="/spatial-editor-3d.html" loading="lazy" style={{width:"100%",height:590,border:0,borderRadius:8,background:"#e9e7e2"}}/>
+ </section>
+ <section style={{background:"#fff",border:"1px solid #ddd8cf",padding:20,borderRadius:12,marginTop:20}}>
+ <h2 style={{fontSize:18,fontWeight:500,margin:"0 0 8px"}}>04 / Gaussian Splatting · 3D Viewer</h2>
  <p style={{fontSize:13,opacity:.65,lineHeight:1.5}}>{tr("Реальная 3D-сцена: поверни демонстрационный объект пальцем или открой свой файл .spz, .ply, .splat. Это просмотр готовой реконструкции, а не преобразование записанного видео.","Справжня 3D-сцена: обертай демонстраційний об'єкт або відкрий свій файл. Це перегляд готової реконструкції, а не обробка відео.","Real Gaussian Splat viewer: rotate the demo or load a .spz, .ply, .splat file. This does not convert the captured video.")}</p>
  <iframe title="Gaussian Splat 3D viewer" src="/spatial-splat-viewer.html" loading="lazy" allow="fullscreen" style={{width:"100%",height:"min(65vh,540px)",minHeight:340,border:0,borderRadius:8,background:"#e9e7e2"}}/>
  <p style={{fontSize:12,opacity:.55}}>{tr("Демо-сцена загружается с внешнего сервера Spark. Локальные файлы остаются в браузере.","Демо-сцена завантажується із зовнішнього сервера Spark.","Demo asset loads from Spark's server. Your local files stay in the browser.")}</p>
