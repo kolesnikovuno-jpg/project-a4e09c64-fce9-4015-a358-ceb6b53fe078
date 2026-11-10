@@ -25,6 +25,9 @@ export default function EggAuthorWorkspace(){
  const [notice,setNotice]=useState("");
  const [remoteFindings,setRemoteFindings]=useState<{id:string;title:string;content:string;actor_kind:string;created_at:string}[]>([]);
  const [bridgeStatus,setBridgeStatus]=useState("Соединение с EGG не проверено");
+ const [reviews,setReviews]=useState<Record<string,{decision:string;note:string}>>({});
+ const [reviewNotes,setReviewNotes]=useState<Record<string,string>>({});
+ const [reviewBusy,setReviewBusy]=useState<string|null>(null);
  const tokenRef=useRef<string|null>(null);
  const sentRef=useRef<Record<string,string>>({});
  const readyRef=useRef(false);
@@ -60,10 +63,17 @@ export default function EggAuthorWorkspace(){
     });
     return [...merged,...remote.values()];
    });
+   const nextReviews:Record<string,{decision:string;note:string}>={};
+   for(const item of body.items){try{
+    const v=JSON.parse(item.content) as {kind?:string;proposalId?:string;decision?:string;note?:string};
+    if(v.kind==="author_review"&&v.proposalId&&!nextReviews[v.proposalId]&&v.decision)
+     nextReviews[v.proposalId]={decision:v.decision,note:v.note??""};
+   }catch{}}
+   setReviews(nextReviews);
    setRemoteFindings(body.items.filter(item=>{
     if(item.content.includes('"kind":"canvas_fragment"')||item.content.includes('"kind":"canvas_image"'))return false;
     if(item.title.startsWith("Проверка канала")||item.title.startsWith("Холст /"))return false;
-    return item.actor_kind==="agent";
+    return item.actor_kind==="agent"&&item.title.startsWith("Предложение ИИ");
    }));
    const latest=new Map<string,Fragment>();
    for(const item of body.items){try{const parsed=JSON.parse(item.content) as {kind?:string;fragment?:Fragment};if(parsed.kind==="canvas_fragment"&&parsed.fragment&&!latest.has(parsed.fragment.id))latest.set(parsed.fragment.id,parsed.fragment);}catch{}}
@@ -171,6 +181,17 @@ export default function EggAuthorWorkspace(){
    setNotice("Фрагмент экспортирован в PNG. Прикрепите его к сообщению в ChatGPT вместе с заметкой.");
   },"image/png");
  };
+ const reviewProposal=async(proposalId:string,decision:"accept"|"revise"|"reject")=>{
+  if(!tokenRef.current){setNotice("Сначала войдите в EGG");return;}
+  setReviewBusy(proposalId);
+  try{
+   const response=await fetch("/api/egg",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+tokenRef.current},body:JSON.stringify({command:"author_review",projectId:id,proposalId,decision,note:reviewNotes[proposalId]??""})});
+   if(!response.ok)throw Error("Не удалось сохранить решение");
+   setReviews(v=>({...v,[proposalId]:{decision,note:reviewNotes[proposalId]??""}}));
+   setNotice("Решение Автора записано в EGG. Утверждённое ядро не изменено.");
+  }catch(e){setNotice(e instanceof Error?e.message:"Ошибка сохранения");}
+  finally{setReviewBusy(null);}
+ };
  const payload={version:2,project:id,text,images,marks,findings,fragments,exportedAt:new Date().toISOString()};
  const transferText=()=>["EGG — контекст Автора","Проект: "+id,"Замысел:",text||"(пока не сформулирован)","Выводы предыдущих обсуждений:",...findings.map((f,i)=>String(i+1)+". "+f.text),"Фрагменты холста:",...fragments.map((f,i)=>String(i+1)+". ID "+f.id+"; область "+[f.x,f.y,f.w,f.h].map(Math.round).join(", ")+"; заметка: "+(f.note||"нет")),"Визуальные материалы: "+images.length+" изображений, "+marks.length+" линий. Для визуального анализа приложите экспорт холста.","Задача: исследуй замысел, сохрани авторское ядро, отдели факты от гипотез и предложи варианты. Не утверждай решения вместо Автора."].join("\n\n");
  const addFinding=()=>{const value=discussion.trim();if(!value)return;setFindings(v=>[...v,{id:crypto.randomUUID(),text:value,createdAt:new Date().toISOString()}]);setDiscussion("");setNotice("Итог обсуждения добавлен в материалы Автора. Он не утверждён как концепция.");};
@@ -210,9 +231,16 @@ export default function EggAuthorWorkspace(){
      const summary=f.content.replace(/Связанный фрагмент холста:\\s*[0-9a-f-]{36}\\.\\s*/i,"").replace(/Статус: рабочее предложение ИИ, НЕ утверждено Автором\\.\\s*/i,"").trim();
      return <div key={f.id} className="mb-2 rounded-lg border border-foreground/10 bg-foreground/5 p-3">
       <p className="text-xs font-medium">{f.title}</p>
-      <p className="mt-1 text-[10px] text-foreground/50">Предложение ИИ · ожидает решения Автора</p>
+      <p className="mt-1 text-[10px] text-foreground/50">Предложение ИИ · {reviews[f.id]?({accept:"Принято к дальнейшей работе",revise:"На доработку",reject:"Отклонено"} as Record<string,string>)[reviews[f.id].decision]:"Ожидает решения Автора"}</p>
       {linked&&<button type="button" className="mt-2 rounded-lg border border-foreground/20 px-2 py-1 text-[11px]" onClick={()=>{setSelectedFragment(linked);setTool("move");board.current?.scrollIntoView({behavior:"smooth",block:"center"});}}>Показать связанный фрагмент</button>}
       <p className="mt-2 whitespace-pre-wrap break-words text-xs leading-relaxed">{summary.slice(0,1300)}</p>
+      {!reviews[f.id]&&<div className="mt-3 space-y-2">
+       <textarea aria-label="Комментарий к решению Автора" placeholder="Комментарий или направление доработки (необязательно)" value={reviewNotes[f.id]??""} onChange={e=>setReviewNotes(v=>({...v,[f.id]:e.target.value}))} className="min-h-16 w-full rounded-lg border border-foreground/15 bg-transparent p-2 text-xs"/>
+       <div className="flex flex-wrap gap-2">
+        {([["accept","Принять"],["revise","Доработать"],["reject","Отклонить"]] as const).map(([decision,label])=><button key={decision} type="button" disabled={reviewBusy===f.id} onClick={()=>void reviewProposal(f.id,decision)} className="rounded-lg border border-foreground/25 px-3 py-2 text-xs disabled:opacity-40">{label}</button>)}
+       </div>
+      </div>}
+      {reviews[f.id]?.note&&<p className="mt-2 text-xs text-foreground/65">Комментарий Автора: {reviews[f.id].note}</p>}
      </div>;
     })}</div>}
     <button type="button" onClick={exportDraft} className="rounded-xl bg-foreground px-4 py-3 text-sm text-background">Сохранить пакет для сферы Идеи (JSON)</button>
