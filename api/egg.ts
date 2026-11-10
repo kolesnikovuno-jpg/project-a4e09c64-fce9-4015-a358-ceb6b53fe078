@@ -273,6 +273,30 @@ export default async function handler(req: Request, res: Response) {
       respond(res, 201, { ok: true, channelId: (created as { id: string }).id });
       return;
     }
+    if(raw&&typeof raw==="object"&&!Array.isArray(raw)&&(raw as Record<string,unknown>).command==="author_review"){
+      const input=raw as Record<string,unknown>;
+      if(identity.kind!=="author")throw new RequestFailure(403,"author_required");
+      const projectId=String(input.projectId||"");
+      await checkedProject(db,projectId,identity,"author");
+      const proposalId=String(input.proposalId||"");
+      const decision=String(input.decision||"");
+      const note=String(input.note||"").trim();
+      if(!uuid(proposalId)||!["accept","revise","reject"].includes(decision)||note.length>2000)
+        throw new RequestFailure(400,"invalid_review");
+      const {data:proposal,error:readError}=await db.from("egg_field_items" as never)
+        .select("id,actor_kind,claim_type").eq("project_id",projectId).eq("id",proposalId).maybeSingle();
+      if(readError)throw new RequestFailure(503,"proposal_lookup_failed");
+      if(!proposal||proposal.actor_kind!=="agent"||proposal.claim_type!=="proposal")
+        throw new RequestFailure(404,"proposal_not_found");
+      const content=JSON.stringify({kind:"author_review",proposalId,decision,note,reviewedAt:new Date().toISOString()});
+      const {data:review,error}=await db.from("egg_field_items" as never).insert({
+        project_id:projectId,sphere:null,flow:"field",origin:"internal",source_kind:"human",
+        title:"Решение Автора по предложению "+proposalId,content,claim_type:"fact",
+        actor_kind:"user",created_by:identity.ownerId,operation_id:null,
+      } as never).select("id").single();
+      if(error||!review)throw new RequestFailure(503,"review_save_failed");
+      respond(res,201,{ok:true,reviewId:review.id});return;
+    }
     if(raw&&typeof raw==="object"&&!Array.isArray(raw)&&["media_upload","media_register"].includes(String((raw as Record<string,unknown>).command))){
       const input=raw as Record<string,unknown>;
       if(identity.kind!=="author")throw new RequestFailure(403,"author_required");
