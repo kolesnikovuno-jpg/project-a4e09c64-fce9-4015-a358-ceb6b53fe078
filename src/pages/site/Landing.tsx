@@ -111,6 +111,9 @@ const Landing = () => {
           <a className="landing-lab" href="https://architectural-object-lab.lovable.app">
             {copy.lab}
           </a>
+          <a className="landing-lab" href={localePath("/spatial")}>
+            Spatial Studio ↗
+          </a>
           <a className="landing-lab" href={localePath("/unocalc")}>
             UNOcalc ↗
           </a>
