@@ -194,6 +194,17 @@ export default async function handler(req: Request, res: Response) {
 
     if (req.method === "GET") {
       const url = new URL(req.url || "/", "https://local.invalid");
+      if(url.searchParams.get("active_visual_context")==="1"){
+        const projectId=url.searchParams.get("projectId")||"";
+        await checkedProject(db,projectId,identity,"read");
+        const {data,error}=await db.from("egg_field_items" as never).select("content")
+          .eq("project_id",projectId).eq("title","Холст / активный фрагмент для ИИ")
+          .order("created_at",{ascending:false}).limit(1).maybeSingle();
+        if(error)throw new RequestFailure(503,"active_fragment_lookup_failed");
+        const item=data as {content:string}|null;
+        const selection=item?JSON.parse(item.content) as {fragmentId?:string}:null;
+        respond(res,200,{ok:true,projectId,fragmentId:selection?.fragmentId??null});return;
+      }
       if(url.searchParams.get("visual_context")==="1"){
         const projectId=url.searchParams.get("projectId")||"";
         const fragmentId=url.searchParams.get("fragmentId")||"";
@@ -304,6 +315,29 @@ export default async function handler(req: Request, res: Response) {
       if (createError || !created) throw new RequestFailure(503, "channel_creation_failed");
       respond(res, 201, { ok: true, channelId: (created as { id: string }).id });
       return;
+    }
+    if(raw&&typeof raw==="object"&&!Array.isArray(raw)&&(raw as Record<string,unknown>).command==="select_visual_fragment"){
+      const input=raw as Record<string,unknown>;
+      if(identity.kind!=="author")throw new RequestFailure(403,"author_required");
+      const projectId=String(input.projectId||""),fragmentId=String(input.fragmentId||"");
+      if(!uuid(fragmentId))throw new RequestFailure(400,"invalid_fragment_id");
+      await checkedProject(db,projectId,identity,"author");
+      const {data:fragments,error:lookupError}=await db.from("egg_field_items" as never)
+        .select("content").eq("project_id",projectId).eq("title","Холст / фрагмент "+fragmentId)
+        .order("created_at",{ascending:false}).limit(1);
+      if(lookupError)throw new RequestFailure(503,"fragment_lookup_failed");
+      if(!(fragments as Array<{content:string}>|null)?.some(row=>{try{
+        const v=JSON.parse(row.content) as {kind?:string;fragment?:{id:string}};
+        return v.kind==="canvas_fragment"&&v.fragment?.id===fragmentId;
+      }catch{return false;}}))throw new RequestFailure(404,"fragment_not_saved");
+      const {error}=await db.from("egg_field_items" as never).insert({
+        project_id:projectId,sphere:null,flow:"field",origin:"internal",source_kind:"human",
+        title:"Холст / активный фрагмент для ИИ",
+        content:JSON.stringify({kind:"active_visual_fragment",fragmentId}),
+        claim_type:"fact",actor_kind:"user",created_by:identity.ownerId,operation_id:null
+      } as never);
+      if(error)throw new RequestFailure(503,"active_fragment_save_failed");
+      respond(res,201,{ok:true,fragmentId});return;
     }
     if(raw&&typeof raw==="object"&&!Array.isArray(raw)&&(raw as Record<string,unknown>).command==="author_review"){
       const input=raw as Record<string,unknown>;
