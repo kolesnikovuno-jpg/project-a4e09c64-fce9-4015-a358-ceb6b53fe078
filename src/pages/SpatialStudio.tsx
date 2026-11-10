@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { useLocale } from "@/i18n/useLocale";
 
-type Item = { id: number; x: number; y: number; w: number; h: number; label: string; color: string };
+type Item = { id: number; x: number; y: number; w: number; h: number; label: string; color: string; photo?: string };
 const initial: Item[] = [{ id: 1, x: 90, y: 90, w: 115, h: 55, label: "Sofa", color: "#b5a99b" }, { id: 2, x: 280, y: 160, w: 65, h: 65, label: "Table", color: "#a18d75" }];
 export default function SpatialStudio() {
  const { locale, localePath } = useLocale();
@@ -23,6 +23,9 @@ export default function SpatialStudio() {
  const parts = useRef<Blob[]>([]);
  const drag = useRef<{id:number;dx:number;dy:number}|null>(null);
  const svg = useRef<SVGSVGElement>(null);
+ const photoInput = useRef<HTMLInputElement>(null);
+ const activeItem = items.find(i=>i.id===selected);
+ const attachPhoto = (f?:File)=>{if(!f||selected===null)return;if(!f.type.startsWith("image/")){setError("Please select an image");return;}const reader=new FileReader();reader.onload=()=>{if(typeof reader.result==="string")setItems(old=>old.map(i=>i.id===selected?{...i,photo:reader.result as string}:i))};reader.readAsDataURL(f)};
  const stop = () => {recorder.current?.state==="recording" && recorder.current.stop(); stream.current?.getTracks().forEach(t=>t.stop());if(preview.current)preview.current.srcObject=null;setRecording(false);};
  const start = async () => {
    setError("");
@@ -95,13 +98,34 @@ export default function SpatialStudio() {
  <p style={{fontSize:13,opacity:.65,lineHeight:1.5}}>{tr("Перетаскивай объекты на условном плане. Размеры демонстрационные, не получены из видео.","Перетягуй об'єкти на умовному плані. Розміри демонстраційні.","Drag objects on a conceptual floor plan. Dimensions are illustrative.")}</p>
  <svg ref={svg} viewBox="0 0 440 350" style={{width:"100%",background:"#eae7e1",borderRadius:6,touchAction:"none",marginTop:8}} onPointerMove={e=>{if(!drag.current)return;const p=point(e);const d=drag.current;setItems(old=>old.map(i=>i.id===d.id?{...i,x:Math.max(25,Math.min(405-i.w,p.x-d.dx)),y:Math.max(25,Math.min(315-i.h,p.y-d.dy))}:i))}} onPointerUp={()=>drag.current=null} onPointerCancel={()=>drag.current=null}>
  <rect x="25" y="25" width="390" height="290" fill="#faf9f6" stroke="#333" strokeWidth="6"/><path d="M 140 25 H 270" stroke="#8db2bb" strokeWidth="7"/><path d="M 415 220 V 290" stroke="#faf9f6" strokeWidth="9"/><path d="M 415 290 A 70 70 0 0 1 345 220" fill="none" stroke="#b9b1a6" strokeDasharray="4 4"/>
- {items.map(i=><g key={i.id} onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);const p=point(e);drag.current={id:i.id,dx:p.x-i.x,dy:p.y-i.y};setSelected(i.id)}} style={{cursor:"grab"}}><rect x={i.x} y={i.y} width={i.w} height={i.h} rx="5" fill={i.color} stroke={selected===i.id?"#3d6d72":"#857e72"} strokeWidth={selected===i.id?3:1}/><text x={i.x+i.w/2} y={i.y+i.h/2+4} fontSize="12" textAnchor="middle" fill="#292822" pointerEvents="none">{i.label}</text></g>)}
+ {items.map(i=><g key={i.id} onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);const p=point(e);drag.current={id:i.id,dx:p.x-i.x,dy:p.y-i.y};setSelected(i.id)}} style={{cursor:"grab"}}>{i.photo?<image href={i.photo} x={i.x} y={i.y} width={i.w} height={i.h} preserveAspectRatio="xMidYMid slice"/>:<rect x={i.x} y={i.y} width={i.w} height={i.h} rx="5" fill={i.color}/> }<rect x={i.x} y={i.y} width={i.w} height={i.h} rx="5" fill="none" stroke={selected===i.id?"#3d6d72":"#857e72"} strokeWidth={selected===i.id?3:1}/><text x={i.x+i.w/2} y={i.y+i.h/2+4} fontSize="12" textAnchor="middle" fill="#292822" pointerEvents="none">{i.label}</text></g>)}
  <text x="30" y="338" fontSize="11" fill="#777">CONCEPT / NOT TO SCALE</text>
  </svg>
  <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:12}}>
  <button style={btn} onClick={()=>setItems(a=>[...a,{id:Date.now(),x:140,y:135,w:70,h:45,label:"Object",color:"#a9b9b2"}])}>+ {tr("Объект","Об'єкт","Object")}</button>
- <button style={btn} onClick={()=>setItems(initial)}>↺ {tr("Сброс","Скинути","Reset")}</button>
+ <button style={btn} onClick={()=>{setItems(initial);setSelected(null)}}>↺ {tr("Сброс","Скинути","Reset")}</button>
  <button style={btn} onClick={exportScene}>↓ JSON</button>
+ </div>
+ {activeItem&&<div style={{marginTop:16,padding:14,border:"1px solid #d8d3c9",borderRadius:8}}>
+ <strong style={{fontSize:14}}>{tr("Выбранный объект","Обраний об'єкт","Selected object")}: {activeItem.label}</strong>
+ <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",marginTop:10}}>
+ <button style={btn} onClick={()=>photoInput.current?.click()}>{tr("Загрузить фото предмета","Завантажити фото предмета","Attach object photo")}</button>
+ <input ref={photoInput} type="file" accept="image/*" style={{display:"none"}} onChange={e=>{attachPhoto(e.target.files?.[0]);e.target.value=""}}/>
+ {activeItem.photo&&<button style={btn} onClick={()=>setItems(old=>old.map(i=>i.id===selected?{...i,photo:undefined}:i))}>{tr("Удалить фото","Видалити фото","Remove photo")}</button>}
+ </div>
+ <p style={{fontSize:12,opacity:.6}}>{tr("Фото связано с объектом. Перемести его на плане — изображение переместится и в эскизе сцены.","Фото пов'язане з об'єктом. Переміщення на плані змінює його положення в ескізі сцени.","Photo is linked to this object. Dragging it on the plan also moves it in the scene sketch.")}</p>
+ </div>}
+ <div style={{marginTop:18}}>
+ <h3 style={{fontSize:14,fontWeight:500}}>{tr("Пространственный эскиз · фото-плоскости","Просторовий ескіз · фото-площини","Spatial sketch · photo planes")}</h3>
+ <svg viewBox="0 0 440 310" style={{width:"100%",background:"#e8e6e0",borderRadius:8}}>
+ <defs><linearGradient id="sp-wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#faf9f6"/><stop offset="1" stopColor="#d6d0c7"/></linearGradient></defs>
+ <polygon points="30,75 220,15 410,75 220,145" fill="url(#sp-wall)" stroke="#b9b2a7"/>
+ <polygon points="30,75 220,145 220,285 30,205" fill="#e2ddd5" stroke="#b9b2a7"/>
+ <polygon points="410,75 220,145 220,285 410,205" fill="#f0ede7" stroke="#b9b2a7"/>
+ <polygon points="30,205 220,285 410,205 220,130" fill="#d0c7b9" stroke="#aaa092"/>
+ {items.map(i=>{const px=70+(i.x-25)/390*300,py=125+(i.y-25)/290*115;const depth=(i.y-25)/290;const width=Math.max(24,i.w*.5*(.75+depth*.4));const height=Math.max(28,i.h*.75);return <g key={i.id} onClick={()=>setSelected(i.id)} style={{cursor:"pointer"}}><ellipse cx={px} cy={py+3} rx={width*.48} ry="8" fill="#70685d" opacity=".25"/>{i.photo?<><image href={i.photo} x={px-width/2} y={py-height} width={width} height={height} preserveAspectRatio="xMidYMid meet"/><rect x={px-width/2} y={py-height} width={width} height={height} fill="none" stroke={selected===i.id?"#3d6d72":"#777"} strokeWidth="2"/></>:<rect x={px-width/2} y={py-height*.65} width={width} height={height*.65} rx="3" fill={i.color} stroke={selected===i.id?"#3d6d72":"#888"} strokeWidth="2"/>}<text x={px} y={py+17} fontSize="10" textAnchor="middle" fill="#403d38">{i.label}</text></g>})}
+ </svg>
+ <p style={{fontSize:12,opacity:.6}}>{tr("Это условная перспективная визуализация, не геометрия помещения. Фото показано плоскостью; Gaussian Splatting пока работает отдельно.","Це умовна перспектива, не геометрія приміщення. Фото — площина; Gaussian Splatting працює окремо.","Illustrative perspective, not measured room geometry. Photos are planes; the Gaussian Splat viewer is separate.")}</p>
  </div>
  </section></div>
  <section style={{background:"#fff",border:"1px solid #ddd8cf",padding:20,borderRadius:12,marginTop:20}}>
