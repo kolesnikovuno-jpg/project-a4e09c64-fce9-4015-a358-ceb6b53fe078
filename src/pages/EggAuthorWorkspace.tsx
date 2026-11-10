@@ -145,6 +145,15 @@ export default function EggAuthorWorkspace(){
    }catch(err){setNotice("Изображение видно на холсте, но не сохранено в облаке: "+(err instanceof Error?err.message:"ошибка загрузки"));}
   });
  };
+ const prepareFragmentForAI=async()=>{
+  const fragment=fragments.find(f=>f.id===selectedFragment);
+  if(!fragment||!tokenRef.current){setNotice("Выберите сохранённый фрагмент и войдите в EGG.");return;}
+  try{
+   const response=await fetch("/api/egg",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+tokenRef.current},body:JSON.stringify({command:"select_visual_fragment",projectId:id,fragmentId:fragment.id})});
+   if(!response.ok)throw Error("Не удалось передать выбор в EGG. Убедитесь, что заметка синхронизирована.");
+   setNotice("Фрагмент отмечен для ИИ в EGG. Для получения изображения потребуется обновлённое подключение ChatGPT.");
+  }catch(e){setNotice(e instanceof Error?e.message:"Ошибка передачи выбора");}
+ };
  const exportFragmentImage=async()=>{
   const f=fragments.find(item=>item.id===selectedFragment);
   if(!f)return;
