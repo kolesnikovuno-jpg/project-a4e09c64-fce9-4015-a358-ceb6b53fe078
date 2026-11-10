@@ -286,7 +286,7 @@ export default async function handler(req: Request, res: Response) {
       const {data:proposal,error:readError}=await db.from("egg_field_items" as never)
         .select("id,actor_kind,claim_type").eq("project_id",projectId).eq("id",proposalId).maybeSingle();
       if(readError)throw new RequestFailure(503,"proposal_lookup_failed");
-      if(!proposal||proposal.actor_kind!=="agent"||proposal.claim_type!=="proposal")
+      if(!proposal||(proposal as {actor_kind:string;claim_type:string}).actor_kind!=="agent"||(proposal as {actor_kind:string;claim_type:string}).claim_type!=="proposal")
         throw new RequestFailure(404,"proposal_not_found");
       const content=JSON.stringify({kind:"author_review",proposalId,decision,note,reviewedAt:new Date().toISOString()});
       const {data:review,error}=await db.from("egg_field_items" as never).insert({
@@ -295,7 +295,7 @@ export default async function handler(req: Request, res: Response) {
         actor_kind:"user",created_by:identity.ownerId,operation_id:null,
       } as never).select("id").single();
       if(error||!review)throw new RequestFailure(503,"review_save_failed");
-      respond(res,201,{ok:true,reviewId:review.id});return;
+      respond(res,201,{ok:true,reviewId:(review as {id:string}).id});return;
     }
     if(raw&&typeof raw==="object"&&!Array.isArray(raw)&&["media_upload","media_register"].includes(String((raw as Record<string,unknown>).command))){
       const input=raw as Record<string,unknown>;
