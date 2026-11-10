@@ -70,6 +70,12 @@ export default function SpatialStudio() {
  <button style={btn} onClick={exportScene}>↓ JSON</button>
  </div>
  </section></div>
+ <section style={{background:"#fff",border:"1px solid #ddd8cf",padding:20,borderRadius:12,marginTop:20}}>
+ <h2 style={{fontSize:18,fontWeight:500,margin:"0 0 8px"}}>03 / Gaussian Splatting · 3D Viewer</h2>
+ <p style={{fontSize:13,opacity:.65,lineHeight:1.5}}>{tr("Реальная 3D-сцена: поверни демонстрационный объект пальцем или открой свой файл .spz, .ply, .splat. Это просмотр готовой реконструкции, а не преобразование записанного видео.","Справжня 3D-сцена: обертай демонстраційний об'єкт або відкрий свій файл. Це перегляд готової реконструкції, а не обробка відео.","Real Gaussian Splat viewer: rotate the demo or load a .spz, .ply, .splat file. This does not convert the captured video.")}</p>
+ <iframe title="Gaussian Splat 3D viewer" src="/spatial-splat-viewer.html" loading="lazy" allow="fullscreen" style={{width:"100%",height:"min(65vh,540px)",minHeight:340,border:0,borderRadius:8,background:"#e9e7e2"}}/>
+ <p style={{fontSize:12,opacity:.55}}>{tr("Демо-сцена загружается с внешнего сервера Spark. Локальные файлы остаются в браузере.","Демо-сцена завантажується із зовнішнього сервера Spark.","Demo asset loads from Spark's server. Your local files stay in the browser.")}</p>
+ </section>
  <p style={{fontSize:12,opacity:.55,marginTop:24}}>{tr("Следующий этап: подключение просмотра Gaussian Splatting, затем отдельного движка реконструкции и геометрического экспорта.","Наступний етап: перегляд Gaussian Splatting, реконструкція та геометричний експорт.","Next: Gaussian Splatting viewer, reconstruction backend and geometric export.")}</p>
  </div>;
 }
