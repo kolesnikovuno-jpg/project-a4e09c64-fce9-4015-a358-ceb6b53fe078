@@ -194,6 +194,38 @@ export default async function handler(req: Request, res: Response) {
 
     if (req.method === "GET") {
       const url = new URL(req.url || "/", "https://local.invalid");
+      if(url.searchParams.get("visual_context")==="1"){
+        const projectId=url.searchParams.get("projectId")||"";
+        const fragmentId=url.searchParams.get("fragmentId")||"";
+        if(!uuid(fragmentId))throw new RequestFailure(400,"invalid_fragment_id");
+        await checkedProject(db,projectId,identity,"read");
+        const {data:rows,error}=await db.from("egg_field_items" as never)
+          .select("id,content,created_at").eq("project_id",projectId)
+          .order("created_at",{ascending:false}).limit(500);
+        if(error)throw new RequestFailure(503,"visual_context_read_failed");
+        type Fragment={id:string;x:number;y:number;w:number;h:number;note?:string};
+        type Image={id:string;path:string;x:number;y:number;w:number;h:number};
+        let fragment:Fragment|null=null;
+        const images=new Map<string,Image>();
+        for(const row of rows as Array<{content:string}>){
+          try{
+            const v=JSON.parse(row.content) as {kind?:string;fragment?:Fragment;image?:Image};
+            if(v.kind==="canvas_fragment"&&v.fragment?.id===fragmentId&&!fragment)fragment=v.fragment;
+            if(v.kind==="canvas_image"&&v.image?.path?.startsWith(projectId+"/")&&!images.has(v.image.id))
+              images.set(v.image.id,v.image);
+          }catch{}
+        }
+        if(!fragment)throw new RequestFailure(404,"fragment_not_found");
+        const region=fragment as Fragment;
+        const visualImages:Array<{id:string;url:string;placement:{x:number;y:number;w:number;h:number}}>=[];
+        for(const im of images.values()){
+          if(im.x>=region.x+region.w||im.y>=region.y+region.h||im.x+im.w<=region.x||im.y+im.h<=region.y)continue;
+          const {data}=await db.storage.from("egg-author-media").createSignedUrl(im.path,300);
+          if(data?.signedUrl)visualImages.push({id:im.id,url:data.signedUrl,placement:{x:im.x,y:im.y,w:im.w,h:im.h}});
+        }
+        respond(res,200,{ok:true,projectId,fragment:region,images:visualImages,
+          note:"Signed URLs expire after 5 minutes. Images are original canvas assets, not a pre-cropped composite."});return;
+      }
       if(url.searchParams.get("canvas")==="1"){
         const projectId=url.searchParams.get("projectId")||"";
         await checkedProject(db,projectId,identity,"read");
