@@ -36,6 +36,7 @@ import StudioExchange from "./pages/studio/Exchange";
 import StudioPage from "./pages/studio/StudioPage";
 import StudioStart from "./pages/studio/Start";
 import Landing from "./pages/site/Landing";
+import SpatialStudio from "./pages/SpatialStudio";
 import { DEFAULT_LOCALE, LOCALES, isLocale } from "./i18n/config";
 import { initialLocale } from "./i18n/storage";
 import LocalePersistenceGuard from "./i18n/LocalePersistenceGuard";
@@ -68,6 +69,7 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   { path: "exchange", element: <StudioExchange /> },
   { path: "studio", element: <StudioPage /> },
   { path: "start", element: <StudioStart /> },
+  { path: "spatial", element: <SpatialStudio /> },
   // Previous landing (architectural research) kept for backward compatibility
   { path: "research", element: <Index /> },
   { path: "unocalc", element: <UnoCalcEgg /> },
