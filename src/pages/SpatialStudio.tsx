@@ -14,21 +14,23 @@ export default function SpatialStudio() {
  const [recording,setRecording] = useState(false);
  const [error,setError] = useState("");
  const input = useRef<HTMLInputElement>(null);
+ const preview = useRef<HTMLVideoElement>(null);
  const recorder = useRef<MediaRecorder|null>(null);
  const stream = useRef<MediaStream|null>(null);
  const parts = useRef<Blob[]>([]);
  const drag = useRef<{id:number;dx:number;dy:number}|null>(null);
  const svg = useRef<SVGSVGElement>(null);
- const stop = () => {recorder.current?.state==="recording" && recorder.current.stop(); stream.current?.getTracks().forEach(t=>t.stop());setRecording(false);};
+ const stop = () => {recorder.current?.state==="recording" && recorder.current.stop(); stream.current?.getTracks().forEach(t=>t.stop());if(preview.current)preview.current.srcObject=null;setRecording(false);};
  const start = async () => {
    setError("");
    try {
      if(!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) throw new Error("Camera recording is unavailable in this browser");
      const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false});stream.current=s;
+     if(preview.current){preview.current.srcObject=s;await preview.current.play().catch(()=>{});}
      const mime=["video/mp4","video/webm;codecs=h264","video/webm"].find(x=>MediaRecorder.isTypeSupported(x));
      const r=new MediaRecorder(s,mime?{mimeType:mime}:undefined);recorder.current=r;parts.current=[];
      r.ondataavailable=e=>{if(e.data.size)parts.current.push(e.data)};
-     r.onstop=()=>{const blob=new Blob(parts.current,{type:r.mimeType||"video/webm"});setVideo(old=>{if(old)URL.revokeObjectURL(old);return URL.createObjectURL(blob)});setFileName("camera-capture");s.getTracks().forEach(t=>t.stop())};
+     r.onstop=()=>{const blob=new Blob(parts.current,{type:r.mimeType||"video/webm"});setVideo(old=>{if(old)URL.revokeObjectURL(old);return URL.createObjectURL(blob)});setFileName("camera-capture");s.getTracks().forEach(t=>t.stop());if(preview.current)preview.current.srcObject=null};
      r.start();setRecording(true);
    } catch(e){setError(e instanceof Error?e.message:String(e))}
  };
@@ -49,7 +51,9 @@ export default function SpatialStudio() {
  <input ref={input} type="file" accept="video/*" style={{display:"none"}} onChange={e=>load(e.target.files?.[0])}/>
  </div>
  {error&&<p role="alert" style={{color:"#a43d2b",fontSize:13}}>{error}</p>}
- {video?<video controls playsInline src={video} style={{width:"100%",maxHeight:280,background:"#181818",borderRadius:6}}/>:<div style={{height:200,display:"grid",placeItems:"center",background:"#e8e5df",borderRadius:6,color:"#777"}}>{tr("Нет видео","Немає відео","No video yet")}</div>}
+ <video ref={preview} autoPlay muted playsInline aria-label={tr("Камера во время записи","Камера під час запису","Live camera preview")} style={{display:recording?"block":"none",width:"100%",maxHeight:300,background:"#181818",borderRadius:6}}/>
+ {recording&&<p role="status" style={{color:"#9d3327",fontSize:13}}>● REC — {tr("Идёт запись","Триває запис","Recording")}</p>}
+ {!recording&&(video?<video controls playsInline src={video} style={{width:"100%",maxHeight:280,background:"#181818",borderRadius:6}}/>:<div style={{height:200,display:"grid",placeItems:"center",background:"#e8e5df",borderRadius:6,color:"#777"}}>{tr("Нет видео","Немає відео","No video yet")}</div>)}
  {fileName&&<p style={{fontSize:12,overflowWrap:"anywhere"}}>{fileName}</p>}
  </section>
  <section style={{background:"#fff",border:"1px solid #ddd8cf",padding:20,borderRadius:12}}>
