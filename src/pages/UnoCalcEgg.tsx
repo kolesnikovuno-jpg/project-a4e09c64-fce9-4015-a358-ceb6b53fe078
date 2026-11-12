@@ -6,6 +6,8 @@ import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import { useLocale } from "@/i18n/useLocale";
 import UnoEggScene from "@/components/unocalc/UnoEggScene";
 import EggServerState from "@/components/egg/EggServerState";
+import EggSpherePanel from "@/components/egg/EggSpherePanel";
+import type { SphereId } from "@/lib/eggEngine";
 
 const modelLabel = { ru: "Модель объекта", uk: "Модель об’єкта", en: "Object model" };
 
@@ -14,6 +16,7 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
   const [params] = useSearchParams();
   const hasProject = Boolean(params.get("project"));
   const [activeSphere, setActiveSphere] = useState<string | null>(null);
+  const [selectedWorkSphere, setSelectedWorkSphere] = useState<SphereId | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelExpanded, setPanelExpanded] = useState(false);
   useEffect(() => {
@@ -63,12 +66,13 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
           </nav>
         </header>
         <section className="mt-3" aria-label={eggBrand ? "EGG — interactive project workspace" : "UNOcalc — egg geometry"}>
-          <UnoEggScene locale={locale} />
+          <UnoEggScene locale={locale} onSphereOpen={eggBrand ? (sphere) => setSelectedWorkSphere(sphere as SphereId) : undefined} />
         </section>
         {eggBrand && <div className="flex flex-wrap items-center justify-center gap-3 py-5">
           <button type="button" onClick={() => { setActiveSphere(null); setPanelOpen(true); }} className="rounded-full border border-foreground/30 px-5 py-3 text-sm text-foreground/80">{hasProject ? "Открыть проект и результаты сфер" : "Познакомиться с EGG"}</button>
           <span className="text-xs text-foreground/50">Сферы открывают исходные боковые панели; обзор проекта доступен отдельно</span>
         </div>}
+        {eggBrand && selectedWorkSphere && <EggSpherePanel key={selectedWorkSphere} sphere={selectedWorkSphere} name={EGG_SPHERES[selectedWorkSphere].name} summary={EGG_SPHERES[selectedWorkSphere].purpose} status="open" projectId={params.get("project")} onClose={() => setSelectedWorkSphere(null)} />}
         {eggBrand && panelOpen && <div className="fixed inset-0 z-[100] isolate flex items-stretch justify-end bg-background/20 backdrop-blur-[2px]" onMouseDown={event => { if (event.target === event.currentTarget) setPanelOpen(false); }}>
           <div role="dialog" aria-modal="true" aria-label="Рабочая панель EGG" className={`relative z-10 flex h-[100dvh] w-full flex-col overflow-hidden border-l border-foreground/20 bg-background shadow-2xl transition-[max-width] duration-300 ${panelExpanded ? "max-w-[min(100vw,1060px)]" : "max-w-[min(100vw,480px)]"}`}>
             <div className="flex shrink-0 items-center justify-between border-b border-foreground/10 px-5 py-3">
