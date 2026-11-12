@@ -194,6 +194,18 @@ export default async function handler(req: Request, res: Response) {
 
     if (req.method === "GET") {
       const url = new URL(req.url || "/", "https://local.invalid");
+      if(url.searchParams.get("sphere_notes")==="1"){
+        const projectId=url.searchParams.get("projectId")||"";
+        const sphere=url.searchParams.get("sphere")||"";
+        if(!["marketing","design","testDrive","commerce","legal","production","procurement","retail"].includes(sphere))
+          throw new RequestFailure(400,"invalid_sphere");
+        await checkedProject(db,projectId,identity,"read");
+        const {data,error}=await db.from("egg_field_items" as never)
+          .select("id,content,created_at").eq("project_id",projectId).eq("sphere",sphere)
+          .eq("title","Панель сферы / заметка").order("created_at",{ascending:true}).limit(100);
+        if(error)throw new RequestFailure(503,"sphere_notes_read_failed");
+        respond(res,200,{ok:true,items:data??[]});return;
+      }
       if(url.searchParams.get("active_visual_context")==="1"){
         const projectId=url.searchParams.get("projectId")||"";
         await checkedProject(db,projectId,identity,"read");
@@ -315,6 +327,23 @@ export default async function handler(req: Request, res: Response) {
       if (createError || !created) throw new RequestFailure(503, "channel_creation_failed");
       respond(res, 201, { ok: true, channelId: (created as { id: string }).id });
       return;
+    }
+    if(raw&&typeof raw==="object"&&!Array.isArray(raw)&&(raw as Record<string,unknown>).command==="save_sphere_note"){
+      const input=raw as Record<string,unknown>;
+      if(identity.kind!=="author")throw new RequestFailure(403,"author_required");
+      const projectId=String(input.projectId||""),sphere=String(input.sphere||"");
+      const mode=String(input.mode||""),note=String(input.note||"").trim();
+      if(!["marketing","design","testDrive","commerce","legal","production","procurement","retail"].includes(sphere)
+        ||!["manual","symbiosis"].includes(mode)||!note||note.length>8000)
+        throw new RequestFailure(400,"invalid_sphere_note");
+      await checkedProject(db,projectId,identity,"author");
+      const {data,error}=await db.from("egg_field_items" as never).insert({
+        project_id:projectId,sphere,flow:"field",origin:"internal",source_kind:"human",
+        title:"Панель сферы / заметка",content:JSON.stringify({kind:"sphere_note",mode,note}),
+        claim_type:"proposal",actor_kind:"user",created_by:identity.ownerId,operation_id:null
+      } as never).select("id").single();
+      if(error||!data)throw new RequestFailure(503,"sphere_note_save_failed");
+      respond(res,201,{ok:true,id:(data as {id:string}).id});return;
     }
     if(raw&&typeof raw==="object"&&!Array.isArray(raw)&&(raw as Record<string,unknown>).command==="select_visual_fragment"){
       const input=raw as Record<string,unknown>;
