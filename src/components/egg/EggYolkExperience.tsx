@@ -305,8 +305,8 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
                   iteration={timeline?.iteration??project?.iteration??1}
                   projectId={project?.id} visualVersion={timeline?.visual??null} minimalControls/>
               </div>
-              <div className={(view==="egg"?"":"hidden")+" pointer-events-none absolute inset-[7%] rounded-[50%] border border-foreground/10" aria-hidden="true"/>
-              <div className={(view==="egg"?"":"hidden")+" pointer-events-none absolute inset-[18%] rounded-[50%] border border-foreground/[.06]" aria-hidden="true"/>
+              <div className={(view==="egg"?"":"hidden")+" pointer-events-none absolute inset-[7%] rounded-[50%] border border-foreground/10"} aria-hidden="true"/>
+              <div className={(view==="egg"?"":"hidden")+" pointer-events-none absolute inset-[18%] rounded-[50%] border border-foreground/[.06]"} aria-hidden="true"/>
               {view==="egg"&&YOLK_SPHERES.map(s=>{
                 const radians=s.angle*Math.PI/180;
                 const x=50+43*Math.cos(radians),y=50+43*Math.sin(radians);
