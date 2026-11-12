@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft, Dna, History, MessageCircle, FileText, Layers3, Info, X } from "lucide-react";
 import EggYolkViewer from "./EggYolkViewer";
+import EggSpherePanel from "./EggSpherePanel";
 import EggDocumentationPanel from "./EggDocumentationPanel";
 import EggFlowCyclePanel from "./EggFlowCyclePanel";
 import type { VisualDraft } from "../../lib/eggDocumentation";
@@ -344,13 +345,7 @@ export default function EggYolkExperience(){
           <p className="mt-3 text-[11px] text-foreground/50">{approved?"Принято Автором":candidateText?"Предложено, ожидает решения":"Исследовательская форма · не утверждена"}</p>
           <button type="button" onClick={()=>{setShowInfo(false);setSelected(null);setExpanded(true)}} className="mt-3 border-b border-foreground/35 text-xs">Подробнее →</button>
         </section>}
-        {selectedMeta&&spherePopup&&<div className="fixed inset-x-4 bottom-4 z-40 mx-auto max-w-[430px] rounded-2xl border border-foreground/20 bg-background/95 p-4 shadow-xl backdrop-blur-md sm:bottom-8" role="dialog" aria-label={"Состояние сферы "+selectedMeta.name} data-testid="yolk-sphere-popup">
-          <div className="flex items-center justify-between gap-3"><h2 className="text-base font-medium">{selectedMeta.name}</h2><button type="button" onClick={()=>setSpherePopup(false)} aria-label="Закрыть сведения о сфере" className="rounded-full border border-foreground/20 px-3 py-1">×</button></div>
-          <p className="mt-2 text-xs text-foreground/60">{sphereVisibleStatus}</p>
-          <p className="mt-2 text-sm leading-relaxed">{rightCopy}</p>
-          <p className="mt-2 text-xs text-foreground/55">Влияние на форму: {selectedMeta.tag}. Конкретные изменения требуют подтверждённой связи с моделью.</p>
-          <button type="button" onClick={()=>{setSpherePopup(false);setExpanded(true)}} className="mt-3 border-b border-foreground/35 text-xs">Вся история и параметры →</button>
-        </div>}
+        {selectedMeta&&spherePopup&&<EggSpherePanel key={selectedMeta.id} sphere={selectedMeta.id} name={selectedMeta.name} summary={selectedMeta.detail} status={sphereVisibleStatus} onClose={()=>setSpherePopup(false)}/>}
         <section className={(utilityPanel==="author"?"block":"hidden")+" mx-auto mt-5 max-w-[700px] rounded-2xl border border-foreground/15 bg-background/90 p-3 sm:p-4"} aria-label="Диалог Автора" data-testid="yolk-author-dialog">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2"><h2 className="text-xs font-medium">Автор → EGG</h2><Link to={"/egg/author"+(id?"?project="+encodeURIComponent(id):"")} className="rounded-lg border border-foreground/30 px-3 py-2 text-xs font-medium" data-testid="yolk-author-workspace-link">Открыть единый холст Автора</Link></div><p className="mb-3 text-xs text-foreground/60">Основное рабочее пространство Автора теперь находится на холсте. Этот диалоговый блок сохранён временно для совместимости.</p>
           <form onSubmit={event=>{event.preventDefault();void submitAuthorMessage()}} className="flex items-end gap-2">
