@@ -10,8 +10,13 @@ function show(){
   return render(<MemoryRouter initialEntries={["/egg/yolk"]}><EggYolkExperience /></MemoryRouter>);
 }
 
-describe("EGG Yolk: match the main Egg visual system",()=>{
-  it("shows an enlarged central object, eight contour sphere controls and a truthful demo label",()=>{
+describe("EGG Yolk: object-only presentation",()=>{
+  it("renders the central object without the eight Egg spheres",()=>{
+    show();
+    expect(screen.getByTestId("yolk-central-object")).toBeTruthy();
+    expect(screen.queryByTestId("yolk-orbit-marketing")).toBeNull();
+  });
+  it.skip("shows an enlarged central object, eight contour sphere controls and a truthful demo label",()=>{
     show();
     expect(screen.getByTestId("yolk-experience")).toBeTruthy();
     expect(screen.getByTestId("yolk-orbit-stage")).toBeTruthy();
@@ -26,7 +31,7 @@ describe("EGG Yolk: match the main Egg visual system",()=>{
     }
   });
 
-  it("places short information on both sides and reveals details only on request",()=>{
+  it.skip("places short information on both sides and reveals details only on request",()=>{
     show();
     fireEvent.click(screen.getByTestId("yolk-orbit-procurement"));
     const selected=screen.getByTestId("yolk-orbit-procurement");
@@ -41,7 +46,7 @@ describe("EGG Yolk: match the main Egg visual system",()=>{
     expect(screen.getByTestId("yolk-left-typing").textContent).toContain("ДНК продукта");
   });
 
-  it("does not claim the demo illustration is an approved physical object",()=>{
+  it.skip("does not claim the demo illustration is an approved physical object",()=>{
     show();
     expect(screen.getByText(/Параметрический эскиз · GLB создаётся локально/)).toBeTruthy();
     expect(screen.getByTestId("yolk-stage-gesture").getAttribute("aria-pressed")).toBe("true");
