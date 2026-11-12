@@ -1,4 +1,4 @@
-import { createElement, useEffect, useMemo, useRef, useState, type ChangeEvent, type PointerEvent, type WheelEvent } from "react";
+import { createElement, useEffect, useMemo, useRef, useState, type ChangeEvent, type PointerEvent, type WheelEvent, type TouchEvent } from "react";
 import { Download, RotateCcw, Upload, X } from "lucide-react";
 import { buildSpatialSketch, createSpatialGlb, type SpatialStage, type SpatialVariant, type Vec3 } from "../../lib/eggSpatialGenerator";
 import type {EggVisualSnapshot} from "../../lib/eggVisualHistory";
@@ -27,7 +27,7 @@ function projectPoint(p:Vec3,yaw:number,pitch:number,zoom:number):Projection{
   return {x:300+x*factor,y:315-y*factor,depth};
 }
 export default function EggYolkViewer({
-  onFileChange, onSketchChange, level=1, iteration=1, projectId, visualVersion=null
+  onFileChange, onSketchChange, level=1, iteration=1, projectId, visualVersion=null, minimalControls=false
 }:{
   onFileChange?:(fileName:string|null)=>void;
   /** Existing Author-linked source; never inferred from parametric local study. */
@@ -36,8 +36,9 @@ export default function EggYolkViewer({
   level?:number;
   iteration?:number;
   projectId?:string;
+  minimalControls?:boolean;
 }){
-  const [stage,setStage]=useState<SpatialStage>(()=>stageFromLevel(level));
+  const [stage,setStage]=useState<SpatialStage>(()=>minimalControls?"volume":stageFromLevel(level));
   const [variant,setVariant]=useState<SpatialVariant>("A");
   const [yaw,setYaw]=useState(-.52);
   const [pitch,setPitch]=useState(-.16);
@@ -52,7 +53,10 @@ export default function EggYolkViewer({
     visualVersion.sourceKind==="concept"&&
     /\.(?:glb|gltf)$/i.test(new URL(visualVersion.url).pathname)
     ?visualVersion.url:null;
-  const pointer=useRef<{x:number;y:number}|null>(null);
+  const pointers=useRef(new Map<number,{x:number;y:number}>());
+  const pinchDistance=useRef<number|null>(null);
+  const touchDistance=useRef<number|null>(null);
+  const clampZoom=(value:number)=>Math.max(.5,Math.min(2.5,value));
   const fileRef=useRef<string|null>(null);
   const sketch=useMemo(()=>buildSpatialSketch(stage,variant,iteration),[stage,variant,iteration]);
   useEffect(()=>{onSketchChange?.({stage,variant,iteration:sketch.iteration});},[stage,variant,sketch.iteration,onSketchChange]);
@@ -70,7 +74,7 @@ export default function EggYolkViewer({
     return {quads,paths};
   },[sketch,yaw,pitch,zoom]);
 
-  useEffect(()=>{setStage(stageFromLevel(level));},[level]);
+  useEffect(()=>{setStage(minimalControls?"volume":stageFromLevel(level));},[level,minimalControls]);
   useEffect(()=>{setShowSketch(false);},[visualVersion?.id]);
   useEffect(()=>()=>{if(fileRef.current)URL.revokeObjectURL(fileRef.current);},[]);
   useEffect(()=>{
@@ -91,19 +95,74 @@ export default function EggYolkViewer({
     return()=>{active=false;script?.removeEventListener("error",fail)};
   },[fileUrl,directModel]);
   function dragStart(e:PointerEvent<SVGSVGElement>){
-    pointer.current={x:e.clientX,y:e.clientY};
+    if(e.pointerType==="touch")return;
+    pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pointers.current.size===2){
+      const [a,b]=[...pointers.current.values()];
+      pinchDistance.current=Math.hypot(a.x-b.x,a.y-b.y);
+    }
     e.currentTarget.setPointerCapture?.(e.pointerId);
   }
   function dragMove(e:PointerEvent<SVGSVGElement>){
-    if(!pointer.current)return;
-    const dx=e.clientX-pointer.current.x,dy=e.clientY-pointer.current.y;
-    pointer.current={x:e.clientX,y:e.clientY};
-    setYaw(v=>v+dx*.012);
-    setPitch(v=>Math.max(-.7,Math.min(.7,v+dy*.006)));
+    if(e.pointerType==="touch")return;
+    const previous=pointers.current.get(e.pointerId);
+    if(!previous)return;
+    pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pointers.current.size>=2){
+      const [a,b]=[...pointers.current.values()];
+      const distance=Math.hypot(a.x-b.x,a.y-b.y);
+      if(pinchDistance.current!==null&&pinchDistance.current>0)
+        setZoom(value=>clampZoom(value*distance/pinchDistance.current!));
+      pinchDistance.current=distance;
+      return;
+    }
+    const dx=e.clientX-previous.x,dy=e.clientY-previous.y;
+    setYaw(value=>value+dx*.012);
+    setPitch(value=>Math.max(-.7,Math.min(.7,value+dy*.006)));
   }
-  function dragStop(){pointer.current=null;}
+  function dragStop(e:PointerEvent<SVGSVGElement>){
+    if(e.pointerType==="touch")return;
+    pointers.current.delete(e.pointerId);
+    pinchDistance.current=null;
+  }
+  function touchStart(e:TouchEvent<SVGSVGElement>){
+    if(e.touches.length===2){
+      const a=e.touches[0],b=e.touches[1];
+      touchDistance.current=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+    }else{
+      touchDistance.current=null;
+      if(e.touches.length===1) pointers.current.set(-1,{x:e.touches[0].clientX,y:e.touches[0].clientY});
+    }
+  }
+  function touchMove(e:TouchEvent<SVGSVGElement>){
+    if(e.touches.length===2){
+      e.preventDefault();
+      const a=e.touches[0],b=e.touches[1];
+      const distance=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+      if(touchDistance.current!==null&&touchDistance.current>0){
+        const ratio=distance/touchDistance.current;
+        setZoom(value=>clampZoom(value*ratio));
+      }
+      touchDistance.current=distance;
+      pointers.current.delete(-1);
+    }else if(e.touches.length===1){
+      e.preventDefault();
+      const t=e.touches[0],prev=pointers.current.get(-1);
+      if(prev){
+        setYaw(value=>value+(t.clientX-prev.x)*.012);
+        setPitch(value=>Math.max(-.7,Math.min(.7,value+(t.clientY-prev.y)*.006)));
+      }
+      pointers.current.set(-1,{x:t.clientX,y:t.clientY});
+      touchDistance.current=null;
+    }
+  }
+  function touchEnd(e:TouchEvent<SVGSVGElement>){
+    touchDistance.current=null;
+    pointers.current.delete(-1);
+    if(e.touches.length===1)pointers.current.set(-1,{x:e.touches[0].clientX,y:e.touches[0].clientY});
+  }
   function wheel(e:WheelEvent<SVGSVGElement>){
-    setZoom(v=>Math.max(.68,Math.min(1.7,v+(e.deltaY<0?.07:-.07))));
+    setZoom(value=>clampZoom(value*Math.exp(-e.deltaY*.001)));
   }
   async function choose(e:ChangeEvent<HTMLInputElement>){
     const file=e.currentTarget.files?.[0];e.currentTarget.value="";
@@ -144,14 +203,14 @@ export default function EggYolkViewer({
   const label=STAGES.find(s=>s.id===stage)?.label??"Линии";
   const pts=(points:Projection[])=>points.map(p=>p.x.toFixed(1)+","+p.y.toFixed(1)).join(" ");
   return <div className="relative flex h-full min-h-0 w-full flex-col items-center justify-center" data-testid="yolk-viewer">
-    {!showingBound&&<div className="absolute inset-x-0 top-[4%] z-20 flex flex-wrap justify-center gap-2 px-2" role="group" aria-label="Уровень пространственной проработки">
+    {!minimalControls&&!showingBound&&<div className="absolute inset-x-0 top-[4%] z-20 flex flex-wrap justify-center gap-2 px-2" role="group" aria-label="Уровень пространственной проработки">
       {STAGES.map(s=><button key={s.id} type="button" onClick={()=>setStage(s.id)} aria-pressed={stage===s.id}
         data-testid={"yolk-stage-"+s.id}
         className={"min-h-8 rounded-full border px-3 py-1 text-[11px] font-light backdrop-blur-sm transition-colors "+
           (stage===s.id?"border-foreground/55 bg-background/95 text-foreground":"border-foreground/15 bg-background/70 text-foreground/55 hover:border-foreground/40")}>
         {s.label}</button>)}
     </div>}
-    <div className="relative aspect-square w-full max-w-[650px] min-h-0">
+    <div className="relative aspect-square w-full min-h-0 overflow-visible">
       {showingBound ? (
         <div className="relative flex h-full w-full flex-col items-center justify-center"
           data-testid="yolk-bound-visual">
@@ -182,9 +241,9 @@ export default function EggYolkViewer({
         </div>
       ) : !fileUrl?<svg viewBox="0 0 600 600" role="img"
         aria-label={"Поворотный пространственный эскиз кресла: "+label+", вариант "+variant+"; не утверждённый объект"}
-        className="h-full w-full cursor-grab select-none touch-none active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="h-full w-full overflow-visible cursor-grab select-none touch-none active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{overflow:"visible",touchAction:"none"}}
         tabIndex={0} onPointerDown={dragStart} onPointerMove={dragMove} onPointerUp={dragStop}
-        onPointerCancel={dragStop} onLostPointerCapture={dragStop} onWheel={wheel}
+        onPointerCancel={dragStop} onLostPointerCapture={dragStop} onTouchStart={touchStart} onTouchMove={touchMove} onTouchEnd={touchEnd} onTouchCancel={touchEnd} onWheel={wheel}
         onKeyDown={e=>{
           if(e.key==="ArrowLeft"){e.preventDefault();setYaw(v=>v-.14);}
           if(e.key==="ArrowRight"){e.preventDefault();setYaw(v=>v+.14);}
@@ -214,14 +273,14 @@ export default function EggYolkViewer({
         style:{height:"100%",width:"100%",background:"transparent"}
       }):<div className="grid h-full place-items-center text-xs text-foreground/60">Подключаем 3D-просмотрщик…</div>}
     </div>
-    {!showingBound&&<div className="absolute inset-x-0 bottom-[12%] z-20 flex flex-wrap justify-center gap-1.5 px-2" role="group" aria-label="Линии формообразования">
+    {!minimalControls&&!showingBound&&<div className="absolute inset-x-0 bottom-[12%] z-20 flex flex-wrap justify-center gap-1.5 px-2" role="group" aria-label="Линии формообразования">
       {VARIANTS.map(v=><button type="button" key={v.id} onClick={()=>setVariant(v.id)}
         aria-pressed={variant===v.id} data-testid={"yolk-variant-"+v.id}
         className={"min-h-8 rounded-full border px-2.5 py-1 text-[10px] font-light backdrop-blur-sm "+
           (variant===v.id?"border-foreground/50 bg-background/95 text-foreground":"border-foreground/15 bg-background/70 text-foreground/55 hover:border-foreground/40")}>
         {v.label}</button>)}
     </div>}
-    <div className="absolute inset-x-2 bottom-[2%] z-20 flex flex-wrap items-center justify-center gap-2 text-[11px]">
+    <div className={(minimalControls?"hidden":"flex")+" absolute inset-x-2 bottom-[2%] z-20 flex flex-wrap items-center justify-center gap-2 text-[11px]"}>
       {visualVersion&&<button type="button" onClick={()=>setShowSketch(v=>!v)}
         data-testid="yolk-visual-mode"
         className="rounded-full border border-foreground/35 bg-background/95 px-3 py-1.5 text-[11px]">
@@ -241,6 +300,6 @@ export default function EggYolkViewer({
       </label>}
     </div>
     {fileError&&<p role="alert" className="absolute bottom-[22%] left-5 right-5 z-30 rounded bg-background/95 p-2 text-center text-xs text-red-600">{fileError}</p>}
-    <span className="sr-only">Три режима: линии, каркас, объём. Три альтернативные пространственные трактовки исходной идеи. Вращайте жестом, масштабируйте колесом. Сохранение GLB выгружает геометрию локально, без утверждения и отправки на сервер.</span>
+    <span className="sr-only">Три режима: линии, каркас, объём. Три альтернативные пространственные трактовки исходной идеи. Вращайте одним пальцем, приближайте и отдаляйте двумя пальцами или колесом мыши. Сохранение GLB выгружает геометрию локально, без утверждения и отправки на сервер.</span>
   </div>;
 }
