@@ -6,6 +6,12 @@ import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import heroField from "@/assets/hero-field-v2.jpg";
 
+const methodLines = {
+  ru: "Исследую → Анализирую → Создаю эффективные решения",
+  uk: "Досліджую → Аналізую → Створюю ефективні рішення",
+  en: "Research → Analysis → Effective solutions",
+};
+
 const Index = () => {
   const [open, setOpen] = useState(false);
   const [toggled, setToggled] = useState(false);
@@ -20,7 +26,32 @@ const Index = () => {
   const navigate = useNavigate();
   const isNative = useIsNative();
   const controls = useAnimation();
-  const { t, localePath } = useLocale();
+  const { t, locale, localePath } = useLocale();
+  const methodLine = methodLines[locale];
+  const [typedCount, setTypedCount] = useState(0);
+
+  useEffect(() => {
+    setTypedCount(0);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setTypedCount(Array.from(methodLine).length);
+      return;
+    }
+    const chars = Array.from(methodLine);
+    let count = 0;
+    const start = window.setTimeout(() => {
+      const interval = window.setInterval(() => {
+        count += 1;
+        setTypedCount(count);
+        if (count >= chars.length) window.clearInterval(interval);
+      }, 58);
+      intervalRef = interval;
+    }, 1300);
+    let intervalRef: number | undefined;
+    return () => {
+      window.clearTimeout(start);
+      if (intervalRef !== undefined) window.clearInterval(intervalRef);
+    };
+  }, [methodLine]);
 
   useEffect(() => {
     openRef.current = open;
@@ -197,6 +228,13 @@ const Index = () => {
                   {line}
                 </span>
               ))}
+            </p>
+            <p
+              className="min-h-[3.2em] md:min-h-[1.8em] max-w-[540px] mx-auto text-[12px] md:text-[14px] leading-[1.8] tracking-[0.045em] font-light text-primary/85"
+              aria-label={methodLine}
+            >
+              <span aria-hidden="true">{Array.from(methodLine).slice(0, typedCount).join("")}</span>
+              <span aria-hidden="true" className={typedCount < Array.from(methodLine).length ? "inline-block ml-[2px] h-[1em] w-px align-[-0.15em] bg-primary/65" : "hidden"} />
             </p>
           </motion.div>
 
