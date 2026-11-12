@@ -23,3 +23,19 @@ A model running on a laptop cannot be reached directly by a Vercel serverless fu
 5. Only the Author may approve the resulting cycle. No automatic infinite loop or unattended agent is enabled.
 
 This change is an adapter seam, not evidence that a local model is running or that Survival LLM is compatible. Validate the specific bridge and model separately before deployment.
+
+## Ollama pilot (adapter included)
+
+Survival LLM is an offline Python application using Ollama, local search and memory. Its application API is **not** an OpenAI Responses endpoint. EGG's pilot bridge connects to the underlying Ollama model only; it does **not** call Survival LLM's library search, personal memory or user interface.
+
+The standard-library adapter lives in `tools/egg_ollama_bridge.py`. On the machine running Ollama:
+
+1. Install Ollama and download a model capable of producing JSON objects.
+2. Set `EGG_BRIDGE_KEY` to a new random 32+ character secret, `EGG_BRIDGE_MODELS` to the exact allowed Ollama model name, and optionally `EGG_OLLAMA_URL` (default `http://127.0.0.1:11434/api/chat`).
+3. Run `python3 tools/egg_ollama_bridge.py`. It listens on loopback port 8765, never directly on a public interface.
+4. Configure an authenticated HTTPS reverse proxy/tunnel forwarding only `/v1/responses` to that port. Keep proxy access private and use TLS; ensure Vercel can reach it.
+5. In Vercel server-side secrets set `EGG_AUTOMATION_ENDPOINT=https://YOUR-PRIVATE-BRIDGE/v1/responses`, `EGG_AUTOMATION_ENDPOINT_KEY` to the bridge key, and `EGG_AUTOMATION_MODEL` to the exact allowed model. Never put these in `VITE_*` variables or source control.
+6. Run `python3 -m unittest tools/test_egg_ollama_bridge.py` for local contract checks. These do not test real model output.
+7. Sign in as the EGG Author and use the existing automation preflight followed by a single step. Review JSON schema compatibility, duration and result quality before running all steps.
+
+**Important:** This requires a continuously available model host and an HTTPS route. The model does not run inside Vercel, and a stopped personal computer will make the bridge unavailable. No credentials have been configured or deployment triggered by this commit.
