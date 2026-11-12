@@ -227,7 +227,6 @@ export function startEggFlowCycle(p:EggFlowProject,input:{
 }):EggFlowProject{
   assertAuthor(input.actor);date(input.at);
   if(!p.seed.text.trim())throw new EggEngineError("Concept DNA / Author seed is required");
-  if(!getActiveConcept(p))throw new EggEngineError("Approve the Concept sphere proposal and DNA before starting the two flows");
   if(!EGG_FIVE_LEVELS.includes(p.level as typeof EGG_FIVE_LEVELS[number]))
     throw new EggEngineError("Only five product levels are supported");
   if((p.flowCycles??[]).length && current(p).status!=="accepted")
