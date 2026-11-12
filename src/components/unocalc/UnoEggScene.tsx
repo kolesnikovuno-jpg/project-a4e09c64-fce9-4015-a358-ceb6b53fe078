@@ -28,7 +28,7 @@ import {
 } from "@/lib/unocalcEgg3d";
 
 type Locale = "ru" | "uk" | "en";
-type Props = { locale: Locale; onSphereOpen?: (sphere: string) => void };
+type Props = { locale: Locale; onSphereOpen?: (sphere: string) => void; guest?: boolean };
 type InteractiveNode = "retail" | "commerce" | "design" | "production" | "marketing" | "testDrive" | "procurement" | "legal" | "idea" | "matter";
 type EggHitNode = InteractiveNode | "author";
 type NodeDetail = { title: string; description: string; number: string; openLabel: string; closeLabel: string };
@@ -306,7 +306,7 @@ const NodeDescription = ({ node, detail }: { node: InteractiveNode; detail: Node
   );
 };
 
-const UnoEggScene = ({ locale, onSphereOpen }: Props) => {
+const UnoEggScene = ({ locale, onSphereOpen, guest = false }: Props) => {
   const [orientation, setOrientation] = useState<EggOrientation>(INITIAL);
   const [selectedNodes, setSelectedNodes] = useState<InteractiveNode[]>([]);
   const [workspaceNode, setWorkspaceNode] = useState<EggHitNode | null>(null);
@@ -1081,12 +1081,12 @@ const UnoEggScene = ({ locale, onSphereOpen }: Props) => {
             <div key={node} className="flex min-w-0 flex-col gap-4">
               <NodeDescription node={node} detail={nodeDetails[node]} />
               {(
-                <button type="button" data-testid={`unocalc-${node}-open`} onClick={() => openWorkspace(node)}
+                <button type="button" data-testid={`unocalc-${node}-open`} onClick={() => guest ? window.location.assign("/egg/connect") : openWorkspace(node)}
                   className="self-start border-b border-foreground/35 pb-1 text-left text-[11px] font-light text-foreground/75 hover:text-foreground">
-                  {locale === "ru" ? "Открыть рабочее пространство" : locale === "uk" ? "Відкрити робочий простір" : "Open workspace"}
+                  {guest ? (locale === "ru" ? "Войти для работы" : locale === "uk" ? "Увійти для роботи" : "Sign in to work") : (locale === "ru" ? "Открыть рабочее пространство" : locale === "uk" ? "Відкрити робочий простір" : "Open workspace")}
                 </button>
               )}
-              {node === "design" && hasIdea && ideaCycle?.phase !== "forwarded" && (
+              {!guest && node === "design" && hasIdea && ideaCycle?.phase !== "forwarded" && (
                 <button
                   type="button"
                   onClick={openDesignWorkspace}
@@ -1099,7 +1099,7 @@ const UnoEggScene = ({ locale, onSphereOpen }: Props) => {
           ))}
         </div>
       )}
-      {workspaceOpen && createPortal(
+      {!guest && workspaceOpen && createPortal(
         <div data-testid="unocalc-sphere-workspace" className="unocalc-workspace-overlay fixed inset-0 z-[90] flex items-stretch justify-end" role="presentation">
           <button type="button" aria-label={locale === "ru" ? "Закрыть панель" : locale === "uk" ? "Закрити панель" : "Close panel"}
             className={`absolute inset-0 bg-black/35 transition-opacity duration-[420ms] ease-out motion-reduce:transition-none ${workspaceVisible ? "opacity-100" : "opacity-0"}`} onClick={closeWorkspace} />
