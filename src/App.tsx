@@ -76,7 +76,7 @@ const EggEntryRedirect = () => {
   const { search, hash } = useLocation();
   const params = new URLSearchParams(search);
   const projectId = params.get("project");
-  return <Navigate to={projectId ? `/egg/yolk${search}${hash}` : `/egg/connect${search}${hash}`} replace />;
+  return <Navigate to={projectId ? `/egg/workspace${search}${hash}` : `/` } replace />;
 };
 
 /** A rendering exception must never leave the authenticated EGG page blank. */
