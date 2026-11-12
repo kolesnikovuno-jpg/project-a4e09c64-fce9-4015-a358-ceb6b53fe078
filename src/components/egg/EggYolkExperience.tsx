@@ -261,8 +261,8 @@ export default function EggYolkExperience(){
     <div className="min-h-screen bg-background font-body text-foreground" data-testid="yolk-experience">
       <main className="mx-auto flex min-h-screen w-full max-w-[1580px] flex-col px-4 pb-4 pt-3 sm:px-6">
         <div className="flex items-center gap-3 text-[11px] font-light text-foreground/60">
-          <Link to={id?"/ru/egg?project="+encodeURIComponent(id):"/egg/demo"} className="inline-flex items-center gap-1 underline-offset-4 hover:underline"><ArrowLeft size={13}/> Назад</Link>
-          <h1 className="text-[13px] font-light tracking-[0.04em] text-foreground/65">EGG / YOLK</h1>
+          <Link to="/egg/connect" className="inline-flex items-center gap-1 underline-offset-4 hover:underline"><ArrowLeft size={13}/> Назад</Link>
+          <h1 className="text-[13px] font-light tracking-[0.04em] text-foreground/65">EGG / ЯЙЦО</h1>
           <Link to={"/egg/author"+(id?"?project="+encodeURIComponent(id):"")} className="ml-auto rounded-full border border-foreground/20 px-3 py-1 text-[11px] text-foreground/75" data-testid="yolk-open-author">Автор</Link>
         </div>
         {id&&!project&&!loading&&<div role="alert" className="mt-5 rounded-xl border border-amber-600/35 bg-amber-500/5 p-4 text-sm text-foreground/85"><p className="font-medium">Данные проекта не загружены</p><p className="mt-2">{notice||"Не удалось получить состояние проекта."} Демонстрационная форма ниже не является состоянием вашего проекта.</p><div className="mt-3 flex flex-wrap gap-4"><Link to="/egg/connect" className="underline underline-offset-4">Войти в EGG на этом адресе</Link><button type="button" onClick={()=>setRefresh(v=>v+1)} className="underline underline-offset-4">Повторить загрузку</button></div></div>}
@@ -304,8 +304,22 @@ export default function EggYolkExperience(){
                   iteration={timeline?.iteration??project?.iteration??1}
                   projectId={project?.id} visualVersion={timeline?.visual??null} minimalControls/>
               </div>
-
-
+              <div className="pointer-events-none absolute inset-[7%] rounded-[50%] border border-foreground/10" aria-hidden="true"/>
+              <div className="pointer-events-none absolute inset-[18%] rounded-[50%] border border-foreground/[.06]" aria-hidden="true"/>
+              {YOLK_SPHERES.map(s=>{
+                const radians=s.angle*Math.PI/180;
+                const x=50+43*Math.cos(radians),y=50+43*Math.sin(radians);
+                return <button key={s.id} type="button"
+                  data-testid={"egg-orbit-"+s.id}
+                  aria-label={"Открыть сферу "+s.name}
+                  onClick={()=>selectSphere(s.id)}
+                  style={{left:x+"%",top:y+"%",borderColor:s.accent}}
+                  className={"pointer-events-auto absolute z-20 flex h-[54px] w-[54px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border bg-background/95 text-[9px] shadow-sm backdrop-blur-sm transition-transform hover:scale-110 sm:h-[78px] sm:w-[78px] sm:text-[11px] "+(selected===s.id?"ring-2 ring-foreground/35":"")}>
+                  <span className="max-w-full px-1 text-center leading-tight">{s.name}</span>
+                </button>;
+              })}
+              <span className="pointer-events-none absolute left-1/2 top-[4%] -translate-x-1/2 text-[10px] tracking-[.15em] text-foreground/50">ИДЕЯ</span>
+              <span className="pointer-events-none absolute bottom-[3%] left-1/2 -translate-x-1/2 text-[10px] tracking-[.15em] text-foreground/50">МАТЕРИЯ</span>
             </div>
           </section>
 
