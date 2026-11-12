@@ -533,6 +533,7 @@ const UnoEggScene = ({ locale, onSphereOpen, guest = false }: Props) => {
   }, [workspaceOpen, closeWorkspace]);
 
   const activateAuthor = () => {
+    if (guest) { window.location.assign("/egg/connect"); return; }
     if (onSphereOpen) { onSphereOpen("author"); giveNodeFeedback(); return; }
     openWorkspace("author");
     giveNodeFeedback();
