@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import SEO from "@/components/SEO";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import { LOCALES } from "@/i18n/config";
@@ -10,27 +10,49 @@ const landingCopy = {
   en: {
     sequence: ["sparse", ":", "form", ":", "meaning"],
     disciplines: ["architect", ":", "design", ":", "art"],
-    lab: "Architectural Object Lab ↗",
+    method: "Research → Analysis → Effective solutions",
     positioning: "I help shape spaces around the way you live. I work with the context and the conditions of the place, developing a practical solution from the first idea through to realization.",
   },
   ru: {
     sequence: ["пространство", ":", "форма", ":", "смысл"],
     disciplines: ["архитектура", ":", "дизайн", ":", "искусство"],
-    lab: "Архитектурная лаборатория ↗",
+    method: "Исследую → Анализирую → Создаю эффективные решения",
     positioning: "Я помогаю настроить пространство так, чтобы оно поддерживало твой ритм жизни. Работаю с контекстом, параметрами места и довожу решение до рабочей формы: от идеи до реализации",
   },
   uk: {
     sequence: ["простір", ":", "форма", ":", "сенс"],
     disciplines: ["архітектура", ":", "дизайн", ":", "мистецтво"],
-    lab: "Архітектурна лабораторія ↗",
+    method: "Досліджую → Аналізую → Створюю ефективні рішення",
     positioning: "Я допомагаю налаштувати простір так, щоб він відповідав твоєму ритму життя. Враховую контекст і особливості місця та доводжу рішення до втілення: від задуму до реалізації.",
   },
 } as const;
 
 const Landing = () => {
-  const { locale, localePath } = useLocale();
+  const { locale } = useLocale();
   const page = getSiteContent(locale);
   const copy = landingCopy[locale];
+  const [typedCount, setTypedCount] = useState(0);
+  useEffect(() => {
+    const chars = Array.from(copy.method);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setTypedCount(chars.length);
+      return;
+    }
+    setTypedCount(0);
+    let interval: number | undefined;
+    const timeout = window.setTimeout(() => {
+      let count = 0;
+      interval = window.setInterval(() => {
+        count++;
+        setTypedCount(count);
+        if (count >= chars.length) window.clearInterval(interval);
+      }, 60);
+    }, 700);
+    return () => {
+      window.clearTimeout(timeout);
+      if (interval !== undefined) window.clearInterval(interval);
+    };
+  }, [copy.method]);
   const fieldRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number>();
 
@@ -107,16 +129,12 @@ const Landing = () => {
 
         <div className="landing-introduction">
           <p className="landing-positioning">{copy.positioning}</p>
-        <nav className="landing-links" aria-label="Project tools">
-          <a className="landing-lab" href="https://architectural-object-lab.lovable.app">
-            {copy.lab}
-          </a>
-          <a className="landing-lab" href={localePath("/spatial")}>
-            Spatial Studio ↗
-          </a>
-          <a className="landing-lab" href={localePath("/unocalc")}>
-            UNOcalc ↗
-          </a>
+        <p className="landing-method" aria-label={copy.method}>
+          <span aria-hidden="true">{Array.from(copy.method).slice(0, typedCount).join("")}</span>
+          {typedCount < Array.from(copy.method).length && <span aria-hidden="true" className="landing-caret">|</span>}
+        </p>
+        <nav className="landing-links" aria-label="EGG">
+          <a className="landing-lab" href="https://egg-test.kolesnikov.studio/ru/egg">EGG ↗</a>
         </nav>
         </div>
       </main>
