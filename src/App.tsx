@@ -29,6 +29,7 @@ import SemanticAbout from "./pages/SemanticAbout";
 import OperatorLogin from "./pages/OperatorLogin";
 import EggOAuthConsent from "./pages/EggOAuthConsent";
 import EggConnect from "./pages/EggConnect";
+import EggHome from "./pages/EggHome";
 import EggStablePreview from "./components/egg/EggStablePreview";
 import EggYolkExperience from "./components/egg/EggYolkExperience";
 import EggAuthorWorkspace from "./pages/EggAuthorWorkspace";
@@ -124,6 +125,8 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   { path: "semantic/about", element: <SemanticAbout /> },
 ];
 
+const RootEntry = () => /^(egg|egg-test)\\.kolesnikov\\.studio$/i.test(window.location.hostname) ? <EggHome /> : <RedirectToDefaultLocale />;
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -133,7 +136,7 @@ const App = () => (
         <LocalePersistenceGuard />
         <Routes>
           {/* Root → default locale */}
-          <Route path="/" element={<RedirectToDefaultLocale />} />
+          <Route path="/" element={<RootEntry />} />
 
           {/* Localized routes — generated for each supported locale. */}
           {LOCALES.map((loc) =>
