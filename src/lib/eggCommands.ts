@@ -7,7 +7,7 @@
 import { z } from "zod";
 import { confirmDriveReference, registerDriveReference } from "./eggArtifacts.js";
 import { startEggFlowCycle, contributeEggFlowSphere, decideEggFlowCycle, EGG_FLOW_ROUTES } from "./eggFlowCycle.js";
-import {buildEggSphereBrief} from "./eggSphereIntelligence.js";
+import {buildEggSphereBrief,buildEggSphereIntelligencePrompt} from "./eggSphereIntelligence.js";
 import {buildEggBalanceOverview,registerEggBalanceTension,decideEggBalanceTension} from "./eggDynamicBalance.js";
 import {buildEggEvolutionOverview,recordEggEvolutionAssessment} from "./eggEvolution.js";
 import {buildEggVisualHistory,registerEggVisualVersion} from "./eggVisualHistory.js";
@@ -281,7 +281,8 @@ export const readEggState = (state: EggProject) => ({
         .filter(v=>v.status==="awaiting_result")
         .map(v=>({sphere:v.sphere,command:"return" as const,
           taskId:"flow:"+state.flowCycles![state.flowCycles!.length-1].id+":"+v.sphere,
-          brief:buildEggSphereBrief(state,v.sphere)}))
+          brief:buildEggSphereBrief(state,v.sphere),
+          aiAssignment:buildEggSphereIntelligencePrompt(state,v.sphere)}))
       : []),
   },
 });
