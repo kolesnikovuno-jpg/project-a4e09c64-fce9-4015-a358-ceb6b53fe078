@@ -25,7 +25,6 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
       setPanelOpen(true);
     }
   }, [eggBrand, hasProject, params]);
-  const openSphere = (sphere: string) => { setActiveSphere(sphere); setPanelExpanded(false); setPanelOpen(true); };
   useEffect(() => {
     if (!panelOpen) return;
     const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setPanelOpen(false); };
@@ -64,11 +63,11 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
           </nav>
         </header>
         <section className="mt-3" aria-label={eggBrand ? "EGG — interactive project workspace" : "UNOcalc — egg geometry"}>
-          <UnoEggScene locale={locale} onSphereOpen={eggBrand ? openSphere : undefined} />
+          <UnoEggScene locale={locale} />
         </section>
         {eggBrand && <div className="flex flex-wrap items-center justify-center gap-3 py-5">
           <button type="button" onClick={() => { setActiveSphere(null); setPanelOpen(true); }} className="rounded-full border border-foreground/30 px-5 py-3 text-sm text-foreground/80">{hasProject ? "Открыть проект и результаты сфер" : "Познакомиться с EGG"}</button>
-          <span className="text-xs text-foreground/50">Выберите сферу на Яйце или откройте обзор</span>
+          <span className="text-xs text-foreground/50">Сферы открывают исходные боковые панели; обзор проекта доступен отдельно</span>
         </div>}
         {eggBrand && panelOpen && <div className="fixed inset-0 z-[100] isolate flex items-stretch justify-end bg-background/20 backdrop-blur-[2px]" onMouseDown={event => { if (event.target === event.currentTarget) setPanelOpen(false); }}>
           <div role="dialog" aria-modal="true" aria-label="Рабочая панель EGG" className={`relative z-10 flex h-[100dvh] w-full flex-col overflow-hidden border-l border-foreground/20 bg-background shadow-2xl transition-[max-width] duration-300 ${panelExpanded ? "max-w-[min(100vw,1060px)]" : "max-w-[min(100vw,480px)]"}`}>
