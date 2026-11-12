@@ -78,7 +78,7 @@ function YolkTypewriter({title,description,number,side}:{title:string;descriptio
   </div>;
 }
 
-export default function EggYolkExperience(){
+export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
   const [params]=useSearchParams();
   const id=params.get("project");
   const [project,setProject]=useState<Project|null>(null);
@@ -261,8 +261,8 @@ export default function EggYolkExperience(){
     <div className="min-h-screen bg-background font-body text-foreground" data-testid="yolk-experience">
       <main className="mx-auto flex min-h-screen w-full max-w-[1580px] flex-col px-4 pb-4 pt-3 sm:px-6">
         <div className="flex items-center gap-3 text-[11px] font-light text-foreground/60">
-          <Link to="/egg/connect" className="inline-flex items-center gap-1 underline-offset-4 hover:underline"><ArrowLeft size={13}/> Назад</Link>
-          <h1 className="text-[13px] font-light tracking-[0.04em] text-foreground/65">EGG / ЯЙЦО</h1>
+          <Link to={view==="yolk"?"/egg/workspace"+(id?"?project="+encodeURIComponent(id):""):"/egg/connect"} className="inline-flex items-center gap-1 underline-offset-4 hover:underline"><ArrowLeft size={13}/> Назад</Link>
+          <h1 className="text-[13px] font-light tracking-[0.04em] text-foreground/65">{view==="egg"?"EGG / ЯЙЦО":"EGG / ЖЕЛТОК"}</h1>
           <Link to={"/egg/author"+(id?"?project="+encodeURIComponent(id):"")} className="ml-auto rounded-full border border-foreground/20 px-3 py-1 text-[11px] text-foreground/75" data-testid="yolk-open-author">Автор</Link>
         </div>
         {id&&!project&&!loading&&<div role="alert" className="mt-5 rounded-xl border border-amber-600/35 bg-amber-500/5 p-4 text-sm text-foreground/85"><p className="font-medium">Данные проекта не загружены</p><p className="mt-2">{notice||"Не удалось получить состояние проекта."} Демонстрационная форма ниже не является состоянием вашего проекта.</p><div className="mt-3 flex flex-wrap gap-4"><Link to="/egg/connect" className="underline underline-offset-4">Войти в EGG на этом адресе</Link><button type="button" onClick={()=>setRefresh(v=>v+1)} className="underline underline-offset-4">Повторить загрузку</button></div></div>}
@@ -304,9 +304,9 @@ export default function EggYolkExperience(){
                   iteration={timeline?.iteration??project?.iteration??1}
                   projectId={project?.id} visualVersion={timeline?.visual??null} minimalControls/>
               </div>
-              <div className="pointer-events-none absolute inset-[7%] rounded-[50%] border border-foreground/10" aria-hidden="true"/>
-              <div className="pointer-events-none absolute inset-[18%] rounded-[50%] border border-foreground/[.06]" aria-hidden="true"/>
-              {YOLK_SPHERES.map(s=>{
+              <div className={(view==="egg"?"":"hidden")+" pointer-events-none absolute inset-[7%] rounded-[50%] border border-foreground/10" aria-hidden="true"/>
+              <div className={(view==="egg"?"":"hidden")+" pointer-events-none absolute inset-[18%] rounded-[50%] border border-foreground/[.06]" aria-hidden="true"/>
+              {view==="egg"&&YOLK_SPHERES.map(s=>{
                 const radians=s.angle*Math.PI/180;
                 const x=50+43*Math.cos(radians),y=50+43*Math.sin(radians);
                 return <button key={s.id} type="button"
@@ -318,8 +318,8 @@ export default function EggYolkExperience(){
                   <span className="max-w-full px-1 text-center leading-tight">{s.name}</span>
                 </button>;
               })}
-              <span className="pointer-events-none absolute left-1/2 top-[4%] -translate-x-1/2 text-[10px] tracking-[.15em] text-foreground/50">ИДЕЯ</span>
-              <span className="pointer-events-none absolute bottom-[3%] left-1/2 -translate-x-1/2 text-[10px] tracking-[.15em] text-foreground/50">МАТЕРИЯ</span>
+              {view==="egg"&&<span className="pointer-events-none absolute left-1/2 top-[4%] -translate-x-1/2 text-[10px] tracking-[.15em] text-foreground/50">ИДЕЯ</span>}
+              {view==="egg"&&<span className="pointer-events-none absolute bottom-[3%] left-1/2 -translate-x-1/2 text-[10px] tracking-[.15em] text-foreground/50">МАТЕРИЯ</span>}
             </div>
           </section>
 
@@ -335,15 +335,16 @@ export default function EggYolkExperience(){
           </aside>
         </div>
 
-        <nav className="fixed bottom-5 left-4 right-4 z-30 flex items-end justify-between gap-3 pointer-events-none sm:bottom-7 sm:left-7 sm:right-7" aria-label="Управление Желтком">
+        {view==="egg"&&<nav className="fixed bottom-5 left-4 right-4 z-30 flex items-end justify-between gap-3 pointer-events-none sm:bottom-7 sm:left-7 sm:right-7" aria-label="Управление Желтком">
           <button type="button" aria-label="Слои" aria-expanded={showLayers} data-testid="yolk-layers-toggle"
             onClick={()=>{setShowLayers(v=>!v);setShowInfo(false);setSpherePopup(false);}}
             className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-foreground/15 bg-background/85 text-foreground/70 shadow-sm backdrop-blur-md"><Layers3 size={19}/></button>
           <button type="button" aria-label="Информация" aria-expanded={showInfo} data-testid="yolk-info-toggle"
             onClick={()=>{setShowInfo(v=>!v);setShowLayers(false);setSpherePopup(false);}}
             className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-foreground/15 bg-background/85 text-foreground/70 shadow-sm backdrop-blur-md"><Info size={19}/></button>
-        </nav>
-        {showLayers&&<section className="fixed bottom-20 left-4 z-40 w-[min(330px,calc(100vw-32px))] rounded-2xl border border-foreground/15 bg-background/95 p-4 shadow-lg backdrop-blur-md sm:bottom-24 sm:left-7" aria-label="Слои Желтка" data-testid="yolk-layers-panel">
+        </nav>}
+        {view==="yolk"&&<Link to={"/egg/workspace"+(id?"?project="+encodeURIComponent(id):"")} className="fixed bottom-6 left-6 z-30 rounded-full border border-foreground/25 bg-background/90 px-4 py-2 text-xs">Яйцо →</Link>}
+        {showLayers&&view==="egg"&&<section className="fixed bottom-20 left-4 z-40 w-[min(330px,calc(100vw-32px))] rounded-2xl border border-foreground/15 bg-background/95 p-4 shadow-lg backdrop-blur-md sm:bottom-24 sm:left-7" aria-label="Слои Желтка" data-testid="yolk-layers-panel">
           <div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-medium">Восемь сфер</h2><button type="button" aria-label="Закрыть слои" onClick={()=>setShowLayers(false)}><X size={16}/></button></div>
           <div className="grid grid-cols-2 gap-2">
             {YOLK_SPHERES.map(s=><button key={s.id} type="button" data-testid={"yolk-layer-"+s.id}
@@ -359,7 +360,7 @@ export default function EggYolkExperience(){
           <p className="mt-3 text-[11px] text-foreground/50">{approved?"Принято Автором":candidateText?"Предложено, ожидает решения":"Исследовательская форма · не утверждена"}</p>
           <button type="button" onClick={()=>{setShowInfo(false);setSelected(null);setExpanded(true)}} className="mt-3 border-b border-foreground/35 text-xs">Подробнее →</button>
         </section>}
-        {selectedMeta&&spherePopup&&<EggSpherePanel key={selectedMeta.id} sphere={selectedMeta.id} name={selectedMeta.name} summary={selectedMeta.detail} status={sphereVisibleStatus} projectId={id} onClose={()=>setSpherePopup(false)}/>}
+        {view==="egg"&&selectedMeta&&spherePopup&&<EggSpherePanel key={selectedMeta.id} sphere={selectedMeta.id} name={selectedMeta.name} summary={selectedMeta.detail} status={sphereVisibleStatus} projectId={id} onClose={()=>setSpherePopup(false)}/>}
         <section className={(utilityPanel==="author"?"block":"hidden")+" mx-auto mt-5 max-w-[700px] rounded-2xl border border-foreground/15 bg-background/90 p-3 sm:p-4"} aria-label="Диалог Автора" data-testid="yolk-author-dialog">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2"><h2 className="text-xs font-medium">Автор → EGG</h2><Link to={"/egg/author"+(id?"?project="+encodeURIComponent(id):"")} className="rounded-lg border border-foreground/30 px-3 py-2 text-xs font-medium" data-testid="yolk-author-workspace-link">Открыть единый холст Автора</Link></div><p className="mb-3 text-xs text-foreground/60">Основное рабочее пространство Автора теперь находится на холсте. Этот диалоговый блок сохранён временно для совместимости.</p>
           <form onSubmit={event=>{event.preventDefault();void submitAuthorMessage()}} className="flex items-end gap-2">
