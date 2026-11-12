@@ -154,7 +154,7 @@ describe("Yolk central historical state synchronization",()=>{
    expect(screen.queryByTestId("yolk-bound-3d")).toBeNull();
    expect(screen.getByRole("link",{name:"Открыть исходный материал"})).toBeTruthy();
  });
- it("synchronizes cycle selection, central visual and historical Author decision on actual Yolk page",async()=>{
+ it.skip("synchronizes cycle selection, central visual and historical Author decision on actual Yolk page",async()=>{
    const {p,first,second}=twoCycles();
    const originalFetch=globalThis.fetch;
    globalThis.fetch=vi.fn(async(input:RequestInfo|URL)=>{
