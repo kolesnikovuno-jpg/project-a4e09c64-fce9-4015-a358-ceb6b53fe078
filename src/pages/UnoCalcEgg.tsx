@@ -5,7 +5,7 @@ import UnoEggScene from "@/components/unocalc/UnoEggScene";
 
 const UnoCalcEgg = () => {
   const { locale, localePath } = useLocale();
-  const isEgg = /\\/egg\\/?$/.test(useLocation().pathname);
+  const isEgg = useLocation().pathname.split("/").filter(Boolean).pop() === "egg";
   return (
     <div
       className="min-h-screen bg-background font-body text-foreground"
