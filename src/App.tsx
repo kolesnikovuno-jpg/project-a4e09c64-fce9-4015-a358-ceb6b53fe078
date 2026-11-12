@@ -46,6 +46,7 @@ import Landing from "./pages/site/Landing";
 import { DEFAULT_LOCALE, LOCALES, isLocale } from "./i18n/config";
 import { initialLocale } from "./i18n/storage";
 import LocalePersistenceGuard from "./i18n/LocalePersistenceGuard";
+import { EGG_AUTH_CALLBACK } from "./lib/eggAuthRedirect";
 
 const queryClient = new QueryClient();
 
@@ -96,6 +97,18 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   { path: "semantic/about", element: <SemanticAbout /> },
 ];
 
+const EggHostEntry = () => {
+  const { search, hash } = useLocation();
+  if (window.location.hostname !== "egg.kolesnikov.studio") return <RedirectToDefaultLocale />;
+  const fragment = new URLSearchParams(hash.replace(/^#/, ""));
+  const callback = (fragment.has("access_token") && fragment.has("refresh_token") && fragment.has("token_type")) || fragment.has("error_code") || fragment.has("error_description");
+  if (callback) {
+    window.location.replace(EGG_AUTH_CALLBACK + search + hash);
+    return null;
+  }
+  return <Navigate to={"/egg" + search + hash} replace />;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -105,7 +118,7 @@ const App = () => (
         <LocalePersistenceGuard />
         <Routes>
           {/* Root → default locale */}
-          <Route path="/" element={<RedirectToDefaultLocale />} />
+          <Route path="/" element={<EggHostEntry />} />
 
           {/* Localized routes — generated for each supported locale. */}
           {LOCALES.map((loc) =>
