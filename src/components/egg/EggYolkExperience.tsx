@@ -249,7 +249,7 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
           "Для выбранного состояния нет зарегистрированного вывода этой сферы."
         :sphereTasks.length
           ?brief(lastFinding??lastTask.question,185)
-          :"Это ознакомительный режим. Данные реального проекта здесь не показаны.") )
+          :"Это ознакомительный режим. Данные реального проекта здесь не показаны.")
     : brief(currentText,185);
   const selectSphere=(sphere:SphereId)=>{
     setSelected(current=>current===sphere?null:sphere);
