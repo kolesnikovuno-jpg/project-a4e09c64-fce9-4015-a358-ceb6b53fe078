@@ -257,6 +257,21 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
     setSpherePopup(true);
     setShowDna(false);
   };
+  if (view === "yolk") return (
+    <main className="relative flex h-[100dvh] w-full items-center justify-center overflow-hidden bg-background" data-testid="yolk-experience" aria-label="Желток — объект">
+      <div className="absolute left-5 top-5 z-20 flex items-center gap-4">
+        <Link to={"/ru/egg"+(id?"?project="+encodeURIComponent(id):"")} className="text-xs text-foreground/60 hover:text-foreground" aria-label="Вернуться к Яйцу">← EGG</Link>
+        <span className="text-xs tracking-[.14em] text-foreground/45">ЖЕЛТОК</span>
+      </div>
+      <section className="relative aspect-square w-[min(96vw,94dvh)] max-w-[1100px]" data-testid="yolk-central-object" aria-label="Пространственный объект">
+        <EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
+          level={timeline?.level??project?.level??1}
+          iteration={timeline?.iteration??project?.iteration??1}
+          projectId={project?.id} visualVersion={timeline?.visual??null} minimalControls/>
+      </section>
+      {id&&!project&&!loading&&<p role="alert" className="absolute bottom-6 left-5 right-5 text-center text-xs text-foreground/65">{notice||"Проект не загружен; отображается демонстрационный эскиз."}</p>}
+    </main>
+  );
   return (
     <div className="min-h-screen bg-background font-body text-foreground" data-testid="yolk-experience">
       <main className="mx-auto flex min-h-screen w-full max-w-[1580px] flex-col px-4 pb-4 pt-3 sm:px-6">
