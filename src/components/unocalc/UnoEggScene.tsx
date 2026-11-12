@@ -538,7 +538,6 @@ const UnoEggScene = ({ locale, onSphereOpen }: Props) => {
   };
 
   const activateNode = (node: InteractiveNode) => {
-    if (onSphereOpen && node !== "idea" && node !== "matter") { onSphereOpen(node); giveNodeFeedback(); return; }
     if (!canActivateNode(node)) return;
     if (node === "design" && hasIdea) {
       if (!brief.concept.trim()) {
