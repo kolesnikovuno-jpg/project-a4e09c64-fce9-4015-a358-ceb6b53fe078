@@ -244,12 +244,12 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
   const lastTask=sphereTasks[sphereTasks.length-1];
   const lastFinding=lastTask?.findings?.[lastTask.findings.length-1]?.text;
   const rightCopy=selectedMeta
-    ? (project
+    ? (view==="egg"?selectedMeta.detail:project
         ?stateCard?.summary?brief(stateCard.summary,185):
           "Для выбранного состояния нет зарегистрированного вывода этой сферы."
         :sphereTasks.length
           ?brief(lastFinding??lastTask.question,185)
-          :"Это ознакомительный режим. Данные реального проекта здесь не показаны.")
+          :"Это ознакомительный режим. Данные реального проекта здесь не показаны.") )
     : brief(currentText,185);
   const selectSphere=(sphere:SphereId)=>{
     setSelected(current=>current===sphere?null:sphere);
@@ -288,7 +288,7 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
           </p>
         </div>}
 
-        <div className="mx-auto flex w-full flex-1 items-center justify-center">
+        <div className="mx-auto flex w-full flex-1 flex-col items-center justify-center lg:flex-row">
           <aside className="hidden order-2 min-w-0 self-center pb-1 lg:order-1" aria-label="Название и назначение">
             <YolkTypewriter key={"left-"+(selected??"dna")+"-"+activeCycleKey} side="left"
               number={selectedMeta?"Сфера / "+String(YOLK_SPHERES.indexOf(selectedMeta)+1).padStart(2,"0"):"ДНК / исходный замысел"}
@@ -324,12 +324,12 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
             </div>
           </section>
 
-          <aside className="hidden order-3 min-w-0 self-center pb-1" aria-label="Краткий вывод и развернутая информация" aria-live="polite">
+          <aside className={(view==="egg"?"block":"hidden")+" order-3 w-full max-w-[340px] min-w-0 self-center pb-1 px-4"} aria-label="Краткий вывод и развернутая информация" aria-live="polite">
             <YolkTypewriter key={"right-"+(selected??"dna")+"-"+activeCycleKey} side="right"
               number={selectedMeta?(project?sphereVisibleStatus:"Вклад сферы"):"Формирование / концепция"}
               title={selectedMeta?"Текущий вклад":approved?"Концепция принята":"Концепция"}
               description={rightCopy}/>
-            <button type="button" data-testid="yolk-expand" onClick={()=>setExpanded(true)}
+            <button type="button" data-testid="yolk-expand" onClick={()=>{if(selectedMeta){setSpherePopup(true);}else{setExpanded(true);}}}
               className="mt-3 border-b border-foreground/35 pb-1 text-left text-[11px] font-light text-foreground/75 hover:text-foreground">Развернуть →</button>
             {loading&&<p className="mt-4 text-[11px] text-foreground/45" role="status">Читаем проект…</p>}
             {notice&&<p className="mt-4 text-[11px] leading-relaxed text-foreground/65" role="status">{notice} <Link to="/egg/connect" className="underline underline-offset-4">Войти</Link></p>}
