@@ -538,7 +538,7 @@ const UnoEggScene = ({ locale, onSphereOpen }: Props) => {
   };
 
   const activateNode = (node: InteractiveNode) => {
-    if (!canActivateNode(node)) return;
+    // Every sphere can be selected for its short description; execution gates remain in the workspace.
     if (node === "design" && hasIdea) {
       if (!brief.concept.trim()) {
         setBrief((current) => ({ ...current, concept: ideaDraft.trim(), ideaSnapshot: ideaDraft }));
