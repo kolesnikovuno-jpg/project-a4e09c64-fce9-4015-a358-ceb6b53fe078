@@ -169,7 +169,7 @@ describe("Yolk central historical state synchronization",()=>{
    });
    try{
      render(<MemoryRouter initialEntries={["/egg/yolk?project="+id]}>
-       <EggYolkExperience/>
+       <EggYolkExperience view="egg"/>
      </MemoryRouter>);
      await waitFor(()=>expect(screen.getByTestId("yolk-timeline-controls")).toBeTruthy());
      expect((screen.getByTestId("yolk-timeline-select") as HTMLSelectElement).value).toBe(second);
