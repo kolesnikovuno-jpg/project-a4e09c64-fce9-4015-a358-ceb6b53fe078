@@ -179,6 +179,7 @@ const App = () => (
           <Route path="/egg/collab" element={<EggStablePreview><EggCollaboration /></EggStablePreview>} />
           <Route path="/egg/demo" element={<EggStablePreview><EggDemo /></EggStablePreview>} />
           <Route path="/egg/author" element={<EggAuthorWorkspace />} />
+          <Route path="/egg/workspace" element={<EggRenderBoundary><EggStablePreview><EggYolkExperience view="egg" /></EggStablePreview></EggRenderBoundary>} />
           <Route path="/egg/yolk" element={<EggRenderBoundary><EggStablePreview><EggYolkExperience /></EggStablePreview></EggRenderBoundary>} />
 
           {/* Internal operator workspace */}
