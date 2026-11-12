@@ -53,9 +53,22 @@ async function readBody(req:Request):Promise<unknown>{
   }
   return JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown;
 }
-type Provider={url:string;key:string;model:string;kind:"gateway"|"direct_openai"};
+type Provider={url:string;key:string;model:string;kind:"gateway"|"direct_openai"|"self_hosted"};
 /** Vercel injects runtime OIDC on x-vercel-oidc-token, not reliably in env. */
 export function providerFromEnv(env:NodeJS.ProcessEnv,oidcHeader?:string|string[]):Provider|null{
+  // Explicit opt-in for a private OpenAI Responses-compatible HTTPS bridge.
+  // Never accept arbitrary request-provided URLs (SSRF prevention).
+  const endpoint=env.EGG_AUTOMATION_ENDPOINT?.trim();
+  if(endpoint){
+    let url:URL;
+    try{url=new URL(endpoint);}catch{return null;}
+    if(url.protocol!=="https:"||url.username||url.password||url.search||url.hash||
+       !url.hostname.includes(".")||/^(localhost|127\\.|10\\.|192\\.168\\.|169\\.254\\.)/.test(url.hostname))return null;
+    const key=env.EGG_AUTOMATION_ENDPOINT_KEY?.trim();
+    const model=env.EGG_AUTOMATION_MODEL?.trim();
+    if(!key||!model)return null;
+    return {url:url.toString(),key,model,kind:"self_hosted"};
+  }
   const injected=typeof oidcHeader==="string"?oidcHeader.trim():"";
   const oidc=(env.VERCEL&&injected)||env.VERCEL_OIDC_TOKEN?.trim();
   const gatewayKey=env.AI_GATEWAY_API_KEY?.trim()||oidc;
