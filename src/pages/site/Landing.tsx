@@ -134,7 +134,7 @@ const Landing = () => {
           {typedCount < Array.from(copy.method).length && <span aria-hidden="true" className="landing-caret">|</span>}
         </p>
         <nav className="landing-links" aria-label="EGG">
-          <a className="landing-lab" href="https://egg-test.kolesnikov.studio/ru/egg">EGG ↗</a>
+          <a className="landing-lab" href="https://egg-test.kolesnikov.studio/">EGG ↗</a>
         </nav>
         </div>
       </main>
