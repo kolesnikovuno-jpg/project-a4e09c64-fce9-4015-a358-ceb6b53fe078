@@ -261,6 +261,7 @@ export default function EggConnect() {
   }
   return (
     <main className="mx-auto max-w-2xl px-5 py-14 text-foreground">
+      <div className="mb-6 flex items-center justify-between gap-3 text-xs"><Link to="/" className="border-b border-foreground/35 pb-1">← Главная EGG</Link><span className="text-muted-foreground">Аккаунт / Проекты / ИИ</span></div>
       <p className="mb-2 text-sm text-muted-foreground">EGG Engine · подключение</p>
       <h1 className="mb-3 text-3xl font-medium">Аккаунт EGG</h1>
       {isTechnicalOrigin && <section data-testid="egg-auth-canonical-warning"
@@ -282,7 +283,7 @@ export default function EggConnect() {
         ) : user ? (
           <div className="space-y-3">
             <p>Вы вошли как <strong>{user.email ?? "пользователь EGG"}</strong>.</p>
-            <div className="flex flex-wrap gap-3"><Link to={projects?.length ? "/ru/egg?project=" + encodeURIComponent(projects![0].id) : "/egg"} className="rounded bg-foreground px-4 py-2 text-background">Открыть EGG</Link><button className="rounded border border-border px-4 py-2" onClick={signOut}>Выйти</button></div>
+            <div className="flex flex-wrap gap-3"><Link to={projects?.length ? "/egg/yolk?project=" + encodeURIComponent(projects![0].id) : "/egg/demo"} className="rounded bg-foreground px-4 py-2 text-background">Открыть EGG</Link><button className="rounded border border-border px-4 py-2" onClick={signOut}>Выйти</button></div>
           </div>
         ) : (
           <div className="space-y-3">
@@ -415,7 +416,7 @@ export default function EggConnect() {
       </section>}
       <section className="rounded-xl border border-border p-6">
         <h2 className="mb-3 text-xl font-medium">Мои проекты</h2>
-        <p className="mb-3 text-sm text-muted-foreground">Проекты ниже читаются из EGG Engine. Визуальное Яйцо пока сохраняет изменения локально: эти два состояния ещё не синхронизированы.</p>
+        <p className="mb-3 text-sm text-muted-foreground">Проекты ниже читаются из EGG Engine. Данные ядра, визуальные материалы и диалоги пока имеют разные механизмы сохранения; полная синхронизация ещё разрабатывается.</p>
         {user && client && <EggNewProject client={client} />}
         {user && projectError && <p role="status" className="mb-3 text-sm">{projectError}</p>}
         {user && projects === null && !projectError && <p className="mb-3 text-sm">Загружаем проекты…</p>}
