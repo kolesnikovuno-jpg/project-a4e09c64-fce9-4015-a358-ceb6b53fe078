@@ -69,23 +69,31 @@ export default async function handler(req:Req,res:ServerResponse){
    const geminiModel=process.env.EGG_AUTHOR_GEMINI_MODEL?.trim()||"gemini-2.5-flash";
    const geminiContents:any[]=[{text}];
    if(image){const match=/^data:image\/(png|jpeg|webp);base64,(.+)$/.exec(image);if(match)geminiContents.push({inline_data:{mime_type:"image/"+match[1],data:match[2]}});}
-   const response=geminiKey
-    ?await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(geminiModel)+":generateContent",{
-      method:"POST",headers:{"x-goog-api-key":geminiKey,"Content-Type":"application/json"},signal:controller.signal,redirect:"error",
-      body:JSON.stringify({system_instruction:{parts:[{text:"Ты соучастник сферы Автор EGG. Различай наблюдаемое и гипотезы. Не придумывай размеры и материалы. Отвечай по-русски кратко и конкретно."}]},contents:[{role:"user",parts:geminiContents}],generationConfig:{maxOutputTokens:900}})})
+   const geminiRequest=(model:string)=>fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{
+      method:"POST",headers:{"x-goog-api-key":geminiKey!,"Content-Type":"application/json"},signal:controller.signal,redirect:"error",
+      body:JSON.stringify({systemInstruction:{parts:[{text:"Ты соучастник сферы Автор EGG. Различай наблюдаемое и гипотезы. Не придумывай размеры и материалы. Отвечай по-русски кратко и конкретно."}]},contents:[{role:"user",parts:geminiContents}],generationConfig:{maxOutputTokens:900}})});
+   let activeModel=geminiModel;
+   let response=geminiKey
+    ?await geminiRequest(geminiModel)
     :await fetch(provider!.url,{method:"POST",headers:{"Authorization":"Bearer "+provider!.key,"Content-Type":"application/json"},signal:controller.signal,redirect:"error",body:JSON.stringify({model:provider!.model,instructions:"Ты соучастник сферы Автор EGG. Анализируй предоставленный рисунок и пометки как предварительный замысел. Различай наблюдаемое и гипотезы. Не придумывай размеры и материалы. Отвечай на русском кратко, конкретно и без навязывания формы. Не утверждай, что видишь изображение, если оно не передано.",input:[{role:"user",content}],max_output_tokens:750,store:false})});
+   // A model may be listed but unavailable for generation under this key.
+   // Retry once on a distinct low-cost multimodal model, only for a 404.
+   if(geminiKey&&response.status===404&&geminiModel!=="gemini-2.5-flash-lite"){
+    activeModel="gemini-2.5-flash-lite";
+    response=await geminiRequest(activeModel);
+   }
    if(!response.ok){
     // Capture only bounded, machine-readable provider error identifiers; never log
     // provider messages, request content, tokens, or user images.
-    let providerCode="unknown",providerType="unknown";
+    let providerCode="unknown",providerType="unknown",providerStatus="unknown";
     try{
-     const raw=await response.json() as {error?:{code?:unknown;type?:unknown}};
+     const raw=await response.json() as {error?:{code?:unknown;type?:unknown;status?:unknown}};
      const safe=(value:unknown)=>typeof value==="string"&&/^[a-zA-Z0-9_.-]{1,80}$/.test(value)?value:"unknown";
-     providerCode=safe(raw?.error?.code);providerType=safe(raw?.error?.type);
+     providerCode=safe(raw?.error?.code);providerType=safe(raw?.error?.type);providerStatus=safe(raw?.error?.status);
     }catch{/* Provider may not return JSON. */}
-    console.error("egg_author_ai_provider_failure",{status:response.status,kind:geminiKey?"gemini":provider!.kind,model:geminiKey?geminiModel:provider!.model,providerCode,providerType});
+    console.error("egg_author_ai_provider_failure",{status:response.status,kind:geminiKey?"gemini":provider!.kind,model:geminiKey?activeModel:provider!.model,providerCode,providerType,providerStatus});
     const code=response.status===429?"ai_rate_limited":response.status===402?"ai_budget_exhausted":response.status===401||response.status===403?"ai_model_not_authorized":response.status===404||response.status===400?"ai_model_or_request_unsupported":"ai_request_failed";
-    return send(res,response.status===429?429:502,{error:code,providerStatus:response.status,providerCode,providerType});
+    return send(res,response.status===429?429:502,{error:code,providerHttpStatus:response.status,providerCode,providerType,providerStatus});
    }
    const data=await response.json() as {output?:Array<{type?:string;content?:Array<{type?:string;text?:string}>}>};
    const answer=geminiKey?(data as any).candidates?.[0]?.content?.parts?.map((p:any)=>p.text??"").join("")??"":data.output?.flatMap(o=>o.content??[]).filter(x=>x.type==="output_text").map(x=>x.text??"").join("")??"";
