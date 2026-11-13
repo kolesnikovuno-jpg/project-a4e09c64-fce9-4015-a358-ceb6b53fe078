@@ -20,6 +20,17 @@ export default async function handler(req:Req,res:ServerResponse){
   const {data:{user},error:authError}=await auth.auth.getUser(bearer[1]);if(authError||!user)return send(res,401,{error:"invalid_session"});
   const url=new URL(req.url??"/","https://local.invalid");
   if(req.method==="GET"&&url.searchParams.get("diagnostic")==="1"){
+   const geminiKey=process.env.GEMINI_API_KEY?.trim();
+   if(geminiKey){
+    const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),12000);
+    try{
+     const response=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=100",{headers:{"x-goog-api-key":geminiKey},signal:controller.signal,redirect:"error"});
+     const data=await response.json() as {models?:Array<{name?:string;supportedGenerationMethods?:string[]}>};
+     const models=(data.models??[]).filter(m=>m.supportedGenerationMethods?.includes("generateContent")).map(m=>m.name?.replace(/^models\//,"")).filter(Boolean);
+     return send(res,200,{ok:response.ok,httpStatus:response.status,providerKind:"gemini",configuredModel:process.env.EGG_AUTHOR_GEMINI_MODEL?.trim()||"gemini-2.5-flash",availableModels:models.slice(0,30),environment:process.env.VERCEL_ENV??"unknown"});
+    }catch{return send(res,502,{ok:false,error:"gemini_model_discovery_failed"});}
+    finally{clearTimeout(timer);}
+   }
    const provider=providerFromEnv(process.env,req.headers["x-vercel-oidc-token"]);
    if(!provider)return send(res,503,{ok:false,error:"ai_provider_not_configured"});
    const keySource=process.env.EGG_AUTOMATION_ENDPOINT?"custom_endpoint":process.env.AI_GATEWAY_API_KEY?.trim()?"explicit_gateway_key":"vercel_oidc";
