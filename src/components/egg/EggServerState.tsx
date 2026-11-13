@@ -9,6 +9,7 @@ import EggProjectOverview from "./EggProjectOverview";
 import EggSphereWorkspace from "./EggSphereWorkspace";
 import EggYolkMonitor from "./EggYolkMonitor";
 import EggIdeaWorkshop from "./EggIdeaWorkshop";
+import EggAuthorCanvas from "./EggAuthorCanvas";
 import EggAiHandoff from "./EggAiHandoff";
 import EggDocumentationPanel from "./EggDocumentationPanel";
 import EggFlowCyclePanel from "./EggFlowCyclePanel";
@@ -63,7 +64,7 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
   const isSphere = activeSphere && !["author", "idea", "matter"].includes(activeSphere);
   const sphereNames: Record<string, string> = { marketing: "Маркетинг", legal: "Право", design: "Дизайн", production: "Производство", testDrive: "Тестдрайв", procurement: "Комплектация", commerce: "Коммерция", retail: "Ритейл" };
   const pending = project?.tasks.filter(task => task.status === "returned").length ?? 0;
-  return <section className="mx-auto mb-5 mt-5 max-w-[760px] rounded-xl border border-foreground/15 p-4 sm:p-5" aria-label="Серверные результаты EGG">
+  return <section className="mx-auto mb-5 mt-5 max-w-[1400px] rounded-xl border border-foreground/15 p-4 sm:p-5" aria-label="Серверные результаты EGG">
     <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
       <h2 className="text-sm font-medium">EGG · {isSphere ? (sphereNames[activeSphere ?? ""] ?? activeSphere) : activeSphere==="author"?"Автор · управление циклом":"Серверный проект"}</h2>
       <div className="flex items-center gap-3"><button type="button" onClick={() => setRefreshKey(value => value + 1)} className="text-xs underline underline-offset-4">Обновить</button><Link to="/egg/connect" className="text-xs underline underline-offset-4">Мои проекты</Link></div>
@@ -76,7 +77,8 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
     {project && <div className="space-y-2">
       <p className="text-sm font-medium">{project.title || "Проект EGG"}</p>
       {project.seed.text.trim() ? <details className="rounded-lg border border-foreground/10 p-3"><summary className="cursor-pointer text-xs text-foreground/75">Исходная идея Автора</summary><p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground/75">{project.seed.text}</p></details> : <p className="text-sm text-foreground/70">Исходная идея ещё не сформирована</p>}
-      {!project.seed.text.trim() && revision !== null && <EggSeedStart projectId={project.id} revision={revision} proposal={project.seedProposal?.text} onSaved={() => setRefreshKey(value => value + 1)} />}
+      {activeSphere==="author" && revision !== null && <EggAuthorCanvas projectId={project.id} seed={project.seed.text} revision={revision} onSaved={() => setRefreshKey(value => value + 1)} />}
+      {!project.seed.text.trim() && revision !== null && activeSphere!=="author" && <EggSeedStart projectId={project.id} revision={revision} proposal={project.seedProposal?.text} onSaved={() => setRefreshKey(value => value + 1)} />}
       <p className="text-xs text-foreground/65">Ревизия {revision}{lastUpdated ? " · Обновлено " + lastUpdated : ""}</p>
       {project.seed.text.trim() && <div className="flex flex-wrap gap-2">
         <button type="button" className="rounded-full border border-foreground/30 px-3 py-2 text-xs" onClick={()=>onSelectSphere("idea")}>Сфера «Концепт» · ДНК</button>
@@ -85,7 +87,7 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
       {project.seed.text.trim()&&activeSphere==="idea"&&revision!==null&&
         <EggIdeaWorkshop projectId={project.id} seed={project.seed.text} concepts={project.concepts??[]}
           tasks={project.tasks} files={project.artifacts??[]} revision={revision} level={project.level} iteration={project.iteration} onSaved={()=>setRefreshKey(v=>v+1)} allowDecision={false}/>}
-      {activeSphere==="author"&&project.seed.text.trim()&&revision!==null&&<EggIdeaWorkshop projectId={project.id} seed={project.seed.text} concepts={project.concepts??[]} tasks={project.tasks} files={project.artifacts??[]} revision={revision} level={project.level} iteration={project.iteration} onSaved={()=>setRefreshKey(v=>v+1)} allowDecision={true}/>}
+      {false&&activeSphere==="author"&&project.seed.text.trim()&&revision!==null&&<EggIdeaWorkshop projectId={project.id} seed={project.seed.text} concepts={project.concepts??[]} tasks={project.tasks} files={project.artifacts??[]} revision={revision} level={project.level} iteration={project.iteration} onSaved={()=>setRefreshKey(v=>v+1)} allowDecision={true}/>}
       {activeSphere==="author"&&<div className="space-y-2 rounded-lg border border-foreground/20 p-3"
         data-testid="egg-author-focus">
         <h3 className="text-sm font-medium">Текущая версия EGG · Author + Dynamic Balance</h3>
