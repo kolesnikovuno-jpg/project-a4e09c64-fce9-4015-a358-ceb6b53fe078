@@ -13,6 +13,11 @@ export default function EggAuthorCanvas({projectId,seed,revision,onSaved}:{proje
  const [mode,setMode]=useState<Mode>("draw");
  const [presence,setPresence]=useState<"silent"|"partner"|"dialog">("partner");
  const [panel,setPanel]=useState(true);
+ const [tab,setTab]=useState<"dialog"|"idea"|"materials">("dialog");
+ const [chat,setChat]=useState<Array<{role:"author"|"ai";text:string}>>([]);
+ const [aiBusy,setAiBusy]=useState(false);
+ const [sync,setSync]=useState("Локальный черновик");
+ const hydrated=useRef(false);
  const [message,setMessage]=useState("");
  const [error,setError]=useState("");
  const [busy,setBusy]=useState(false);
@@ -29,15 +34,28 @@ export default function EggAuthorCanvas({projectId,seed,revision,onSaved}:{proje
   loaded.current=false;
   try{const saved=localStorage.getItem(key);setBoard(saved?JSON.parse(saved) as Board:{...empty,idea:seed});}
   catch{setBoard({...empty,idea:seed});}
-  loaded.current=true;setObservations([]);setSelected(null);
+  loaded.current=true;hydrated.current=false;setObservations([]);setSelected(null);
  },[key]);
  useEffect(()=>{if(!loaded.current)return;try{localStorage.setItem(key,JSON.stringify(board));}catch{setError("Недостаточно места для локального сохранения. Удалите крупные изображения.");}},[board,key]);
+ async function token(){const response=await fetch("/api/egg-config",{cache:"no-store"});if(!response.ok)throw Error("Авторизация недоступна");const cfg=await response.json() as {supabaseUrl:string;publishableKey:string};const client=createClient(cfg.supabaseUrl,cfg.publishableKey);const {data:{session}}=await client.auth.getSession();if(!session)throw Error("Войдите в EGG");return session.access_token;}
+ useEffect(()=>{let alive=true;(async()=>{try{const bearer=await token();const response=await fetch("/api/egg-author-canvas?project="+encodeURIComponent(projectId),{headers:{Authorization:"Bearer "+bearer}});if(!response.ok)throw Error("Серверный холст недоступен");const data=await response.json() as {board:Board|null};if(!alive)return;
+ const local=localStorage.getItem(key);if(data.board&&!local)setBoard(data.board);setSync(data.board?"Серверное сохранение доступно":"Новый серверный холст");hydrated.current=true;
+ }catch{if(alive){setSync("Только локальное сохранение");hydrated.current=false;}}})();return()=>{alive=false};},[key,projectId]);
+ useEffect(()=>{if(!loaded.current||!hydrated.current)return;setSync("Есть несохранённые изменения");const timer=setTimeout(async()=>{try{const bearer=await token();const response=await fetch("/api/egg-author-canvas",{method:"PUT",headers:{"Content-Type":"application/json",Authorization:"Bearer "+bearer},body:JSON.stringify({projectId,board})});if(!response.ok)throw Error("save_failed");setSync("Сохранено на сервере");}catch{setSync("Сохранено только в браузере");}},1600);return()=>clearTimeout(timer);},[board,projectId]);
+ async function snapshot(){const canvas=document.createElement("canvas");canvas.width=1000;canvas.height=700;const ctx=canvas.getContext("2d");if(!ctx)return null;ctx.fillStyle="#f5f3ed";ctx.fillRect(0,0,1000,700);
+ for(const photo of board.photos){try{const img=new Image();img.src=photo.src;await img.decode();const h=Math.min(220,230*img.height/img.width);ctx.drawImage(img,photo.x,photo.y,230,h);}catch{/* skip unsupported image */}}
+ ctx.strokeStyle="#252525";ctx.lineWidth=2;ctx.lineCap="round";ctx.lineJoin="round";for(const s of board.strokes){ctx.beginPath();s.points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();}
+ for(const p of board.pins){ctx.fillStyle="#fff0b6";ctx.fillRect(p.x,p.y,185,55);ctx.fillStyle="#242424";ctx.font="13px sans-serif";ctx.fillText(p.text.slice(0,25),p.x+6,p.y+22);}
+ return canvas.toDataURL("image/jpeg",.55);}
+ async function discuss(){if(!message.trim()||aiBusy)return;const question=message.trim();setAiBusy(true);setMessage("");setChat(v=>[...v,{role:"author",text:question}]);try{
+ const bearer=await token();const image=await snapshot();const response=await fetch("/api/egg-author-canvas",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+bearer},body:JSON.stringify({projectId,action:"discuss",question,image})});const result=await response.json() as {answer?:string;error?:string};if(!response.ok)throw Error(result.error||"Ошибка ИИ");setChat(v=>[...v,{role:"ai",text:result.answer??"Нет ответа"}]);
+ }catch(e){setChat(v=>[...v,{role:"ai",text:"Не удалось получить ответ: "+(e instanceof Error?e.message:"Ошибка")}]);}finally{setAiBusy(false);}}
  function position(e:React.PointerEvent){const r=surface.current!.getBoundingClientRect();return{x:(e.clientX-r.left)/zoom,y:(e.clientY-r.top)/zoom};}
  function start(e:React.PointerEvent){if(mode!=="draw"||e.button!==0)return;e.currentTarget.setPointerCapture(e.pointerId);const s={id:uid(),points:[position(e)]};drawing.current=s;setDraft(s);}
  function move(e:React.PointerEvent){if(!drawing.current)return;const s={...drawing.current,points:[...drawing.current.points,position(e)]};drawing.current=s;setDraft(s);}
  function end(){if(!drawing.current)return;const s=drawing.current;drawing.current=null;setDraft(null);setBoard(b=>({...b,strokes:[...b.strokes,s]}));}
  function addPin(e:React.MouseEvent){if(mode!=="note"||e.target!==surface.current)return;const r=surface.current!.getBoundingClientRect();const text=window.prompt("Пометка к идее");if(!text?.trim())return;setBoard(b=>({...b,pins:[...b.pins,{id:uid(),x:(e.clientX-r.left)/zoom,y:(e.clientY-r.top)/zoom,text:text.trim()}]}));}
- async function upload(files:FileList|null){if(!files)return;for(const f of Array.from(files).slice(0,6)){if(!f.type.startsWith("image/")||f.size>3_000_000){setError("Допустимы изображения до 3 МБ.");continue;}const src=await new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=()=>reject(new Error("Не удалось прочитать файл"));reader.readAsDataURL(f);});setBoard(b=>({...b,photos:[...b.photos,{id:uid(),x:80+(b.photos.length%3)*160,y:65+(b.photos.length%3)*35,src,name:f.name}]}));}}
+ async function upload(files:FileList|null){if(!files)return;for(const f of Array.from(files).slice(0,6)){if(!f.type.startsWith("image/")||f.size>3_000_000){setError("Допустимы изображения до 3 МБ.");continue;}const original=await new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=()=>reject(new Error("Не удалось прочитать файл"));reader.readAsDataURL(f);});const img=new Image();img.src=original;await img.decode();const cv=document.createElement("canvas");const scale=Math.min(1,900/Math.max(img.width,img.height));cv.width=Math.round(img.width*scale);cv.height=Math.round(img.height*scale);cv.getContext("2d")?.drawImage(img,0,0,cv.width,cv.height);const src=cv.toDataURL("image/jpeg",.7);setBoard(b=>({...b,photos:[...b.photos,{id:uid(),x:80+(b.photos.length%3)*160,y:65+(b.photos.length%3)*35,src,name:f.name}]}));}}
  function observe(){const summary="На холсте: "+board.strokes.length+" линий, "+board.photos.length+" изображений, "+board.pins.length+" пометок. "+(board.idea?"Смысл: "+board.idea.slice(0,180):"Формулировка идеи пока открыта.");setObservations(v=>[summary,...v].slice(0,8));}
  async function approve(){if(!board.idea.trim())return;setBusy(true);setError("");try{
   const config=await fetch("/api/egg-config",{cache:"no-store"});if(!config.ok)throw new Error("Авторизация недоступна");
@@ -78,19 +96,26 @@ export default function EggAuthorCanvas({projectId,seed,revision,onSaved}:{proje
      {board.pins.map(p=><button key={p.id} type="button" onClick={()=>{setSelected(p.id);setMode("move");}} className={"absolute max-w-[200px] rounded-lg border bg-[#fff0b6] p-2 text-left text-xs shadow "+(selected===p.id?"border-amber-700":"border-[#d5c48e]")} style={{left:p.x,top:p.y}}>{p.text}</button>)}
     </div>
    </div>
-   {panel&&<aside className="w-full shrink-0 space-y-3 border-t border-foreground/15 p-3 lg:w-[300px] lg:border-l lg:border-t-0">
-    <label className="block text-xs font-medium">Смысл идеи<textarea value={board.idea} onChange={e=>setBoard(b=>({...b,idea:e.target.value}))} rows={5} maxLength={10000} placeholder="Мысль, ощущение, назначение, образ…" className="mt-2 w-full rounded-lg border border-foreground/20 bg-background p-2 text-sm"/></label>
-    <div className="rounded-lg border border-foreground/15 p-3">
-     <p className="mb-2 text-xs font-medium">AI Presence · подготовка</p>
-     <select value={presence} onChange={e=>setPresence(e.target.value as typeof presence)} className="w-full rounded border bg-background p-2 text-xs"><option value="silent">Наблюдение</option><option value="partner">Соучастие</option><option value="dialog">По запросу</option></select>
-     <p className="mt-2 text-[11px] text-foreground/60">ИИ пока не подключён. Контекст холста можно собрать и скопировать для обсуждения.</p>
-     <button type="button" onClick={observe} className="mt-2 rounded-full border px-3 py-2 text-xs">Собрать контекст</button>
-     {observations[0]&&<div className="mt-2 space-y-2"><p className="whitespace-pre-wrap text-xs">{observations[0]}</p><button type="button" onClick={()=>void navigator.clipboard.writeText(observations[0])} className="text-xs underline">Копировать</button></div>}
-     <textarea value={message} onChange={e=>setMessage(e.target.value)} rows={2} placeholder="Вопрос к будущему соучастнику…" className="mt-3 w-full rounded border bg-background p-2 text-xs"/>
+   {panel&&<aside className="w-full shrink-0 border-t border-foreground/15 bg-background lg:w-[380px] xl:w-[420px] lg:border-l lg:border-t-0">
+    <div className="flex gap-1 border-b border-foreground/15 p-2">
+     {([["dialog","Диалог"],["idea","Идея"],["materials","Материалы"]] as const).map(([id,label])=><button key={id} type="button" onClick={()=>setTab(id)} className={"flex-1 rounded-lg px-2 py-2 text-sm "+(tab===id?"bg-foreground text-background":"bg-foreground/5")}>{label}</button>)}
     </div>
-    {!seed.trim()?<button type="button" disabled={busy||!board.idea.trim()} onClick={()=>void approve()} className="w-full rounded-full bg-foreground px-4 py-2 text-sm text-background disabled:opacity-40">{busy?"Сохраняем…":"Утвердить идею"}</button>:<p className="text-xs text-foreground/60">Исходная идея утверждена в проекте. Холст пока хранится только в этом браузере; для передачи его материалов в Концепт потребуется серверное сохранение.</p>}
-    <p className="text-[11px] text-foreground/50">Локальный черновик сохраняется автоматически. Не очищайте данные браузера до синхронизации с сервером.</p>
-    {error&&<p role="alert" className="text-xs text-red-600">{error}</p>}
+    <div className="max-h-[68vh] min-h-[300px] space-y-3 overflow-y-auto p-4">
+    {tab==="idea"&&<label className="block text-sm font-medium">Смысл идеи<textarea value={board.idea} onChange={e=>setBoard(b=>({...b,idea:e.target.value}))} rows={8} maxLength={10000} placeholder="Мысль, ощущение, назначение, образ…" className="mt-2 w-full resize-y rounded-lg border border-foreground/20 bg-background p-3 text-sm"/></label>}
+    {tab==="materials"&&<div className="space-y-3 text-sm"><p>Эскизы: {board.strokes.length}</p><p>Изображения: {board.photos.length}</p><p>Пометки: {board.pins.length}</p><button type="button" onClick={()=>file.current?.click()} className="rounded-full border px-4 py-2">Добавить изображение</button>{board.pins.map(p=><p key={p.id} className="rounded-lg bg-foreground/5 p-2">{p.text}</p>)}</div>}
+    {tab==="dialog"&&<div className="space-y-3">
+      <div className="flex items-center justify-between gap-2"><strong className="text-sm">AI Presence</strong><select value={presence} onChange={e=>setPresence(e.target.value as typeof presence)} className="rounded border bg-background p-2 text-xs"><option value="silent">Наблюдение</option><option value="partner">Соучастие</option><option value="dialog">По запросу</option></select></div>
+      <p className="text-xs text-foreground/60">ИИ получает изображение текущего холста и его пометки при отправке вопроса. Автоматическое наблюдение ещё не включено.</p>
+      {chat.map((entry,i)=><div key={i} className={"whitespace-pre-wrap rounded-xl p-3 text-sm "+(entry.role==="author"?"bg-foreground/10":"border border-foreground/15")}><span className="mb-1 block text-[11px] text-foreground/50">{entry.role==="author"?"Автор":"ИИ"}</span>{entry.text}</div>)}
+      <textarea value={message} onChange={e=>setMessage(e.target.value)} rows={3} placeholder="Что ты видишь в этой форме? Обсудим…" className="w-full rounded-lg border bg-background p-3 text-sm"/>
+      <button type="button" onClick={()=>void discuss()} disabled={aiBusy||!message.trim()} className="w-full rounded-full bg-foreground px-4 py-2 text-sm text-background disabled:opacity-40">{aiBusy?"ИИ анализирует холст…":"Обсудить с ИИ"}</button>
+    </div>}
+    </div>
+    <div className="space-y-2 border-t border-foreground/15 p-4">
+     <p className="text-xs text-foreground/60" role="status">{sync}</p>
+     {!seed.trim()&&<button type="button" disabled={busy||!board.idea.trim()} onClick={()=>void approve()} className="w-full rounded-full bg-foreground px-4 py-2 text-sm text-background disabled:opacity-40">{busy?"Сохраняем…":"Утвердить идею"}</button>}
+     {error&&<p role="alert" className="text-xs text-red-600">{error}</p>}
+    </div>
    </aside>}
   </div>
  </section>;
