@@ -55,9 +55,17 @@ export default async function handler(req:Req,res:ServerResponse){
    const content:any[]=[{type:"input_text",text}];if(image)content.push({type:"input_image",image_url:image});
    const response=await fetch(provider.url,{method:"POST",headers:{"Authorization":"Bearer "+provider.key,"Content-Type":"application/json"},signal:controller.signal,redirect:"error",body:JSON.stringify({model:provider.model,instructions:"Ты соучастник сферы Автор EGG. Анализируй предоставленный рисунок и пометки как предварительный замысел. Различай наблюдаемое и гипотезы. Не придумывай размеры и материалы. Отвечай на русском кратко, конкретно и без навязывания формы. Не утверждай, что видишь изображение, если оно не передано.",input:[{role:"user",content}],max_output_tokens:750,store:false})});
    if(!response.ok){
-    console.error("egg_author_ai_provider_failure",{status:response.status,kind:provider.kind,model:provider.model});
+    // Capture only bounded, machine-readable provider error identifiers; never log
+    // provider messages, request content, tokens, or user images.
+    let providerCode="unknown",providerType="unknown";
+    try{
+     const raw=await response.json() as {error?:{code?:unknown;type?:unknown}};
+     const safe=(value:unknown)=>typeof value==="string"&&/^[a-zA-Z0-9_.-]{1,80}$/.test(value)?value:"unknown";
+     providerCode=safe(raw?.error?.code);providerType=safe(raw?.error?.type);
+    }catch{/* Provider may not return JSON. */}
+    console.error("egg_author_ai_provider_failure",{status:response.status,kind:provider.kind,model:provider.model,providerCode,providerType});
     const code=response.status===429?"ai_rate_limited":response.status===402?"ai_budget_exhausted":response.status===401||response.status===403?"ai_model_not_authorized":response.status===404||response.status===400?"ai_model_or_request_unsupported":"ai_request_failed";
-    return send(res,response.status===429?429:502,{error:code});
+    return send(res,response.status===429?429:502,{error:code,providerStatus:response.status,providerCode,providerType});
    }
    const data=await response.json() as {output?:Array<{type?:string;content?:Array<{type?:string;text?:string}>}>};
    const answer=data.output?.flatMap(o=>o.content??[]).filter(x=>x.type==="output_text").map(x=>x.text??"").join("")??"";
