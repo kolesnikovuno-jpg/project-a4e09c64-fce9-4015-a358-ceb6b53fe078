@@ -84,9 +84,9 @@ export default function EggIdeaWorkshop({projectId,seed,concepts,tasks,files,rev
     }
   }
 
-  return <section className="space-y-4 rounded-xl border border-foreground/20 p-3 sm:p-4" aria-label="Сфера Идея">
+  return <section className="space-y-4 rounded-xl border border-foreground/20 p-3 sm:p-4" aria-label="Сфера Концепт">
    <div>
-    <h3 className="text-base font-medium">Сфера «Идея»</h3>
+    <h3 className="text-base font-medium">Сфера «Концепт»</h3>
     <p className="mt-1 text-xs leading-relaxed text-foreground/65">Задача сферы — через диалог выявить смысл авторской идеи, уточнить только существенные неопределённости и предложить текстовую, графическую или смешанную концепцию. Автор может оставить параметры открытыми; черновик не изменяет утверждённый замысел.</p>
    </div>
    <EggAiHandoff projectId={projectId} sphere="idea" revision={revision} level={level} iteration={iteration}
