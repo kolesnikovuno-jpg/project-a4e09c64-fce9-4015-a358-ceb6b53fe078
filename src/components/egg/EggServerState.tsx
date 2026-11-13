@@ -78,7 +78,7 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
       {!project.seed.text.trim() && revision !== null && <EggSeedStart projectId={project.id} revision={revision} proposal={project.seedProposal?.text} onSaved={() => setRefreshKey(value => value + 1)} />}
       <p className="text-xs text-foreground/65">Ревизия {revision}{lastUpdated ? " · Обновлено " + lastUpdated : ""}</p>
       {project.seed.text.trim() && <div className="flex flex-wrap gap-2">
-        <button type="button" className="rounded-full border border-foreground/30 px-3 py-2 text-xs" onClick={()=>onSelectSphere("idea")}>Сфера «Идея» · концепция</button>
+        <button type="button" className="rounded-full border border-foreground/30 px-3 py-2 text-xs" onClick={()=>onSelectSphere("idea")}>Сфера «Концепт» · ДНК</button>
         {activeSphere==="idea"&&<button type="button" className="rounded-full border border-foreground/20 px-3 py-2 text-xs" onClick={()=>onSelectSphere(null)}>← Обзор</button>}
       </div>}
       {project.seed.text.trim()&&activeSphere==="idea"&&revision!==null&&
