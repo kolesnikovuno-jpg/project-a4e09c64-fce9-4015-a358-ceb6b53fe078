@@ -28,6 +28,7 @@ import SemanticAbout from "./pages/SemanticAbout";
 import OperatorLogin from "./pages/OperatorLogin";
 import EggOAuthConsent from "./pages/EggOAuthConsent";
 import EggConnect from "./pages/EggConnect";
+import EggAuthorPage from "./pages/EggAuthorPage";
 import EggStablePreview from "./components/egg/EggStablePreview";
 import EggYolkExperience from "./components/egg/EggYolkExperience";
 import EggCollaboration from "./pages/EggCollaboration";
@@ -80,6 +81,7 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   { path: "research", element: <Index /> },
   { path: "unocalc", element: <UnoCalcEgg /> },
   { path: "egg", element: <EggStablePreview><UnoCalcEgg eggBrand /></EggStablePreview> },
+  { path: "egg/author", element: <EggStablePreview><EggAuthorPage /></EggStablePreview> },
   { path: "unocalc/model", element: <UnoObjectModel /> },
   { path: "unocalc/about", element: <UnoCalcAbout /> },
   { path: "unocalc/lab", element: <UnoLab /> },
