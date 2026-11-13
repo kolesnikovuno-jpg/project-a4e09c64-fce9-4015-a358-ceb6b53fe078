@@ -16,6 +16,7 @@ export default function EggAuthorCanvas({projectId,seed,revision,onSaved}:{proje
  const [tab,setTab]=useState<"dialog"|"idea"|"materials">("dialog");
  const [chat,setChat]=useState<Array<{role:"author"|"ai";text:string}>>([]);
  const [aiBusy,setAiBusy]=useState(false);
+ const [diagnostic,setDiagnostic]=useState("");
  const [sync,setSync]=useState("Локальный черновик");
  const hydrated=useRef(false);
  const [message,setMessage]=useState("");
@@ -42,6 +43,7 @@ export default function EggAuthorCanvas({projectId,seed,revision,onSaved}:{proje
  const local=localStorage.getItem(key);if(data.board&&!local)setBoard(data.board);setSync(data.board?"Серверное сохранение доступно":"Новый серверный холст");hydrated.current=true;
  }catch{if(alive){setSync("Только локальное сохранение");hydrated.current=false;}}})();return()=>{alive=false};},[key,projectId]);
  useEffect(()=>{if(!loaded.current||!hydrated.current)return;setSync("Есть несохранённые изменения");const timer=setTimeout(async()=>{try{const bearer=await token();const response=await fetch("/api/egg-author-canvas",{method:"PUT",headers:{"Content-Type":"application/json",Authorization:"Bearer "+bearer},body:JSON.stringify({projectId,board})});if(!response.ok)throw Error("save_failed");setSync("Сохранено на сервере");}catch{setSync("Сохранено только в браузере");}},1600);return()=>clearTimeout(timer);},[board,projectId]);
+ async function diagnose(){setDiagnostic("Проверяем соединение…");try{const bearer=await token();const response=await fetch("/api/egg-ai-diagnostic",{headers:{Authorization:"Bearer "+bearer},cache:"no-store"});const data=await response.json() as {ok?:boolean;httpStatus?:number;keySource?:string;providerKind?:string;model?:string;environment?:string;error?:string};setDiagnostic(JSON.stringify(data,null,2));}catch(e){setDiagnostic(e instanceof Error?e.message:"Ошибка диагностики");}}
  async function snapshot(){const canvas=document.createElement("canvas");canvas.width=1000;canvas.height=700;const ctx=canvas.getContext("2d");if(!ctx)return null;ctx.fillStyle="#f5f3ed";ctx.fillRect(0,0,1000,700);
  for(const photo of board.photos){try{const img=new Image();img.src=photo.src;await img.decode();const h=Math.min(220,230*img.height/img.width);ctx.drawImage(img,photo.x,photo.y,230,h);}catch{/* skip unsupported image */}}
  ctx.strokeStyle="#252525";ctx.lineWidth=2;ctx.lineCap="round";ctx.lineJoin="round";for(const s of board.strokes){ctx.beginPath();s.points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();}
@@ -106,6 +108,8 @@ export default function EggAuthorCanvas({projectId,seed,revision,onSaved}:{proje
     {tab==="dialog"&&<div className="space-y-3">
       <div className="flex items-center justify-between gap-2"><strong className="text-sm">AI Presence</strong><select value={presence} onChange={e=>setPresence(e.target.value as typeof presence)} className="rounded border bg-background p-2 text-xs"><option value="silent">Наблюдение</option><option value="partner">Соучастие</option><option value="dialog">По запросу</option></select></div>
       <p className="text-xs text-foreground/60">ИИ получает изображение текущего холста и его пометки при отправке вопроса. Автоматическое наблюдение ещё не включено.</p>
+      <button type="button" onClick={()=>void diagnose()} className="rounded-full border border-foreground/20 px-3 py-2 text-xs">Проверить подключение ИИ</button>
+      {diagnostic&&<pre className="whitespace-pre-wrap break-all rounded-lg bg-foreground/5 p-3 text-xs">{diagnostic}</pre>}
       {chat.map((entry,i)=><div key={i} className={"whitespace-pre-wrap rounded-xl p-3 text-sm "+(entry.role==="author"?"bg-foreground/10":"border border-foreground/15")}><span className="mb-1 block text-[11px] text-foreground/50">{entry.role==="author"?"Автор":"ИИ"}</span>{entry.text}</div>)}
       <div className="flex flex-wrap gap-2">{["Что ты видишь в рисунке?","Какие противоречия формы заметны?","Какие вопросы стоит уточнить?"].map(q=><button key={q} type="button" onClick={()=>setMessage(q)} className="rounded-full border border-foreground/20 px-3 py-1.5 text-xs">{q}</button>)}</div>
       <textarea value={message} onChange={e=>setMessage(e.target.value)} rows={3} placeholder="Что ты видишь в этой форме? Обсудим…" className="w-full rounded-lg border bg-background p-3 text-sm"/>
