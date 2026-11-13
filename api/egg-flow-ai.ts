@@ -63,7 +63,8 @@ export function providerFromEnv(env:NodeJS.ProcessEnv,oidcHeader?:string|string[
     let url:URL;
     try{url=new URL(endpoint);}catch{return null;}
     if(url.protocol!=="https:"||url.username||url.password||url.search||url.hash||
-       !url.hostname.includes(".")||/^(localhost|127\\.|10\\.|192\\.168\\.|169\\.254\\.)/.test(url.hostname))return null;
+       !url.hostname.includes(".")||url.pathname!=="/v1/responses"||url.port||
+       /^(localhost|127\\.|10\\.|192\\.168\\.|169\\.254\\.)/.test(url.hostname))return null;
     const key=env.EGG_AUTOMATION_ENDPOINT_KEY?.trim();
     const model=env.EGG_AUTOMATION_MODEL?.trim();
     if(!key||!model)return null;
@@ -95,6 +96,7 @@ async function generate(model:Provider,prompt:{instructions:string;input:string}
       method:"POST",
       headers:{"Authorization":"Bearer "+model.key,"Content-Type":"application/json"},
       signal:controller.signal,
+      redirect:"error",
       body:JSON.stringify({
         model:model.model,instructions:prompt.instructions,input:prompt.input,
         max_output_tokens:maxTokens,store:false,
