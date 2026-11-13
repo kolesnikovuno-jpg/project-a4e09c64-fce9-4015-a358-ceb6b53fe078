@@ -90,6 +90,16 @@ export default async function handler(req:Req,res:ServerResponse){
      const raw=await response.json() as {error?:{code?:unknown;type?:unknown;status?:unknown}};
      const safe=(value:unknown)=>typeof value==="string"&&/^[a-zA-Z0-9_.-]{1,80}$/.test(value)?value:"unknown";
      providerCode=safe(raw?.error?.code);providerType=safe(raw?.error?.type);providerStatus=safe(raw?.error?.status);
+     if(geminiKey){
+      const message=typeof (raw as any)?.error?.message==="string"?(raw as any).error.message:"";
+      const reason=/not found for API version|not supported for generateContent/i.test(message)?"model_api_incompatible"
+       :/not found|does not exist/i.test(message)?"model_not_found"
+       :/API key|permission|access denied/i.test(message)?"api_access_denied"
+       :/location|region|country/i.test(message)?"region_restriction"
+       :/quota|billing|limit/i.test(message)?"quota_or_billing"
+       :"unclassified";
+      providerType=reason;
+     }
     }catch{/* Provider may not return JSON. */}
     console.error("egg_author_ai_provider_failure",{status:response.status,kind:geminiKey?"gemini":provider!.kind,model:geminiKey?activeModel:provider!.model,providerCode,providerType,providerStatus});
     const code=response.status===429?"ai_rate_limited":response.status===402?"ai_budget_exhausted":response.status===401||response.status===403?"ai_model_not_authorized":response.status===404||response.status===400?"ai_model_or_request_unsupported":"ai_request_failed";
