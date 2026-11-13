@@ -71,6 +71,7 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
     {!id && <p className="text-sm text-foreground/70">Выберите проект в личном кабинете.</p>}
     {id && !project && !status && <p className="text-sm">Загружаем проект…</p>}
     {status && <p role="status" className="text-sm text-foreground/70">{status}</p>}
+    {status.includes("Войдите") && <Link to={"/egg/connect?returnProject="+encodeURIComponent(id)+"&start="+encodeURIComponent(activeSphere||"author")} className="mt-3 mr-2 inline-flex rounded-full bg-foreground px-4 py-2 text-xs text-background">Войти и вернуться к проекту</Link>}
     {status && <Link to="/egg/demo" className="mt-3 inline-flex rounded-full border border-foreground/25 px-4 py-2 text-xs">Посмотреть демонстрацию без регистрации</Link>}
     {project && <div className="space-y-2">
       <p className="text-sm font-medium">{project.title || "Проект EGG"}</p>
@@ -83,7 +84,8 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
       </div>}
       {project.seed.text.trim()&&activeSphere==="idea"&&revision!==null&&
         <EggIdeaWorkshop projectId={project.id} seed={project.seed.text} concepts={project.concepts??[]}
-          tasks={project.tasks} files={project.artifacts??[]} revision={revision} level={project.level} iteration={project.iteration} onSaved={()=>setRefreshKey(v=>v+1)}/>}
+          tasks={project.tasks} files={project.artifacts??[]} revision={revision} level={project.level} iteration={project.iteration} onSaved={()=>setRefreshKey(v=>v+1)} allowDecision={false}/>}
+      {activeSphere==="author"&&project.seed.text.trim()&&revision!==null&&<EggIdeaWorkshop projectId={project.id} seed={project.seed.text} concepts={project.concepts??[]} tasks={project.tasks} files={project.artifacts??[]} revision={revision} level={project.level} iteration={project.iteration} onSaved={()=>setRefreshKey(v=>v+1)} allowDecision={true}/>}
       {activeSphere==="author"&&<div className="space-y-2 rounded-lg border border-foreground/20 p-3"
         data-testid="egg-author-focus">
         <h3 className="text-sm font-medium">Текущая версия EGG · Author + Dynamic Balance</h3>
