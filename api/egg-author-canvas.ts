@@ -19,6 +19,17 @@ export default async function handler(req:Req,res:ServerResponse){
   const auth=createClient(cfg.url,cfg.publishableKey,{auth:{persistSession:false,autoRefreshToken:false}});
   const {data:{user},error:authError}=await auth.auth.getUser(bearer[1]);if(authError||!user)return send(res,401,{error:"invalid_session"});
   const url=new URL(req.url??"/","https://local.invalid");
+  if(req.method==="GET"&&url.searchParams.get("diagnostic")==="1"){
+   const provider=providerFromEnv(process.env,req.headers["x-vercel-oidc-token"]);
+   if(!provider)return send(res,503,{ok:false,error:"ai_provider_not_configured"});
+   const keySource=process.env.EGG_AUTOMATION_ENDPOINT?"custom_endpoint":process.env.AI_GATEWAY_API_KEY?.trim()?"explicit_gateway_key":"vercel_oidc";
+   const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),12000);
+   try{const response=await fetch("https://ai-gateway.vercel.sh/v1/models",{headers:{Authorization:"Bearer "+provider.key},redirect:"error",signal:controller.signal});
+    console.info("egg_ai_diagnostic",{httpStatus:response.status,keySource,providerKind:provider.kind});
+    return send(res,200,{ok:response.ok,httpStatus:response.status,keySource,providerKind:provider.kind,model:provider.model,environment:process.env.VERCEL_ENV??"unknown"});
+   }catch{return send(res,502,{ok:false,error:controller.signal.aborted?"gateway_timeout":"gateway_unreachable",keySource});}
+   finally{clearTimeout(timer);}
+  }
   const input=req.method==="GET"?null:await body(req);
   const projectId=req.method==="GET"?(url.searchParams.get("project")??""):String(input?.projectId??"");
   if(!uuid(projectId))return send(res,400,{error:"invalid_project"});
