@@ -52,6 +52,24 @@ import LocalePersistenceGuard from "./i18n/LocalePersistenceGuard";
 
 const queryClient = new QueryClient();
 
+// Legacy email redirects may still target egg-test/ru via Supabase Site URL.
+// Forward the callback to the canonical account before the old landing renders.
+const LegacyEggAuthReturn = () => {
+  if (typeof window !== "undefined" && window.location.hostname === "egg-test.kolesnikov.studio" &&
+      /^\\/(ru|uk|en)\\/?$/.test(window.location.pathname)) {
+    const hash = window.location.hash;
+    const fragment = new URLSearchParams(hash.replace(/^#/, ""));
+    const authCallback = (fragment.has("access_token") && fragment.has("refresh_token") && fragment.has("token_type")) ||
+      fragment.has("error_code") || fragment.has("error_description");
+    const query = new URLSearchParams(window.location.search);
+    const safeQuery = query.has("code") || query.has("error") ? window.location.search : "";
+    window.location.replace("https://egg.kolesnikov.studio/egg/connect" + safeQuery + (authCallback ? hash : ""));
+    return true;
+  }
+  return false;
+};
+
+
 /**
  * Redirect bare paths (e.g. /about) to the default locale (/en/about),
  * preserving search and hash. Used for any route that should always be
@@ -127,7 +145,7 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
 
 const RootEntry = () => /^(egg|egg-test)\\.kolesnikov\\.studio$/i.test(window.location.hostname) ? <EggHome /> : <RedirectToDefaultLocale />;
 
-const App = () => (
+const App = () => LegacyEggAuthReturn() ? null : (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
