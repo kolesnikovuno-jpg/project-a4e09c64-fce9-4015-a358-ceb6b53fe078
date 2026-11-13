@@ -11,6 +11,12 @@ const AI_FIRST_CONTACT_PROMPT = getEggAiFirstContactPrompt();
 
 export default function EggConnect() {
   const [client, setClient] = useState<SupabaseClient | null>(null);
+  const returnProject = new URLSearchParams(window.location.search).get("returnProject");
+  const returnStart = new URLSearchParams(window.location.search).get("start");
+  const explicitReturn = returnProject && /^[0-9a-f-]{36}$/i.test(returnProject) ? "/ru/egg?project="+encodeURIComponent(returnProject)+"&start="+(returnStart==="idea"?"idea":"author") : null;
+  const storedReturn = window.sessionStorage.getItem("egg.authReturn");
+  const safeReturn = explicitReturn || (storedReturn && /^\/ru\/egg\?project=[0-9a-f-]{36}&start=(idea|author)$/i.test(storedReturn) ? storedReturn : null);
+  const targetProject = returnProject || (safeReturn ? new URLSearchParams(safeReturn.split("?")[1]).get("project") : null);
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -35,6 +41,11 @@ export default function EggConnect() {
     }catch{setMcpHealth("unavailable");}
   }
   useEffect(()=>{void checkMcpHealth();},[]);
+  useEffect(()=>{
+    if (!user || !projects || !safeReturn || !targetProject) return;
+    if (projects.some(p=>p.id===targetProject)) { window.sessionStorage.removeItem("egg.authReturn"); window.location.replace(safeReturn); }
+    else setAuthIssue("У этого аккаунта нет доступа к выбранному проекту. Проверьте адрес почты.");
+  },[user,projects,safeReturn,targetProject]);
   useEffect(() => {
     if (!client || !user) { setProjects(null); return; }
     let active = true;
@@ -132,6 +143,7 @@ export default function EggConnect() {
 
   async function sendLink() {
     if (!client || !email.trim()) return;
+    if (safeReturn) window.sessionStorage.setItem("egg.authReturn",safeReturn);
     const invited = /^#egg-invite=([a-zA-Z0-9_-]{43})$/.exec(window.location.hash);
     if (invited) window.localStorage.setItem("egg.pendingInvite", invited[1]);
     setBusy(true);
