@@ -56,7 +56,7 @@ const queryClient = new QueryClient();
 // Forward the callback to the canonical account before the old landing renders.
 const LegacyEggAuthReturn = () => {
   if (typeof window !== "undefined" && window.location.hostname === "egg-test.kolesnikov.studio" &&
-      /^\\/(ru|uk|en)\\/?$/.test(window.location.pathname)) {
+      /^\/(ru|uk|en)\/?$/.test(window.location.pathname)) {
     const hash = window.location.hash;
     const fragment = new URLSearchParams(hash.replace(/^#/, ""));
     const authCallback = (fragment.has("access_token") && fragment.has("refresh_token") && fragment.has("token_type")) ||
