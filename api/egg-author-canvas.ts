@@ -46,14 +46,23 @@ export default async function handler(req:Req,res:ServerResponse){
   if(readError)return send(res,503,{error:"database_unavailable"});
   const board=(input.board??stored?.board) as {idea?:string;strokes?:unknown[];pins?:Array<{text:string}>;photos?:Array<{src:string;name:string}>}|undefined;
   if(!board)return send(res,409,{error:"save_board_first"});
-  const provider=providerFromEnv(process.env,req.headers["x-vercel-oidc-token"]);if(!provider)return send(res,503,{error:"ai_provider_not_configured"});
+  const geminiKey=process.env.GEMINI_API_KEY?.trim();
+  const provider=geminiKey?null:providerFromEnv(process.env,req.headers["x-vercel-oidc-token"]);
+  if(!geminiKey&&!provider)return send(res,503,{error:"ai_provider_not_configured"});
   const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),35000);
   try{
    // The rendered sketch is supplied by the browser, not inferred from stroke counts.
    const image=typeof input.image==="string"&&/^data:image\/(png|jpeg|webp);base64,/.test(input.image)&&input.image.length<900000?input.image:null;
    const text="Идея: "+String(board.idea??"").slice(0,10000)+"\nПометки: "+JSON.stringify((board.pins??[]).slice(0,100))+"\nРеференсы: "+JSON.stringify((board.photos??[]).map(p=>p.name).slice(0,30))+"\nВопрос Автора: "+input.question;
    const content:any[]=[{type:"input_text",text}];if(image)content.push({type:"input_image",image_url:image});
-   const response=await fetch(provider.url,{method:"POST",headers:{"Authorization":"Bearer "+provider.key,"Content-Type":"application/json"},signal:controller.signal,redirect:"error",body:JSON.stringify({model:provider.model,instructions:"Ты соучастник сферы Автор EGG. Анализируй предоставленный рисунок и пометки как предварительный замысел. Различай наблюдаемое и гипотезы. Не придумывай размеры и материалы. Отвечай на русском кратко, конкретно и без навязывания формы. Не утверждай, что видишь изображение, если оно не передано.",input:[{role:"user",content}],max_output_tokens:750,store:false})});
+   const geminiModel=process.env.EGG_AUTHOR_GEMINI_MODEL?.trim()||"gemini-2.5-flash";
+   const geminiContents:any[]=[{text}];
+   if(image){const match=/^data:image\/(png|jpeg|webp);base64,(.+)$/.exec(image);if(match)geminiContents.push({inline_data:{mime_type:"image/"+match[1],data:match[2]}});}
+   const response=geminiKey
+    ?await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(geminiModel)+":generateContent",{
+      method:"POST",headers:{"x-goog-api-key":geminiKey,"Content-Type":"application/json"},signal:controller.signal,redirect:"error",
+      body:JSON.stringify({system_instruction:{parts:[{text:"Ты соучастник сферы Автор EGG. Различай наблюдаемое и гипотезы. Не придумывай размеры и материалы. Отвечай по-русски кратко и конкретно."}]},contents:[{role:"user",parts:geminiContents}],generationConfig:{maxOutputTokens:900}})})
+    :await fetch(provider!.url,{method:"POST",headers:{"Authorization":"Bearer "+provider!.key,"Content-Type":"application/json"},signal:controller.signal,redirect:"error",body:JSON.stringify({model:provider!.model,instructions:"Ты соучастник сферы Автор EGG. Анализируй предоставленный рисунок и пометки как предварительный замысел. Различай наблюдаемое и гипотезы. Не придумывай размеры и материалы. Отвечай на русском кратко, конкретно и без навязывания формы. Не утверждай, что видишь изображение, если оно не передано.",input:[{role:"user",content}],max_output_tokens:750,store:false})});
    if(!response.ok){
     // Capture only bounded, machine-readable provider error identifiers; never log
     // provider messages, request content, tokens, or user images.
@@ -63,12 +72,12 @@ export default async function handler(req:Req,res:ServerResponse){
      const safe=(value:unknown)=>typeof value==="string"&&/^[a-zA-Z0-9_.-]{1,80}$/.test(value)?value:"unknown";
      providerCode=safe(raw?.error?.code);providerType=safe(raw?.error?.type);
     }catch{/* Provider may not return JSON. */}
-    console.error("egg_author_ai_provider_failure",{status:response.status,kind:provider.kind,model:provider.model,providerCode,providerType});
+    console.error("egg_author_ai_provider_failure",{status:response.status,kind:geminiKey?"gemini":provider!.kind,model:geminiKey?geminiModel:provider!.model,providerCode,providerType});
     const code=response.status===429?"ai_rate_limited":response.status===402?"ai_budget_exhausted":response.status===401||response.status===403?"ai_model_not_authorized":response.status===404||response.status===400?"ai_model_or_request_unsupported":"ai_request_failed";
     return send(res,response.status===429?429:502,{error:code,providerStatus:response.status,providerCode,providerType});
    }
    const data=await response.json() as {output?:Array<{type?:string;content?:Array<{type?:string;text?:string}>}>};
-   const answer=data.output?.flatMap(o=>o.content??[]).filter(x=>x.type==="output_text").map(x=>x.text??"").join("")??"";
+   const answer=geminiKey?(data as any).candidates?.[0]?.content?.parts?.map((p:any)=>p.text??"").join("")??"":data.output?.flatMap(o=>o.content??[]).filter(x=>x.type==="output_text").map(x=>x.text??"").join("")??"";
    if(!answer)return send(res,502,{error:"empty_ai_answer"});return send(res,200,{ok:true,answer,hasImage:!!image});
   }finally{clearTimeout(timeout);}
  }catch(e){return send(res,String(e).includes("too_large")?413:500,{error:String(e).includes("too_large")?"too_large":"internal_error"});}
