@@ -22,9 +22,9 @@ const states:Record<Concept["status"],string>={
   revision_requested:"Возвращена на доработку",rejected:"Отклонена",
 };
 
-export default function EggIdeaWorkshop({projectId,seed,concepts,tasks,files,revision,level,iteration,onSaved}:{
+export default function EggIdeaWorkshop({projectId,seed,concepts,tasks,files,revision,level,iteration,onSaved,allowDecision=true}:{
   projectId:string;seed:string;concepts:Concept[];tasks:Task[];files:AttachedFile[];
-  revision:number;level:number;iteration:number;onSaved:()=>void;
+  revision:number;level:number;iteration:number;onSaved:()=>void;allowDecision?:boolean;
 }){
   const accepted=[...concepts].reverse().find(c=>c.status==="accepted");
   const pending=concepts.find(c=>c.status==="proposed");
@@ -121,7 +121,7 @@ export default function EggIdeaWorkshop({projectId,seed,concepts,tasks,files,rev
        })}
      </div>
    </div>}
-   {pending&&<div className="space-y-3 rounded-lg border border-amber-600/30 p-3">
+   {pending&&allowDecision&&<div className="space-y-3 rounded-lg border border-amber-600/30 p-3">
      <div className="flex flex-wrap items-center justify-between">
        <h4 className="text-sm font-medium">Концепция на рассмотрении</h4>
        <span className="text-xs text-foreground/65">{pending.proposedBy==="ai"?"Предложение AI":"Черновик Автора"}</span>
