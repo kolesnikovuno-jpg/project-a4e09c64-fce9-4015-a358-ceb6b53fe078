@@ -33,7 +33,7 @@ export default async function handler(req:Req,res:ServerResponse){
   if(input?.action!=="discuss"||typeof input.question!=="string"||input.question.length>2000||!input.question.trim())return send(res,400,{error:"invalid_question"});
   const {data:stored,error:readError}=await db.from("egg_author_canvases").select("board").eq("project_id",projectId).maybeSingle();
   if(readError)return send(res,503,{error:"database_unavailable"});
-  const board=stored?.board as {idea?:string;strokes?:unknown[];pins?:Array<{text:string}>;photos?:Array<{src:string;name:string}>}|undefined;
+  const board=(input.board??stored?.board) as {idea?:string;strokes?:unknown[];pins?:Array<{text:string}>;photos?:Array<{src:string;name:string}>}|undefined;
   if(!board)return send(res,409,{error:"save_board_first"});
   const provider=providerFromEnv(process.env,req.headers["x-vercel-oidc-token"]);if(!provider)return send(res,503,{error:"ai_provider_not_configured"});
   const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),35000);
