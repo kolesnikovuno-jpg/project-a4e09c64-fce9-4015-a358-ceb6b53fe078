@@ -27,20 +27,6 @@ export default async function handler(req:Req,res:ServerResponse){
      const response=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=100",{headers:{"x-goog-api-key":geminiKey},signal:controller.signal,redirect:"error"});
      const data=await response.json() as {models?:Array<{name?:string;supportedGenerationMethods?:string[]}>};
      const models=(data.models??[]).filter(m=>m.supportedGenerationMethods?.includes("generateContent")).map(m=>m.name?.replace(/^models\//,"")).filter(Boolean);
-     if(url.searchParams.get("probe")==="text"){
-      const model=process.env.EGG_AUTHOR_GEMINI_MODEL?.trim()||"gemini-2.5-flash";
-      const probe=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{
-       method:"POST",headers:{"x-goog-api-key":geminiKey,"Content-Type":"application/json"},signal:controller.signal,redirect:"error",
-       body:JSON.stringify({contents:[{role:"user",parts:[{text:"Ответь одним словом: готово"}]}],generationConfig:{maxOutputTokens:30}})});
-      const result=await probe.json() as {error?:{code?:number;status?:string;message?:string};candidates?:Array<{content?:{parts?:Array<{text?:string}>}}>}};
-      const providerMessage=typeof result.error?.message==="string"?result.error.message:"";
-      const reason=/not found for API version|not supported for generateContent/i.test(providerMessage)?"model_api_incompatible"
-       :/not found|does not exist/i.test(providerMessage)?"model_not_found"
-       :/API key|permission|access denied/i.test(providerMessage)?"api_access_denied"
-       :/location|region|country/i.test(providerMessage)?"region_restriction"
-       :/quota|billing|limit/i.test(providerMessage)?"quota_or_billing":"unclassified";
-      return send(res,200,{ok:probe.ok,phase:"text_generation",model,httpStatus:probe.status,providerStatus:result.error?.status??null,reason,hasAnswer:!!result.candidates?.[0]?.content?.parts?.some(p=>p.text),environment:process.env.VERCEL_ENV??"unknown"});
-     }
      return send(res,200,{ok:response.ok,httpStatus:response.status,providerKind:"gemini",configuredModel:process.env.EGG_AUTHOR_GEMINI_MODEL?.trim()||"gemini-2.5-flash",availableModels:models.slice(0,30),environment:process.env.VERCEL_ENV??"unknown"});
     }catch{return send(res,502,{ok:false,error:"gemini_model_discovery_failed"});}
     finally{clearTimeout(timer);}
