@@ -161,27 +161,18 @@ export default function EggFlowCyclePanel({
   return <section className="rounded-xl border border-foreground/15 p-4 sm:p-5"
     data-testid="egg-flow-cycle" aria-label="Два постоянных потока и цикл EGG">
     <div className="flex flex-wrap items-baseline justify-between gap-2">
-      <h3 className="text-sm font-medium">EGG · два постоянных потока</h3>
+      <h3 className="text-sm font-medium">Цикл ИИ · восемь сфер → Желток</h3>
       <span className="text-xs text-foreground/60">
         {cycle?"Уровень "+cycle.level+"/5 · итерация "+cycle.iteration:"5 уровней · Идея / Материя"}
       </span>
     </div>
-    <p className="mt-2 text-xs leading-relaxed text-foreground/65">
-      Маршрут не меняется. Сферы с актуальной задачей работают; остальные фиксируют транзит,
-      сохраняя предыдущие результаты. Обе ветви сходятся в Желтке. Автор рассматривает
-      целостный результат после синтеза, а не каждый отдельный вывод.
-    </p>
     {!cycle&&<p className="mt-3 text-xs text-foreground/65">
       Новый потоковый цикл ещё не запускался. Старые записи и документы остаются в памяти проекта.
     </p>}
     {authorControls&&(canStart||canRunAI||aiBusy)&&<div className="mt-4 space-y-3 rounded-lg border border-foreground/25 p-3 sm:p-4"
       data-testid="egg-ai-flow-controls">
       <h4 className="text-sm font-medium">Первый запуск · восемь сфер → Желток</h4>
-      <p className="text-xs text-foreground/70">Один запуск ИИ проводит сферы по двум установленным потокам,
-        затем создаёт черновой анализ Желтка. Перед началом выполняется один небольшой платный
-        запрос для проверки доступа к модели — при ошибке проект не изменяется.
-        Далее тексты проекта передаются внешней модели; вызовы тарифицируются провайдером.
-        Решение Автора не принимается автоматически.</p>
+      <p className="text-xs text-foreground/70">Перед запуском проверяется доступ к модели. Решение по результату остаётся за Автором.</p>
       {(canStart||canRunAI)&&!aiBusy&&<button type="button"
         disabled={busy} onClick={()=>void runAICycle(Boolean(canStart))}
         className="w-full rounded-lg bg-foreground px-4 py-3 text-sm font-medium text-background disabled:opacity-40 sm:w-auto"
@@ -195,6 +186,7 @@ export default function EggFlowCyclePanel({
         className="text-xs leading-relaxed text-foreground/65">{aiMessage}
         {aiBusy?" · шагов сохранено: "+aiProgress:""}</p>}
     </div>}
+    <details className="mt-4 rounded-lg border border-foreground/10 p-3"><summary className="cursor-pointer text-xs font-medium">Подробности · восемь сфер и состояние Желтка</summary>
     <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-4">
       {(["first","second"] as EggFlowBranch[]).map(branch=><div key={branch}
         className="rounded-lg border border-foreground/10 p-2 sm:p-3">
@@ -313,6 +305,7 @@ export default function EggFlowCyclePanel({
          </div>}
        </div>}
     </div>
+    </details>
     {canStart&&<details className="mt-4 rounded-lg border border-foreground/10 p-3">
       <summary className="cursor-pointer text-xs text-foreground/65">Ручной режим · без автоматического выполнения сфер</summary>
       <button type="button" disabled={busy||aiBusy} onClick={()=>void send("start_flow_cycle")}
