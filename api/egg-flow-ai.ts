@@ -75,7 +75,7 @@ export function providerFromEnv(env:NodeJS.ProcessEnv,oidcHeader?:string|string[
   if(geminiKey)return {
     url:"https://generativelanguage.googleapis.com/v1beta/models/",
     key:geminiKey,kind:"direct_gemini",
-    model:env.EGG_GEMINI_MODEL?.trim()||"gemini-2.5-flash",
+    model:env.EGG_GEMINI_MODEL?.trim()||"gemini-3.5-flash",
   };
   const injected=typeof oidcHeader==="string"?oidcHeader.trim():"";
   const oidc=(env.VERCEL&&injected)||env.VERCEL_OIDC_TOKEN?.trim();
