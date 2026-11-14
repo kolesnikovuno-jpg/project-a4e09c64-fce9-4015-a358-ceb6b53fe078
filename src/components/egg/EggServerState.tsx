@@ -74,7 +74,26 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
     {status && <p role="status" className="text-sm text-foreground/70">{status}</p>}
     {status.includes("Войдите") && <Link to={"/egg/connect?returnProject="+encodeURIComponent(id)+"&start="+encodeURIComponent(activeSphere||"author")} className="mt-3 mr-2 inline-flex rounded-full bg-foreground px-4 py-2 text-xs text-background">Войти и вернуться к проекту</Link>}
     {status && <Link to="/egg/demo" className="mt-3 inline-flex rounded-full border border-foreground/25 px-4 py-2 text-xs">Посмотреть демонстрацию без регистрации</Link>}
-    {project && <div className="space-y-2">
+    {project && activeSphere==="author" && <div className="space-y-3" data-testid="egg-author-canvas-view">
+      <EggAuthorCanvas projectId={project.id} seed={project.seed.text} revision={revision ?? 0} onSaved={() => setRefreshKey(v => v + 1)} />
+      <details className="rounded-lg border border-foreground/15 p-3" data-testid="egg-author-tools">
+        <summary className="cursor-pointer text-sm font-medium">Управление проектом · Концепт / цикл / история</summary>
+        <div className="mt-3 space-y-3">
+          <p className="text-xs text-foreground/65">Ревизия {revision}{lastUpdated ? " · Обновлено " + lastUpdated : ""}</p>
+          <button type="button" className="rounded-full border border-foreground/30 px-3 py-2 text-xs" onClick={() => onSelectSphere("idea")}>Открыть сферу «Концепт» · ДНК</button>
+          {!project.seed.text.trim() && revision !== null && <EggSeedStart projectId={project.id} revision={revision} proposal={project.seedProposal?.text} onSaved={() => setRefreshKey(v => v + 1)} />}
+          {project.seed.text.trim() && revision !== null && <EggIdeaWorkshop projectId={project.id} seed={project.seed.text} concepts={project.concepts??[]} tasks={project.tasks} files={project.artifacts??[]} revision={revision} level={project.level} iteration={project.iteration} onSaved={() => setRefreshKey(v => v + 1)} allowDecision={true} />}
+          <EggFlowCyclePanel project={project} revision={revision} authorControls={true} onSaved={() => setRefreshKey(v => v + 1)} />
+          <details className="rounded-lg border border-foreground/10 p-3">
+            <summary className="cursor-pointer text-xs">Архив и служебные сведения</summary>
+            <EggProjectOverview project={project} activeSphere={activeSphere} onSelectSphere={onSelectSphere} />
+            <EggYolkMonitor project={project} />
+            <EggDocumentationPanel project={project} revision={revision} origin="author" />
+          </details>
+        </div>
+      </details>
+    </div>}
+    {project && activeSphere!=="author" && <div className="space-y-2">
       <p className="text-sm font-medium">{project.title || "Проект EGG"}</p>
       {project.seed.text.trim() ? <details className="rounded-lg border border-foreground/10 p-3"><summary className="cursor-pointer text-xs text-foreground/75">Исходная идея Автора</summary><p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground/75">{project.seed.text}</p></details> : <p className="text-sm text-foreground/70">Исходная идея ещё не сформирована</p>}
       {activeSphere==="author" && revision !== null && <EggAuthorCanvas projectId={project.id} seed={project.seed.text} revision={revision} onSaved={() => setRefreshKey(value => value + 1)} />}
