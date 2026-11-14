@@ -66,7 +66,7 @@ export default async function handler(req:Req,res:ServerResponse){
    const image=typeof input.image==="string"&&/^data:image\/(png|jpeg|webp);base64,/.test(input.image)&&input.image.length<900000?input.image:null;
    const text="Идея: "+String(board.idea??"").slice(0,10000)+"\nПометки: "+JSON.stringify((board.pins??[]).slice(0,100))+"\nРеференсы: "+JSON.stringify((board.photos??[]).map(p=>p.name).slice(0,30))+"\nВопрос Автора: "+input.question;
    const content:any[]=[{type:"input_text",text}];if(image)content.push({type:"input_image",image_url:image});
-   const geminiModel=process.env.EGG_AUTHOR_GEMINI_MODEL?.trim()||"gemini-2.5-flash";
+   const geminiModel=process.env.EGG_AUTHOR_GEMINI_MODEL?.trim()||"gemini-3-flash-preview";
    const geminiContents:any[]=[{text}];
    if(image){const match=/^data:image\/(png|jpeg|webp);base64,(.+)$/.exec(image);if(match)geminiContents.push({inline_data:{mime_type:"image/"+match[1],data:match[2]}});}
    const geminiRequest=(model:string)=>fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{
@@ -78,8 +78,8 @@ export default async function handler(req:Req,res:ServerResponse){
     :await fetch(provider!.url,{method:"POST",headers:{"Authorization":"Bearer "+provider!.key,"Content-Type":"application/json"},signal:controller.signal,redirect:"error",body:JSON.stringify({model:provider!.model,instructions:"Ты соучастник сферы Автор EGG. Анализируй предоставленный рисунок и пометки как предварительный замысел. Различай наблюдаемое и гипотезы. Не придумывай размеры и материалы. Отвечай на русском кратко, конкретно и без навязывания формы. Не утверждай, что видишь изображение, если оно не передано.",input:[{role:"user",content}],max_output_tokens:750,store:false})});
    // A model may be listed but unavailable for generation under this key.
    // Retry once on a distinct low-cost multimodal model, only for a 404.
-   if(geminiKey&&response.status===404&&geminiModel!=="gemini-2.5-flash-lite"){
-    activeModel="gemini-2.5-flash-lite";
+   if(geminiKey&&response.status===404&&geminiModel!=="gemini-2.5-flash"){
+    activeModel="gemini-2.5-flash";
     response=await geminiRequest(activeModel);
    }
    if(!response.ok){
