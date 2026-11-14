@@ -148,9 +148,9 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
         level={project.level} iteration={project.iteration} />}
       <div className="space-y-3">{project.tasks.filter(task => isSphere && task.sphere === activeSphere).map(task => <div key={task.id} className="rounded-lg border border-foreground/10 p-3 sm:p-4"><p className="text-sm font-medium">{task.sphere} · {task.status}</p><p className="mt-1 text-xs text-foreground/70">{task.question}</p>{task.findings.map(finding => <p key={finding.id} className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed"><span className="text-foreground/50">{finding.evidence}:</span> {finding.text}</p>)}{task.decisions.length > 0 && <p className="mt-2 text-xs">Решений Автора: {task.decisions.length}</p>}{!(project.flowCycles?.length) && task.status === "returned" && revision !== null && <EggAuthorDecision projectId={project.id} revision={revision} taskId={task.id} onSaved={() => setRefreshKey(value => value + 1)} />}</div>)}</div>
     </div>}
-    {project && <EggProjectChat projectId={project.id} activeSphere={activeSphere} />}
-    {project && (!isSphere || activeSphere === "author") && <EggInviteAuthor projectId={project.id} />}
+    {project && activeSphere!=="author" && <EggProjectChat projectId={project.id} activeSphere={activeSphere} />}
+    {project && activeSphere!=="author" && !isSphere && <EggInviteAuthor projectId={project.id} />}
     {project && activeSphere && !["author", "idea", "matter"].includes(activeSphere) && !project.tasks.some(task => task.sphere === activeSphere) && <p className="mt-2 text-xs text-foreground/60">В этой сфере пока нет серверных задач.</p>}
-    <p className="mt-3 text-xs text-foreground/55">Серверные результаты синхронизируются с EGG Engine. Визуальная модель и локальные черновики пока сохраняются отдельно.</p>
+    {activeSphere!=="author"&&<p className="mt-3 text-xs text-foreground/55">Серверные результаты синхронизируются с EGG Engine.</p>}
   </section>;
 }
