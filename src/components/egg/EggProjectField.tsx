@@ -32,7 +32,7 @@ export default function EggProjectField({projectId,children}:{projectId:string;c
  const g=gesture.current;if(!g)return;const dx=x-g.x,dy=y-g.y;
  if(g.kind==="pan")setPan({x:g.px+dx,y:g.py+dy});
  else setItems(v=>v.map(item=>item.id===g.id?{...item,x:item.x+dx/zoom,y:item.y+dy/zoom}:item));if(g.kind==="item"){g.x=x;g.y=y;}}
- function up(){if(drawing&&drawing.length>1){const p=drawing;add("sketch","Скетч",undefined,p);}setDrawing(null);gesture.current=null;}
+ function up(){if(drawing&&drawing.length>1){const p=drawing;const minX=Math.min(...p.map(q=>q.x)),minY=Math.min(...p.map(q=>q.y));setItems(v=>[...v,{id:id(),type:"sketch",x:minX,y:minY,text:"Скетч",points:p.map(q=>({x:q.x-minX,y:q.y-minY}))}]);}setDrawing(null);gesture.current=null;}
  const c=center();
  return <section className="relative mt-3 overflow-hidden rounded-2xl border border-foreground/15 bg-background" aria-label="Пространство проекта EGG">
   <div className="absolute left-3 top-3 z-30 flex flex-wrap items-center gap-2 rounded-2xl border border-foreground/15 bg-background/95 p-2 shadow-sm">
@@ -61,7 +61,7 @@ export default function EggProjectField({projectId,children}:{projectId:string;c
     <div className="absolute" style={{width:900,height:620,left:-450,top:-310,transform:`scale(${eggScale})`,transformOrigin:"center center"}}>{children}</div>
     {items.map(item=><div key={item.id} data-field-item={item.id} className="absolute w-[190px] cursor-grab rounded-xl border border-foreground/20 bg-background/95 p-3 shadow-md active:cursor-grabbing" style={{left:item.x,top:item.y}}>
      <div className="mb-1 flex items-center justify-between"><span className="text-[10px] uppercase tracking-wider text-foreground/50">{item.type==="thought"?"Мысль":item.type==="image"?"Образ":item.type==="link"?"Ссылка":"Скетч"}</span><button type="button" aria-label="Удалить элемент" className="text-xs text-foreground/60" onClick={()=>setItems(v=>v.filter(x=>x.id!==item.id))}>×</button></div>
-     {item.src?<img src={item.src} alt={item.text} className="max-h-40 w-full object-contain"/>:item.points?<svg viewBox="0 0 200 140" className="w-full" aria-label="Скетч"><polyline points={item.points.map(p=>`${p.x-item.x+50},${p.y-item.y+30}`).join(" ")} fill="none" stroke="currentColor" strokeWidth="2"/></svg>:item.type==="link"?<a href={/^https?:\/\//.test(item.text)?item.text:undefined} target="_blank" rel="noopener noreferrer" className="break-all text-xs underline">{item.text}</a>:<p className="whitespace-pre-wrap break-words text-sm">{item.text}</p>}
+     {item.src?<img src={item.src} alt={item.text} className="max-h-40 w-full object-contain"/>:item.points?<svg viewBox={`0 0 ${Math.max(1,...item.points.map(p=>p.x))+4} ${Math.max(1,...item.points.map(p=>p.y))+4}`} className="w-full" aria-label="Скетч"><polyline points={item.points.map(p=>`${p.x},${p.y}`).join(" ")} fill="none" stroke="currentColor" strokeWidth="2"/></svg>:item.type==="link"?<a href={/^https?:\/\//.test(item.text)?item.text:undefined} target="_blank" rel="noopener noreferrer" className="break-all text-xs underline">{item.text}</a>:<p className="whitespace-pre-wrap break-words text-sm">{item.text}</p>}
     </div>)}
     {drawing&&<svg className="pointer-events-none absolute overflow-visible" width="1" height="1"><polyline points={drawing.map(p=>`${p.x},${p.y}`).join(" ")} fill="none" stroke="currentColor" strokeWidth="2"/></svg>}
    </div>
