@@ -16,6 +16,7 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
   const { locale, localePath } = useLocale();
   const [params] = useSearchParams();
   const hasProject = Boolean(params.get("project"));
+  const fieldMode = eggBrand && hasProject;
   const [activeSphere, setActiveSphere] = useState<string | null>(null);
   const [selectedWorkSphere, setSelectedWorkSphere] = useState<SphereId | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
@@ -39,21 +40,24 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
   }, [panelOpen]);
   return (
     <div
-      className="min-h-screen bg-background font-body text-foreground"
-      style={{
+      className={fieldMode ? "h-[100dvh] w-full overflow-hidden bg-background font-body text-foreground" : "min-h-screen bg-background font-body text-foreground"}
+      style={fieldMode ? undefined : {
         paddingTop: "max(2.25rem, env(safe-area-inset-top))",
         paddingBottom: "max(2rem, calc(env(safe-area-inset-bottom) + 1rem))",
         paddingLeft: "max(1.25rem, env(safe-area-inset-left))",
         paddingRight: "max(1.25rem, env(safe-area-inset-right))",
       }}
     >
-      <LanguageSwitcher />
-      <main className="mx-auto w-full max-w-[1060px]">
-        <header className="flex items-center justify-between pb-4 pr-2">
-          <h1 className="text-[25px] font-extralight leading-none tracking-[-0.04em] text-foreground/85 sm:text-[28px]">
+      {!fieldMode && <LanguageSwitcher />}
+      <main className={fieldMode ? "relative h-full w-full" : "mx-auto w-full max-w-[1060px]"}>
+        <header className={fieldMode ? "pointer-events-none absolute inset-x-0 top-0 z-50 flex items-center justify-between px-5 pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-8" : "flex items-center justify-between pb-4 pr-2"}>
+          <h1 className="pointer-events-auto text-[25px] font-extralight leading-none tracking-[-0.04em] text-foreground/85 sm:text-[28px]">
             {eggBrand ? "EGG" : <>UNO<span className="font-extralight">calc</span></>}
           </h1>
-          <nav className="flex items-center gap-4 sm:gap-7">
+          {fieldMode ? <nav className="pointer-events-auto flex items-center gap-2">
+            <button type="button" onClick={() => { setActiveSphere("author"); setPanelOpen(true); }} className="rounded-full border border-foreground/10 bg-background/90 px-3 py-2 text-xs text-foreground/75 shadow-sm" data-testid="egg-open-concept">Автор</button>
+            <button type="button" onClick={() => { setActiveSphere(null); setPanelOpen(true); }} className="rounded-full border border-foreground/10 bg-background/90 px-3 py-2 text-xs text-foreground/75 shadow-sm">Проект</button>
+          </nav> : <nav className="flex items-center gap-4 sm:gap-7">
             {eggBrand && <Link to={"/egg/yolk" + (hasProject ? "?project=" + encodeURIComponent(params.get("project") || "") : "")} className="text-[12px] text-foreground/70 hover:text-primary">Желток · 3D</Link>}
             {eggBrand && <Link to="/egg/connect" className="text-[12px] text-foreground/70 hover:text-primary">{({ ru: "Аккаунт", uk: "Акаунт", en: "Account" } as const)[locale]}</Link>}
             <Link to={localePath("/unocalc/model")}
@@ -64,12 +68,12 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
               className="inline-flex min-h-9 items-center text-[12px] tracking-[0.12em] text-foreground/80 transition-colors hover:text-primary">
               .uno
             </Link>
-          </nav>
+          </nav>}
         </header>
-        <section className="mt-3" aria-label={eggBrand ? "EGG — interactive project workspace" : "UNOcalc — egg geometry"}>
+        <section className={fieldMode ? "absolute inset-0" : "mt-3"} aria-label={eggBrand ? "EGG — interactive project workspace" : "UNOcalc — egg geometry"}>
           {eggBrand && hasProject ? <EggProjectField projectId={params.get("project") || ""}><UnoEggScene locale={locale} onSphereOpen={(sphere) => setSelectedWorkSphere(sphere as SphereId)} /></EggProjectField> : <UnoEggScene locale={locale} onSphereOpen={eggBrand ? (sphere) => setSelectedWorkSphere(sphere as SphereId) : undefined} />}
         </section>
-        {eggBrand && <div className="flex flex-wrap items-center justify-center gap-3 py-5">
+        {eggBrand && !fieldMode && <div className="flex flex-wrap items-center justify-center gap-3 py-5">
           {hasProject && <button type="button" onClick={() => { setActiveSphere("author"); setPanelOpen(true); }} className="rounded-full bg-foreground px-5 py-3 text-sm text-background" data-testid="egg-open-concept">Автор · решение по ДНК</button>}
           <button type="button" onClick={() => { setActiveSphere(null); setPanelOpen(true); }} className="rounded-full border border-foreground/30 px-5 py-3 text-sm text-foreground/80">{hasProject ? "Открыть проект и результаты сфер" : "Познакомиться с EGG"}</button>
           <span className="text-xs text-foreground/50">Сферы открывают исходные боковые панели; обзор проекта доступен отдельно</span>
