@@ -47,7 +47,7 @@ const discoveredQuestion=z.object({
 }).strict();
 export const automatedSphereOutputSchema=z.object({
   text:z.string().trim().min(8).max(6000),
-  evidence:z.enum(["hypothesis","question"]),
+  evidence:z.enum(["hypothesis","question"]).catch("hypothesis"),
   sourceRefs:z.array(z.string()).max(0).optional(),
   discoveredQuestions:z.array(discoveredQuestion).max(6).optional(),
 }).strict();
@@ -63,6 +63,7 @@ export function buildEggAutomationPrompt(project:EggProject,step:EggAutomationSt
         "Keep a single evolving recommendation about the existing concept, never generate three alternatives.",
         "Use short Russian language and distinguish assumptions from evidence.",
         "Return ONLY a compact JSON object: {\"text\":\"at least 8 chars\",\"evidence\":\"hypothesis|question\",\"discoveredQuestions\":[{\"domain\":\"...\",\"question\":\"at least 8 chars\",\"basis\":\"...\"}]}.",
+        "Evidence MUST be exactly the string hypothesis or question; NEVER use fact, analysis, observation, confirmed, or any other label.",
         "Do not include any additional fields, sourceRefs, legalSimilarity or external searches.",
       ].join("\n"),
       input:brief.input,
