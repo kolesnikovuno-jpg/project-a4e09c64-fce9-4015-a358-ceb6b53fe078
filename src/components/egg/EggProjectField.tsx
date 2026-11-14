@@ -1,71 +1,266 @@
 import { useEffect, useRef, useState } from "react";
-import type { ReactNode, PointerEvent as ReactPointerEvent } from "react";
+import type { ReactNode, PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from "react";
+import { Eraser, Image as ImageIcon, Link2, Maximize2, Mic, Minus, Move, Pencil, Plus, RotateCcw, RotateCw, Video, X } from "lucide-react";
 
-type Item={id:string;type:"thought"|"link"|"image"|"sketch";x:number;y:number;text:string;src?:string;points?:{x:number;y:number}[]};
-const id=()=>Math.random().toString(36).slice(2);
+type Point = { x:number; y:number };
+type Item = { id:string; type:"thought"|"link"|"image"|"sketch"|"video"; x:number; y:number; text:string; src?:string; points?:Point[]; color?:string; strokeWidth?:number; mediaId?:string };
+type Tool = "thought"|"link"|"sketch"|"eraser"|null;
+type SpeechResult = { results:ArrayLike<ArrayLike<{transcript:string}>> };
+type Recognition = { lang:string; interimResults:boolean; onresult:((event:SpeechResult)=>void)|null; onerror:(()=>void)|null; onend:(()=>void)|null; start:()=>void; stop:()=>void };
+const uid=()=>Math.random().toString(36).slice(2);
+const clamp=(n:number,min:number,max:number)=>Math.max(min,Math.min(max,n));
+const colors=["#272727","#7B7B7B","#B54E47","#D09A43","#528468","#547DA8","#8D689D"];
+
+function openMediaDb():Promise<IDBDatabase>{
+ return new Promise((resolve,reject)=>{
+  if(!("indexedDB" in window)){reject(new Error("no_indexed_db"));return;}
+  const request=indexedDB.open("egg-project-field-media-v1",1);
+  request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains("videos"))request.result.createObjectStore("videos");};
+  request.onsuccess=()=>resolve(request.result);
+  request.onerror=()=>reject(request.error);
+ });
+}
+async function storeVideo(key:string,file:File){
+ const db=await openMediaDb();
+ try{await new Promise<void>((resolve,reject)=>{const tx=db.transaction("videos","readwrite");tx.objectStore("videos").put(file,key);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);});}
+ finally{db.close();}
+}
+async function readVideo(key:string):Promise<Blob|null>{
+ const db=await openMediaDb();
+ try{return await new Promise<Blob|null>((resolve,reject)=>{const req=db.transaction("videos","readonly").objectStore("videos").get(key);req.onsuccess=()=>resolve(req.result instanceof Blob?req.result:null);req.onerror=()=>reject(req.error);});}
+ finally{db.close();}
+}
+
 export default function EggProjectField({projectId,children}:{projectId:string;children:ReactNode}){
  const key="egg:project-field:v1:"+projectId;
  const [items,setItems]=useState<Item[]>([]);
  const [ready,setReady]=useState(false);
- const [tool,setTool]=useState<"thought"|"link"|"sketch"|null>(null);
+ const [tool,setTool]=useState<Tool>(null);
  const [entry,setEntry]=useState("");
  const [zoom,setZoom]=useState(1);
- const [pan,setPan]=useState({x:0,y:0});
+ const [pan,setPan]=useState<Point>({x:0,y:0});
  const [eggScale,setEggScale]=useState(.8);
- const [drawing,setDrawing]=useState<{x:number;y:number}[]|null>(null);
+ const [eggControls,setEggControls]=useState(false);
+ const [drawing,setDrawing]=useState<Point[]|null>(null);
+ const [sketchColor,setSketchColor]=useState(colors[0]);
+ const [sketchWidth,setSketchWidth]=useState(1);
+ const [openId,setOpenId]=useState<string|null>(null);
+ const [notice,setNotice]=useState("");
+ const [listening,setListening]=useState(false);
+ const [videoUrls,setVideoUrls]=useState<Record<string,string>>({});
  const gesture=useRef<{kind:"pan"|"item";id?:string;x:number;y:number;px:number;py:number}|null>(null);
- const input=useRef<HTMLInputElement>(null);
+ const pointers=useRef(new Map<number,Point>());
+ const pinch=useRef<{distance:number;zoom:number;pan:Point;world:Point}|null>(null);
+ const eggPointers=useRef(new Map<number,Point>());
+ const eggPinch=useRef<{distance:number;scale:number}|null>(null);
+ const undoStack=useRef<Item[][]>([]);
+ const redoStack=useRef<Item[][]>([]);
+ const recognition=useRef<Recognition|null>(null);
+ const imageInput=useRef<HTMLInputElement>(null);
  const camera=useRef<HTMLInputElement>(null);
+ const videoInput=useRef<HTMLInputElement>(null);
  const field=useRef<HTMLDivElement>(null);
- useEffect(()=>{setReady(false);try{const raw=localStorage.getItem(key);setItems(raw?JSON.parse(raw):[]);}catch{setItems([]);}setPan({x:0,y:0});setReady(true);},[key]);
- useEffect(()=>{if(ready)try{localStorage.setItem(key,JSON.stringify(items));}catch{/* storage full */}},[items,key,ready]);
- const center=()=>({x:(field.current?.clientWidth||700)/2,y:(field.current?.clientHeight||650)/2});
+ const videoKeys=items.filter(item=>item.type==="video"&&item.mediaId).map(item=>item.mediaId).join("|");
+
+ useEffect(()=>{
+  setReady(false);
+  try{const raw=localStorage.getItem(key);const saved=raw?JSON.parse(raw):[];setItems(Array.isArray(saved)?saved:[]);}
+  catch{setItems([]);}
+  undoStack.current=[];redoStack.current=[];setPan({x:0,y:0});setZoom(1);setReady(true);
+ },[key]);
+ useEffect(()=>{if(ready)try{localStorage.setItem(key,JSON.stringify(items));}catch{setNotice("Место для сохранения заполнено. Некоторые изменения могут не сохраниться.");}},[items,key,ready]);
+ useEffect(()=>{
+  let active=true;const urls:string[]=[];
+  void (async()=>{const next:Record<string,string>={};for(const mediaId of videoKeys.split("|").filter(Boolean)){
+   try{const blob=await readVideo(mediaId);if(blob){const url=URL.createObjectURL(blob);urls.push(url);next[mediaId]=url;}}catch{/* unavailable locally */}
+  }if(active)setVideoUrls(next);else urls.forEach(url=>URL.revokeObjectURL(url));})();
+  return()=>{active=false;urls.forEach(url=>URL.revokeObjectURL(url));};
+ },[videoKeys]);
+ useEffect(()=>()=>{recognition.current?.stop();},[]);
+ const center=()=>({x:(field.current?.clientWidth||window.innerWidth)/2,y:(field.current?.clientHeight||window.innerHeight)/2});
  const world=(x:number,y:number)=>{const c=center();return{x:(x-c.x-pan.x)/zoom,y:(y-c.y-pan.y)/zoom};};
- const add=(type:Item["type"],text:string,src?:string,points?:Item["points"])=>setItems(v=>[...v,{id:id(),type,x:120+(v.length%4)*55,y:30+(v.length%5)*65,text,src,points}]);
+ const change=(fn:(previous:Item[])=>Item[])=>setItems(previous=>{undoStack.current.push(previous);if(undoStack.current.length>50)undoStack.current.shift();redoStack.current=[];return fn(previous);});
+ const add=(type:Item["type"],text:string,src?:string,points?:Point[],mediaId?:string)=>{
+  change(previous=>[...previous,{id:uid(),type,x:310+(previous.length%3)*38,y:-210+(previous.length%6)*75,text,src,points,mediaId}]);
+ };
  const commit=()=>{if(!entry.trim())return;add(tool==="link"?"link":"thought",entry.trim());setEntry("");setTool(null);};
- async function images(files:FileList|null){if(!files)return;for(const f of Array.from(files).slice(0,5)){if(!f.type.startsWith("image/"))continue;try{const img=new Image();img.src=URL.createObjectURL(f);await img.decode();const cv=document.createElement("canvas");const ratio=Math.min(1,850/Math.max(img.width,img.height));cv.width=Math.max(1,Math.round(img.width*ratio));cv.height=Math.max(1,Math.round(img.height*ratio));cv.getContext("2d")?.drawImage(img,0,0,cv.width,cv.height);URL.revokeObjectURL(img.src);add("image",f.name,cv.toDataURL("image/jpeg",.7));}catch{/* invalid image */}}}
- function down(e:ReactPointerEvent<HTMLDivElement>){if((e.target as HTMLElement).closest("button,textarea,input,a"))return;const rect=e.currentTarget.getBoundingClientRect();const x=e.clientX-rect.left,y=e.clientY-rect.top;const target=(e.target as HTMLElement).closest("[data-field-item]") as HTMLElement|null;
- if(tool==="sketch"&&!target){setDrawing([world(x,y)]);e.currentTarget.setPointerCapture(e.pointerId);return;}
- gesture.current={kind:target?"item":"pan",id:target?.dataset.fieldItem,x,y,px:pan.x,py:pan.y};e.currentTarget.setPointerCapture(e.pointerId);}
- function move(e:ReactPointerEvent<HTMLDivElement>){const r=e.currentTarget.getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;
- if(drawing){setDrawing(v=>v?[...v,world(x,y)]:null);return;}
- const g=gesture.current;if(!g)return;const dx=x-g.x,dy=y-g.y;
- if(g.kind==="pan")setPan({x:g.px+dx,y:g.py+dy});
- else setItems(v=>v.map(item=>item.id===g.id?{...item,x:item.x+dx/zoom,y:item.y+dy/zoom}:item));if(g.kind==="item"){g.x=x;g.y=y;}}
- function up(){if(drawing&&drawing.length>1){const p=drawing;const minX=Math.min(...p.map(q=>q.x)),minY=Math.min(...p.map(q=>q.y));setItems(v=>[...v,{id:id(),type:"sketch",x:minX,y:minY,text:"Скетч",points:p.map(q=>({x:q.x-minX,y:q.y-minY}))}]);}setDrawing(null);gesture.current=null;}
- const c=center();
- return <section className="relative mt-3 overflow-hidden rounded-2xl border border-foreground/15 bg-background" aria-label="Пространство проекта EGG">
-  <div className="absolute left-3 top-3 z-30 flex flex-wrap items-center gap-2 rounded-2xl border border-foreground/15 bg-background/95 p-2 shadow-sm">
-   <button type="button" className="rounded-full bg-foreground px-3 py-2 text-xs text-background" onClick={()=>setTool(v=>v===null?"thought":null)}>＋ Добавить</button>
-   <button type="button" className="rounded-full border px-3 py-2 text-xs" onClick={()=>{setPan({x:0,y:0});setZoom(1)}}>Центр</button>
-   <button type="button" className="rounded-full border px-2 py-2 text-xs" onClick={()=>setZoom(z=>Math.max(.4,z-.15))}>−</button>
-   <span className="text-xs">{Math.round(zoom*100)}%</span>
-   <button type="button" className="rounded-full border px-2 py-2 text-xs" onClick={()=>setZoom(z=>Math.min(2,z+.15))}>＋</button>
-  </div>
-  <div className="absolute right-3 top-3 z-30 rounded-xl border border-foreground/15 bg-background/95 px-3 py-2 text-xs">Яйцо <input aria-label="Размер яйца" type="range" min=".45" max="1.1" step=".05" value={eggScale} onChange={e=>setEggScale(Number(e.target.value))} className="ml-2 w-20 align-middle"/></div>
-  {tool!==null&&<div className="absolute left-3 top-16 z-40 w-[min(330px,calc(100%-24px))] rounded-2xl border border-foreground/20 bg-background p-3 shadow-xl">
-   <div className="mb-3 grid grid-cols-2 gap-2">
-    <button className="rounded-lg border p-2 text-sm" onClick={()=>{setTool("thought");setEntry("")}}>Мысль</button>
-    <button className="rounded-lg border p-2 text-sm" onClick={()=>camera.current?.click()}>Фото</button>
-    <button className="rounded-lg border p-2 text-sm" onClick={()=>{setTool("sketch");setEntry("")}}>Скетч</button>
-    <button className="rounded-lg border p-2 text-sm" onClick={()=>{setTool("link");setEntry("")}}>Ссылка</button>
-    <button className="col-span-2 rounded-lg border p-2 text-sm" onClick={()=>input.current?.click()}>Изображение из файлов</button>
+ const undo=()=>{const previous=undoStack.current.pop();if(!previous)return;redoStack.current.push(items);setItems(previous);};
+ const redo=()=>{const next=redoStack.current.pop();if(!next)return;undoStack.current.push(items);setItems(next);};
+ async function images(files:FileList|null){
+  if(!files)return;
+  for(const file of Array.from(files).slice(0,5)){
+   if(!file.type.startsWith("image/"))continue;
+   let url="";
+   try{
+    const img=new Image();url=URL.createObjectURL(file);img.src=url;await img.decode();
+    const cv=document.createElement("canvas");const ratio=Math.min(1,1200/Math.max(img.width,img.height));
+    cv.width=Math.max(1,Math.round(img.width*ratio));cv.height=Math.max(1,Math.round(img.height*ratio));
+    cv.getContext("2d")?.drawImage(img,0,0,cv.width,cv.height);
+    add("image",file.name,cv.toDataURL("image/jpeg",.75));
+   }catch{setNotice("Изображение не удалось открыть.");}
+   finally{if(url)URL.revokeObjectURL(url);}
+  }
+  setTool(null);
+ }
+ async function videos(files:FileList|null){
+  if(!files)return;
+  for(const file of Array.from(files).slice(0,3)){
+   if(!file.type.startsWith("video/"))continue;
+   if(file.size>35*1024*1024){setNotice("Видео слишком большое. Максимум — 35 МБ.");continue;}
+   try{const mediaId=uid();await storeVideo(mediaId,file);add("video",file.name,undefined,undefined,mediaId);}
+   catch{setNotice("Не удалось сохранить видео в памяти устройства.");}
+  }
+  setTool(null);
+ }
+ function voice(){
+  if(listening){recognition.current?.stop();return;}
+  const w=window as unknown as {SpeechRecognition?:new()=>Recognition;webkitSpeechRecognition?:new()=>Recognition};
+  const Speech=w.SpeechRecognition??w.webkitSpeechRecognition;
+  if(!Speech){setNotice("Распознавание речи недоступно в этом браузере. Используйте диктовку клавиатуры.");return;}
+  try{
+   const speech=new Speech();recognition.current=speech;speech.lang=document.documentElement.lang==="uk"?"uk-UA":document.documentElement.lang==="en"?"en-US":"ru-RU";
+   speech.interimResults=false;
+   speech.onresult=e=>{const transcript=Array.from(e.results).map(result=>result[0]?.transcript||"").join(" ").trim();if(transcript)setEntry(old=>(old.trim()?old.trim()+" ":"")+transcript);};
+   speech.onerror=()=>{setNotice("Не удалось распознать речь. Проверьте доступ к микрофону.");setListening(false);};
+   speech.onend=()=>setListening(false);speech.start();setListening(true);
+  }catch{setNotice("Микрофон или распознавание речи недоступны.");setListening(false);}
+ }
+ const distance=(a:Point,b:Point)=>Math.hypot(a.x-b.x,a.y-b.y);
+ function down(e:ReactPointerEvent<HTMLDivElement>){
+  if((e.target as Element).closest("button,textarea,input,a,[data-no-drag],[data-egg-anchor]"))return;
+  const rect=e.currentTarget.getBoundingClientRect();const x=e.clientX-rect.left,y=e.clientY-rect.top;
+  pointers.current.set(e.pointerId,{x,y});
+  if(pointers.current.size===2){
+   const [a,b]=Array.from(pointers.current.values());const c=center();const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+   pinch.current={distance:Math.max(1,distance(a,b)),zoom,pan,world:{x:(mx-c.x-pan.x)/zoom,y:(my-c.y-pan.y)/zoom}};
+   gesture.current=null;setDrawing(null);return;
+  }
+  const target=(e.target as Element).closest("[data-field-item]") as HTMLElement|null;
+  if(tool==="eraser"&&target){
+   const item=items.find(v=>v.id===target.dataset.fieldItem);
+   if(item?.type==="sketch")change(v=>v.filter(x=>x.id!==item.id));
+   return;
+  }
+  if(tool==="sketch"&&!target){setDrawing([world(x,y)]);e.currentTarget.setPointerCapture(e.pointerId);return;}
+  gesture.current={kind:target?"item":"pan",id:target?.dataset.fieldItem,x,y,px:pan.x,py:pan.y};
+  e.currentTarget.setPointerCapture(e.pointerId);
+ }
+ function move(e:ReactPointerEvent<HTMLDivElement>){
+  const rect=e.currentTarget.getBoundingClientRect();const x=e.clientX-rect.left,y=e.clientY-rect.top;
+  if(pointers.current.has(e.pointerId))pointers.current.set(e.pointerId,{x,y});
+  if(pinch.current&&pointers.current.size>=2){
+   const [a,b]=Array.from(pointers.current.values());const d=pinch.current;const next=clamp(d.zoom*distance(a,b)/d.distance,.25,3);
+   const c=center(),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+   setZoom(next);setPan({x:mx-c.x-d.world.x*next,y:my-c.y-d.world.y*next});return;
+  }
+  if(drawing){setDrawing(previous=>previous?[...previous,world(x,y)]:null);return;}
+  const g=gesture.current;if(!g)return;
+  const dx=x-g.x,dy=y-g.y;
+  if(g.kind==="pan")setPan({x:g.px+dx,y:g.py+dy});
+  else{setItems(previous=>previous.map(item=>item.id===g.id?{...item,x:item.x+dx/zoom,y:item.y+dy/zoom}:item));g.x=x;g.y=y;}
+ }
+ function up(e:ReactPointerEvent<HTMLDivElement>){
+  pointers.current.delete(e.pointerId);
+  if(pinch.current){if(pointers.current.size<2)pinch.current=null;gesture.current=null;setDrawing(null);return;}
+  if(drawing&&drawing.length>1){
+   const points=drawing;const minX=Math.min(...points.map(p=>p.x)),minY=Math.min(...points.map(p=>p.y));
+   change(v=>[...v,{id:uid(),type:"sketch",x:minX,y:minY,text:"Скетч",color:sketchColor,strokeWidth:sketchWidth,points:points.map(p=>({x:p.x-minX,y:p.y-minY}))}]);
+  }
+  setDrawing(null);gesture.current=null;
+ }
+ function wheel(e:ReactWheelEvent<HTMLDivElement>){
+  if((e.target as Element).closest("[data-egg-anchor],[data-field-item]"))return;
+  e.preventDefault();const rect=e.currentTarget.getBoundingClientRect(),c=center();
+  const x=e.clientX-rect.left,y=e.clientY-rect.top;const old=world(x,y);
+  const next=clamp(zoom*(e.deltaY>0?.92:1.08),.25,3);
+  setZoom(next);setPan({x:x-c.x-old.x*next,y:y-c.y-old.y*next});
+ }
+ function eggDown(e:ReactPointerEvent<HTMLDivElement>){
+  eggPointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(eggPointers.current.size===2){const [a,b]=Array.from(eggPointers.current.values());eggPinch.current={distance:Math.max(1,distance(a,b)),scale:eggScale};}
+ }
+ function eggMove(e:ReactPointerEvent<HTMLDivElement>){
+  if(!eggPointers.current.has(e.pointerId))return;
+  eggPointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(eggPinch.current&&eggPointers.current.size>=2){const [a,b]=Array.from(eggPointers.current.values());setEggScale(clamp(eggPinch.current.scale*distance(a,b)/eggPinch.current.distance,.35,1.8));}
+ }
+ function eggUp(e:ReactPointerEvent<HTMLDivElement>){eggPointers.current.delete(e.pointerId);if(eggPointers.current.size<2)eggPinch.current=null;}
+ const active=items.find(item=>item.id===openId);
+ const currentScale=Math.round(zoom*100);
+ return <section className="absolute inset-0 overflow-hidden bg-background" aria-label="Поле проекта EGG" data-testid="egg-project-field">
+  <div ref={field} className="absolute inset-0 touch-none overflow-hidden" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}
+   style={{backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}}>
+   <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+    <div data-egg-anchor className="pointer-events-auto relative shrink-0" style={{width:900,height:620,transform:"scale("+eggScale+")",touchAction:"none"}}
+     onPointerDownCapture={eggDown} onPointerMoveCapture={eggMove} onPointerUpCapture={eggUp} onPointerCancelCapture={eggUp}
+     onPointerDown={e=>e.stopPropagation()} onPointerMove={e=>e.stopPropagation()} onPointerUp={e=>e.stopPropagation()} onPointerCancel={e=>e.stopPropagation()}
+     onWheel={e=>{e.stopPropagation();setEggScale(s=>clamp(s*(e.deltaY>0?.95:1.05),.35,1.8));}}>
+     {children}
+    </div>
    </div>
-   {tool==="sketch"?<p className="text-xs text-foreground/65">Рисуйте пальцем или указателем на свободном участке поля. Завершение штриха сохранит скетч.</p>:<><textarea rows={3} value={entry} onChange={e=>setEntry(e.target.value)} placeholder={tool==="link"?"Вставьте ссылку":"Запишите мысль или наблюдение"} className="w-full rounded-lg border bg-background p-2 text-sm"/><button onClick={commit} disabled={!entry.trim()} className="mt-2 rounded-full bg-foreground px-4 py-2 text-xs text-background disabled:opacity-40">Разместить в поле</button></>}
-   <button className="ml-3 text-xs text-foreground/60" onClick={()=>setTool(null)}>Закрыть</button>
+   <div className="absolute left-0 top-0 z-20" style={{transform:"translate("+(center().x+pan.x)+"px,"+(center().y+pan.y)+"px) scale("+zoom+")",transformOrigin:"0 0"}}>
+    {items.map(item=><div key={item.id} data-field-item={item.id} className="group absolute w-[218px] cursor-grab rounded-2xl border border-foreground/10 bg-background/95 p-2 shadow-[0_10px_32px_rgba(0,0,0,.09)] backdrop-blur-md transition-shadow hover:shadow-[0_15px_42px_rgba(0,0,0,.14)] active:cursor-grabbing"
+     style={{left:item.x,top:item.y}}>
+     <div className="mb-1 flex items-center justify-between gap-2 px-1 py-0.5">
+      <span className="truncate text-[10px] tracking-[.06em] text-foreground/45">{item.type==="image"?"Фото":item.type==="thought"?"Заметка":item.type==="link"?"Ссылка":item.type==="video"?"Видео":"Скетч"}</span>
+      <div className="flex gap-1 opacity-80 sm:opacity-0 sm:group-hover:opacity-100">
+       <button type="button" data-no-drag aria-label="Развернуть элемент" className="rounded-full p-1 hover:bg-foreground/10" onClick={()=>setOpenId(item.id)}><Maximize2 size={13}/></button>
+       <button type="button" data-no-drag aria-label="Удалить элемент" className="rounded-full p-1 hover:bg-foreground/10" onClick={()=>change(v=>v.filter(x=>x.id!==item.id))}><X size={13}/></button>
+      </div>
+     </div>
+     {item.src?<button type="button" data-no-drag className="block w-full overflow-hidden rounded-xl bg-foreground/[.025]" onClick={()=>setOpenId(item.id)}><img src={item.src} alt={item.text} className="max-h-[180px] w-full object-contain"/></button>
+      :item.type==="video"?<button type="button" data-no-drag className="flex h-28 w-full items-center justify-center rounded-xl bg-foreground/5" onClick={()=>setOpenId(item.id)}><Video size={28} strokeWidth={1}/></button>
+      :item.points?<button type="button" data-no-drag className="w-full" onClick={()=>setOpenId(item.id)}><svg viewBox={"0 0 "+(Math.max(1,...item.points.map(p=>p.x))+4)+" "+(Math.max(1,...item.points.map(p=>p.y))+4)} className="h-24 w-full" aria-label="Скетч"><polyline points={item.points.map(p=>p.x+","+p.y).join(" ")} fill="none" stroke={item.color||"currentColor"} strokeWidth={item.strokeWidth||2} strokeLinecap="round" strokeLinejoin="round"/></svg></button>
+      :item.type==="link"?<a href={/^https?:\/\//.test(item.text)?item.text:undefined} target="_blank" rel="noopener noreferrer" className="block break-all px-1 py-2 text-[12px] text-foreground/75 underline underline-offset-2">{item.text}</a>
+      :<button type="button" data-no-drag className="block w-full px-1 py-2 text-left" onClick={()=>setOpenId(item.id)}><p className="line-clamp-6 whitespace-pre-wrap break-words text-[13px] leading-relaxed text-foreground/85">{item.text}</p></button>}
+    </div>)}
+    {drawing&&<svg className="pointer-events-none absolute overflow-visible" width="1" height="1"><polyline points={drawing.map(p=>p.x+","+p.y).join(" ")} fill="none" stroke={sketchColor} strokeWidth={sketchWidth} strokeLinecap="round" strokeLinejoin="round"/></svg>}
+   </div>
+  </div>
+  <div className="absolute left-4 top-[80px] z-30 flex items-center gap-1.5 rounded-full border border-foreground/10 bg-background/95 p-1 shadow-sm sm:left-6">
+   <button type="button" className="flex items-center gap-1.5 rounded-full bg-foreground px-3.5 py-2 text-xs text-background" aria-label="Добавить материал" onClick={()=>setTool(previous=>previous===null?"thought":null)}><Plus size={15}/> Добавить</button>
+   <button type="button" aria-label="Вернуться к центру поля" title="Центр" className="rounded-full p-2 text-foreground/65 hover:bg-foreground/10" onClick={()=>{setPan({x:0,y:0});setZoom(1);}}><Move size={16}/></button>
+   <button type="button" aria-label="Уменьшить масштаб поля" className="rounded-full p-2 text-foreground/65 hover:bg-foreground/10" onClick={()=>setZoom(v=>clamp(v/1.2,.25,3))}><Minus size={14}/></button>
+   <span className="min-w-[36px] text-center text-[10px] tabular-nums text-foreground/50">{currentScale}%</span>
+   <button type="button" aria-label="Увеличить масштаб поля" className="rounded-full p-2 text-foreground/65 hover:bg-foreground/10" onClick={()=>setZoom(v=>clamp(v*1.2,.25,3))}><Plus size={14}/></button>
+  </div>
+  <div className="absolute right-4 top-[80px] z-30 sm:right-6">
+   <button type="button" aria-label="Настроить размер Яйца" className="rounded-full border border-foreground/10 bg-background/95 px-3 py-2 text-xs text-foreground/65 shadow-sm" onClick={()=>setEggControls(v=>!v)}>Яйцо · {Math.round(eggScale*100)}%</button>
+   {eggControls&&<div className="mt-2 w-44 rounded-2xl border border-foreground/10 bg-background/95 p-3 shadow-lg"><label className="block text-[11px] text-foreground/60" htmlFor="egg-object-size">Размер Яйца</label><input id="egg-object-size" aria-label="Размер яйца" className="mt-2 w-full" type="range" min=".35" max="1.8" step=".05" value={eggScale} onChange={e=>setEggScale(Number(e.target.value))}/><button className="mt-1 text-[11px] text-foreground/60" onClick={()=>setEggScale(.8)}>Сбросить размер</button></div>}
+  </div>
+  {tool!==null&&<div className="absolute left-4 top-[132px] z-40 w-[min(340px,calc(100vw-32px))] rounded-2xl border border-foreground/15 bg-background/95 p-3 shadow-xl sm:left-6">
+   <div className="grid grid-cols-3 gap-1.5">
+    <button className={"flex flex-col items-center gap-1 rounded-xl p-2 text-xs "+(tool==="thought"?"bg-foreground/10":"hover:bg-foreground/5")} onClick={()=>{setTool("thought");setEntry("");}}><Pencil size={17}/> Заметка</button>
+    <button className="flex flex-col items-center gap-1 rounded-xl p-2 text-xs hover:bg-foreground/5" onClick={()=>camera.current?.click()}><ImageIcon size={17}/> Фото</button>
+    <button className="flex flex-col items-center gap-1 rounded-xl p-2 text-xs hover:bg-foreground/5" onClick={()=>imageInput.current?.click()}><ImageIcon size={17}/> Файл</button>
+    <button className={"flex flex-col items-center gap-1 rounded-xl p-2 text-xs "+(tool==="sketch"?"bg-foreground/10":"hover:bg-foreground/5")} onClick={()=>setTool("sketch")}><Pencil size={17}/> Скетч</button>
+    <button className={"flex flex-col items-center gap-1 rounded-xl p-2 text-xs "+(tool==="link"?"bg-foreground/10":"hover:bg-foreground/5")} onClick={()=>setTool("link")}><Link2 size={17}/> Ссылка</button>
+    <button className="flex flex-col items-center gap-1 rounded-xl p-2 text-xs hover:bg-foreground/5" onClick={()=>videoInput.current?.click()}><Video size={17}/> Видео</button>
+   </div>
+   {tool==="sketch"||tool==="eraser"?<div className="mt-3 space-y-3 border-t border-foreground/10 pt-3">
+     <div className="flex items-center gap-2"><button className={"rounded-full p-2 "+(tool==="sketch"?"bg-foreground/10":"")} aria-label="Перо" onClick={()=>setTool("sketch")}><Pencil size={18}/></button><button className={"rounded-full p-2 "+(tool==="eraser"?"bg-foreground/10":"")} aria-label="Ластик по штрихам" onClick={()=>setTool("eraser")}><Eraser size={18}/></button><button className="rounded-full p-2 disabled:opacity-30" title="Отменить" disabled={!undoStack.current.length} onClick={undo}><RotateCcw size={17}/></button><button className="rounded-full p-2 disabled:opacity-30" title="Повторить" disabled={!redoStack.current.length} onClick={redo}><RotateCw size={17}/></button></div>
+     <div className="flex flex-wrap gap-2">{colors.map(color=><button key={color} type="button" aria-label={"Цвет "+color} onClick={()=>{setSketchColor(color);setTool("sketch");}} className={"h-6 w-6 rounded-full "+(sketchColor===color?"ring-2 ring-offset-2 ring-foreground/50":"")} style={{backgroundColor:color}}/>)}</div>
+     <label className="flex items-center gap-2 text-xs text-foreground/70">Толщина <input type="range" min=".5" max="12" step=".5" value={sketchWidth} onChange={e=>setSketchWidth(Number(e.target.value))} className="min-w-0 flex-1"/><span className="w-10 text-right tabular-nums">{sketchWidth} px</span></label>
+     <p className="text-[11px] text-foreground/55">{tool==="eraser"?"Нажмите на штрих скетча, чтобы удалить его.":"Рисуйте на свободной области поля; каждый штрих сохраняется отдельно."}</p>
+    </div>:<div className="mt-3 border-t border-foreground/10 pt-3"><div className="relative">
+      <textarea rows={3} value={entry} onChange={e=>setEntry(e.target.value)} placeholder={tool==="link"?"Вставьте ссылку":"Запишите мысль или наблюдение"} className="w-full resize-y rounded-xl border border-foreground/15 bg-background p-3 pr-10 text-sm"/>
+      {tool==="thought"&&<button type="button" title="Голосовой ввод" aria-label="Голосовой ввод" className={"absolute right-2 top-2 rounded-full p-1.5 "+(listening?"bg-red-100 text-red-700":"text-foreground/65")} onClick={voice}><Mic size={18}/></button>}
+     </div><div className="mt-2 flex justify-between gap-2"><button onClick={commit} disabled={!entry.trim()} className="rounded-full bg-foreground px-4 py-2 text-xs text-background disabled:opacity-40">Добавить в поле</button><button className="px-2 text-xs text-foreground/60" onClick={()=>setTool(null)}>Закрыть</button></div></div>}
+   {(tool==="sketch"||tool==="eraser")&&<button className="mt-3 text-xs text-foreground/60" onClick={()=>setTool(null)}>Готово</button>}
   </div>}
   <input ref={camera} type="file" accept="image/*" capture="environment" className="hidden" onChange={e=>{void images(e.target.files);e.target.value="";}}/>
-  <input ref={input} type="file" accept="image/*" multiple className="hidden" onChange={e=>{void images(e.target.files);e.target.value="";}}/>
-  <div ref={field} className="relative h-[min(78vh,780px)] min-h-[560px] w-full overflow-hidden touch-none" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} style={{backgroundImage:"radial-gradient(hsl(var(--foreground) / .12) 1px,transparent 1px)",backgroundSize:"24px 24px"}}>
-   <div className="absolute left-0 top-0" style={{transform:`translate(${c.x+pan.x}px,${c.y+pan.y}px) scale(${zoom})`,transformOrigin:"0 0"}}>
-    <div className="absolute" style={{width:900,height:620,left:-450,top:-310,transform:`scale(${eggScale})`,transformOrigin:"center center"}}>{children}</div>
-    {items.map(item=><div key={item.id} data-field-item={item.id} className="absolute w-[190px] cursor-grab rounded-xl border border-foreground/20 bg-background/95 p-3 shadow-md active:cursor-grabbing" style={{left:item.x,top:item.y}}>
-     <div className="mb-1 flex items-center justify-between"><span className="text-[10px] uppercase tracking-wider text-foreground/50">{item.type==="thought"?"Мысль":item.type==="image"?"Образ":item.type==="link"?"Ссылка":"Скетч"}</span><button type="button" aria-label="Удалить элемент" className="text-xs text-foreground/60" onClick={()=>setItems(v=>v.filter(x=>x.id!==item.id))}>×</button></div>
-     {item.src?<img src={item.src} alt={item.text} className="max-h-40 w-full object-contain"/>:item.points?<svg viewBox={`0 0 ${Math.max(1,...item.points.map(p=>p.x))+4} ${Math.max(1,...item.points.map(p=>p.y))+4}`} className="w-full" aria-label="Скетч"><polyline points={item.points.map(p=>`${p.x},${p.y}`).join(" ")} fill="none" stroke="currentColor" strokeWidth="2"/></svg>:item.type==="link"?<a href={/^https?:\/\//.test(item.text)?item.text:undefined} target="_blank" rel="noopener noreferrer" className="break-all text-xs underline">{item.text}</a>:<p className="whitespace-pre-wrap break-words text-sm">{item.text}</p>}
-    </div>)}
-    {drawing&&<svg className="pointer-events-none absolute overflow-visible" width="1" height="1"><polyline points={drawing.map(p=>`${p.x},${p.y}`).join(" ")} fill="none" stroke="currentColor" strokeWidth="2"/></svg>}
+  <input ref={imageInput} type="file" accept="image/*" multiple className="hidden" onChange={e=>{void images(e.target.files);e.target.value="";}}/>
+  <input ref={videoInput} type="file" accept="video/*" multiple className="hidden" onChange={e=>{void videos(e.target.files);e.target.value="";}}/>
+  {notice&&<div role="status" className="absolute bottom-5 left-1/2 z-50 max-w-[90vw] -translate-x-1/2 rounded-full border border-foreground/10 bg-background px-4 py-2 text-xs shadow-md" onClick={()=>setNotice("")}>{notice}</div>}
+  {active&&<div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/65 p-4" role="presentation" onClick={()=>setOpenId(null)}>
+   <div role="dialog" aria-modal="true" aria-label="Просмотр материала" onClick={e=>e.stopPropagation()} className="relative max-h-[92dvh] w-full max-w-[min(92vw,900px)] overflow-y-auto rounded-2xl bg-background p-4 shadow-2xl sm:p-6">
+    <div className="mb-4 flex items-center justify-between gap-3"><span className="truncate text-xs text-foreground/50">{active.text}</span><button type="button" aria-label="Закрыть просмотр" onClick={()=>setOpenId(null)} className="rounded-full p-2 hover:bg-foreground/10"><X size={19}/></button></div>
+    {active.src?<img src={active.src} alt={active.text} className="mx-auto max-h-[72dvh] w-auto max-w-full rounded-lg object-contain"/>
+     :active.type==="video"?(videoUrls[active.mediaId||""]?<video src={videoUrls[active.mediaId||""]} className="mx-auto max-h-[72dvh] w-full" controls playsInline/>:<p className="p-5 text-sm">Видео недоступно в памяти этого устройства.</p>)
+     :active.points?<svg viewBox={"0 0 "+(Math.max(1,...active.points.map(p=>p.x))+4)+" "+(Math.max(1,...active.points.map(p=>p.y))+4)} className="h-[65dvh] w-full"><polyline points={active.points.map(p=>p.x+","+p.y).join(" ")} fill="none" stroke={active.color||"currentColor"} strokeWidth={active.strokeWidth||2} strokeLinecap="round" strokeLinejoin="round"/></svg>
+     :active.type==="thought"?<textarea aria-label="Редактировать заметку" value={active.text} onChange={e=>setItems(v=>v.map(item=>item.id===active.id?{...item,text:e.target.value}:item))} className="min-h-48 w-full resize-y rounded-xl border border-foreground/10 bg-background p-4 text-base leading-relaxed"/>
+     :<a href={/^https?:\/\//.test(active.text)?active.text:undefined} target="_blank" rel="noopener noreferrer" className="break-all text-sm underline">{active.text}</a>}
    </div>
-  </div>
-  <div className="absolute bottom-3 left-3 z-20 rounded-full bg-background/90 px-3 py-1.5 text-[11px] text-foreground/60">Перемещайте поле и карточки · {items.length} материалов · сохранение в этом браузере</div>
+  </div>}
  </section>;
 }
