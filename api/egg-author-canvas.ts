@@ -100,7 +100,7 @@ export default async function handler(req:Req,res:ServerResponse){
        :"unclassified";
       providerType=reason;
       // Report only a non-sensitive error shape, never provider message or key.
-      providerMessageKind=message.length===0?"empty":/models\\//i.test(message)?"model_path":/api key/i.test(message)?"api_key":/project/i.test(message)?"project":/not found/i.test(message)?"not_found":/quota/i.test(message)?"quota":"other";
+      providerMessageKind=message.length===0?"empty":message.includes("models/")?"model_path":/api key/i.test(message)?"api_key":/project/i.test(message)?"project":/not found/i.test(message)?"not_found":/quota/i.test(message)?"quota":"other";
      }
     }catch{/* Provider may not return JSON. */}
     console.error("egg_author_ai_provider_failure",{status:response.status,kind:geminiKey?"gemini":provider!.kind,model:geminiKey?activeModel:provider!.model,providerCode,providerType,providerStatus,providerMessageKind});
