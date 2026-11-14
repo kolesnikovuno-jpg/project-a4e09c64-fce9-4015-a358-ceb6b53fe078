@@ -248,7 +248,18 @@ export default async function handler(req:Request,res:ServerResponse){
         code==="ai_model_not_authorized"?503:502,failure);
     }
     let generated:ReturnType<typeof parseEggAutomationOutput>;
-    try{generated=parseEggAutomationOutput(step,raw);}
+    try{
+      // Normalize only the model's evidence label at the trusted server boundary.
+      // Unknown labels are never upgraded to verified facts.
+      if(step.kind==="sphere"){
+        const obj=JSON.parse(raw) as Record<string,unknown>;
+        if(obj&&typeof obj==="object"&&!Array.isArray(obj)&&typeof obj.evidence==="string"&&
+          obj.evidence!=="hypothesis"&&obj.evidence!=="question"){
+          obj.evidence="hypothesis";raw=JSON.stringify(obj);
+        }
+      }
+      generated=parseEggAutomationOutput(step,raw);
+    }
     catch(error){
       const issues=error&&typeof error==="object"&&"issues" in error&&Array.isArray((error as {issues?:unknown[]}).issues)?(error as {issues:unknown[]}).issues:[];
       console.warn("egg_flow_ai_schema_failure",{
