@@ -54,7 +54,7 @@ export default function EggAuthorCanvas({projectId,seed,revision,onSaved}:{proje
  if(sessionError)throw sessionError;
  if(!session)throw Error("Войдите в EGG заново");
  stage="gemini";
- const response=await fetch("/api/egg-author-canvas?diagnostic=1&probe=text",{headers:{Authorization:"Bearer "+session.access_token},cache:"no-store"});
+ const response=await fetch("/api/egg-author-canvas?diagnostic=1",{headers:{Authorization:"Bearer "+session.access_token},cache:"no-store"});
  const data=await response.json();
  setDiagnostic(JSON.stringify({stage,httpStatus:response.status,...data},null,2));
  }catch(e){setDiagnostic("Этап: "+stage+". "+(e instanceof Error?e.message:"Ошибка диагностики"));}}
