@@ -7,6 +7,7 @@ import { useLocale } from "@/i18n/useLocale";
 import UnoEggScene from "@/components/unocalc/UnoEggScene";
 import EggServerState from "@/components/egg/EggServerState";
 import EggSpherePanel from "@/components/egg/EggSpherePanel";
+import EggProjectField from "@/components/egg/EggProjectField";
 import type { SphereId } from "@/lib/eggEngine";
 
 const modelLabel = { ru: "Модель объекта", uk: "Модель об’єкта", en: "Object model" };
@@ -66,7 +67,7 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
           </nav>
         </header>
         <section className="mt-3" aria-label={eggBrand ? "EGG — interactive project workspace" : "UNOcalc — egg geometry"}>
-          <UnoEggScene locale={locale} onSphereOpen={eggBrand ? (sphere) => setSelectedWorkSphere(sphere as SphereId) : undefined} />
+          {eggBrand && hasProject ? <EggProjectField projectId={params.get("project") || ""}><UnoEggScene locale={locale} onSphereOpen={(sphere) => setSelectedWorkSphere(sphere as SphereId)} /></EggProjectField> : <UnoEggScene locale={locale} onSphereOpen={eggBrand ? (sphere) => setSelectedWorkSphere(sphere as SphereId) : undefined} />}
         </section>
         {eggBrand && <div className="flex flex-wrap items-center justify-center gap-3 py-5">
           {hasProject && <button type="button" onClick={() => { setActiveSphere("author"); setPanelOpen(true); }} className="rounded-full bg-foreground px-5 py-3 text-sm text-background" data-testid="egg-open-concept">Автор · решение по ДНК</button>}
