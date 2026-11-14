@@ -43,7 +43,21 @@ export default function EggAuthorCanvas({projectId,seed,revision,onSaved}:{proje
  const local=localStorage.getItem(key);if(data.board&&!local)setBoard(data.board);setSync(data.board?"Серверное сохранение доступно":"Новый серверный холст");hydrated.current=true;
  }catch{if(alive){setSync("Только локальное сохранение");hydrated.current=false;}}})();return()=>{alive=false};},[key,projectId]);
  useEffect(()=>{if(!loaded.current||!hydrated.current)return;setSync("Есть несохранённые изменения");const timer=setTimeout(async()=>{try{const bearer=await token();const response=await fetch("/api/egg-author-canvas",{method:"PUT",headers:{"Content-Type":"application/json",Authorization:"Bearer "+bearer},body:JSON.stringify({projectId,board})});if(!response.ok)throw Error("save_failed");setSync("Сохранено на сервере");}catch{setSync("Сохранено только в браузере");}},1600);return()=>clearTimeout(timer);},[board,projectId]);
- async function diagnose(){setDiagnostic("Проверяем соединение…");try{const bearer=await token();const response=await fetch("/api/egg-author-canvas?diagnostic=1&probe=text",{headers:{Authorization:"Bearer "+bearer},cache:"no-store"});const data=await response.json() as {ok?:boolean;httpStatus?:number;keySource?:string;providerKind?:string;model?:string;environment?:string;error?:string};setDiagnostic(JSON.stringify(data,null,2));}catch(e){setDiagnostic(e instanceof Error?e.message:"Ошибка диагностики");}}
+ async function diagnose(){setDiagnostic("Проверяем соединение…");let stage="config";try{
+ const configResponse=await fetch("/api/egg-config",{cache:"no-store"});
+ if(!configResponse.ok)throw Error("HTTP "+configResponse.status);
+ const cfg=await configResponse.json() as {supabaseUrl?:string;publishableKey?:string};
+ if(!cfg.supabaseUrl||!cfg.publishableKey)throw Error("Отсутствуют параметры авторизации");
+ stage="session";
+ const client=createClient(cfg.supabaseUrl,cfg.publishableKey);
+ const {data:{session},error:sessionError}=await client.auth.getSession();
+ if(sessionError)throw sessionError;
+ if(!session)throw Error("Войдите в EGG заново");
+ stage="gemini";
+ const response=await fetch("/api/egg-author-canvas?diagnostic=1&probe=text",{headers:{Authorization:"Bearer "+session.access_token},cache:"no-store"});
+ const data=await response.json();
+ setDiagnostic(JSON.stringify({stage,httpStatus:response.status,...data},null,2));
+ }catch(e){setDiagnostic("Этап: "+stage+". "+(e instanceof Error?e.message:"Ошибка диагностики"));}}
  async function snapshot(){const canvas=document.createElement("canvas");canvas.width=1000;canvas.height=700;const ctx=canvas.getContext("2d");if(!ctx)return null;ctx.fillStyle="#f5f3ed";ctx.fillRect(0,0,1000,700);
  for(const photo of board.photos){try{const img=new Image();img.src=photo.src;await img.decode();const h=Math.min(220,230*img.height/img.width);ctx.drawImage(img,photo.x,photo.y,230,h);}catch{/* skip unsupported image */}}
  ctx.strokeStyle="#252525";ctx.lineWidth=2;ctx.lineCap="round";ctx.lineJoin="round";for(const s of board.strokes){ctx.beginPath();s.points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();}
