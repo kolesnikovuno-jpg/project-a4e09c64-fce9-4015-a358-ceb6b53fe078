@@ -21,6 +21,26 @@ export default async function handler(req:Req,res:ServerResponse){
   const url=new URL(req.url??"/","https://local.invalid");
   if(req.method==="GET"&&url.searchParams.get("diagnostic")==="1"){
    const geminiKey=process.env.GEMINI_API_KEY?.trim();
+   if(geminiKey&&url.searchParams.get("probe")==="text"){
+    const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),20000);
+    try{
+     const tests:Array<{api:string;model:string;status:number;reason:string;answered:boolean}>=[];
+     for(const [api,model] of [["v1beta","gemini-2.5-flash"],["v1","gemini-2.5-flash"],["v1beta","gemini-2.5-flash-lite"],["v1beta","gemini-3-flash-preview"]]){
+      if(controller.signal.aborted)break;
+      const result=await fetch("https://generativelanguage.googleapis.com/"+api+"/models/"+model+":generateContent",{
+       method:"POST",headers:{"x-goog-api-key":geminiKey,"Content-Type":"application/json"},signal:controller.signal,redirect:"error",
+       body:JSON.stringify({contents:[{parts:[{text:"Reply with OK"}]}]})});
+      const raw=await result.json() as {error?:{status?:string;message?:string};candidates?:Array<{content?:{parts?:Array<{text?:string}>}}>}};
+      const msg=raw.error?.message??"";
+      const reason=/not found for API version|not supported for generateContent/i.test(msg)?"model_api_incompatible":/not found|does not exist/i.test(msg)?"model_not_found":/region|country|location/i.test(msg)?"region_restriction":/quota|billing|limit/i.test(msg)?"quota":/API key|permission|access denied/i.test(msg)?"access_denied":raw.error?.status??"none";
+      tests.push({api,model,status:result.status,reason,answered:!!raw.candidates?.[0]?.content?.parts?.some(p=>p.text)});
+      if(result.ok)break;
+     }
+     console.info("egg_gemini_text_probe",{tests});
+     return send(res,200,{ok:tests.some(t=>t.answered),tests});
+    }catch(e){return send(res,502,{ok:false,error:controller.signal.aborted?"probe_timeout":"probe_failed"});}
+    finally{clearTimeout(timer);}
+   }
    if(geminiKey){
     const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),12000);
     try{
