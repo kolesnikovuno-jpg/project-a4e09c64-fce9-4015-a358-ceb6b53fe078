@@ -122,10 +122,12 @@ async function generate(model:Provider,prompt:{instructions:string;input:string}
       }),
     });
   }catch(error){
+    console.warn("egg_ai_provider_transport",{provider:model.kind,model:model.model,aborted:controller.signal.aborted,errorType:error instanceof Error?error.name:"unknown"});
     if(controller.signal.aborted)throw Error("provider_timeout");
     throw Error("model_request_failed");
   }finally{clearTimeout(timeout);}
   if(!response.ok){
+    console.warn("egg_ai_provider_http",{provider:model.kind,model:model.model,status:response.status});
     // Do not echo provider errors; they can include private customer context.
     if(response.status===429)throw Error("ai_rate_limited");
     if(response.status===402)throw Error("ai_budget_exhausted");
