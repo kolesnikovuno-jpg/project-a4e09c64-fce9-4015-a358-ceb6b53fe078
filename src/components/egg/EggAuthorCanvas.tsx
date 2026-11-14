@@ -12,7 +12,9 @@ export default function EggAuthorCanvas({projectId,seed,revision,onSaved}:{proje
  const [board,setBoard]=useState<Board>({...empty,idea:seed});
  const [mode,setMode]=useState<Mode>("draw");
  const [presence,setPresence]=useState<"silent"|"partner"|"dialog">("partner");
- const [panel,setPanel]=useState(true);
+ const [panel,setPanel]=useState(false);
+ const [expandedAnswers,setExpandedAnswers]=useState<number[]>([]);
+ const [showTools,setShowTools]=useState(false);
  const [tab,setTab]=useState<"dialog"|"idea"|"materials">("dialog");
  const [chat,setChat]=useState<Array<{role:"author"|"ai";text:string}>>([]);
  const [aiBusy,setAiBusy]=useState(false);
@@ -87,7 +89,7 @@ export default function EggAuthorCanvas({projectId,seed,revision,onSaved}:{proje
   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-foreground/15 p-3">
    <div><strong className="text-sm">Автор / Холст идеи</strong><p className="text-[11px] text-foreground/60">Эскиз · образы · смыслы</p></div>
    <div className="flex flex-wrap gap-2">
-    <button type="button" onClick={()=>setPanel(v=>!v)} className="rounded-full border px-3 py-1.5 text-xs">{panel?"Скрыть":"Открыть"} контекст</button>
+    <button type="button" onClick={()=>setPanel(v=>!v)} className="rounded-full border px-3 py-1.5 text-xs">{panel?"Свернуть":"Открыть"} помощника</button>
     <button type="button" onClick={()=>setZoom(z=>Math.max(.5,z-.25))} className="rounded border px-2 text-sm" aria-label="Уменьшить">−</button>
     <span className="self-center text-xs">{Math.round(zoom*100)}%</span>
     <button type="button" onClick={()=>setZoom(z=>Math.min(2,z+.25))} className="rounded border px-2 text-sm" aria-label="Увеличить">+</button>
@@ -116,17 +118,15 @@ export default function EggAuthorCanvas({projectId,seed,revision,onSaved}:{proje
     <div className="flex gap-1 border-b border-foreground/15 p-2">
      {([["dialog","Диалог"],["idea","Идея"],["materials","Материалы"]] as const).map(([id,label])=><button key={id} type="button" onClick={()=>setTab(id)} className={"flex-1 rounded-lg px-2 py-2 text-sm "+(tab===id?"bg-foreground text-background":"bg-foreground/5")}>{label}</button>)}
     </div>
-    <div className="max-h-[68vh] min-h-[300px] space-y-3 overflow-y-auto p-4">
+    <div className="max-h-[62vh] min-h-[230px] space-y-3 overflow-y-auto p-4">
     {tab==="idea"&&<label className="block text-sm font-medium">Смысл идеи<textarea value={board.idea} onChange={e=>setBoard(b=>({...b,idea:e.target.value}))} rows={8} maxLength={10000} placeholder="Мысль, ощущение, назначение, образ…" className="mt-2 w-full resize-y rounded-lg border border-foreground/20 bg-background p-3 text-sm"/></label>}
     {tab==="materials"&&<div className="space-y-3 text-sm"><p>Эскизы: {board.strokes.length}</p><p>Изображения: {board.photos.length}</p><p>Пометки: {board.pins.length}</p><button type="button" onClick={()=>file.current?.click()} className="rounded-full border px-4 py-2">Добавить изображение</button>{board.pins.map(p=><p key={p.id} className="rounded-lg bg-foreground/5 p-2">{p.text}</p>)}</div>}
     {tab==="dialog"&&<div className="space-y-3">
-      <div className="flex items-center justify-between gap-2"><strong className="text-sm">AI Presence</strong><select value={presence} onChange={e=>setPresence(e.target.value as typeof presence)} className="rounded border bg-background p-2 text-xs"><option value="silent">Наблюдение</option><option value="partner">Соучастие</option><option value="dialog">По запросу</option></select></div>
-      <p className="text-xs text-foreground/60">ИИ получает изображение текущего холста и его пометки при отправке вопроса. Автоматическое наблюдение ещё не включено.</p>
-      <button type="button" onClick={()=>void diagnose()} className="rounded-full border border-foreground/20 px-3 py-2 text-xs">Проверить Gemini API</button>
-      {diagnostic&&<pre className="whitespace-pre-wrap break-all rounded-lg bg-foreground/5 p-3 text-xs">{diagnostic}</pre>}
-      {chat.map((entry,i)=><div key={i} className={"whitespace-pre-wrap rounded-xl p-3 text-sm "+(entry.role==="author"?"bg-foreground/10":"border border-foreground/15")}><span className="mb-1 block text-[11px] text-foreground/50">{entry.role==="author"?"Автор":"ИИ"}</span>{entry.text}</div>)}
-      <div className="flex flex-wrap gap-2">{["Что ты видишь в рисунке?","Какие противоречия формы заметны?","Какие вопросы стоит уточнить?"].map(q=><button key={q} type="button" onClick={()=>setMessage(q)} className="rounded-full border border-foreground/20 px-3 py-1.5 text-xs">{q}</button>)}</div>
-      <textarea value={message} onChange={e=>setMessage(e.target.value)} rows={3} placeholder="Что ты видишь в этой форме? Обсудим…" className="w-full rounded-lg border bg-background p-3 text-sm"/>
+      <div className="flex items-center justify-between gap-2"><strong className="text-sm">Диалог с ИИ</strong><button type="button" onClick={()=>setShowTools(v=>!v)} className="text-xs text-foreground/60 underline underline-offset-4">{showTools?"Скрыть настройки":"Настройки"}</button></div>
+      {showTools&&<div className="space-y-2 rounded-lg bg-foreground/5 p-3"><label className="block text-xs">Режим взаимодействия<select value={presence} onChange={e=>setPresence(e.target.value as typeof presence)} className="mt-1 w-full rounded border bg-background p-2 text-xs"><option value="silent">Наблюдение</option><option value="partner">Соучастие</option><option value="dialog">По запросу</option></select></label><p className="text-xs text-foreground/60">При отправке вопроса ИИ получает снимок холста и пометки. Автоматическое наблюдение пока недоступно.</p><button type="button" onClick={()=>void diagnose()} className="rounded-full border px-3 py-1.5 text-xs">Диагностика API</button>{diagnostic&&<pre className="whitespace-pre-wrap break-all text-xs">{diagnostic}</pre>}</div>}
+      {chat.map((entry,i)=>{const long=entry.role==="ai"&&entry.text.length>230;const expanded=expandedAnswers.includes(i);const clean=entry.text.replace(/\\*\\*/g,"").replace(/^\\s*\\*\\s+/gm,"• ");return <div key={i} className={"rounded-xl p-3 text-sm "+(entry.role==="author"?"bg-foreground/10":"border border-foreground/15")}><span className="mb-1 block text-[11px] text-foreground/50">{entry.role==="author"?"Автор":"ИИ · наблюдения и гипотезы"}</span><div className="whitespace-pre-wrap break-words">{long&&!expanded?clean.slice(0,230).trimEnd()+"…":clean}</div>{long&&<button type="button" onClick={()=>setExpandedAnswers(v=>expanded?v.filter(n=>n!==i):[...v,i])} className="mt-2 text-xs underline underline-offset-4">{expanded?"Свернуть":"Читать полностью"}</button>}</div>})}
+      <details className="text-xs"><summary className="cursor-pointer text-foreground/60">Примеры вопросов</summary><div className="mt-2 flex flex-wrap gap-2">{["Что ты видишь в рисунке?","Какие противоречия формы заметны?","Какие вопросы стоит уточнить?"].map(q=><button key={q} type="button" onClick={()=>setMessage(q)} className="rounded-full border border-foreground/20 px-3 py-1.5 text-xs">{q}</button>)}</div></details>
+      <textarea value={message} onChange={e=>setMessage(e.target.value)} rows={2} placeholder="Спросить ИИ о рисунке…" className="w-full rounded-lg border bg-background p-3 text-sm"/>
       <button type="button" onClick={()=>void discuss()} disabled={aiBusy||!message.trim()} className="w-full rounded-full bg-foreground px-4 py-2 text-sm text-background disabled:opacity-40">{aiBusy?"ИИ анализирует холст…":"Обсудить с ИИ"}</button>
     </div>}
     </div>
