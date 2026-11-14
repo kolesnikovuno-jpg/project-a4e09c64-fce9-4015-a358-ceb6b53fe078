@@ -87,7 +87,7 @@ export default function EggServerState({ activeSphere, onSelectSphere }: { activ
       {project.seed.text.trim()&&activeSphere==="idea"&&revision!==null&&
         <EggIdeaWorkshop projectId={project.id} seed={project.seed.text} concepts={project.concepts??[]}
           tasks={project.tasks} files={project.artifacts??[]} revision={revision} level={project.level} iteration={project.iteration} onSaved={()=>setRefreshKey(v=>v+1)} allowDecision={false}/>}
-      {false&&activeSphere==="author"&&project.seed.text.trim()&&revision!==null&&<EggIdeaWorkshop projectId={project.id} seed={project.seed.text} concepts={project.concepts??[]} tasks={project.tasks} files={project.artifacts??[]} revision={revision} level={project.level} iteration={project.iteration} onSaved={()=>setRefreshKey(v=>v+1)} allowDecision={true}/>}
+      {activeSphere==="author"&&project.seed.text.trim()&&revision!==null&&<EggIdeaWorkshop projectId={project.id} seed={project.seed.text} concepts={project.concepts??[]} tasks={project.tasks} files={project.artifacts??[]} revision={revision} level={project.level} iteration={project.iteration} onSaved={()=>setRefreshKey(v=>v+1)} allowDecision={true}/>}
       {activeSphere==="author"&&<div className="space-y-2 rounded-lg border border-foreground/20 p-3"
         data-testid="egg-author-focus">
         <h3 className="text-sm font-medium">Текущая версия EGG · Author + Dynamic Balance</h3>
