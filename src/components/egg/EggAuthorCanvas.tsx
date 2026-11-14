@@ -54,7 +54,7 @@ export default function EggAuthorCanvas({projectId,seed,revision,onSaved}:{proje
  if(sessionError)throw sessionError;
  if(!session)throw Error("Войдите в EGG заново");
  stage="gemini";
- const response=await fetch("/api/egg-author-canvas?diagnostic=1&probe=text",{headers:{Authorization:"Bearer "+session.access_token},cache:"no-store"});
+ const response=await fetch("/api/egg-author-canvas?diagnostic=1",{headers:{Authorization:"Bearer "+session.access_token},cache:"no-store"});
  const data=await response.json();
  setDiagnostic(JSON.stringify({stage,httpStatus:response.status,...data},null,2));
  }catch(e){setDiagnostic("Этап: "+stage+". "+(e instanceof Error?e.message:"Ошибка диагностики"));}}
@@ -122,7 +122,7 @@ export default function EggAuthorCanvas({projectId,seed,revision,onSaved}:{proje
     {tab==="dialog"&&<div className="space-y-3">
       <div className="flex items-center justify-between gap-2"><strong className="text-sm">AI Presence</strong><select value={presence} onChange={e=>setPresence(e.target.value as typeof presence)} className="rounded border bg-background p-2 text-xs"><option value="silent">Наблюдение</option><option value="partner">Соучастие</option><option value="dialog">По запросу</option></select></div>
       <p className="text-xs text-foreground/60">ИИ получает изображение текущего холста и его пометки при отправке вопроса. Автоматическое наблюдение ещё не включено.</p>
-      <button type="button" onClick={()=>void diagnose()} className="rounded-full border border-foreground/20 px-3 py-2 text-xs">Проверить ответ Gemini (без рисунка)</button>
+      <button type="button" onClick={()=>void diagnose()} className="rounded-full border border-foreground/20 px-3 py-2 text-xs">Проверить подключение ИИ</button>
       {diagnostic&&<pre className="whitespace-pre-wrap break-all rounded-lg bg-foreground/5 p-3 text-xs">{diagnostic}</pre>}
       {chat.map((entry,i)=><div key={i} className={"whitespace-pre-wrap rounded-xl p-3 text-sm "+(entry.role==="author"?"bg-foreground/10":"border border-foreground/15")}><span className="mb-1 block text-[11px] text-foreground/50">{entry.role==="author"?"Автор":"ИИ"}</span>{entry.text}</div>)}
       <div className="flex flex-wrap gap-2">{["Что ты видишь в рисунке?","Какие противоречия формы заметны?","Какие вопросы стоит уточнить?"].map(q=><button key={q} type="button" onClick={()=>setMessage(q)} className="rounded-full border border-foreground/20 px-3 py-1.5 text-xs">{q}</button>)}</div>
