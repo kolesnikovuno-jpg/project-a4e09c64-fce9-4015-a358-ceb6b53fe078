@@ -103,7 +103,7 @@ export default async function handler(req:Req,res:ServerResponse){
       providerDiagnostic=/is not found for API version/i.test(message)?"model_not_found_for_api_version"
        :/not supported for generateContent/i.test(message)?"generate_content_not_supported"
        :/not found for API version/i.test(message)?"not_found_for_api_version"
-       :/models\\//i.test(message)?"mentions_model_path"
+       :message.includes("models/")?"mentions_model_path"
        :/permission denied/i.test(message)?"permission_denied"
        :/API key not valid/i.test(message)?"invalid_key"
        :/location is not supported/i.test(message)?"unsupported_location"
