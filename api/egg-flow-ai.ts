@@ -234,7 +234,7 @@ export default async function handler(req:Request,res:ServerResponse){
     });
     const prompt=buildEggAutomationPrompt(project,step);
     let raw:string;
-    try{raw=await generate(provider,prompt);}
+    try{raw=await generate(provider,prompt,step.kind==="yolk"?4200:2200);}
     catch(e){
       const code=(e instanceof Error?e.message:"model_request_failed");
       const known=[
@@ -291,7 +291,14 @@ export default async function handler(req:Request,res:ServerResponse){
         }):null;
       if(!mutation)throw Error("wrong_step");
       nextProject=runEggMutation(project,mutation,agent,ownerId,new Date().toISOString());
-    }catch{return fail(res,502,"invalid_ai_output");}
+    }catch(error){
+      console.warn("egg_flow_ai_mutation_failure",{
+        step:step.kind,provider:provider.kind,model:provider.model,
+        errorType:error instanceof Error?error.name:"unknown",
+        // Do not log project data, model text or raw error messages.
+      });
+      return fail(res,502,"invalid_ai_output");
+    }
     const {data:saved,error:saveError}=await db.rpc("egg_engine_cas_update",{
       p_project_id:project.id,p_owner_id:ownerId,
       p_expected_revision:row.revision,p_document:nextProject,
