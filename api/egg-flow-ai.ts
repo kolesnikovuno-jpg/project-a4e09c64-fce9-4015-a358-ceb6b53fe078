@@ -53,7 +53,7 @@ async function readBody(req:Request):Promise<unknown>{
   }
   return JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown;
 }
-type Provider={url:string;key:string;model:string;kind:"gateway"|"direct_openai"|"self_hosted"};
+type Provider={url:string;key:string;model:string;kind:"gateway"|"direct_openai"|"self_hosted"|"direct_gemini"};
 /** Vercel injects runtime OIDC on x-vercel-oidc-token, not reliably in env. */
 export function providerFromEnv(env:NodeJS.ProcessEnv,oidcHeader?:string|string[]):Provider|null{
   // Explicit opt-in for a private OpenAI Responses-compatible HTTPS bridge.
@@ -70,6 +70,13 @@ export function providerFromEnv(env:NodeJS.ProcessEnv,oidcHeader?:string|string[
     if(!key||!model)return null;
     return {url:url.toString(),key,model,kind:"self_hosted"};
   }
+  // Prefer the already configured Gemini key: it is independent of Gateway billing/auth.
+  const geminiKey=env.GEMINI_API_KEY?.trim();
+  if(geminiKey)return {
+    url:"https://generativelanguage.googleapis.com/v1beta/models/",
+    key:geminiKey,kind:"direct_gemini",
+    model:env.EGG_GEMINI_MODEL?.trim()||"gemini-2.5-flash",
+  };
   const injected=typeof oidcHeader==="string"?oidcHeader.trim():"";
   const oidc=(env.VERCEL&&injected)||env.VERCEL_OIDC_TOKEN?.trim();
   const gatewayKey=env.AI_GATEWAY_API_KEY?.trim()||oidc;
@@ -92,7 +99,18 @@ async function generate(model:Provider,prompt:{instructions:string;input:string}
   const timeout=setTimeout(()=>controller.abort(),35000);
   let response:Response;
   try{
-    response=await fetch(model.url,{
+    if(model.kind==="direct_gemini"){
+      response=await fetch(model.url+encodeURIComponent(model.model)+":generateContent",{
+        method:"POST",
+        headers:{"x-goog-api-key":model.key,"Content-Type":"application/json"},
+        signal:controller.signal,redirect:"error",
+        body:JSON.stringify({
+          systemInstruction:{parts:[{text:prompt.instructions}]},
+          contents:[{role:"user",parts:[{text:prompt.input}]}],
+          generationConfig:{responseMimeType:"application/json",maxOutputTokens:maxTokens},
+        }),
+      });
+    }else response=await fetch(model.url,{
       method:"POST",
       headers:{"Authorization":"Bearer "+model.key,"Content-Type":"application/json"},
       signal:controller.signal,
@@ -113,6 +131,13 @@ async function generate(model:Provider,prompt:{instructions:string;input:string}
     if(response.status===402)throw Error("ai_budget_exhausted");
     if(response.status===401||response.status===403)throw Error("ai_model_not_authorized");
     throw Error("model_request_failed");
+  }
+  if(model.kind==="direct_gemini"){
+    let data:{candidates?:Array<{content?:{parts?:Array<{text?:string}>},finishReason?:string}>};
+    try{data=await response.json() as typeof data;}catch{throw Error("invalid_ai_output");}
+    const raw=data.candidates?.[0]?.content?.parts?.map(p=>p.text??"").join("")??"";
+    if(!raw||raw.length>25000)throw Error("invalid_ai_output");
+    return raw;
   }
   let data:{
     status?:string;output?:Array<{type?:string;content?:Array<{type?:string;text?:string}>}>;
