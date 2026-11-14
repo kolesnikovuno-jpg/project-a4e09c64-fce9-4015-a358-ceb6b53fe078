@@ -107,7 +107,7 @@ async function generate(model:Provider,prompt:{instructions:string;input:string}
         body:JSON.stringify({
           systemInstruction:{parts:[{text:prompt.instructions}]},
           contents:[{role:"user",parts:[{text:prompt.input}]}],
-          generationConfig:{responseMimeType:"application/json",maxOutputTokens:maxTokens},
+          generationConfig:{responseMimeType:"application/json",maxOutputTokens:maxTokens,...(model.model.startsWith("gemini-3")?{thinkingConfig:{thinkingLevel:"minimal"}}:{})},
         }),
       });
     }else response=await fetch(model.url,{
@@ -249,7 +249,18 @@ export default async function handler(req:Request,res:ServerResponse){
     }
     let generated:ReturnType<typeof parseEggAutomationOutput>;
     try{generated=parseEggAutomationOutput(step,raw);}
-    catch{return fail(res,502,"invalid_ai_output");}
+    catch(error){
+      const issues=error&&typeof error==="object"&&"issues" in error&&Array.isArray((error as {issues?:unknown[]}).issues)?(error as {issues:unknown[]}).issues:[];
+      console.warn("egg_flow_ai_schema_failure",{
+        step:step.kind,sphere:step.kind==="sphere"?step.sphere:undefined,
+        provider:provider.kind,model:provider.model,
+        outputLength:raw.length,
+        issuePaths:issues.slice(0,8).map(issue=>issue&&typeof issue==="object"&&"path" in issue?String((issue as {path:unknown}).path):"unknown"),
+        issueCodes:issues.slice(0,8).map(issue=>issue&&typeof issue==="object"&&"code" in issue?String((issue as {code:unknown}).code):"unknown"),
+        parseKind:error instanceof SyntaxError?"json_syntax":"schema",
+      });
+      return fail(res,502,"invalid_ai_output");
+    }
     const agent={kind:"agent" as const,projectId:project.id,ownerId,
       scopes:["contribute" as const]};
     let nextProject:EggProject;
