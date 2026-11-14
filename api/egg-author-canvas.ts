@@ -85,7 +85,7 @@ export default async function handler(req:Req,res:ServerResponse){
    if(!response.ok){
     // Capture only bounded, machine-readable provider error identifiers; never log
     // provider messages, request content, tokens, or user images.
-    let providerCode="unknown",providerType="unknown",providerStatus="unknown";
+    let providerCode="unknown",providerType="unknown",providerStatus="unknown",providerMessageKind="none";
     try{
      const raw=await response.json() as {error?:{code?:unknown;type?:unknown;status?:unknown}};
      const safe=(value:unknown)=>typeof value==="string"&&/^[a-zA-Z0-9_.-]{1,80}$/.test(value)?value:"unknown";
@@ -99,9 +99,11 @@ export default async function handler(req:Req,res:ServerResponse){
        :/quota|billing|limit/i.test(message)?"quota_or_billing"
        :"unclassified";
       providerType=reason;
+      // Report only a non-sensitive error shape, never provider message or key.
+      providerMessageKind=message.length===0?"empty":/models\\//i.test(message)?"model_path":/api key/i.test(message)?"api_key":/project/i.test(message)?"project":/not found/i.test(message)?"not_found":/quota/i.test(message)?"quota":"other";
      }
     }catch{/* Provider may not return JSON. */}
-    console.error("egg_author_ai_provider_failure",{status:response.status,kind:geminiKey?"gemini":provider!.kind,model:geminiKey?activeModel:provider!.model,providerCode,providerType,providerStatus});
+    console.error("egg_author_ai_provider_failure",{status:response.status,kind:geminiKey?"gemini":provider!.kind,model:geminiKey?activeModel:provider!.model,providerCode,providerType,providerStatus,providerMessageKind});
     const code=response.status===429?"ai_rate_limited":response.status===402?"ai_budget_exhausted":response.status===401||response.status===403?"ai_model_not_authorized":response.status===404||response.status===400?"ai_model_or_request_unsupported":"ai_request_failed";
     return send(res,response.status===429?429:502,{error:code,providerHttpStatus:response.status,providerCode,providerType,providerStatus});
    }
