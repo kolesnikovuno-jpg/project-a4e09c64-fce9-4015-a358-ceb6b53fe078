@@ -47,7 +47,7 @@ const discoveredQuestion=z.object({
 }).strict();
 export const automatedSphereOutputSchema=z.object({
   text:z.string().trim().min(8).max(6000),
-  evidence:z.enum(["hypothesis","question"]).catch("hypothesis"),
+  evidence:z.enum(["hypothesis","question"]),
   sourceRefs:z.array(z.string()).max(0).optional(),
   discoveredQuestions:z.array(discoveredQuestion).max(6).optional(),
 }).strict();
