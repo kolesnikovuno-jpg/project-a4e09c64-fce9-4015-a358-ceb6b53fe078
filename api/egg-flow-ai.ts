@@ -75,7 +75,7 @@ export function providerFromEnv(env:NodeJS.ProcessEnv,oidcHeader?:string|string[
   if(geminiKey)return {
     url:"https://generativelanguage.googleapis.com/v1beta/models/",
     key:geminiKey,kind:"direct_gemini",
-    model:env.EGG_GEMINI_MODEL?.trim()||"gemini-3.5-flash",
+    model:env.EGG_GEMINI_MODEL?.trim()||"gemini-3-flash-preview",
   };
   const injected=typeof oidcHeader==="string"?oidcHeader.trim():"";
   const oidc=(env.VERCEL&&injected)||env.VERCEL_OIDC_TOKEN?.trim();
@@ -96,7 +96,7 @@ async function generate(model:Provider,prompt:{instructions:string;input:string}
   if(Buffer.byteLength(prompt.instructions)+Buffer.byteLength(prompt.input)>60000)
     throw Error("ai_context_too_large");
   const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),35000);
+  const timeout=setTimeout(()=>controller.abort(),50000);
   let response:Response;
   try{
     if(model.kind==="direct_gemini"){
