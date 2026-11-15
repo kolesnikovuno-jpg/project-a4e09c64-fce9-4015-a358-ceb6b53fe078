@@ -55,6 +55,7 @@ const errorMessage=(code:string)=>{
  if(code==="author_session_required"||code==="invalid_author_session")return "Для диалога необходимо войти в аккаунт EGG.";
  if(code==="project_not_found")return "Проект не найден в аккаунте Автора. Локальные материалы остаются на холсте.";
  if(code==="ai_rate_limited")return "Лимит запросов ИИ. Попробуйте позже.";
+ if(code==="model_incomplete")return "ИИ не завершил ответ. Незаконченный текст не сохранён как результат. Повторите запрос короче.";
  if(code==="ai_model_not_authorized")return "ИИ-модель сейчас недоступна для этого проекта.";
  return "Не удалось получить ответ ИИ. Материалы и история диалога сохранены.";
 };
