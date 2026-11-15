@@ -356,7 +356,9 @@ const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen }: Props) 
     testDrive: { title: copy.testDrive, description: copy.testDriveDescription, number: copy.testDriveNode, openLabel: copy.testDriveLabel, closeLabel: copy.testDriveCloseLabel },
     procurement: { title: copy.procurement, description: copy.procurementDescription, number: copy.procurementNode, openLabel: copy.procurementLabel, closeLabel: copy.procurementCloseLabel },
     legal: { title: copy.legal, description: copy.legalDescription, number: copy.legalNode, openLabel: copy.legalLabel, closeLabel: copy.legalCloseLabel },
-    idea: { title: onIdeaOpen ? (locale === "ru" ? "Идея" : locale === "uk" ? "Ідея" : "Idea") : copy.idea, description: copy.ideaDescription, number: copy.ideaNode, openLabel: copy.ideaLabel, closeLabel: copy.ideaCloseLabel },
+    idea: { title: onIdeaOpen ? (locale === "ru" ? "Идея" : locale === "uk" ? "Ідея" : "Idea") : copy.idea, description: copy.ideaDescription, number: copy.ideaNode,
+      openLabel: onIdeaOpen ? (locale === "ru" ? "Открыть сферу «Идея»" : locale === "uk" ? "Відкрити сферу «Ідея»" : "Open Idea sphere") : copy.ideaLabel,
+      closeLabel: onIdeaOpen ? (locale === "ru" ? "Сфера «Идея»" : locale === "uk" ? "Сфера «Ідея»" : "Idea sphere") : copy.ideaCloseLabel },
     matter: { title: copy.matter, description: copy.matterDescription, number: copy.matterNode, openLabel: copy.matterLabel, closeLabel: copy.matterCloseLabel },
   };
   const hasIdea = ideaDraft.trim().length > 0;
