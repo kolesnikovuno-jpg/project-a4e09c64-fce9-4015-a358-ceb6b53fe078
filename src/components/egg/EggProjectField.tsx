@@ -4,9 +4,11 @@ import { Check, Undo2, Camera, CircleDot, FileUp, FolderOpen, Image as ImageIcon
 import EggRadialMenu, { type EggMenuAction } from "./EggRadialMenu";
 import EggSketchEditor, { type SketchStroke } from "./EggSketchEditor";
 import EggPhotoWorkspace, { PhotoMarkupOverlay, type PhotoMarkup } from "./EggPhotoWorkspace";
-import EggLinkWorkspace, { normalizeSiteUrl, type SiteMark } from "./EggLinkWorkspace";
+import EggLinkWorkspace, { normalizeSiteUrl } from "./EggLinkWorkspace";
 
 type Point = { x:number; y:number };
+// Retain legacy mark records in saved project data; never display viewport-only anchors as content anchors.
+type SiteMark = { id:string; x:number; y:number; text:string };
 type Workspace = "field" | "matter";
 type Item = { location?:Workspace; fieldPosition?:Point; matterPosition?:Point; id:string; type:"thought"|"link"|"image"|"sketch"|"video"; x:number; y:number; text:string; src?:string; points?:Point[]; strokes?:SketchStroke[]; photoMarkup?:PhotoMarkup; siteMarks?:SiteMark[]; sourceUrl?:string; color?:string; strokeWidth?:number; mediaId?:string };
 type Tool = "thought"|"link"|null;
@@ -360,11 +362,6 @@ export default function EggProjectField({projectId,children,workspace="field",on
    }}
    onClose={()=>{setOpenId(null);setFocusedPhotoNoteId(null);}}/>}
   {active?.type==="link"&&<EggLinkWorkspace key={active.id} address={active.text}
-    marks={active.siteMarks??[]}
-    onMarksChange={marks=>{
-     // Persist with this link in the project's existing field storage.
-     change(previous=>previous.map(item=>item.id===active.id?{...item,siteMarks:marks}:item));
-    }}
     onClose={()=>setOpenId(null)}/>}
   {active&&!active.src&&active.type!=="link"&&<div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/65 p-4" role="presentation" onClick={()=>setOpenId(null)}>
    <div role="dialog" aria-modal="true" aria-label="Просмотр материала" onClick={e=>e.stopPropagation()} className="relative max-h-[92dvh] w-full max-w-[min(92vw,900px)] overflow-y-auto rounded-2xl bg-background p-4 shadow-2xl sm:p-6">
