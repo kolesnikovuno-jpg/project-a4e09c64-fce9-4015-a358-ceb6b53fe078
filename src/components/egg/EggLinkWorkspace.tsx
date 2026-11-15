@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Camera, Check, ExternalLink, FileText, Globe2, X } from "lucide-react";
 import EggPhotoWorkspace from "./EggPhotoWorkspace";
 
@@ -32,6 +32,33 @@ export default function EggLinkWorkspace({
  const [error,setError]=useState("");
  const [capturing,setCapturing]=useState(false);
  const [captureChoices,setCaptureChoices]=useState(false);
+ const screenshotFileInput=useRef<HTMLInputElement>(null);
+ const [screenCaptureSupported]=useState(()=>typeof navigator.mediaDevices?.getDisplayMedia==="function");
+ const prepareScreenshot=(blob:Blob)=>{
+  if(!blob.type.startsWith("image/")){setError("Выберите файл изображения.");return;}
+  const reader=new FileReader();
+  reader.onload=()=>{
+   if(typeof reader.result==="string"){
+    setScreenshot(reader.result);setCaptureChoices(false);setTextOpen(false);setError("");
+   }
+  };
+  reader.onerror=()=>setError("Не удалось открыть снимок.");
+  reader.readAsDataURL(blob);
+ };
+ const pasteScreenshot=async()=>{
+  if(!navigator.clipboard?.read){
+   setError("Вставка изображения из буфера недоступна. Используйте «Выбрать из Фото».");
+   return;
+  }
+  try{
+   const content=await navigator.clipboard.read();
+   for(const item of content){
+    const type=item.types.find(type=>type.startsWith("image/"));
+    if(type){prepareScreenshot(await item.getType(type));return;}
+   }
+   setError("В буфере обмена нет изображения. Скопируйте снимок экрана.");
+  }catch{setError("Safari не разрешил чтение снимка. Используйте «Выбрать из Фото».");}
+ };
  const requestServerScreenshot=async()=>{
   if(!url||capturing)return;
   setCapturing(true);setError("");
@@ -138,18 +165,33 @@ export default function EggLinkWorkspace({
       <p className="text-sm">Это не адрес сайта. Укажите ссылку с http:// или https://.</p>
       <p className="break-all text-xs text-foreground/55">{address}</p>
      </div>}
+   {url&&onCaptureCrop&&<input ref={screenshotFileInput} type="file" accept="image/*"
+     className="hidden" aria-label="Выбрать скриншот из Фото"
+     onChange={e=>{const selected=e.target.files?.[0];if(selected)prepareScreenshot(selected);e.target.value="";}}/>}
    {captureChoices&&url&&<div data-testid="egg-capture-options"
       className="pointer-events-auto absolute bottom-3 right-3 z-30 w-[min(340px,calc(100%-24px))] rounded-xl bg-background/95 p-3 shadow-[0_5px_28px_rgba(0,0,0,.22)] backdrop-blur-md">
       <div className="mb-2 flex items-center justify-between">
        <span className="text-sm font-medium">Снимок фрагмента</span>
        <button type="button" aria-label="Закрыть выбор захвата" className="rounded-full p-2 hover:bg-foreground/10" onClick={()=>setCaptureChoices(false)}><X size={16}/></button>
       </div>
-      <button type="button" aria-label="Снять текущий экран" disabled={capturing}
+      {screenCaptureSupported?<button type="button" aria-label="Снять текущий экран" disabled={capturing}
        className="w-full rounded-lg border border-foreground/15 px-3 py-3 text-left text-sm disabled:opacity-50"
        onClick={()=>void requestVisibleScreenshot()}>
        Текущий экран
        <span className="mt-1 block text-xs text-foreground/55">Выбрать вкладку или окно в разрешении браузера. Прокрутка сохраняется.</span>
-      </button>
+      </button>:<>
+       <p className="mb-2 text-xs text-foreground/65">Safari на iPad не разрешает сайту делать снимок текущего экрана. Для сохранения именно видимого состояния 3D-сцены сделайте системный скриншот.</p>
+       <button type="button" aria-label="Вставить снимок экрана" onClick={()=>void pasteScreenshot()}
+        className="w-full rounded-lg border border-foreground/15 px-3 py-3 text-left text-sm">
+        Вставить снимок
+        <span className="mt-1 block text-xs text-foreground/55">Если снимок скопирован в буфер обмена.</span>
+       </button>
+       <button type="button" aria-label="Выбрать снимок из Фото" onClick={()=>screenshotFileInput.current?.click()}
+        className="mt-2 w-full rounded-lg border border-foreground/15 px-3 py-3 text-left text-sm">
+        Выбрать из Фото
+        <span className="mt-1 block text-xs text-foreground/55">Системный снимок экрана → выделить фрагмент → на холст.</span>
+       </button>
+      </>}
       <button type="button" aria-label="Снять страницу с начала" disabled={capturing}
        className="mt-2 w-full rounded-lg border border-foreground/15 px-3 py-3 text-left text-sm disabled:opacity-50"
        onClick={()=>void requestServerScreenshot()}>
@@ -174,7 +216,7 @@ export default function EggLinkWorkspace({
     </div>}
    {error&&<div role="alert" className="absolute bottom-3 left-3 z-30 rounded-full bg-background/95 px-3 py-2 text-xs shadow-md">{error}</div>}
    {!textOpen&&!captureChoices&&url&&<div className="pointer-events-none absolute bottom-2 left-1/2 z-20 max-w-[92%] -translate-x-1/2 rounded-full bg-background/90 px-3 py-2 text-center text-[11px] text-foreground/65 shadow-sm backdrop-blur-md">
-    Серверное превью передаёт публичный URL WordPress.com. Для текущей прокрутки выбирайте «Текущий экран».
+    Серверное превью передаёт публичный URL WordPress.com. Для видимой области используйте доступный в браузере захват или системный скриншот.
    </div>}
   </div>
   {screenshot&&url&&onCaptureCrop&&<EggPhotoWorkspace src={screenshot} title="Выделите область скриншота" cropOnly
