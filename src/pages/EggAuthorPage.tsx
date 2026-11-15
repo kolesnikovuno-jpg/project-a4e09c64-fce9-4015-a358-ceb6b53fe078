@@ -19,7 +19,7 @@ export default function EggAuthorPage(){
  return <main className="min-h-screen bg-background p-2 sm:p-4">
   <header className="mb-3 flex flex-wrap items-center justify-between gap-2">
    <Link className="text-sm underline underline-offset-4" to={"/ru/egg?project="+encodeURIComponent(projectId)}>← Вернуться к Яйцу</Link>
-   <span className="text-xs text-foreground/60">EGG · Автор · Рабочее пространство v0.1</span>
+   <span className="text-xs text-foreground/60">EGG · Идея · Рабочее пространство v0.1</span>
   </header>
   {error&&<div role="alert" className="rounded-lg border p-4 text-sm">{error} <Link to="/egg/connect" className="ml-2 underline">Войти</Link></div>}
   {!error&&!state&&<p className="p-4 text-sm">Загружаем проект…</p>}

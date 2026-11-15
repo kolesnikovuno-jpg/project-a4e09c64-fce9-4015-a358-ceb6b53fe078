@@ -837,9 +837,8 @@ const UnoEggScene = ({ locale, onSphereOpen }: Props) => {
               </g>;
             })}
           </g>
-          {/* The Author is an external source and operator, ABOVE the egg,
-              not a functional sphere or part of any of the five stages.
-              Original seed lives in the Author page and is sent into Idea. */}
+          {/* Idea workspace entry; retain the legacy author identifier and position
+              for compatibility. The human author remains the decision maker. */}
           <g data-testid="unocalc-author-source">
             <line x1="380" y1="45" x2="380" y2="61"
               stroke="currentColor" strokeWidth=".75" strokeOpacity=".27"
@@ -851,13 +850,13 @@ const UnoEggScene = ({ locale, onSphereOpen }: Props) => {
               fill="currentColor" fillOpacity={ideaCycle?.seed ? ".6" : ".16"} pointerEvents="none" />
             <text x="403" y="33.5" fontSize="12" fontWeight="300"
               letterSpacing="1.25" fill="currentColor" opacity=".60"
-              pointerEvents="none">{locale === "ru" ? "АВТОР" : locale === "uk" ? "АВТОР" : "AUTHOR"}</text>
+              pointerEvents="none">{locale === "ru" ? "ИДЕЯ" : locale === "uk" ? "ІДЕЯ" : "IDEA"}</text>
             <circle
               data-testid="unocalc-author-hit" data-egg-node="author"
               cx="380" cy="29" r="25"
               fill="transparent" pointerEvents="all" stroke="none"
               role="button" tabIndex={0}
-              aria-label={locale === "ru" ? "Открыть страницу Автора" : locale === "uk" ? "Відкрити сторінку Автора" : "Open Author page"}
+              aria-label={locale === "ru" ? "Открыть сферу Идея" : locale === "uk" ? "Відкрити сферу Ідея" : "Open Idea sphere"}
               className="cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
               onKeyDown={(event) => onNodeKeyDown(event, "author")} />
           </g>
@@ -1105,8 +1104,8 @@ const UnoEggScene = ({ locale, onSphereOpen }: Props) => {
             className={`unocalc-workspace-dialog relative z-10 flex h-full min-h-0 flex-col overflow-hidden border-l border-foreground/15 bg-background shadow-2xl transition-[width,transform,opacity] duration-[420ms] ease-out motion-reduce:transition-none ${workspaceVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-95"} ${workspaceExpanded ? "w-full" : "w-full min-[1100px]:w-[min(520px,60vw)]"}`}>
             <header className="unocalc-workspace-header flex shrink-0 items-start justify-between gap-3 border-b border-foreground/10 pb-4 min-[1100px]:pb-6">
               <div className="min-w-0 flex-1">
-                <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-foreground/45">UNO / EGG / {workspaceNode === "author" ? (locale === "en" ? "AUTHOR" : "АВТОР") : workspaceNode ? nodeDetails[workspaceNode].number : ""}</p>
-                <h2 id="unocalc-sphere-workspace-title" className="break-words text-[22px] leading-snug font-extralight tracking-[-0.035em] sm:text-[26px]">{workspaceNode === "author" ? (locale === "en" ? "Author" : "Автор") : workspaceNode ? nodeDetails[workspaceNode].title : ""}</h2>
+                <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-foreground/45">UNO / EGG / {workspaceNode === "author" ? (locale === "en" ? "IDEA" : locale === "uk" ? "ІДЕЯ" : "ИДЕЯ") : workspaceNode ? nodeDetails[workspaceNode].number : ""}</p>
+                <h2 id="unocalc-sphere-workspace-title" className="break-words text-[22px] leading-snug font-extralight tracking-[-0.035em] sm:text-[26px]">{workspaceNode === "author" ? (locale === "en" ? "Idea" : locale === "uk" ? "Ідея" : "Идея") : workspaceNode ? nodeDetails[workspaceNode].title : ""}</h2>
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <button type="button" data-testid="unocalc-sphere-expand" onClick={() => setWorkspaceExpanded((value) => !value)}

@@ -78,21 +78,21 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
           ><UnoEggScene locale={locale} onSphereOpen={(sphere) => setSelectedWorkSphere(sphere as SphereId)} /></EggProjectField> : <UnoEggScene locale={locale} onSphereOpen={eggBrand ? (sphere) => setSelectedWorkSphere(sphere as SphereId) : undefined} />}
         </section>
         {eggBrand && !fieldMode && <div className="flex flex-wrap items-center justify-center gap-3 py-5">
-          {hasProject && <button type="button" onClick={() => { setActiveSphere("author"); setPanelOpen(true); }} className="rounded-full bg-foreground px-5 py-3 text-sm text-background" data-testid="egg-open-concept">Автор · решение по ДНК</button>}
+          {hasProject && <button type="button" onClick={() => { setActiveSphere("author"); setPanelOpen(true); }} className="rounded-full bg-foreground px-5 py-3 text-sm text-background" data-testid="egg-open-concept">Идея · решение по ДНК</button>}
           <button type="button" onClick={() => { setActiveSphere(null); setPanelOpen(true); }} className="rounded-full border border-foreground/30 px-5 py-3 text-sm text-foreground/80">{hasProject ? "Открыть проект и результаты сфер" : "Познакомиться с EGG"}</button>
           <span className="text-xs text-foreground/50">Сферы открывают исходные боковые панели; обзор проекта доступен отдельно</span>
         </div>}
         {eggBrand && selectedWorkSphere && <EggSpherePanel key={selectedWorkSphere} sphere={selectedWorkSphere} name={EGG_SPHERES[selectedWorkSphere].name} summary={EGG_SPHERES[selectedWorkSphere].purpose} status="open" projectId={params.get("project")} onClose={() => setSelectedWorkSphere(null)} />}
         {eggBrand && panelOpen && <div className="fixed inset-0 z-[100] isolate flex items-stretch justify-end bg-background/20 backdrop-blur-[2px]" onMouseDown={event => { if (event.target === event.currentTarget) setPanelOpen(false); }}>
-          <div role="dialog" aria-modal="true" aria-label={activeSphere === "author" ? "Холст Автора EGG" : "Рабочая панель EGG"} className={`relative z-10 flex h-[100dvh] w-full flex-col overflow-hidden bg-background shadow-2xl transition-[max-width] duration-300 ${activeSphere === "author" ? "max-w-none" : panelExpanded ? "max-w-[min(100vw,1060px)]" : "max-w-[min(100vw,480px)]"}`}>
+          <div role="dialog" aria-modal="true" aria-label={activeSphere === "author" ? "Холст сферы Идея EGG" : "Рабочая панель EGG"} className={`relative z-10 flex h-[100dvh] w-full flex-col overflow-hidden bg-background shadow-2xl transition-[max-width] duration-300 ${activeSphere === "author" ? "max-w-none" : panelExpanded ? "max-w-[min(100vw,1060px)]" : "max-w-[min(100vw,480px)]"}`}>
             <div className="flex shrink-0 items-center justify-between border-b border-foreground/10 px-5 py-3">
-              <span className="text-sm font-medium">{activeSphere === "author" ? "EGG · Автор / Холст" : "EGG · Рабочая панель"}</span>
+              <span className="text-sm font-medium">{activeSphere === "author" ? "EGG · Идея / Холст" : "EGG · Рабочая панель"}</span>
               <div className="flex items-center gap-2">{activeSphere !== "author" && <button type="button" onClick={() => setPanelExpanded(value => !value)} aria-label={panelExpanded ? "Свернуть панель" : "Развернуть панель"} className="rounded-full border border-foreground/20 px-3 py-2 text-sm">{panelExpanded ? "Свернуть" : "Развернуть"}</button>}<button type="button" onClick={() => setPanelOpen(false)} aria-label="Закрыть панель" className="rounded-full border border-foreground/20 px-4 py-2 text-sm">Закрыть ×</button></div>
             </div>
             <div className="min-h-0 overflow-y-auto overscroll-contain px-3 pb-5 sm:px-5">
               {!hasProject ? <div className="mx-auto max-w-[660px] space-y-4 py-6">
-  <h2 className="text-lg font-medium">{activeSphere && activeSphere in EGG_SPHERES ? activeSphere : activeSphere === "author" ? "Автор" : "Знакомство с EGG"}</h2>
-  <p className="text-sm leading-relaxed text-foreground/75">{activeSphere && activeSphere in EGG_SPHERES ? EGG_SPHERES[activeSphere as keyof typeof EGG_SPHERES].purpose : activeSphere === "author" ? "Автор формирует замысел, направляет работу сфер и утверждает решения." : "Вращайте Яйцо и выбирайте сферы. Здесь можно познакомиться с системой без регистрации."}</p>
+  <h2 className="text-lg font-medium">{activeSphere && activeSphere in EGG_SPHERES ? activeSphere : activeSphere === "author" ? "Идея" : "Знакомство с EGG"}</h2>
+  <p className="text-sm leading-relaxed text-foreground/75">{activeSphere && activeSphere in EGG_SPHERES ? EGG_SPHERES[activeSphere as keyof typeof EGG_SPHERES].purpose : activeSphere === "author" ? "В сфере Идея автор осмысляет материалы поля и уточняет замысел через итерации." : "Вращайте Яйцо и выбирайте сферы. Здесь можно познакомиться с системой без регистрации."}</p>
   {activeSphere && activeSphere in EGG_SPHERES && <p className="text-sm text-foreground/70">Вопрос сферы: {EGG_SPHERES[activeSphere as keyof typeof EGG_SPHERES].question}</p>}
   <Link to="/egg/connect" className="inline-flex rounded-full bg-foreground px-5 py-3 text-sm text-background">Начать · Вход или регистрация</Link>
 </div> : <EggServerState activeSphere={activeSphere} onSelectSphere={setActiveSphere} />}

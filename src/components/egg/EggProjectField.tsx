@@ -208,7 +208,7 @@ export default function EggProjectField({projectId,children,onOpenAuthor,onOpenP
    {id:"eggReset",label:"Исходный размер",icon:RotateCcw,onSelect:()=>setEggScale(.8)},
   ]},
   {id:"navigation",label:"Разделы",icon:FolderOpen,children:[
-   {id:"author",label:"Автор",icon:UserRound,onSelect:onOpenAuthor},
+   {id:"author",label:"Идея",icon:UserRound,onSelect:onOpenAuthor},
    {id:"project",label:"Проект",icon:FolderOpen,onSelect:onOpenProject},
    {id:"yolk",label:"Желток",icon:CircleDot,onSelect:onOpenYolk},
    {id:"account",label:"Аккаунт",icon:UserRound,onSelect:onOpenAccount},

@@ -85,9 +85,9 @@ export default function EggAuthorCanvas({projectId,seed,revision,onSaved}:{proje
   onSaved();
  }catch(e){setError(e instanceof Error?e.message:"Ошибка");}finally{setBusy(false);}}
  const strokes=[...board.strokes,...(draft?[draft]:[])];
- return <section className="relative w-full overflow-hidden rounded-xl border border-foreground/20 bg-background" aria-label="Холст сферы Автор" data-testid="egg-author-canvas">
+ return <section className="relative w-full overflow-hidden rounded-xl border border-foreground/20 bg-background" aria-label="Холст сферы Идея" data-testid="egg-author-canvas">
   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-foreground/15 p-3">
-   <div><strong className="text-sm">Автор / Холст идеи</strong><p className="text-[11px] text-foreground/60">Эскиз · образы · смыслы</p></div>
+   <div><strong className="text-sm">Идея / Холст</strong><p className="text-[11px] text-foreground/60">Эскиз · образы · смыслы</p></div>
    <div className="flex flex-wrap gap-2">
     <button type="button" onClick={()=>setPanel(v=>!v)} className="rounded-full border px-3 py-1.5 text-xs">{panel?"Свернуть":"Открыть"} помощника</button>
     <button type="button" onClick={()=>setZoom(z=>Math.max(.5,z-.25))} className="rounded border px-2 text-sm" aria-label="Уменьшить">−</button>
