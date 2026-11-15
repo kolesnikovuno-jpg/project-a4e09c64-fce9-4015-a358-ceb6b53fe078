@@ -14,6 +14,7 @@ describe("EGG Idea initiation",()=>{
   const onMatter=vi.fn();
   render(<EggIdeaWorkspace projectId={project} onClose={()=>{}} onOpenMatter={onMatter}/>);
   expect(screen.getByText("Аккорд импульса")).toBeTruthy();
+  expect(screen.getByRole("button",{name:"Открыть круговое меню"})).toBeTruthy();
   expect(screen.queryByText("Не выбран")).toBeNull();
   expect(screen.getByText("Поле: тлеющий минимализм")).toBeTruthy();
   const intent=screen.getByRole("textbox",{name:"Намерение Автора"});
