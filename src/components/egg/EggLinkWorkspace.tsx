@@ -116,7 +116,7 @@ export default function EggLinkWorkspace({
     </div>}
    {error&&<div role="alert" className="absolute bottom-3 left-3 z-30 rounded-full bg-background/95 px-3 py-2 text-xs shadow-md">{error}</div>}
    {!textOpen&&url&&<div className="pointer-events-none absolute bottom-2 left-1/2 z-20 max-w-[92%] -translate-x-1/2 rounded-full bg-background/90 px-3 py-2 text-center text-[11px] text-foreground/65 shadow-sm backdrop-blur-md">
-    «Фрагмент» получает публичную версию страницы, не текущий экран. Закрытые сайты могут не сниматься.
+    «Фрагмент» передаёт публичный URL сервису WordPress.com для снимка. Это не текущий экран; снимок может быть устаревшим.
    </div>}
   </div>
   {screenshot&&url&&onCaptureCrop&&<EggPhotoWorkspace src={screenshot} title="Выделите область скриншота" cropOnly
