@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, BrainCircuit, Check, Send, X } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import { makePreview, type MatterCard } from "./EggMatterDialogue";
+import EggWorkspaceNavigation from "./EggWorkspaceNavigation";
 
 type Message={role:"user"|"assistant";content:string};
 type FieldItem=MatterCard&{location?:string;sourceUrl?:string};
@@ -9,8 +10,9 @@ type IdeaRecord={intent:string;constraints:string;messages:Message[];savedDraft:
 const readJSON=(key:string):unknown=>{
  try{return JSON.parse(localStorage.getItem(key)??"null");}catch{return null;}
 };
-export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter}:{
+export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenField,onOpenConcept,onOpenYolk}:{
  projectId:string;onClose:()=>void;onOpenMatter:()=>void;
+ onOpenField?:()=>void;onOpenConcept?:()=>void;onOpenYolk?:()=>void;
 }){
  const key="egg:idea-workspace:v1:"+projectId;
  const [intent,setIntent]=useState("");
@@ -170,5 +172,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter}:{
    </form>
    <p className="text-[10px] opacity-55">Локальный черновик · не меняет ДНК, уровень или решения Автора</p>
   </div>
+  <EggWorkspaceNavigation active="idea" onOpenField={onOpenField} onOpenMatter={onOpenMatter}
+   onOpenIdea={()=>{}} onOpenConcept={onOpenConcept} onOpenYolk={onOpenYolk}/>
  </section>;
 }
