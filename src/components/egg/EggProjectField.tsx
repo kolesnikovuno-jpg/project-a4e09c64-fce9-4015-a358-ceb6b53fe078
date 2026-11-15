@@ -263,8 +263,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
  const active=items.find(item=>item.id===openId);
  const currentScale=Math.round(zoom*100);
  return <section className="absolute inset-0 overflow-hidden bg-background" aria-label={workspace==="matter"?"Холст сферы Материальное":"Поле проекта EGG"} data-workspace={workspace} data-testid="egg-project-field">
-  <div ref={field} className="absolute inset-y-0 right-0 touch-none overflow-hidden" style={{left:workspace==="matter"&&matterDialogueOpen?"max(240px,min(42%,420px))":0}} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}
-   style={{backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}}>
+  <div ref={field} className="absolute inset-y-0 left-0 touch-none overflow-hidden" style={{right:workspace==="matter"&&matterDialogueOpen?"max(240px,min(42%,420px))":0,backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}>
    <div className={"pointer-events-none absolute inset-0 z-10 flex items-center justify-center"+(workspace==="matter"?" hidden":"")}>
     <div data-egg-anchor className="pointer-events-auto relative shrink-0 [&_[data-testid=unocalc-maturity-readout]]:hidden [&_[data-testid=unocalc-rotation-hint]]:hidden" style={{width:900,height:620,transform:"scale("+eggScale+")",touchAction:"none"}}
      onPointerDownCapture={eggDown} onPointerMoveCapture={eggMove} onPointerUpCapture={eggUp} onPointerCancelCapture={eggUp}
@@ -333,7 +332,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
     projectId={projectId} cards={matterCards} focusId={matterFocusId} onClearFocus={()=>setMatterFocusId(null)}
     onBack={()=>onWorkspaceChange?.("field")} onClose={()=>setMatterDialogueOpen(false)}/>}
   {workspace==="matter"&&!matterDialogueOpen&&<button type="button" aria-label="Открыть диалог Материальное"
-    className="absolute left-5 top-16 z-40 flex items-center gap-2 rounded-full bg-[#f9f7f2] px-4 py-2 text-xs text-[#45574b] shadow-md"
+    className="absolute right-5 top-16 z-40 flex items-center gap-2 rounded-full bg-[#f9f7f2] px-4 py-2 text-xs text-[#45574b] shadow-md"
     onClick={()=>setMatterDialogueOpen(true)}><MessageCircle size={16}/> Диалог с ИИ</button>}
   {workspace==="matter"&&!visibleItems.length&&<p className="pointer-events-none absolute inset-x-8 top-1/2 text-center text-sm text-foreground/45">Выберите карточки в общем поле кнопкой «В работу».</p>}
   {!tool && !sketchEditor && !openId && <EggRadialMenu actions={menuActions} side={workspace==="matter"?"right":"left"}/>}
