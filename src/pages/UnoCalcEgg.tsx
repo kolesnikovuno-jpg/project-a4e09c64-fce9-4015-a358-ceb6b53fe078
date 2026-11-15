@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { EGG_SPHERES } from "@/lib/eggEngine";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import { useLocale } from "@/i18n/useLocale";
@@ -15,6 +15,7 @@ const modelLabel = { ru: "Модель объекта", uk: "Модель об�
 const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
   const { locale, localePath } = useLocale();
   const [params] = useSearchParams();
+  const navigate = useNavigate();
   const hasProject = Boolean(params.get("project"));
   const fieldMode = eggBrand && hasProject;
   const [activeSphere, setActiveSphere] = useState<string | null>(null);
@@ -54,10 +55,7 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
           <h1 className="pointer-events-auto text-[25px] font-extralight leading-none tracking-[-0.04em] text-foreground/85 sm:text-[28px]">
             {eggBrand ? "EGG" : <>UNO<span className="font-extralight">calc</span></>}
           </h1>
-          {fieldMode ? <nav className="pointer-events-auto flex items-center gap-2">
-            <button type="button" onClick={() => { setActiveSphere("author"); setPanelOpen(true); }} className="rounded-full border border-foreground/10 bg-background/90 px-3 py-2 text-xs text-foreground/75 shadow-sm" data-testid="egg-open-concept">Автор</button>
-            <button type="button" onClick={() => { setActiveSphere(null); setPanelOpen(true); }} className="rounded-full border border-foreground/10 bg-background/90 px-3 py-2 text-xs text-foreground/75 shadow-sm">Проект</button>
-          </nav> : <nav className="flex items-center gap-4 sm:gap-7">
+          {!fieldMode && <nav className="flex items-center gap-4 sm:gap-7">
             {eggBrand && <Link to={"/egg/yolk" + (hasProject ? "?project=" + encodeURIComponent(params.get("project") || "") : "")} className="text-[12px] text-foreground/70 hover:text-primary">Желток · 3D</Link>}
             {eggBrand && <Link to="/egg/connect" className="text-[12px] text-foreground/70 hover:text-primary">{({ ru: "Аккаунт", uk: "Акаунт", en: "Account" } as const)[locale]}</Link>}
             <Link to={localePath("/unocalc/model")}
@@ -71,7 +69,13 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
           </nav>}
         </header>
         <section className={fieldMode ? "absolute inset-0" : "mt-3"} aria-label={eggBrand ? "EGG — interactive project workspace" : "UNOcalc — egg geometry"}>
-          {eggBrand && hasProject ? <EggProjectField projectId={params.get("project") || ""}><UnoEggScene locale={locale} onSphereOpen={(sphere) => setSelectedWorkSphere(sphere as SphereId)} /></EggProjectField> : <UnoEggScene locale={locale} onSphereOpen={eggBrand ? (sphere) => setSelectedWorkSphere(sphere as SphereId) : undefined} />}
+          {eggBrand && hasProject ? <EggProjectField
+            projectId={params.get("project") || ""}
+            onOpenAuthor={() => { setActiveSphere("author"); setPanelOpen(true); }}
+            onOpenProject={() => { setActiveSphere(null); setPanelOpen(true); }}
+            onOpenYolk={() => navigate("/egg/yolk?project=" + encodeURIComponent(params.get("project") || ""))}
+            onOpenAccount={() => navigate("/egg/connect")}
+          ><UnoEggScene locale={locale} onSphereOpen={(sphere) => setSelectedWorkSphere(sphere as SphereId)} /></EggProjectField> : <UnoEggScene locale={locale} onSphereOpen={eggBrand ? (sphere) => setSelectedWorkSphere(sphere as SphereId) : undefined} />}
         </section>
         {eggBrand && !fieldMode && <div className="flex flex-wrap items-center justify-center gap-3 py-5">
           {hasProject && <button type="button" onClick={() => { setActiveSphere("author"); setPanelOpen(true); }} className="rounded-full bg-foreground px-5 py-3 text-sm text-background" data-testid="egg-open-concept">Автор · решение по ДНК</button>}
