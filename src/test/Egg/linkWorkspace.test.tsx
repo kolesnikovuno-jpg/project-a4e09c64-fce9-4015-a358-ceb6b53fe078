@@ -46,28 +46,31 @@ describe("EGG link website preview",()=>{
   expect(screen.queryByRole("button",{name:"Добавить изображение с сайта"})).toBeNull();
   expect(screen.queryByRole("button",{name:"Скрин сайта"})).toBeNull();
  });
- it("never opens Photos or camera when browser screenshot is unsupported",()=>{
-  const onCaptureCrop=vi.fn();
-  render(<EggLinkWorkspace address="https://example.com/reference" onClose={()=>{}} onCaptureCrop={onCaptureCrop}/>);
-  fireEvent.click(screen.getByRole("button",{name:"Фрагмент сайта"}));
-  expect(screen.getByRole("alert").textContent).toContain("браузер не поддерживает захват вкладки");
-  expect(screen.queryByLabelText("Выбрать готовый скриншот")).toBeNull();
-  expect(onCaptureCrop).not.toHaveBeenCalled();
- });
- it("invokes browser screen capture rather than a file picker when supported",async()=>{
-  const getDisplayMedia=vi.fn(async()=>{const error=new Error("cancelled");error.name="NotAllowedError";throw error;});
-  const media=Object.getOwnPropertyDescriptor(navigator,"mediaDevices");
+ it("requests a screenshot from the EGG server without opening the camera or browser sharing",async()=>{
+  const original=globalThis.fetch;
+  const fetchMock=vi.fn(async()=>({ok:true,status:200,json:async()=>({ok:true,status:"ready",imageDataUrl:"data:image/png;base64,iVBORw0KGgo="})}));
+  vi.stubGlobal("fetch",fetchMock);
   try{
-   Object.defineProperty(navigator,"mediaDevices",{configurable:true,value:{getDisplayMedia}});
    render(<EggLinkWorkspace address="https://example.com/reference" onClose={()=>{}} onCaptureCrop={()=>{}}/>);
    fireEvent.click(screen.getByRole("button",{name:"Фрагмент сайта"}));
-   await waitFor(()=>expect(getDisplayMedia).toHaveBeenCalledWith({video:true,audio:false}));
+   await waitFor(()=>expect(fetchMock).toHaveBeenCalledTimes(1));
+   expect(fetchMock).toHaveBeenCalledWith("/api/egg-screenshot",{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({url:"https://example.com/reference"})
+   });
+   expect(await screen.findByTestId("egg-photo-workspace")).toBeTruthy();
    expect(screen.queryByLabelText("Выбрать готовый скриншот")).toBeNull();
-   await waitFor(()=>expect(screen.getByRole("alert").textContent).toContain("Захват отменён"));
-  }finally{
-   if(media)Object.defineProperty(navigator,"mediaDevices",media);
-   else Reflect.deleteProperty(navigator,"mediaDevices");
-  }
+  }finally{vi.stubGlobal("fetch",original);}
+ });
+ it("reports a pending public-page render without opening another tool",async()=>{
+  const original=globalThis.fetch;
+  vi.stubGlobal("fetch",vi.fn(async()=>({ok:false,status:202,json:async()=>({status:"pending"})})));
+  try{
+   render(<EggLinkWorkspace address="https://example.com/reference" onClose={()=>{}} onCaptureCrop={()=>{}}/>);
+   fireEvent.click(screen.getByRole("button",{name:"Фрагмент сайта"}));
+   await waitFor(()=>expect(screen.getByRole("alert").textContent).toContain("Снимок ещё формируется"));
+   expect(screen.queryByTestId("egg-photo-workspace")).toBeNull();
+  }finally{vi.stubGlobal("fetch",original);}
  });
  it("does not embed unsafe legacy links",()=>{
   render(<EggLinkWorkspace address="javascript:alert(1)" onClose={()=>{}}/>);
