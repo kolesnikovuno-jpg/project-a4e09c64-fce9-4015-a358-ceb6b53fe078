@@ -28,9 +28,10 @@ import {
 } from "@/lib/unocalcEgg3d";
 
 type Locale = "ru" | "uk" | "en";
-type Props = { locale: Locale; onMatterOpen?: () => void; onIdeaOpen?: () => void; onConceptOpen?: () => void; onSphereOpen?: (sphere: string) => void };
+type Props = { locale: Locale; onMatterOpen?: () => void; onIdeaOpen?: () => void; onConceptOpen?: () => void; onYolkOpen?: () => void; onSphereOpen?: (sphere: string) => void };
 type InteractiveNode = "retail" | "commerce" | "design" | "production" | "marketing" | "testDrive" | "procurement" | "legal" | "idea" | "matter";
 type EggHitNode = InteractiveNode | "author";
+type EggClickableNode = EggHitNode | "yolk";
 type NodeDetail = { title: string; description: string; number: string; openLabel: string; closeLabel: string };
 
 // Front elevation: the horizontal diameter has two side nodes, while
@@ -306,7 +307,7 @@ const NodeDescription = ({ node, detail }: { node: InteractiveNode; detail: Node
   );
 };
 
-const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen, onConceptOpen }: Props) => {
+const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen, onConceptOpen, onYolkOpen }: Props) => {
   const [orientation, setOrientation] = useState<EggOrientation>(INITIAL);
   const [selectedNodes, setSelectedNodes] = useState<InteractiveNode[]>([]);
   const [workspaceNode, setWorkspaceNode] = useState<EggHitNode | null>(null);
@@ -343,7 +344,7 @@ const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen, onConcept
   const sketchUrls = useRef<string[]>([]);
   const designWorkspace = useRef<HTMLElement>(null);
   const pointer = useRef<{ id: number; x: number; y: number; startX: number; startY: number; moved: boolean; targetNode: string | null } | null>(null);
-  const lastPointerActivation = useRef<{ node: EggHitNode; time: number } | null>(null);
+  const lastPointerActivation = useRef<{ node: EggClickableNode; time: number } | null>(null);
   const suppressDragClick = useRef(false);
   const copy = text[locale];
   const workflowCopy = designCopy[locale];
@@ -543,6 +544,7 @@ const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen, onConcept
     openWorkspace("author");
     giveNodeFeedback();
   };
+  const activateYolk = () => { if(onYolkOpen){ onYolkOpen(); giveNodeFeedback(); } };
 
   const activateNode = (node: InteractiveNode) => {
     // In project mode a single tap must open the current Matter/Idea canvas,
@@ -683,10 +685,11 @@ const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen, onConcept
         event.currentTarget.releasePointerCapture(event.pointerId);
       }
     } catch { /* Safari can release capture automatically. */ }
-    if (event.type === "pointerup" && !active.moved && (active.targetNode === "author" || isInteractiveNode(active.targetNode))) {
-      lastPointerActivation.current = { node: active.targetNode, time: Date.now() };
+    if (event.type === "pointerup" && !active.moved && (active.targetNode === "author" || (active.targetNode === "yolk" && onYolkOpen) || isInteractiveNode(active.targetNode))) {
+      lastPointerActivation.current = { node: active.targetNode as EggClickableNode, time: Date.now() };
       if (active.targetNode === "author") activateAuthor();
-      else activateNode(active.targetNode);
+      else if (active.targetNode === "yolk") activateYolk();
+      else activateNode(active.targetNode as InteractiveNode);
     }
   };
   // Fallback for browsers that dispatch a click but lose SVG pointerup/capture.
@@ -698,19 +701,21 @@ const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen, onConcept
     }
     const target = event.target as Element;
     const node = target.closest("[data-egg-node]")?.getAttribute("data-egg-node") ?? null;
-    if (!isInteractiveNode(node) && node !== "author") return;
+    if (!isInteractiveNode(node) && node !== "author" && !(node === "yolk" && onYolkOpen)) return;
     const previous = lastPointerActivation.current;
     lastPointerActivation.current = null;
     if (previous?.node === node && Date.now() - previous.time < 800) return;
     if (node === "author") activateAuthor();
-    else activateNode(node);
+    else if (node === "yolk") activateYolk();
+    else activateNode(node as InteractiveNode);
   };
-  const onNodeKeyDown = (event: KeyboardEvent<SVGCircleElement>, node: EggHitNode) => {
+  const onNodeKeyDown = (event: KeyboardEvent<SVGCircleElement>, node: EggClickableNode) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       event.stopPropagation();
       if (node === "author") activateAuthor();
-      else activateNode(node);
+      else if (node === "yolk") activateYolk();
+      else activateNode(node as InteractiveNode);
     }
   };
 
@@ -757,6 +762,11 @@ const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen, onConcept
             <radialGradient id="unocalc-matter-pole-light" cx="35%" cy="25%" r="75%">
               <stop offset="0%" stopColor={EGG_POLES.matter.color} stopOpacity=".60" />
               <stop offset="100%" stopColor={EGG_POLES.matter.color} stopOpacity=".10" />
+            </radialGradient>
+            <radialGradient id="egg-temporary-yolk-light" cx="34%" cy="30%" r="74%">
+              <stop offset="0%" stopColor="#f8e7a7" stopOpacity=".70" />
+              <stop offset="55%" stopColor="#dbb86a" stopOpacity=".34" />
+              <stop offset="100%" stopColor="#a38346" stopOpacity=".11" />
             </radialGradient>
           </defs>
           <line
@@ -871,8 +881,27 @@ const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen, onConcept
               className="cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
               onKeyDown={(event) => onNodeKeyDown(event, "author")} />
           </g>
+          {/* Temporary translucent Yolk. This is navigation, not a claim that synthesis
+              or DNA approval has occurred. Drawn below other spheres so overlapping
+              functional nodes retain their pointer priority. */}
+          {onYolkOpen && <g data-testid="unocalc-yolk-sphere">
+            <circle cx="380" cy="350" r="58" fill="#d8b06a" fillOpacity=".055" pointerEvents="none" />
+            <circle cx="380" cy="350" r="47" fill="url(#egg-temporary-yolk-light)"
+              stroke="#b99558" strokeOpacity=".36" strokeWidth="1.1" pointerEvents="none" />
+            <circle cx="365" cy="334" r="15" fill="#fff6d8" fillOpacity=".19" pointerEvents="none" />
+            <text x="380" y="354" fontSize="11" fontWeight="400" textAnchor="middle"
+              letterSpacing="1.9" fill="#80643d" fillOpacity=".76" pointerEvents="none">
+              {locale === "ru" ? "ЖЕЛТОК" : locale === "uk" ? "ЖОВТОК" : "YOLK"}
+            </text>
+            <circle data-testid="unocalc-yolk-hit" data-egg-node="yolk"
+              cx="380" cy="350" r="47" fill="transparent" stroke="none" pointerEvents="all"
+              role="button" tabIndex={0}
+              aria-label={locale === "ru" ? "Открыть Желток" : locale === "uk" ? "Відкрити Жовток" : "Open Yolk"}
+              className="cursor-pointer focus:outline-none focus-visible:stroke-[#a38346] focus-visible:stroke-[1.5px]"
+              onKeyDown={(event) => onNodeKeyDown(event, "yolk")}/>
+          </g>}
           {/* Five formation stages sit along the Idea-to-Matter axis.
-              Colour and glow convey progress; no central yolk is drawn. */}
+              Colour and glow convey progress; stage markers do not imply approval. */}
           <g data-testid="unocalc-axis-stages" aria-hidden="true" pointerEvents="none">
             {geometry.stageNodes.map((point) => {
               const level = EGG_STAGES[point.index - 1];
