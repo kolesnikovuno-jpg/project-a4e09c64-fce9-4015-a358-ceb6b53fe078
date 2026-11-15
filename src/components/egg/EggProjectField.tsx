@@ -91,6 +91,27 @@ export default function EggProjectField({projectId,children,workspace="field",on
  },[workspace]);
  const visibleItems=items.filter(item=>(item.location??"field")===workspace);
  const matterCards:MatterCard[]=visibleItems.map(item=>({id:item.id,type:item.type,text:item.text,src:item.src,strokes:item.strokes}));
+ const fitMatterItems=()=>{
+  const canvas=field.current;
+  const materials=items.filter(item=>(item.location??"field")==="matter");
+  if(!canvas||!materials.length)return;
+  const minX=Math.min(...materials.map(item=>item.x));
+  const minY=Math.min(...materials.map(item=>item.y));
+  const maxX=Math.max(...materials.map(item=>item.x+250));
+  const maxY=Math.max(...materials.map(item=>item.y+(item.type==="image"?300:190)));
+  const viewWidth=Math.max(180,canvas.clientWidth-60);
+  const viewHeight=Math.max(180,canvas.clientHeight-180);
+  const nextZoom=clamp(Math.min(viewWidth/Math.max(240,maxX-minX),viewHeight/Math.max(160,maxY-minY),1),.25,3);
+  setZoom(nextZoom);
+  setPan({x:-((minX+maxX)/2)*nextZoom,y:-((minY+maxY)/2)*nextZoom});
+ };
+ useEffect(()=>{
+  if(workspace!=="matter"||!ready)return;
+  const frame=window.requestAnimationFrame(()=>fitMatterItems());
+  return ()=>window.cancelAnimationFrame(frame);
+ // Refit only on entering Material or opening a project, not after the Author manually pans.
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ },[workspace,ready]);
  const moveToWorkspace=(id:string)=>{
   const destination:Workspace=workspace==="field"?"matter":"field";
   const count=items.filter(item=>(item.location??"field")===destination).length;
@@ -332,6 +353,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
     </div>)}
    </div>
   </div>
+  {workspace==="matter"&&<button type="button" aria-label="Показать все материалы" onClick={fitMatterItems} className="absolute left-5 top-[164px] z-30 rounded-full bg-background/90 px-3 py-2 text-xs text-foreground/70 shadow-sm sm:left-8">Показать всё</button>}
   {workspace==="matter"&&<button type="button" aria-label="Вернуться к Яйцу" onClick={()=>onWorkspaceChange?.("field")} className="absolute left-5 top-[116px] z-30 rounded-full border border-foreground/20 bg-background/95 px-3 py-2 text-xs shadow-sm sm:left-8">← К Яйцу</button>}
   {workspace==="matter"&&matterDialogueOpen&&<EggMatterDialogue
     projectId={projectId} cards={matterCards} focusId={matterFocusId} onClearFocus={()=>setMatterFocusId(null)}
