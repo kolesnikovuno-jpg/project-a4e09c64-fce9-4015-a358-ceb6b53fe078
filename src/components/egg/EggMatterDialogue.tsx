@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, BrainCircuit, Check, MessageCircle, Send, X } from "lucide-react";
+import { ArrowLeft, BrainCircuit, Mic, MicOff, Send, X } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
 export type MatterCard={
@@ -7,6 +7,19 @@ export type MatterCard={
  strokes?:Array<{points:Array<{x:number;y:number}>;strokeWidth:number;color:string}>;
 };
 type Message={role:"user"|"assistant";content:string};
+type SpeechResult={results:ArrayLike<ArrayLike<{transcript:string}>>};
+type SpeechRecognitionLike={
+ lang:string;continuous:boolean;interimResults:boolean;
+ onresult:((event:SpeechResult)=>void)|null;
+ onerror:((event:{error?:string})=>void)|null;
+ onend:(()=>void)|null;
+ start:()=>void;stop:()=>void;
+};
+type SpeechRecognitionWindow=Window&{
+ SpeechRecognition?:new()=>SpeechRecognitionLike;
+ webkitSpeechRecognition?:new()=>SpeechRecognitionLike;
+};
+
 const makePreview=async(card:MatterCard):Promise<string|undefined>=>{
  try{
   const canvas=document.createElement("canvas");
@@ -53,10 +66,57 @@ export default function EggMatterDialogue({
  const [draft,setDraft]=useState("");
  const [error,setError]=useState("");
  const [busy,setBusy]=useState(false);
+ const [listening,setListening]=useState(false);
+ const [speechAvailable,setSpeechAvailable]=useState(false);
+ const recognition=useRef<SpeechRecognitionLike|null>(null);
+ const speechBase=useRef("");
+
  const [overviewed,setOverviewed]=useState(false);
  const [ready,setReady]=useState(false);
  const bottom=useRef<HTMLDivElement>(null);
  const focus=cards.find(card=>card.id===focusId);
+ useEffect(()=>{
+  const browser=window as SpeechRecognitionWindow;
+  setSpeechAvailable(Boolean(browser.SpeechRecognition||browser.webkitSpeechRecognition));
+  return ()=>{
+   const active=recognition.current;
+   if(active){active.onend=null;active.onerror=null;active.onresult=null;active.stop();recognition.current=null;}
+  };
+ },[]);
+ const toggleMicrophone=()=>{
+  if(listening){recognition.current?.stop();return;}
+  const browser=window as SpeechRecognitionWindow;
+  const Speech=browser.SpeechRecognition??browser.webkitSpeechRecognition;
+  if(!Speech){setError("В этом браузере распознавание речи недоступно. Можно использовать диктовку клавиатуры.");return;}
+  try{
+   const next=new Speech();
+   recognition.current=next;
+   speechBase.current=draft.trim();
+   next.lang=document.documentElement.lang==="uk"?"uk-UA":document.documentElement.lang==="en"?"en-US":"ru-RU";
+   next.continuous=false;
+   next.interimResults=true;
+   next.onresult=event=>{
+    const parts:string[]=[];
+    for(let i=0;i<event.results.length;i++)parts.push(event.results[i][0]?.transcript??"");
+    const transcript=parts.join(" ").trim();
+    setDraft((speechBase.current?speechBase.current+" ":"")+transcript);
+   };
+   next.onerror=event=>{
+    const code=event.error??"";
+    if(code==="not-allowed"||code==="service-not-allowed")setError("Нет разрешения на микрофон. Разрешите доступ в настройках Safari.");
+    else if(code!=="no-speech"&&code!=="aborted")setError("Не удалось распознать речь. Используйте текстовый ввод или диктовку клавиатуры.");
+    setListening(false);
+   };
+   next.onend=()=>{setListening(false);recognition.current=null;};
+   setError("");
+   next.start();
+   setListening(true);
+  }catch{
+   recognition.current=null;setListening(false);
+   setError("Микрофон недоступен. Используйте диктовку клавиатуры.");
+  }
+ };
+
  useEffect(()=>{
   try{
    const stored=JSON.parse(localStorage.getItem(storageKey)||"[]") as Message[];
@@ -69,6 +129,7 @@ export default function EggMatterDialogue({
  useEffect(()=>{bottom.current?.scrollIntoView?.({behavior:"smooth",block:"nearest"});},[messages,busy]);
  const submit=async(content:string)=>{
   if(busy||!content.trim())return;
+  if(listening)recognition.current?.stop();
   const userMessage:Message={role:"user",content:content.trim().slice(0,3000)};
   const previous=[...messages,userMessage].slice(-16);
   setMessages(v=>[...v,userMessage]);setDraft("");setError("");setBusy(true);
@@ -147,11 +208,17 @@ export default function EggMatterDialogue({
     placeholder="Наблюдение, вопрос или уточнение…"
     className="w-full resize-none rounded-xl border border-[#a4afa2]/35 bg-white/90 p-3 text-sm outline-none focus:border-[#607466]"/>
    <div className="mt-2 flex items-center justify-between gap-2">
-    <span className="text-[10px] opacity-55">Ответ не утверждает решения</span>
-    <button type="submit" aria-label="Отправить сообщение" disabled={!draft.trim()||busy}
+    <span className="text-[10px] opacity-55">{listening?"Слушаю… · нажмите, чтобы остановить":"Голос → текст · ответ не утверждает решения"}</span>
+    <div className="flex items-center gap-2">
+     <button type="button" onClick={toggleMicrophone} aria-label={listening?"Остановить запись голоса":"Голосовой ввод"} aria-pressed={listening}
+      title={speechAvailable?"Продиктовать сообщение":"Если диктовка недоступна, используйте микрофон клавиатуры"}
+      className={"flex h-9 w-9 items-center justify-center rounded-full border border-[#a4afa2]/35 "+(listening?"bg-[#607466] text-white":"bg-white/80 text-[#607466]")}>
+      {listening?<MicOff size={17}/>:<Mic size={17}/>}
+     </button>
+     <button type="submit" aria-label="Отправить сообщение" disabled={!draft.trim()||busy}
      className="flex items-center gap-1.5 rounded-full bg-[#607466] px-3 py-2 text-xs text-white disabled:opacity-35">
      <Send size={14}/> Отправить
-    </button>
+    </button></div>
    </div>
   </form>
  </aside>;
