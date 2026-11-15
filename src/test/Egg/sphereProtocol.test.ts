@@ -22,6 +22,8 @@ describe("EGG Sphere Protocol v1.0",()=>{
  it("treats the resonance field as an interpretive author-calibrated process",()=>{
   expect(EGG_ENTRY_MANIFESTS.matter.role).toContain("резонансного поля");
   expect(EGG_ENTRY_MANIFESTS.matter.expectedContribution).toContain("карта поля");
+  expect(EGG_ENTRY_MANIFESTS.matter.expectedContribution).toContain("без инициированной идеи");
+  expect(EGG_ENTRY_MANIFESTS.idea.humanRole).toContain("Автор инициирует идею");
   const guide=EGG_MATERIAL_RESONANCE_INSTRUCTIONS.join(" ");
   expect(guide).toContain("аккорд");
   expect(guide).toContain("потенциала");
