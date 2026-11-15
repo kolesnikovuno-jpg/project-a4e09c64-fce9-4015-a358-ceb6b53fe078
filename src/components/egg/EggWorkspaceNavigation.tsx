@@ -22,11 +22,11 @@ export default function EggWorkspaceNavigation({
   {id:"field",label:"Поле",icon:Compass,onSelect:onOpenField,disabled:!onOpenField},
   {id:"matter",label:"Материальное",icon:Layers,onSelect:onOpenMatter,disabled:!onOpenMatter},
   {id:"idea",label:"Идея",icon:Lightbulb,onSelect:onOpenIdea,
-   selected:active==="idea",disabled:!onOpenIdea},
+   selected:active==="idea",disabled:active==="idea"||!onOpenIdea},
   {id:"concept",label:"Концепт",icon:Shapes,onSelect:onOpenConcept,
-   selected:active==="concept",disabled:!onOpenConcept},
+   selected:active==="concept",disabled:active==="concept"||!onOpenConcept},
   {id:"yolk",label:"Желток",icon:CircleDot,onSelect:onOpenYolk,
-   selected:active==="yolk",disabled:!onOpenYolk},
+   selected:active==="yolk",disabled:active==="yolk"||!onOpenYolk},
  ];
  return <EggRadialMenu actions={actions} title="EGG"/>;
 }
