@@ -54,7 +54,7 @@ describe("EGG link website preview",()=>{
    render(<EggLinkWorkspace address="https://example.com/reference" onClose={()=>{}} onCaptureCrop={()=>{}}/>);
    fireEvent.click(screen.getByRole("button",{name:"Фрагмент сайта"}));
    await waitFor(()=>expect(fetchMock).toHaveBeenCalledTimes(1));
-   expect(fetchMock).toHaveBeenCalledWith("/api/egg-screenshot",{
+   expect(fetchMock).toHaveBeenCalledWith("/api/egg?op=page-screenshot",{
     method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({url:"https://example.com/reference"})
    });
