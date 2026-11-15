@@ -11,10 +11,10 @@ describe("EGG field material appearance", () => {
       {id:"sketch1",type:"sketch",x:200,y:300,text:"Скетч",strokes:[{points:[{x:1,y:2},{x:50,y:30}],strokeWidth:1,color:"#252525"}]},
     ]));
     const {container}=render(<EggProjectField projectId={projectId}><span>EGG scene</span></EggProjectField>);
-    const cards=await screen.findAllByLabelText("Перетащить материал");
-    expect(cards).toHaveLength(3);
+    expect(screen.queryByLabelText("Перетащить материал")).toBeNull();
     const itemElements=Array.from(container.querySelectorAll("[data-field-item]"));
     expect(itemElements).toHaveLength(3);
+    expect(itemElements.every(item=>item.className.includes("cursor-grab"))).toBe(true);
     for(const card of itemElements){
       expect(card.className).not.toMatch(/\bborder(?:-|\/|\b)/);
       expect(card.querySelector("[data-field-actions]")).not.toBeNull();
