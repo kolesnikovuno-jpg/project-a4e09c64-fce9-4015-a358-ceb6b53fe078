@@ -10,7 +10,6 @@
  * or written. No CORS wildcards, no secrets in browser JS or URL parameters.
  */
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import screenshotHandler from "../src/server/eggScreenshot.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getEggStorageConfig } from "../src/server/eggStorageConfig.js";
@@ -178,13 +177,6 @@ const updateProject = async (
 };
 
 export default async function handler(req: Request, res: Response) {
-  // Reuse this serverless function for public-page thumbnails to avoid
-  // exceeding Vercel Hobby's 12-function deployment limit.
-  const path=new URL(req.url||"/", "https://local.invalid");
-  if(path.searchParams.get("op")==="page-screenshot"){
-    await screenshotHandler(req,res);
-    return;
-  }
   res.setHeader("Allow", "GET, POST");
   res.setHeader("Cache-Control", "no-store, private");
   if (req.method !== "GET" && req.method !== "POST") {
