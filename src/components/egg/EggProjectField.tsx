@@ -193,7 +193,10 @@ export default function EggProjectField({projectId,children,workspace="field",on
    const bounds=e.currentTarget.getBoundingClientRect();
    const travelled=Math.hypot(e.clientX-bounds.left-g.startX,e.clientY-bounds.top-g.startY);
    // A stationary tap opens the material; a drag only moves it.
-   if(travelled<7&&!((e.target as Element).closest("button,a,input,textarea,[data-no-drag]")))setOpenId(g.id);
+   if(travelled<7&&!((e.target as Element).closest("button,a,input,textarea,[data-no-drag]"))){
+    if(workspace==="matter"){setMatterFocusId(g.id);setMatterDialogueOpen(true);}
+    else setOpenId(g.id);
+   }
   }
   gesture.current=null;
  }
@@ -263,7 +266,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
  const active=items.find(item=>item.id===openId);
  const currentScale=Math.round(zoom*100);
  return <section className="absolute inset-0 overflow-hidden bg-background" aria-label={workspace==="matter"?"Холст сферы Материальное":"Поле проекта EGG"} data-workspace={workspace} data-testid="egg-project-field">
-  <div ref={field} className="absolute inset-y-0 left-0 touch-none overflow-hidden" style={{right:workspace==="matter"&&matterDialogueOpen?"max(240px,min(42%,420px))":0,backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}>
+  <div ref={field} className={"absolute inset-y-0 left-0 touch-none overflow-hidden "+(workspace==="matter"&&matterDialogueOpen?"right-0 md:right-1/2":"right-0")} style={{backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}>
    <div className={"pointer-events-none absolute inset-0 z-10 flex items-center justify-center"+(workspace==="matter"?" hidden":"")}>
     <div data-egg-anchor className="pointer-events-auto relative shrink-0 [&_[data-testid=unocalc-maturity-readout]]:hidden [&_[data-testid=unocalc-rotation-hint]]:hidden" style={{width:900,height:620,transform:"scale("+eggScale+")",touchAction:"none"}}
      onPointerDownCapture={eggDown} onPointerMoveCapture={eggMove} onPointerUpCapture={eggUp} onPointerCancelCapture={eggUp}
@@ -274,7 +277,8 @@ export default function EggProjectField({projectId,children,workspace="field",on
    </div>
    <div className="absolute left-0 top-0 z-20" style={{transform:"translate("+(center().x+pan.x)+"px,"+(center().y+pan.y)+"px) scale("+zoom+")",transformOrigin:"0 0"}}>
     {visibleItems.map(item=><div key={item.id} data-field-item={item.id}
-     className={"group absolute select-none cursor-grab active:cursor-grabbing " + (item.type==="image"?"w-max max-w-[240px]":"w-[218px]")}
+     onPointerEnter={event=>{if(workspace==="matter"&&event.pointerType==="mouse")setMatterFocusId(item.id);}}
+     className={"group absolute select-none cursor-grab active:cursor-grabbing transition-[filter] duration-150 " + (workspace==="matter"&&matterFocusId===item.id?"drop-shadow-[0_0_9px_rgba(88,119,92,.36)] ":"") + (item.type==="image"?"w-max max-w-[240px]":"w-[218px]")}
      style={{left:item.x,top:item.y}}>
      <div className="absolute right-1 top-1 z-30 flex items-center gap-1.5 opacity-90 transition-opacity sm:opacity-60 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100" data-field-actions>
       {workspace==="matter"&&<button type="button" data-no-drag aria-label={"Обсудить материал "+item.text} title="Обсудить с ИИ"
