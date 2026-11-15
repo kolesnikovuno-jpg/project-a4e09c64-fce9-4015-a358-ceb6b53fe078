@@ -23,6 +23,31 @@ describe("EGG Idea initiation",()=>{
   fireEvent.click(screen.getByRole("button",{name:/Материальное/}));
   expect(onMatter).toHaveBeenCalledTimes(1);
  });
+ it("passes a separate space photo as context rather than a Design reference",async()=>{
+  const spacePhoto="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ";
+  localStorage.setItem("egg:idea-workspace:v1:"+project,JSON.stringify({
+   intent:"Лёгкий пространственный акцент",constraints:"",messages:[],savedDraft:"",spacePhoto
+  }));
+  localStorage.setItem("egg:project-field:v1:"+project,JSON.stringify([
+   {id:"ref",type:"thought",text:"Лёгкость",location:"matter"}
+  ]));
+  const fetchMock=vi.fn(async(url:string)=>url==="/api/egg-config"?
+   {ok:true,json:async()=>({supabaseUrl:"https://example.test",publishableKey:"anon"})}:
+   {ok:true,json:async()=>({ok:true,reply:"Уточнение идеи"})});
+  vi.stubGlobal("fetch",fetchMock);
+  render(<EggIdeaWorkspace projectId={project} onClose={()=>{}} onOpenMatter={()=>{}}/>);
+  expect(screen.getByAltText("Загруженное фото пространства")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button",{name:"Проявить идею"}));
+  await waitFor(()=>expect(fetchMock).toHaveBeenCalledTimes(2));
+  const request=JSON.parse((fetchMock.mock.calls[1] as unknown as [string,{body:string}])[1].body);
+  expect(request.materials[0]).toMatchObject({
+   id:"space-context-photo",type:"image",imageData:spacePhoto
+  });
+  expect(request.materials[0].text).toContain("НЕ референс формы");
+  expect(request.materials[1].id).toBe("ref");
+  fireEvent.click(screen.getByRole("button",{name:"Удалить фото пространства"}));
+  await waitFor(()=>expect(screen.queryByAltText("Загруженное фото пространства")).toBeNull());
+ });
  it("passes author initiation and Material insight only to Idea AI endpoint",async()=>{
   localStorage.setItem("egg:project-field:v1:"+project,JSON.stringify([{id:"a",type:"thought",text:"Световой аккорд",location:"matter"}]));
   localStorage.setItem("egg:matter-dialogue:v1:"+project,JSON.stringify([{role:"assistant",content:"Гипотеза поля"}]));
