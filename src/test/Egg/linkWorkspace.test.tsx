@@ -18,7 +18,7 @@ describe("EGG link website preview",()=>{
   const iframe=screen.getByTestId("egg-site-frame") as HTMLIFrameElement;
   expect(iframe.getAttribute("src")).toBe("https://example.com/gallery");
   expect(iframe.getAttribute("sandbox")).toContain("allow-scripts");
-  expect(iframe.referrerPolicy).toBe("no-referrer");
+  expect(iframe.getAttribute("referrerpolicy")).toBe("no-referrer");
   expect(container.querySelector(".bg-black\\/65")).toBeNull();
   const external=screen.getByRole("link",{name:"Открыть сайт отдельно"}) as HTMLAnchorElement;
   expect(external.getAttribute("href")).toBe("https://example.com/gallery");
