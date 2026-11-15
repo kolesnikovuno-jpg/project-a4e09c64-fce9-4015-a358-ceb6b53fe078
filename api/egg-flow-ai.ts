@@ -213,7 +213,7 @@ async function matterModelReply(provider:Provider,input:MatterPayload):Promise<s
      contents:[{role:"user",parts:[{text:prompt},...images.map(src=>({
       inlineData:{mimeType:"image/jpeg",data:src.slice("data:image/jpeg;base64,".length)}
      }))]}],
-     generationConfig:{maxOutputTokens:1100}
+     generationConfig:{maxOutputTokens:2400,...(provider.model.startsWith("gemini-3")?{thinkingConfig:{thinkingLevel:"minimal"}}:{})}
     })
    });
   }else{
@@ -221,7 +221,7 @@ async function matterModelReply(provider:Provider,input:MatterPayload):Promise<s
     method:"POST",redirect:"error",signal:controller.signal,
     headers:{Authorization:"Bearer "+provider.key,"Content-Type":"application/json"},
     body:JSON.stringify({
-     model:provider.model,instructions:matterInstructions,store:false,max_output_tokens:1100,
+     model:provider.model,instructions:matterInstructions,store:false,max_output_tokens:2400,
      input:[{role:"user",content:[{type:"input_text",text:prompt},
       ...images.map(src=>({type:"input_image",image_url:src,detail:"low"}))]}]
     })
@@ -233,9 +233,15 @@ async function matterModelReply(provider:Provider,input:MatterPayload):Promise<s
    throw Error("model_request_failed");
   }
   const data=await response.json() as {
-   candidates?:Array<{content?:{parts?:Array<{text?:string}>}}>;
+   candidates?:Array<{content?:{parts?:Array<{text?:string}>};finishReason?:string}>;
+   status?:string;incomplete_details?:{reason?:string};
    output?:Array<{type?:string;content?:Array<{type?:string;text?:string}>}>;
   };
+  // HTTP 200 may still contain a model response truncated at its token limit.
+  if(provider.kind==="direct_gemini"){
+   const finish=data.candidates?.[0]?.finishReason;
+   if(finish&&finish!=="STOP")throw Error("model_incomplete");
+  }else if(data.status&&data.status!=="completed")throw Error("model_incomplete");
   const result=provider.kind==="direct_gemini"?
    (data.candidates?.[0]?.content?.parts??[]).map(x=>x.text??"").join(""):
    (data.output??[]).flatMap(x=>x.type==="message"?x.content??[]:[])
@@ -295,6 +301,7 @@ async function matterDialogue(req:Request,res:ServerResponse){
   if(reason==="ai_rate_limited")return fail(res,429,"ai_rate_limited");
   if(reason==="ai_model_not_authorized")return fail(res,503,"ai_model_not_authorized");
   if(reason==="invalid_ai_output")return fail(res,502,"invalid_ai_output");
+  if(reason==="model_incomplete")return fail(res,502,"model_incomplete");
   return fail(res,502,"model_request_failed");
  }
 }
