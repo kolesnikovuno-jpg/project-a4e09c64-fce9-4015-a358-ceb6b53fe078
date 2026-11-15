@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { MouseEvent as ReactMouseEvent } from "react";
 import { Check, ExternalLink, Globe2, MapPin, Pencil, Trash2, X } from "lucide-react";
 
 /** Only web URLs may be embedded or linked. */
@@ -32,7 +33,7 @@ export default function EggLinkWorkspace({
  const [selected,setSelected]=useState<string|null>(null);
  const selectedMark=marks.find(mark=>mark.id===selected);
  const control="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background/95 text-foreground shadow-[0_3px_14px_rgba(0,0,0,.15)] backdrop-blur-md hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
- const startMark=(event:React.MouseEvent<HTMLDivElement>)=>{
+ const startMark=(event:ReactMouseEvent<HTMLDivElement>)=>{
   if(!placing||!onMarksChange)return;
   const rect=event.currentTarget.getBoundingClientRect();
   setDraft({id:null,x:clamp((event.clientX-rect.left)/rect.width*100),
