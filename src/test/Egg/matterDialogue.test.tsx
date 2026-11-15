@@ -16,7 +16,11 @@ describe("Material research workspace",()=>{
   ]));
   const {container}=render(<EggProjectField workspace="matter" projectId={projectId}><div>EGG form</div></EggProjectField>);
   expect(screen.getByTestId("egg-matter-dialogue")).toBeTruthy();
-  expect(container.querySelector('[data-field-item="material1"]')).toBeTruthy();
+  const card=container.querySelector('[data-field-item="material1"]') as HTMLElement;
+  expect(card).toBeTruthy();
+  fireEvent.pointerEnter(card,{pointerType:"mouse"});
+  expect(screen.getByText("Фокус: Тихая лёгкая форма")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button",{name:"Сбросить фокус"}));
   fireEvent.click(screen.getByRole("button",{name:"Обсудить материал Тихая лёгкая форма"}));
   expect(screen.getByText("Фокус: Тихая лёгкая форма")).toBeTruthy();
   fireEvent.click(screen.getByRole("button",{name:"Скрыть диалог"}));
