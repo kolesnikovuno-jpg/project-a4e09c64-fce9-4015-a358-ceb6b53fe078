@@ -53,6 +53,8 @@ describe("EGG link website preview",()=>{
   try{
    render(<EggLinkWorkspace address="https://example.com/reference" onClose={()=>{}} onCaptureCrop={()=>{}}/>);
    fireEvent.click(screen.getByRole("button",{name:"Фрагмент сайта"}));
+   expect(screen.getByTestId("egg-capture-options")).toBeTruthy();
+   fireEvent.click(screen.getByRole("button",{name:"Снять страницу с начала"}));
    await waitFor(()=>expect(fetchMock).toHaveBeenCalledTimes(1));
    expect(fetchMock).toHaveBeenCalledWith("/api/egg?op=page-screenshot",{
     method:"POST",headers:{"Content-Type":"application/json"},
@@ -68,9 +70,30 @@ describe("EGG link website preview",()=>{
   try{
    render(<EggLinkWorkspace address="https://example.com/reference" onClose={()=>{}} onCaptureCrop={()=>{}}/>);
    fireEvent.click(screen.getByRole("button",{name:"Фрагмент сайта"}));
+   fireEvent.click(screen.getByRole("button",{name:"Снять страницу с начала"}));
    await waitFor(()=>expect(screen.getByRole("alert").textContent).toContain("Снимок ещё формируется"));
    expect(screen.queryByTestId("egg-photo-workspace")).toBeNull();
   }finally{vi.stubGlobal("fetch",original);}
+ });
+ it("does not call server when current-screen capture is selected",async()=>{
+  const serverFetch=vi.spyOn(globalThis,"fetch");
+  const onCrop=vi.fn();
+  const original=Object.getOwnPropertyDescriptor(navigator,"mediaDevices");
+  const capture=vi.fn(async()=>{const e=new Error("Permission denied");e.name="NotAllowedError";throw e;});
+  try{
+   Object.defineProperty(navigator,"mediaDevices",{configurable:true,value:{getDisplayMedia:capture}});
+   render(<EggLinkWorkspace address="https://example.com/view" onClose={()=>{}} onCaptureCrop={onCrop}/>);
+   const frame=screen.getByTestId("egg-site-frame");
+   fireEvent.click(screen.getByRole("button",{name:"Фрагмент сайта"}));
+   fireEvent.click(screen.getByRole("button",{name:"Снять текущий экран"}));
+   await waitFor(()=>expect(capture).toHaveBeenCalledWith({video:true,audio:false}));
+   expect(serverFetch).not.toHaveBeenCalled();
+   expect(screen.getByTestId("egg-site-frame")).toBe(frame);
+  }finally{
+   if(original)Object.defineProperty(navigator,"mediaDevices",original);
+   else Reflect.deleteProperty(navigator,"mediaDevices");
+   serverFetch.mockRestore();
+  }
  });
  it("does not embed unsafe legacy links",()=>{
   render(<EggLinkWorkspace address="javascript:alert(1)" onClose={()=>{}}/>);
