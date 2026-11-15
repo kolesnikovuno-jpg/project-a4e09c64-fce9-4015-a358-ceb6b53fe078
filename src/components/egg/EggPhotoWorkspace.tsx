@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useRef, useState, type ReactNode, type PointerEvent } from "react";
 import { Check, Crop, Eraser, MessageSquareText, Pencil, RotateCcw, RotateCw, X } from "lucide-react";
 
 export type PhotoPoint = { x:number; y:number }; // x/y in 0..1000 image coordinates
@@ -50,10 +50,10 @@ export default function EggPhotoWorkspace({
  const image=useRef<HTMLImageElement|null>(null);
 
  useEffect(()=>{
-  const onKey=(e:KeyboardEvent)=>{if(e.key==="Escape"){e.stopPropagation();onClose();}};
+  const onKey=(e:KeyboardEvent)=>{if(e.key==="Escape"){e.stopPropagation();if(dirty&&!window.confirm("Закрыть фото без сохранения пометок?"))return;onClose();}};
   window.addEventListener("keydown",onKey,true);
   return ()=>window.removeEventListener("keydown",onKey,true);
- },[onClose]);
+ },[onClose,dirty]);
  const commit=(next:PhotoMarkup)=>{
   undo.current.push(markup);
   if(undo.current.length>60)undo.current.shift();
@@ -92,7 +92,8 @@ export default function EggPhotoWorkspace({
   const p=point(e);
   if(mode==="note"){setPendingNote(p);setNoteText("");return;}
   if(mode==="erase"){
-   const index=markup.strokes.findLastIndex(s=>distanceToStroke(p,s)<18);
+   let index=-1;
+   for(let i=markup.strokes.length-1;i>=0;i--){if(distanceToStroke(p,markup.strokes[i])<18){index=i;break;}}
    if(index>=0)commit({...markup,strokes:markup.strokes.filter((_,i)=>i!==index)});
    return;
   }
@@ -152,7 +153,8 @@ export default function EggPhotoWorkspace({
    setSelection(null);setMode("view");setError("");
   }catch{setError("Не удалось сохранить фрагмент изображения.");}
  };
- const IconButton=({label,selected,onClick,children,disabled}:{label:string;selected?:boolean;onClick:()=>void;children:React.ReactNode;disabled?:boolean})=>
+ const close=()=>{if(dirty&&!window.confirm("Закрыть фото без сохранения пометок?"))return;onClose();};
+ const IconButton=({label,selected,onClick,children,disabled}:{label:string;selected?:boolean;onClick:()=>void;children:ReactNode;disabled?:boolean})=>
   <button type="button" title={label} aria-label={label} aria-pressed={selected} onClick={onClick} disabled={disabled}
    className={"flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-[0_3px_14px_rgba(0,0,0,.19)] backdrop-blur-md transition-colors disabled:opacity-40 "+(selected?"bg-foreground text-background":"bg-background/95 text-foreground hover:bg-background")}>{children}</button>;
  return <div data-testid="egg-photo-workspace" className="pointer-events-none fixed inset-0 z-[90] flex items-center justify-center p-3" aria-label="Увеличенное фото">
@@ -186,7 +188,7 @@ export default function EggPhotoWorkspace({
      <IconButton label="Отменить действие" disabled={!undo.current.length} onClick={rollback}><RotateCcw size={18}/></IconButton>
      <IconButton label="Повторить действие" disabled={!redo.current.length} onClick={forward}><RotateCw size={18}/></IconButton>
      <IconButton label="Сохранить пометки" onClick={()=>{onSave(markup);setDirty(false);setError("");}}><Check size={19}/></IconButton>
-     <IconButton label="Закрыть фото" onClick={onClose}><X size={20}/></IconButton>
+     <IconButton label="Закрыть фото" onClick={close}><X size={20}/></IconButton>
     </div>
     {mode==="pen"&&<div className="absolute bottom-3 left-3 z-10 flex items-center gap-2 rounded-full bg-background/90 px-3 py-2 shadow-sm backdrop-blur-md">
      {COLORS.map(c=><button key={c} type="button" onClick={()=>setColor(c)} title={"Цвет "+c} aria-label={"Цвет "+c}
