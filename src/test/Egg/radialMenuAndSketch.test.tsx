@@ -44,9 +44,17 @@ describe("EGG circular menu", () => {
     // jsdom lacks layout; use a known center 165,165.
     vi.spyOn(dial,"getBoundingClientRect").mockReturnValue({left:0,top:0,width:330,height:330,right:330,bottom:330,x:0,y:0,toJSON:()=>{}} as DOMRect);
     const before=screen.getByRole("button",{name:"Один"}).style.left;
-    fireEvent.pointerDown(screen.getByRole("button",{name:"Один"}),{pointerId:1,button:0,pointerType:"touch",clientX:165,clientY:52});
-    fireEvent.pointerMove(dial,{pointerId:1,pointerType:"touch",clientX:278,clientY:165});
-    fireEvent.pointerUp(dial,{pointerId:1,pointerType:"touch",clientX:278,clientY:165});
+    // jsdom's PointerEvent shim does not reliably populate coordinates.
+    const dispatchPointer=(target:Element,name:string,x:number,y:number)=>{
+      const event=new MouseEvent(name,{bubbles:true,cancelable:true,clientX:x,clientY:y,button:0});
+      Object.defineProperties(event,{
+        pointerId:{value:1},pointerType:{value:"touch"}
+      });
+      fireEvent(target,event);
+    };
+    dispatchPointer(screen.getByRole("button",{name:"Один"}),"pointerdown",165,52);
+    dispatchPointer(dial,"pointermove",278,165);
+    dispatchPointer(dial,"pointerup",278,165);
     expect(screen.getByRole("button",{name:"Один"}).style.left).not.toBe(before);
     expect(action).not.toHaveBeenCalled();
   });
