@@ -1,7 +1,7 @@
 import {describe,expect,it} from "vitest";
 import {createEggProject} from "../../lib/eggEngine";
 import {startEggFlowCycle} from "../../lib/eggFlowCycle";
-import {EGG_SPHERE_MANIFESTS,EGG_ENTRY_MANIFESTS,EGG_SPHERE_PROTOCOL_VERSION,buildEggSphereRoleInstruction} from "../../lib/eggSphereProtocol";
+import {EGG_SPHERE_MANIFESTS,EGG_ENTRY_MANIFESTS,EGG_SPHERE_PROTOCOL_VERSION,EGG_MATERIAL_RESONANCE_INSTRUCTIONS,buildEggSphereRoleInstruction} from "../../lib/eggSphereProtocol";
 import {buildEggSphereIntelligencePrompt} from "../../lib/eggSphereIntelligence";
 
 describe("EGG Sphere Protocol v1.0",()=>{
@@ -18,6 +18,16 @@ describe("EGG Sphere Protocol v1.0",()=>{
    expect(manifest.candidateCapabilities.length).toBeGreaterThan(0);
    expect(manifest.hardBoundary.length).toBeGreaterThan(12);
   }
+ });
+ it("treats the resonance field as an interpretive author-calibrated process",()=>{
+  expect(EGG_ENTRY_MANIFESTS.matter.role).toContain("резонансного поля");
+  expect(EGG_ENTRY_MANIFESTS.matter.expectedContribution).toContain("карта поля");
+  const guide=EGG_MATERIAL_RESONANCE_INSTRUCTIONS.join(" ");
+  expect(guide).toContain("аккорд");
+  expect(guide).toContain("потенциала");
+  expect(guide).toContain("Только Автор");
+  expect(guide).toContain("а не измерение физических частот");
+  expect(guide).toContain("не обязательно готовый предмет");
  });
  it("includes the specific role and explicit capability limits when AI connects",()=>{
   const project=createEggProject({id:"739b6b30-73c1-41aa-9412-0c5dbe8ce5aa",title:"Кресло",seed:"Лёгкое кресло",at:"2026-11-15T10:00:00Z"});
