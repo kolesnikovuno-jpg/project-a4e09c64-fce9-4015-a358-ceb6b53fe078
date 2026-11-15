@@ -9,7 +9,7 @@ describe("EGG Sphere Protocol v1.0",()=>{
   expect(EGG_SPHERE_PROTOCOL_VERSION).toBe("1.0");
   expect(Object.keys(EGG_SPHERE_MANIFESTS)).toHaveLength(8);
   expect(Object.keys(EGG_ENTRY_MANIFESTS)).toEqual(["matter","idea"]);
-  expect(EGG_ENTRY_MANIFESTS.matter.mission).toContain("подборки");
+  expect(EGG_ENTRY_MANIFESTS.matter.mission).toContain("базовую обработку");
   expect(EGG_ENTRY_MANIFESTS.idea.humanRole).toContain("Только Автор");
   const roles=Object.values(EGG_SPHERE_MANIFESTS).map(m=>m.role);
   expect(new Set(roles).size).toBe(8);
