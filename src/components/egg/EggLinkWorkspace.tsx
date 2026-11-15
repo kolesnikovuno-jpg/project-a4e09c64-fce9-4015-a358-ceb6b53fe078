@@ -15,8 +15,8 @@ export function normalizeSiteUrl(value:string):string|null {
 }
 
 /**
- * Screen capture is gated by browser permission; cross-origin iframe pixels
- * cannot be read directly. Unsupported browsers report the limitation.
+ * Cached public-page preview comes from EGG server-side API.
+ * It is not the user's live tab; cross-origin iframe pixels cannot be read.
  */
 export default function EggLinkWorkspace({
  address,onClose,onCaptureText,onCaptureImage,onCaptureCrop,
@@ -33,46 +33,27 @@ export default function EggLinkWorkspace({
  const [capturing,setCapturing]=useState(false);
  const requestScreenshot=async()=>{
   if(!url||capturing)return;
-  const capture=navigator.mediaDevices?.getDisplayMedia;
-  if(typeof capture!=="function"){
-   setError("Этот браузер не поддерживает захват вкладки. В iPad Safari скриншот сайта напрямую недоступен.");
-   return;
-  }
-  setError("");
-  setCapturing(true);
-  let stream:MediaStream|null=null;
-  try {
-   // Browser permission is mandatory. Never attempt to access the cross-origin iframe.
-   stream=await capture.call(navigator.mediaDevices,{video:true,audio:false});
-   const video=document.createElement("video");
-   video.muted=true;video.playsInline=true;video.srcObject=stream;
-   await new Promise<void>((resolve,reject)=>{
-    const timeout=window.setTimeout(()=>reject(new Error("no-frame")),8000);
-    const finish=()=>{window.clearTimeout(timeout);resolve();};
-    if(video.readyState>=2&&video.videoWidth>0)finish();
-    else {video.onloadeddata=finish;video.onerror=()=>{window.clearTimeout(timeout);reject(new Error("video"));};}
+  setCapturing(true);setError("");
+  try{
+   const response=await fetch("/api/egg-screenshot",{
+    method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url}),
    });
-   await video.play();
-   const canvas=document.createElement("canvas");
-   const width=video.videoWidth,height=video.videoHeight;
-   if(!width||!height)throw Error("No image");
-   const scale=Math.min(1,1800/Math.max(width,height));
-   canvas.width=Math.max(1,Math.round(width*scale));
-   canvas.height=Math.max(1,Math.round(height*scale));
-   const ctx=canvas.getContext("2d");
-   if(!ctx)throw Error("Canvas unavailable");
-   ctx.drawImage(video,0,0,canvas.width,canvas.height);
-   video.pause();video.srcObject=null;
-   setScreenshot(canvas.toDataURL("image/jpeg",.88));
+   const result=await response.json() as {
+    ok?:boolean;status?:string;imageDataUrl?:string;error?:string;
+   };
+   if(response.status===202||result.status==="pending"){
+    setError("Снимок ещё формируется. Нажмите «Фрагмент» повторно.");
+    return;
+   }
+   if(!response.ok||!result.ok||!result.imageDataUrl){
+    setError("Снимок этой страницы не получен. Возможно, сайт ограничивает автоматический просмотр.");
+    return;
+   }
+   setScreenshot(result.imageDataUrl);
    setTextOpen(false);
-  }catch(e){
-   setError(e instanceof Error&&e.name==="NotAllowedError"
-    ?"Захват отменён. Выберите вкладку или окно и разрешите показ."
-    :"Не удалось получить изображение экрана в этом браузере.");
-  }finally{
-   stream?.getTracks().forEach(track=>track.stop());
-   setCapturing(false);
-  }
+  }catch{
+   setError("Сервис снимков недоступен. Попробуйте ещё раз.");
+  }finally{setCapturing(false);}
  };
  const saveText=()=>{
   if(!url||!onCaptureText||!text.trim())return;
@@ -100,7 +81,7 @@ export default function EggLinkWorkspace({
      <Globe2 size={13} className="mr-1 inline"/>{host}
     </span>
     <div className="pointer-events-auto flex items-center gap-1.5">
-     {url&&onCaptureCrop&&<button type="button" aria-label="Фрагмент сайта" title="Захватить экран и выделить фрагмент"
+     {url&&onCaptureCrop&&<button type="button" aria-label="Фрагмент сайта" title="Получить снимок публичной страницы и выделить фрагмент"
        className={control} disabled={capturing} onClick={()=>void requestScreenshot()}><Camera size={18}/></button>}
      {url&&onCaptureText&&<button type="button" aria-label="Текст сайта" title="Сохранить текст"
        className={control} onClick={()=>{setTextOpen(v=>!v);setError("");}}><FileText size={18}/></button>}
@@ -135,7 +116,7 @@ export default function EggLinkWorkspace({
     </div>}
    {error&&<div role="alert" className="absolute bottom-3 left-3 z-30 rounded-full bg-background/95 px-3 py-2 text-xs shadow-md">{error}</div>}
    {!textOpen&&url&&<div className="pointer-events-none absolute bottom-2 left-1/2 z-20 max-w-[92%] -translate-x-1/2 rounded-full bg-background/90 px-3 py-2 text-center text-[11px] text-foreground/65 shadow-sm backdrop-blur-md">
-    Некоторые сайты запрещают встроенный просмотр — используйте кнопку открытия отдельно.
+    «Фрагмент» получает публичную версию страницы, не текущий экран. Закрытые сайты могут не сниматься.
    </div>}
   </div>
   {screenshot&&url&&onCaptureCrop&&<EggPhotoWorkspace src={screenshot} title="Выделите область скриншота" cropOnly
