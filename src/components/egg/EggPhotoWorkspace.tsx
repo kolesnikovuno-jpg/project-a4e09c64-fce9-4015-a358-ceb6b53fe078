@@ -43,6 +43,7 @@ export default function EggPhotoWorkspace({
  const [noteText,setNoteText]=useState("");
  const [error,setError]=useState("");
  const [dirty,setDirty]=useState(false);
+ const [cropping,setCropping]=useState(false);
  const undo=useRef<PhotoMarkup[]>([]);
  const redo=useRef<PhotoMarkup[]>([]);
  const drag=useRef<{pointerId:number;start:PhotoPoint;points:PhotoPoint[]}|null>(null);
@@ -137,7 +138,13 @@ export default function EggPhotoWorkspace({
  };
  const crop=async()=>{
   const box=selection,el=image.current;
-  if(!box||!el||box.width<12||box.height<12)return;
+  if(cropping)return;
+  if(!box||!el||box.width<12||box.height<12){
+   setError("Сначала выделите фрагмент рамкой на фотографии.");
+   return;
+  }
+  setCropping(true);
+  setError("");
   try{
    const bitmap=new Image();bitmap.src=src;await bitmap.decode();
    const left=Math.round(box.x/1000*bitmap.naturalWidth),top=Math.round(box.y/1000*bitmap.naturalHeight);
@@ -149,9 +156,20 @@ export default function EggPhotoWorkspace({
    const context=canvas.getContext("2d");
    if(!context)throw Error("Canvas not available");
    context.drawImage(bitmap,left,top,w,h,0,0,canvas.width,canvas.height);
-   onCrop(canvas.toDataURL("image/jpeg",.82));
-   setSelection(null);setMode("view");setError("");
-  }catch{setError("Не удалось сохранить фрагмент изображения.");}
+   const result=canvas.toDataURL("image/jpeg",.82);
+   if(dirty)onSave(markup);
+   onCrop(result);
+   setSelection(null);setMode("view");setError("");setDirty(false);
+   // Return to the project field so the new fragment is visible immediately.
+   onClose();
+  }catch{setError("Не удалось создать фрагмент. Попробуйте выделить область ещё раз.");}
+  finally{setCropping(false);}
+ };
+ const saveCurrent=()=>{
+  if(mode==="crop"){void crop();return;}
+  onSave(markup);
+  setDirty(false);
+  setError("");
  };
  const close=()=>{if(dirty&&!window.confirm("Закрыть фото без сохранения пометок?"))return;onClose();};
  const IconButton=({label,selected,onClick,children,disabled}:{label:string;selected?:boolean;onClick:()=>void;children:ReactNode;disabled?:boolean})=>
@@ -187,7 +205,8 @@ export default function EggPhotoWorkspace({
      <IconButton label="Выделить фрагмент" selected={mode==="crop"} onClick={()=>{setSelection(null);setMode(mode==="crop"?"view":"crop");}}><Crop size={18}/></IconButton>
      <IconButton label="Отменить действие" disabled={!undo.current.length} onClick={rollback}><RotateCcw size={18}/></IconButton>
      <IconButton label="Повторить действие" disabled={!redo.current.length} onClick={forward}><RotateCw size={18}/></IconButton>
-     <IconButton label="Сохранить пометки" onClick={()=>{onSave(markup);setDirty(false);setError("");}}><Check size={19}/></IconButton>
+     <IconButton label={mode==="crop"?"Сохранить выделенный фрагмент":"Сохранить пометки"}
+      disabled={cropping} onClick={saveCurrent}><Check size={19}/></IconButton>
      <IconButton label="Закрыть фото" onClick={close}><X size={20}/></IconButton>
     </div>
     {mode==="pen"&&<div className="absolute bottom-3 left-3 z-10 flex items-center gap-2 rounded-full bg-background/90 px-3 py-2 shadow-sm backdrop-blur-md">
@@ -195,9 +214,8 @@ export default function EggPhotoWorkspace({
       className={"h-6 w-6 rounded-full "+(color===c?"ring-2 ring-foreground ring-offset-2":"")} style={{backgroundColor:c}}/>)}
      <input type="range" aria-label="Толщина пера" min="1" max="12" value={width} onChange={e=>setWidth(Number(e.target.value))} className="w-16"/>
     </div>}
-    {mode==="crop"&&selection&&<div className="absolute bottom-3 right-3 z-10 flex items-center gap-2">
-     <span className="rounded-full bg-background/90 px-3 py-2 text-xs text-foreground/70 shadow-sm">Фрагмент отдельно</span>
-     <IconButton label="Сохранить выделенный фрагмент" onClick={()=>void crop()}><Check size={18}/></IconButton>
+    {mode==="crop"&&selection&&<div className="absolute bottom-3 right-3 z-10 rounded-full bg-background/95 px-3 py-2 text-xs text-foreground shadow-sm backdrop-blur-md">
+     {cropping?"Создание фрагмента…":"Фрагмент выделен · нажмите ✓ сверху"}
     </div>}
     {pendingNote&&<div className="absolute bottom-3 left-1/2 z-20 w-[min(330px,85vw)] -translate-x-1/2 bg-background/95 p-2 shadow-lg">
      <textarea value={noteText} onChange={e=>setNoteText(e.target.value)} rows={2} aria-label="Текст пометки"
@@ -214,7 +232,7 @@ export default function EggPhotoWorkspace({
       onClick={()=>commit({...markup,notes:markup.notes.filter(v=>v.id!==note.id)})}>{i+1}. {note.text} <X size={12} className="ml-1 inline"/></button>)}
    </div>}
    <div className="pointer-events-none mt-1 max-w-[90vw] text-center text-[11px] text-foreground/60">
-    {error|| (mode==="crop"?"Проведите по фото, чтобы выделить фрагмент":mode==="pen"?"Рисуйте прямо на фотографии":mode==="note"?"Коснитесь нужного места на фото":"")}
+    {error|| (mode==="crop"?(selection?"Галочка сверху создаст новый объект на поле":"Проведите по фото, чтобы выделить фрагмент"):mode==="pen"?"Рисуйте прямо на фотографии":mode==="note"?"Коснитесь нужного места на фото":"")}
     {dirty&&<span className="ml-2">· Пометки ещё не сохранены</span>}
    </div>
   </div>
