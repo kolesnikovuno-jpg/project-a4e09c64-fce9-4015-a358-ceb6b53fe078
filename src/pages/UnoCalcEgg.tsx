@@ -86,7 +86,7 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
             onOpenYolk={openYolk}
             onOpenAccount={() => navigate("/egg/connect")}
           ><UnoEggScene locale={locale} onMatterOpen={()=>openBoard("matter")} onIdeaOpen={()=>openEntry("idea")}
-            onConceptOpen={()=>openEntry("concept")} onSphereOpen={(sphere) => setSelectedWorkSphere(sphere as SphereId)} /></EggProjectField> : <UnoEggScene locale={locale} onSphereOpen={eggBrand ? (sphere) => setSelectedWorkSphere(sphere as SphereId) : undefined} />}
+            onConceptOpen={()=>openEntry("concept")} onYolkOpen={openYolk} onSphereOpen={(sphere) => setSelectedWorkSphere(sphere as SphereId)} /></EggProjectField> : <UnoEggScene locale={locale} onSphereOpen={eggBrand ? (sphere) => setSelectedWorkSphere(sphere as SphereId) : undefined} />}
         </section>
         {eggBrand && !fieldMode && <div className="flex flex-wrap items-center justify-center gap-3 py-5">
           {hasProject && <button type="button" onClick={() => { setActiveSphere("author"); setPanelOpen(true); }} className="rounded-full bg-foreground px-5 py-3 text-sm text-background" data-testid="egg-open-concept">Идея · решение по ДНК</button>}
