@@ -165,8 +165,8 @@ export default function EggMatterDialogue({
  };
  const firstReview=()=>{setOverviewed(true);void submit("Изучи весь состав холста. Какие мотивы, противоречия и вопросы ты видишь? Отделяй наблюдения от гипотез.");};
  return <aside aria-label="Диалог Материальное" data-testid="egg-matter-dialogue"
-  className="absolute inset-y-0 right-0 z-40 flex w-full flex-col bg-[#f9f7f2]/95 text-[#3b4b40] backdrop-blur-md md:w-1/2">
-  <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[#a4afa2]/25 px-3 py-3">
+  className="absolute inset-y-0 right-0 z-40 flex w-full flex-col bg-transparent text-foreground md:w-1/2">
+  <div className="flex shrink-0 items-center justify-between gap-2 px-3 py-3">
    <div className="flex min-w-0 items-center gap-2"><BrainCircuit size={17}/>
     <div className="min-w-0"><h2 className="truncate text-sm font-medium">Материальное</h2>
      <p className="text-[10px] opacity-65">Автор ↔ ИИ · исследование</p></div></div>
@@ -177,7 +177,7 @@ export default function EggMatterDialogue({
      className="rounded-full p-2 hover:bg-[#e8ede5]" onClick={onClose}><X size={17}/></button>
    </div>
   </div>
-  <div className="shrink-0 border-b border-[#a4afa2]/20 px-3 py-2">
+  <div className="shrink-0 px-3 py-2">
    <p className="text-[11px] text-[#57675b]">В контексте: {cards.length} материалов · визуально до 12 изображений и эскизов</p>
    {focus?<div className="mt-1 flex items-center gap-2 rounded-lg bg-[#e7ede6] px-2 py-1.5 text-xs">
     <span className="min-w-0 flex-1 truncate" title={focus.text}>Фокус: {focus.text}</span>
@@ -193,16 +193,16 @@ export default function EggMatterDialogue({
      onClick={firstReview}>Исследовать весь холст</button>
     {!cards.length&&<p className="text-xs opacity-65">Перенесите материалы из общего поля — они появятся здесь.</p>}
    </div>}
-   {messages.map((message,index)=><div key={index} className={"max-w-[94%] rounded-xl px-3 py-2.5 text-[13px] leading-relaxed whitespace-pre-wrap "+
-    (message.role==="assistant"?"mr-auto bg-white shadow-sm":"ml-auto bg-[#e5ece2]")}>
-    {message.role==="assistant"?<div className="mb-1 flex items-center gap-1 text-[10px] opacity-60"><BrainCircuit size={12}/> ИИ · гипотезы требуют проверки</div>:<div className="mb-1 text-[10px] opacity-60">Автор</div>}
+   {messages.map((message,index)=><div key={index} className={"max-w-[94%] whitespace-pre-wrap break-words px-3 py-2.5 text-[13px] leading-relaxed "+
+    (message.role==="assistant"?"mr-auto bg-transparent":"ml-auto rounded-xl bg-foreground/[.055] text-right")}>
+    {message.role==="assistant"?<div className="mb-1 flex items-center gap-1 text-[10px] opacity-60"><BrainCircuit size={12}/> ИИ · гипотезы требуют проверки</div>:<div className="mb-1 text-right text-[10px] opacity-60">Автор</div>}
     {message.content}
    </div>)}
    {busy&&<p role="status" className="text-xs opacity-65">ИИ исследует материалы…</p>}
    {error&&<p role="alert" className="rounded-lg border border-[#b6aa91]/40 bg-[#fff7e9] p-2 text-xs">{error}</p>}
    <div ref={bottom}/>
   </div>
-  <form className="shrink-0 border-t border-[#a4afa2]/25 p-3" onSubmit={event=>{event.preventDefault();void submit(draft);}}>
+  <form className="shrink-0 p-3" onSubmit={event=>{event.preventDefault();void submit(draft);}}>
    <textarea aria-label="Сообщение Автору и ИИ" rows={2} maxLength={3000} value={draft}
     onChange={e=>setDraft(e.target.value)}
     placeholder="Наблюдение, вопрос или уточнение…"
