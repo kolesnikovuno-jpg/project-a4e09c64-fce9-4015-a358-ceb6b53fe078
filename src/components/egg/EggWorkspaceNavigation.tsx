@@ -1,7 +1,7 @@
 import { CircleDot, Compass, Layers, Lightbulb, Shapes } from "lucide-react";
 import EggRadialMenu, { type EggMenuAction } from "./EggRadialMenu";
 
-type Workspace = "idea" | "concept";
+type Workspace = "idea" | "concept" | "yolk";
 type Props = {
  active:Workspace;
  onOpenField?:()=>void;
@@ -11,7 +11,7 @@ type Props = {
  onOpenYolk?:()=>void;
 };
 
-/** The same fixed circular launcher across the Idea and Concept canvases.
+/** Shared fixed circular launcher across Idea, Concept and Yolk canvases.
  * Only navigates; neither moving between canvases nor reading a draft
  * constitutes approval of DNA or advancement of an EGG maturity level.
  */
@@ -25,7 +25,8 @@ export default function EggWorkspaceNavigation({
    selected:active==="idea",disabled:!onOpenIdea},
   {id:"concept",label:"Концепт",icon:Shapes,onSelect:onOpenConcept,
    selected:active==="concept",disabled:!onOpenConcept},
-  {id:"yolk",label:"Желток",icon:CircleDot,onSelect:onOpenYolk,disabled:!onOpenYolk},
+  {id:"yolk",label:"Желток",icon:CircleDot,onSelect:onOpenYolk,
+   selected:active==="yolk",disabled:!onOpenYolk},
  ];
  return <EggRadialMenu actions={actions} title="EGG"/>;
 }
