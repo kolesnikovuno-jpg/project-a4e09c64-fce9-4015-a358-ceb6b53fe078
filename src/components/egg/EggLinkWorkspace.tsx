@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Camera, Check, ExternalLink, FileText, Globe2, X } from "lucide-react";
 import EggPhotoWorkspace from "./EggPhotoWorkspace";
 
@@ -15,8 +15,8 @@ export function normalizeSiteUrl(value:string):string|null {
 }
 
 /**
- * Focused capture workflow. A cross-origin iframe cannot be inspected or
- * screenshotted by the host. Author explicitly selects an existing screenshot.
+ * Screen capture is gated by browser permission; cross-origin iframe pixels
+ * cannot be read directly. Unsupported browsers report the limitation.
  */
 export default function EggLinkWorkspace({
  address,onClose,onCaptureText,onCaptureImage,onCaptureCrop,
@@ -30,14 +30,49 @@ export default function EggLinkWorkspace({
  const [text,setText]=useState("");
  const [screenshot,setScreenshot]=useState<string|null>(null);
  const [error,setError]=useState("");
- const screenshotInput=useRef<HTMLInputElement>(null);
- const captureFile=(file?:File|null)=>{
-  if(!file)return;
-  if(!file.type.startsWith("image/")){setError("Выберите изображение.");return;}
-  const reader=new FileReader();
-  reader.onload=()=>{if(typeof reader.result==="string"){setScreenshot(reader.result);setTextOpen(false);setError("");}};
-  reader.onerror=()=>setError("Не удалось открыть изображение.");
-  reader.readAsDataURL(file);
+ const [capturing,setCapturing]=useState(false);
+ const requestScreenshot=async()=>{
+  if(!url||capturing)return;
+  const capture=navigator.mediaDevices?.getDisplayMedia;
+  if(typeof capture!=="function"){
+   setError("Этот браузер не поддерживает захват вкладки. В iPad Safari скриншот сайта напрямую недоступен.");
+   return;
+  }
+  setError("");
+  setCapturing(true);
+  let stream:MediaStream|null=null;
+  try {
+   // Browser permission is mandatory. Never attempt to access the cross-origin iframe.
+   stream=await capture.call(navigator.mediaDevices,{video:true,audio:false});
+   const video=document.createElement("video");
+   video.muted=true;video.playsInline=true;video.srcObject=stream;
+   await new Promise<void>((resolve,reject)=>{
+    const timeout=window.setTimeout(()=>reject(new Error("no-frame")),8000);
+    const finish=()=>{window.clearTimeout(timeout);resolve();};
+    if(video.readyState>=2&&video.videoWidth>0)finish();
+    else {video.onloadeddata=finish;video.onerror=()=>{window.clearTimeout(timeout);reject(new Error("video"));};}
+   });
+   await video.play();
+   const canvas=document.createElement("canvas");
+   const width=video.videoWidth,height=video.videoHeight;
+   if(!width||!height)throw Error("No image");
+   const scale=Math.min(1,1800/Math.max(width,height));
+   canvas.width=Math.max(1,Math.round(width*scale));
+   canvas.height=Math.max(1,Math.round(height*scale));
+   const ctx=canvas.getContext("2d");
+   if(!ctx)throw Error("Canvas unavailable");
+   ctx.drawImage(video,0,0,canvas.width,canvas.height);
+   video.pause();video.srcObject=null;
+   setScreenshot(canvas.toDataURL("image/jpeg",.88));
+   setTextOpen(false);
+  }catch(e){
+   setError(e instanceof Error&&e.name==="NotAllowedError"
+    ?"Захват отменён. Выберите вкладку или окно и разрешите показ."
+    :"Не удалось получить изображение экрана в этом браузере.");
+  }finally{
+   stream?.getTracks().forEach(track=>track.stop());
+   setCapturing(false);
+  }
  };
  const saveText=()=>{
   if(!url||!onCaptureText||!text.trim())return;
@@ -65,8 +100,8 @@ export default function EggLinkWorkspace({
      <Globe2 size={13} className="mr-1 inline"/>{host}
     </span>
     <div className="pointer-events-auto flex items-center gap-1.5">
-     {url&&onCaptureCrop&&<button type="button" aria-label="Фрагмент сайта" title="Выбрать скриншот и выделить фрагмент"
-       className={control} onClick={()=>{setTextOpen(false);setError("");screenshotInput.current?.click();}}><Camera size={18}/></button>}
+     {url&&onCaptureCrop&&<button type="button" aria-label="Фрагмент сайта" title="Захватить экран и выделить фрагмент"
+       className={control} disabled={capturing} onClick={()=>void requestScreenshot()}><Camera size={18}/></button>}
      {url&&onCaptureText&&<button type="button" aria-label="Текст сайта" title="Сохранить текст"
        className={control} onClick={()=>{setTextOpen(v=>!v);setError("");}}><FileText size={18}/></button>}
      {url&&<a data-testid="egg-site-open-external" href={url} target="_blank" rel="noopener noreferrer"
@@ -83,9 +118,6 @@ export default function EggLinkWorkspace({
       <p className="text-sm">Это не адрес сайта. Укажите ссылку с http:// или https://.</p>
       <p className="break-all text-xs text-foreground/55">{address}</p>
      </div>}
-   {url&&onCaptureCrop&&<input type="file" ref={screenshotInput} accept="image/*" className="hidden"
-     aria-label="Выбрать готовый скриншот"
-     onChange={e=>{captureFile(e.target.files?.[0]);e.target.value="";}}/>}
    {textOpen&&url&&<div data-testid="egg-site-text-panel"
      className="pointer-events-auto absolute bottom-3 right-3 z-30 w-[min(330px,calc(100%-24px))] rounded-xl bg-background/95 p-3 shadow-[0_5px_28px_rgba(0,0,0,.22)] backdrop-blur-md">
      <div className="mb-2 flex items-center justify-between gap-2">
