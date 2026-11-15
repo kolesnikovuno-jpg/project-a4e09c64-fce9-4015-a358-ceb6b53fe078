@@ -263,4 +263,4 @@ expected_output_schema, next_allowed_destination
 3. **v1.2 (план):** единая оболочка результата, явное авторское принятие, versioned handoff и вклад Желтка.
 4. **v1.3 (план):** подключаемые компетенции/инструменты с проверяемыми разрешениями, журналом действий и контролем затрат.
 
-**Связанные действующие источники:** `src/lib/eggSphereIntelligence.ts`, `src/lib/eggFlowCycle.ts`, `api/egg-flow-ai.ts`, `docs/egg-sphere-kernels-architecture-v01.md`, `docs/egg-nine-kernels-domain-contracts-v02.md`, `docs/egg-field-idea-levels-2026-11-15.md`.
+**Практическая карта первого круга:** [источники, роли восьми сфер, формат вклада в Желток и критерии приёмки](./egg-first-iteration-operational-contract-2026-11-15.md).\n\n**Связанные действующие источники:** `src/lib/eggSphereIntelligence.ts`, `src/lib/eggFlowCycle.ts`, `api/egg-flow-ai.ts`, `docs/egg-sphere-kernels-architecture-v01.md`, `docs/egg-nine-kernels-domain-contracts-v02.md`, `docs/egg-field-idea-levels-2026-11-15.md`.
