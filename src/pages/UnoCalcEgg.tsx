@@ -76,11 +76,11 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
             key={params.get("project") || ""}
             projectId={params.get("project") || ""}
             workspace={fieldWorkspace} onWorkspaceChange={setFieldWorkspace}
-            onOpenAuthor={() => setIdeaOpen(true)}
+            onOpenAuthor={() => { setIdeaOpen(true); setPanelOpen(false); setSelectedWorkSphere(null); }}
             onOpenProject={() => { setActiveSphere(null); setPanelOpen(true); }}
             onOpenYolk={() => navigate("/egg/yolk?project=" + encodeURIComponent(params.get("project") || ""))}
             onOpenAccount={() => navigate("/egg/connect")}
-          ><UnoEggScene locale={locale} onMatterOpen={()=>setFieldWorkspace("matter")} onSphereOpen={(sphere) => setSelectedWorkSphere(sphere as SphereId)} /></EggProjectField> : <UnoEggScene locale={locale} onSphereOpen={eggBrand ? (sphere) => setSelectedWorkSphere(sphere as SphereId) : undefined} />}
+          ><UnoEggScene locale={locale} onMatterOpen={()=>{setIdeaOpen(false);setFieldWorkspace("matter");}} onIdeaOpen={()=>{setIdeaOpen(true);setPanelOpen(false);setSelectedWorkSphere(null);}} onSphereOpen={(sphere) => setSelectedWorkSphere(sphere as SphereId)} /></EggProjectField> : <UnoEggScene locale={locale} onSphereOpen={eggBrand ? (sphere) => setSelectedWorkSphere(sphere as SphereId) : undefined} />}
         </section>
         {eggBrand && !fieldMode && <div className="flex flex-wrap items-center justify-center gap-3 py-5">
           {hasProject && <button type="button" onClick={() => { setActiveSphere("author"); setPanelOpen(true); }} className="rounded-full bg-foreground px-5 py-3 text-sm text-background" data-testid="egg-open-concept">Идея · решение по ДНК</button>}
