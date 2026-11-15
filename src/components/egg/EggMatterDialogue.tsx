@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, BrainCircuit, Check, MessageCircle, Send, X } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { createClient } from "@supabase/supabase-js";
 
 export type MatterCard={
  id:string;type:"thought"|"link"|"image"|"sketch"|"video";text:string;src?:string;
@@ -37,6 +37,7 @@ const makePreview=async(card:MatterCard):Promise<string|undefined>=>{
  }catch{return undefined;}
 };
 const errorMessage=(code:string)=>{
+ if(code==="egg_engine_not_configured")return "Конфигурация EGG недоступна. Повторите попытку позже.";
  if(code==="ai_provider_not_configured")return "Для настоящего диалога необходимо настроить ИИ-провайдера на сервере EGG.";
  if(code==="author_session_required"||code==="invalid_author_session")return "Для диалога необходимо войти в аккаунт EGG.";
  if(code==="project_not_found")return "Проект не найден в аккаунте Автора. Локальные материалы остаются на холсте.";
@@ -72,7 +73,12 @@ export default function EggMatterDialogue({
   const previous=[...messages,userMessage].slice(-16);
   setMessages(v=>[...v,userMessage]);setDraft("");setError("");setBusy(true);
   try{
-   const {data:{session}}=await supabase.auth.getSession();
+   // EGG uses its own runtime-configured Supabase project, not the legacy site client.
+   const configResponse=await fetch("/api/egg-config",{cache:"no-store"});
+   if(!configResponse.ok)throw Error("egg_engine_not_configured");
+   const config=await configResponse.json() as {supabaseUrl:string;publishableKey:string};
+   const auth=createClient(config.supabaseUrl,config.publishableKey);
+   const {data:{session}}=await auth.auth.getSession();
    if(!session?.access_token)throw Error("author_session_required");
    // Each turn refreshes the entire board; model knows which item is the focus.
    let previewCount=0;
