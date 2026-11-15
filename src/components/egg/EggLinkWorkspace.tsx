@@ -35,7 +35,7 @@ export default function EggLinkWorkspace({
   if(!url||capturing)return;
   setCapturing(true);setError("");
   try{
-   const response=await fetch("/api/egg-screenshot",{
+   const response=await fetch("/api/egg?op=page-screenshot",{
     method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url}),
    });
    const result=await response.json() as {
