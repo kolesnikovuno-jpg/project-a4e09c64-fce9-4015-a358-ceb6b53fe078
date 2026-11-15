@@ -8,6 +8,7 @@ import UnoEggScene from "@/components/unocalc/UnoEggScene";
 import EggServerState from "@/components/egg/EggServerState";
 import EggSpherePanel from "@/components/egg/EggSpherePanel";
 import EggProjectField from "@/components/egg/EggProjectField";
+import EggIdeaWorkspace from "@/components/egg/EggIdeaWorkspace";
 import type { SphereId } from "@/lib/eggEngine";
 
 const modelLabel = { ru: "Модель объекта", uk: "Модель об’єкта", en: "Object model" };
@@ -22,12 +23,13 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
   const [selectedWorkSphere, setSelectedWorkSphere] = useState<SphereId | null>(null);
   const [fieldWorkspace,setFieldWorkspace]=useState<"field"|"matter">("field");
   const [panelOpen, setPanelOpen] = useState(false);
+  const [ideaOpen,setIdeaOpen]=useState(false);
   const [panelExpanded, setPanelExpanded] = useState(false);
   useEffect(() => {
     if (!eggBrand || !hasProject) return;
     const requested = params.get("start");
-    if (requested === "idea" || requested === "author" ||
-        (requested !== null && Object.prototype.hasOwnProperty.call(EGG_SPHERES, requested))) {
+    if(requested === "idea" || requested === "author") {setIdeaOpen(true);return;}
+    if(requested !== null && Object.prototype.hasOwnProperty.call(EGG_SPHERES, requested)) {
       setActiveSphere(requested);
       setPanelOpen(true);
     }
@@ -74,7 +76,7 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
             key={params.get("project") || ""}
             projectId={params.get("project") || ""}
             workspace={fieldWorkspace} onWorkspaceChange={setFieldWorkspace}
-            onOpenAuthor={() => { setActiveSphere("author"); setPanelOpen(true); }}
+            onOpenAuthor={() => setIdeaOpen(true)}
             onOpenProject={() => { setActiveSphere(null); setPanelOpen(true); }}
             onOpenYolk={() => navigate("/egg/yolk?project=" + encodeURIComponent(params.get("project") || ""))}
             onOpenAccount={() => navigate("/egg/connect")}
@@ -85,6 +87,7 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
           <button type="button" onClick={() => { setActiveSphere(null); setPanelOpen(true); }} className="rounded-full border border-foreground/30 px-5 py-3 text-sm text-foreground/80">{hasProject ? "Открыть проект и результаты сфер" : "Познакомиться с EGG"}</button>
           <span className="text-xs text-foreground/50">Сферы открывают исходные боковые панели; обзор проекта доступен отдельно</span>
         </div>}
+        {eggBrand && fieldMode && ideaOpen && <EggIdeaWorkspace projectId={params.get("project") || ""} onClose={()=>setIdeaOpen(false)} onOpenMatter={()=>{setIdeaOpen(false);setFieldWorkspace("matter");}}/>}
         {eggBrand && selectedWorkSphere && <EggSpherePanel key={selectedWorkSphere} sphere={selectedWorkSphere} name={EGG_SPHERES[selectedWorkSphere].name} summary={EGG_SPHERES[selectedWorkSphere].purpose} status="open" projectId={params.get("project")} onClose={() => setSelectedWorkSphere(null)} />}
         {eggBrand && panelOpen && <div className="fixed inset-0 z-[100] isolate flex items-stretch justify-end bg-background/20 backdrop-blur-[2px]" onMouseDown={event => { if (event.target === event.currentTarget) setPanelOpen(false); }}>
           <div role="dialog" aria-modal="true" aria-label={activeSphere === "author" ? "Холст сферы Идея EGG" : "Рабочая панель EGG"} className={`relative z-10 flex h-[100dvh] w-full flex-col overflow-hidden bg-background shadow-2xl transition-[max-width] duration-300 ${activeSphere === "author" ? "max-w-none" : panelExpanded ? "max-w-[min(100vw,1060px)]" : "max-w-[min(100vw,480px)]"}`}>
