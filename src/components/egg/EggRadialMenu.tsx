@@ -65,9 +65,15 @@ export default function EggRadialMenu({ actions, title = "EGG" }: { actions: Egg
   const move=(event:PointerEvent<HTMLDivElement>)=>{
     const tracking=drag.current;
     if(!tracking||tracking.id!==event.pointerId)return;
-    const delta=normalizeDelta(angleAt(event.clientX,event.clientY)-tracking.angle);
+    const nextAngle=angleAt(event.clientX,event.clientY);
+    const delta=normalizeDelta(nextAngle-tracking.angle);
+    tracking.angle=nextAngle;
     if(Math.abs(delta)>5)tracking.moved=true;
-    if(tracking.moved)setRotation(tracking.startRotation+delta);
+    if(tracking.moved){
+      // Integrate successive angular changes so a complete revolution has no 180° jump.
+      tracking.startRotation+=delta;
+      setRotation(tracking.startRotation);
+    }
     event.stopPropagation();
   };
   const up=(event:PointerEvent<HTMLDivElement>)=>{
