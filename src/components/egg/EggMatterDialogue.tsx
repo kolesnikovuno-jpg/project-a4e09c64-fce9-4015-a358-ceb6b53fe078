@@ -8,17 +8,32 @@ export type MatterCard={
 };
 type Message={role:"user"|"assistant";content:string};
 const makePreview=async(card:MatterCard):Promise<string|undefined>=>{
- if(card.type!=="image"||!card.src?.startsWith("data:image/"))return undefined;
  try{
-  const image=new Image();image.src=card.src;await image.decode();
   const canvas=document.createElement("canvas");
+  const ctx=canvas.getContext("2d");if(!ctx)return undefined;
+  if(card.type==="sketch"&&card.strokes?.length){
+   canvas.width=480;canvas.height=336;
+   ctx.fillStyle="#ffffff";ctx.fillRect(0,0,480,336);
+   ctx.save();ctx.scale(.48,.48);
+   for(const stroke of card.strokes){
+    if(!stroke.points.length)continue;
+    ctx.beginPath();ctx.strokeStyle=stroke.color||"#252525";ctx.lineWidth=stroke.strokeWidth||2;
+    ctx.lineCap="round";ctx.lineJoin="round";
+    stroke.points.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+    ctx.stroke();
+   }
+   ctx.restore();
+   return canvas.toDataURL("image/jpeg",.55);
+  }
+  if(card.type!=="image"||!card.src?.startsWith("data:image/"))return undefined;
+  const image=new Image();image.src=card.src;await image.decode();
   const scale=Math.min(1,480/Math.max(image.naturalWidth,image.naturalHeight));
   canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
   canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
-  const ctx=canvas.getContext("2d");if(!ctx)return undefined;
   ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);
   ctx.drawImage(image,0,0,canvas.width,canvas.height);
-  return canvas.toDataURL("image/jpeg",.55);
+  const preview=canvas.toDataURL("image/jpeg",.48);
+  return preview.length<210000?preview:undefined;
  }catch{return undefined;}
 };
 const errorMessage=(code:string)=>{
@@ -60,11 +75,17 @@ export default function EggMatterDialogue({
    const {data:{session}}=await supabase.auth.getSession();
    if(!session?.access_token)throw Error("author_session_required");
    // Each turn refreshes the entire board; model knows which item is the focus.
-   const materials=await Promise.all(cards.slice(0,100).map(async card=>({
-    id:card.id,type:card.type,text:card.text.slice(0,2000),
-    ...(card.type==="link"?{url:card.text}:{}),
-    ...(!card.src?{}:{imageData:await makePreview(card)})
-   })));
+   let previewCount=0;
+   const materials=await Promise.all(cards.slice(0,100).map(async card=>{
+    const hasVisual=card.type==="image"||card.type==="sketch";
+    const attachVisual=hasVisual&&previewCount<12;
+    if(attachVisual)previewCount+=1;
+    return {
+     id:card.id,type:card.type,text:card.text.slice(0,2000),
+     ...(card.type==="link"?{url:card.text}:{}),
+     ...(attachVisual?{imageData:await makePreview(card)}:{})
+    };
+   }));
    const response=await fetch("/api/egg-flow-ai?op=matter-dialogue",{
     method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},
     body:JSON.stringify({projectId,materials,messages:previous,focusId:focus?.id})
@@ -90,7 +111,7 @@ export default function EggMatterDialogue({
    </div>
   </div>
   <div className="shrink-0 border-b border-[#a4afa2]/20 px-3 py-2">
-   <p className="text-[11px] text-[#57675b]">В контексте: {cards.length} материалов · фотографии, заметки, эскизы, ссылки</p>
+   <p className="text-[11px] text-[#57675b]">В контексте: {cards.length} материалов · визуально до 12 изображений и эскизов</p>
    {focus?<div className="mt-1 flex items-center gap-2 rounded-lg bg-[#e7ede6] px-2 py-1.5 text-xs">
     <span className="min-w-0 flex-1 truncate" title={focus.text}>Фокус: {focus.text}</span>
     <button type="button" aria-label="Сбросить фокус" onClick={onClearFocus}><X size={14}/></button>
