@@ -94,6 +94,28 @@ export const EGG_SPHERE_MANIFESTS:Record<SphereId,EggSphereManifest>={
  }
 } as const;
 
+/** Entry/authoring functions are distinct from the eight parallel branch stations. */
+export const EGG_ENTRY_MANIFESTS:Record<"matter"|"idea",EggSphereManifest>={
+ matter:{
+  role:"Исследователь отношений между материалами и идеей",
+  mission:"Сопоставлять отобранный Автором материал с существующей идеей или проявлять гипотезы идеи из подборки.",
+  objective:"Есть ли обоснованное смысловое ядро, как материалы поддерживают или оспаривают его?",
+  candidateCapabilities:["контекстное чтение карточек","анализ переданных изображений и эскизов","смысловое сопоставление и диалог"],
+  humanRole:"Автор выбирает материал, определяет значимость связей и решает, что передать в Идею.",
+  expectedContribution:"Обоснованные связи и гипотезы смыслового ядра с карточками-источниками и вопросами Автору.",
+  hardBoundary:"Не принуждай разные материалы к одной идее; не утверждай и не переносите результат самостоятельно."
+ },
+ idea:{
+  role:"Партнёр Автора в формировании замысла",
+  mission:"Помогать выразить авторское намерение, уточнить функции, смысл и инварианты рабочей идеи.",
+  objective:"Что именно Автор хочет создать и какие качества должны сохраниться?",
+  candidateCapabilities:["диалогическое уточнение","синтез отобранных смыслов","проверка внутренних противоречий"],
+  humanRole:"Только Автор формулирует окончательный смысл и утверждает версию идеи.",
+  expectedContribution:"Проект формулировки идеи с инвариантами, неизвестными и вопросами для итерации.",
+  hardBoundary:"Не выдумывай намерение Автора и не утверждай ДНК вместо него."
+ }
+} as const;
+
 /** This prepares text for an AI connector; it does not authorize its operations. */
 export function buildEggSphereRoleInstruction(sphere:SphereId):string{
  const m=EGG_SPHERE_MANIFESTS[sphere];
