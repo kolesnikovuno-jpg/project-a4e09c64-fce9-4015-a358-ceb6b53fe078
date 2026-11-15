@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Check, ClipboardPaste, ExternalLink, FileImage, Globe2, Maximize2, Minimize2, NotebookPen, X } from "lucide-react";
+import { Camera, Check, ClipboardPaste, ExternalLink, FileImage, Globe2, Maximize2, Minimize2, NotebookPen, X } from "lucide-react";
+import EggPhotoWorkspace from "./EggPhotoWorkspace";
 
 /** Accept only normal web addresses; never embed javascript:, data:, file:, etc. */
 export function normalizeSiteUrl(value:string):string|null {
@@ -15,10 +16,11 @@ export function normalizeSiteUrl(value:string):string|null {
 
 /** Preview a collected external site as a free window over the EGG field. */
 export default function EggLinkWorkspace({
- address,onClose,onCaptureText,onCaptureImage,
+ address,onClose,onCaptureText,onCaptureImage,onCaptureCrop,
 }:{address:string;onClose:()=>void;
  onCaptureText?:(text:string,sourceUrl:string)=>void;
  onCaptureImage?:(file:File,sourceUrl:string)=>Promise<boolean>|boolean;
+ onCaptureCrop?:(dataUrl:string,sourceUrl:string)=>void;
 }){
  const url=normalizeSiteUrl(address);
  const [expanded,setExpanded]=useState(false);
@@ -27,6 +29,52 @@ export default function EggLinkWorkspace({
  const [captureError,setCaptureError]=useState("");
  const [working,setWorking]=useState(false);
  const captureInput=useRef<HTMLInputElement>(null);
+ const screenshotInput=useRef<HTMLInputElement>(null);
+ const [screenshot,setScreenshot]=useState<string|null>(null);
+ const [takingScreenshot,setTakingScreenshot]=useState(false);
+ const captureFile=async(file?:File|null)=>{
+  if(!file||!file.type.startsWith("image/"))return;
+  setCaptureError("");
+  const reader=new FileReader();
+  reader.onload=()=>{if(typeof reader.result==="string"){setScreenshot(reader.result);setCaptureOpen(false);}};
+  reader.onerror=()=>setCaptureError("Не удалось прочитать скриншот.");
+  reader.readAsDataURL(file);
+ };
+ const requestScreenshot=async()=>{
+  if(!url||takingScreenshot)return;
+  // Screen capture requires the user's explicit choice. It never reads the iframe.
+  const display=navigator.mediaDevices?.getDisplayMedia;
+  if(!display){screenshotInput.current?.click();return;}
+  setTakingScreenshot(true);setCaptureError("");
+  let stream:MediaStream|null=null;
+  try{
+   stream=await display.call(navigator.mediaDevices,{video:true,audio:false});
+   const video=document.createElement("video");
+   video.muted=true;video.playsInline=true;video.srcObject=stream;
+   await new Promise<void>((resolve,reject)=>{
+    if(video.readyState>=2){resolve();return;}
+    video.onloadeddata=()=>resolve();video.onerror=()=>reject(new Error("video"));
+   });
+   await video.play();
+   const canvas=document.createElement("canvas");
+   const scale=Math.min(1,1800/Math.max(video.videoWidth,video.videoHeight));
+   canvas.width=Math.max(1,Math.round(video.videoWidth*scale));
+   canvas.height=Math.max(1,Math.round(video.videoHeight*scale));
+   const context=canvas.getContext("2d");if(!context)throw Error("Canvas");
+   context.drawImage(video,0,0,canvas.width,canvas.height);
+   video.pause();video.srcObject=null;
+   setScreenshot(canvas.toDataURL("image/jpeg",.87));
+   setCaptureOpen(false);
+  }catch(error){
+   if(error instanceof Error&&error.name==="NotAllowedError"){
+    setCaptureError("Захват отменён. Можно выбрать готовый скриншот.");
+   }else setCaptureError("Не удалось захватить экран. Выберите готовый скриншот.");
+   setCaptureOpen(true);
+  }finally{
+   stream?.getTracks().forEach(track=>track.stop());
+   setTakingScreenshot(false);
+  }
+ };
  const importImage=async(file?:File|null)=>{
   if(!file||!url||!file.type.startsWith("image/")||!onCaptureImage)return;
   setWorking(true);setCaptureError("");
@@ -70,6 +118,8 @@ export default function EggLinkWorkspace({
      <Globe2 size={13} className="mr-1 inline"/>{host}
     </span>
     <div className="pointer-events-auto flex items-center gap-1.5">
+     {url&&onCaptureCrop&&<button type="button" aria-label="Скрин сайта" title="Скрин → выделить область"
+      className={control} disabled={takingScreenshot} onClick={()=>void requestScreenshot()}><Camera size={18}/></button>}
      {(onCaptureText||onCaptureImage)&&<button type="button" aria-label="Сохранить материал сайта" title="Сохранить референс"
       className={control} onClick={()=>{setCaptureOpen(v=>!v);setCaptureError("");}}><NotebookPen size={18}/></button>}
      {url&&<a data-testid="egg-site-open-external" href={url} target="_blank" rel="noopener noreferrer"
@@ -92,6 +142,8 @@ export default function EggLinkWorkspace({
       <p className="text-sm">Это не адрес сайта. Укажите ссылку с http:// или https://.</p>
       <p className="break-all text-xs text-foreground/55">{address}</p>
      </div>}
+   {onCaptureCrop&&<input ref={screenshotInput} type="file" accept="image/*" className="hidden"
+     aria-label="Выбрать готовый скриншот" onChange={e=>{void captureFile(e.target.files?.[0]);e.target.value="";}}/>}
    {captureOpen&&url&&<div data-testid="egg-site-capture-panel"
       className="pointer-events-auto absolute bottom-3 right-3 z-30 w-[min(360px,calc(100%-24px))] rounded-xl bg-background/95 p-3 shadow-[0_5px_28px_rgba(0,0,0,.22)] backdrop-blur-md">
       <div className="mb-2 flex items-center justify-between gap-2">
@@ -112,6 +164,9 @@ export default function EggLinkWorkspace({
          className="flex items-center gap-1 rounded-full bg-foreground px-3 py-2 text-xs text-background disabled:opacity-35"><Check size={15}/> Сохранить текст</button>
        </div>
       </>}
+      {onCaptureCrop&&<button type="button" aria-label="Выбрать скриншот из Фото"
+         className="mt-2 flex w-full items-center justify-center gap-2 rounded-full border border-foreground/15 px-3 py-2.5 text-xs"
+         onClick={()=>screenshotInput.current?.click()}><Camera size={16}/> Выбрать скриншот для выделения</button>}
       {onCaptureImage&&<>
        <input ref={captureInput} type="file" accept="image/*" className="hidden"
         aria-label="Выбрать изображение с сайта" onChange={e=>{void importImage(e.target.files?.[0]);e.target.value="";}}/>
@@ -129,5 +184,9 @@ export default function EggLinkWorkspace({
      className="pointer-events-auto underline underline-offset-2">внешнюю ссылку</a>.
    </div>}
   </div>
+  {screenshot&&url&&onCaptureCrop&&<EggPhotoWorkspace key={screenshot.slice(0,50)}
+    src={screenshot} title="Выделите область скриншота" cropOnly
+    onSave={()=>{}} onCrop={cropped=>{onCaptureCrop(cropped,url);setScreenshot(null);}}
+    onClose={()=>setScreenshot(null)}/>}
  </section>;
 }
