@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
-import handler from "../../../api/egg-screenshot";
+import handler from "@/server/eggScreenshot";
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 function call(body:unknown,method="POST"){
