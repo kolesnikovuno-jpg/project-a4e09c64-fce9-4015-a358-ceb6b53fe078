@@ -153,7 +153,147 @@ async function generate(model:Provider,prompt:{instructions:string;input:string}
   return raw;
 }
 
+
+type MatterMaterial={id:string;type:"thought"|"link"|"image"|"sketch"|"video";text:string;url?:string;imageData?:string};
+type MatterMessage={role:"user"|"assistant";content:string};
+type MatterPayload={projectId:string;materials:MatterMaterial[];messages:MatterMessage[];focusId?:string};
+const matterTypes=new Set(["thought","link","image","sketch","video"]);
+const isMatterPayload=(value:unknown):value is MatterPayload=>{
+ if(!value||typeof value!=="object"||Array.isArray(value))return false;
+ const v=value as Partial<MatterPayload>;
+ return typeof v.projectId==="string"&&/^[0-9a-f-]{8,80}$/i.test(v.projectId)&&
+  Array.isArray(v.materials)&&v.materials.length<=100&&
+  v.materials.every(m=>m&&typeof m.id==="string"&&m.id.length<=120&&
+   typeof m.type==="string"&&matterTypes.has(m.type)&&
+   typeof m.text==="string"&&m.text.length<=2000&&
+   (m.url===undefined||(typeof m.url==="string"&&m.url.length<=2048&&/^https?:\/\//i.test(m.url)))&&
+   (m.imageData===undefined||(typeof m.imageData==="string"&&
+    /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(m.imageData)&&m.imageData.length<220000)))&&
+  Array.isArray(v.messages)&&v.messages.length>=1&&v.messages.length<=16&&
+  v.messages.every(m=>m&&(m.role==="user"||m.role==="assistant")&&typeof m.content==="string"&&m.content.length<=3000)&&
+  v.messages[v.messages.length-1].role==="user"&&
+  (v.focusId===undefined||(typeof v.focusId==="string"&&v.focusId.length<=120));
+};
+const matterInstructions=[
+ "Ты — исследовательский партнёр Автора в сфере EGG «Материальное». Работай по-русски.",
+ "Твоя задача — видеть общий контекст материалов, выявлять мотивы, противоречия, возможные связи, задавать один-два полезных вопроса.",
+ "Разделяй: НАБЛЮДЕНИЕ (дано), ГИПОТЕЗА (не подтверждена), ВОПРОС.",
+ "Автор решает, что принимать. Не меняй ДНК, не утверждай решения и не передавай результат в другие сферы.",
+ "Изображения доступны только если приложены как визуальные превью; видео, сайты, документы за ссылками не просматривались.",
+ "Если сфокусирован объект, сначала обсуждай его в контексте всего холста.",
+ "Не выдумывай детали невидимого содержимого. Пиши компактно, без длинных перечней; предлагай конкретные уточнения."
+].join("\n");
+async function matterModelReply(provider:Provider,input:MatterPayload):Promise<string>{
+ const materials=input.materials.map((m,i)=>({
+  ref:i+1,id:m.id,type:m.type,text:m.text,url:m.url??null,
+  vision:m.imageData?"Визуальное превью приложено":"Изображение/содержимое не передано",
+ }));
+ const messages=input.messages.map(m=>m.role+": "+m.content).join("\n\n");
+ const prompt="Состав материального холста ("+materials.length+" материалов):\n"+
+  JSON.stringify(materials)+"\n\nФокус: "+(input.focusId??"весь холст")+
+  "\n\nДиалог:\n"+messages;
+ const controller=new AbortController();
+ const timeout=setTimeout(()=>controller.abort(),45000);
+ try{
+  let response:Response;
+  const images=input.materials.filter(m=>Boolean(m.imageData)).map(m=>m.imageData as string);
+  if(provider.kind==="direct_gemini"){
+   response=await fetch(provider.url+encodeURIComponent(provider.model)+":generateContent",{
+    method:"POST",redirect:"error",signal:controller.signal,
+    headers:{"x-goog-api-key":provider.key,"Content-Type":"application/json"},
+    body:JSON.stringify({
+     systemInstruction:{parts:[{text:matterInstructions}]},
+     contents:[{role:"user",parts:[{text:prompt},...images.map(src=>({
+      inlineData:{mimeType:"image/jpeg",data:src.slice("data:image/jpeg;base64,".length)}
+     }))]}],
+     generationConfig:{maxOutputTokens:1100}
+    })
+   });
+  }else{
+   response=await fetch(provider.url,{
+    method:"POST",redirect:"error",signal:controller.signal,
+    headers:{Authorization:"Bearer "+provider.key,"Content-Type":"application/json"},
+    body:JSON.stringify({
+     model:provider.model,instructions:matterInstructions,store:false,max_output_tokens:1100,
+     input:[{role:"user",content:[{type:"input_text",text:prompt},
+      ...images.map(src=>({type:"input_image",image_url:src,detail:"low"}))]}]
+    })
+   });
+  }
+  if(!response.ok){
+   if(response.status===429)throw Error("ai_rate_limited");
+   if(response.status===401||response.status===403)throw Error("ai_model_not_authorized");
+   throw Error("model_request_failed");
+  }
+  const data=await response.json() as {
+   candidates?:Array<{content?:{parts?:Array<{text?:string}>}}>;
+   output?:Array<{type?:string;content?:Array<{type?:string;text?:string}>}>;
+  };
+  const result=provider.kind==="direct_gemini"?
+   (data.candidates?.[0]?.content?.parts??[]).map(x=>x.text??"").join(""):
+   (data.output??[]).flatMap(x=>x.type==="message"?x.content??[]:[])
+    .filter(x=>x.type==="output_text").map(x=>x.text??"").join("");
+  if(!result.trim()||result.length>8000)throw Error("invalid_ai_output");
+  return result.trim();
+ }finally{clearTimeout(timeout);}
+}
+async function matterDialogue(req:Request,res:ServerResponse){
+ if(req.method!=="POST")return fail(res,405,"method_not_allowed");
+ if(req.headers.origin){
+  try{
+   const origin=new URL(req.headers.origin);
+   const host=String(req.headers["x-forwarded-host"]||req.headers.host||"").split(",")[0].trim();
+   if(origin.protocol!=="https:"||origin.host!==host)return fail(res,403,"cross_origin_forbidden");
+  }catch{return fail(res,403,"cross_origin_forbidden");}
+ }
+ const bearer=/^Bearer\s+(\S+)$/i.exec(String(req.headers.authorization??""));
+ if(!bearer||bearer[1].startsWith("egg_v1_"))return fail(res,401,"author_session_required");
+ const cfg=getEggStorageConfig(process.env);
+ if(!cfg)return fail(res,503,"egg_engine_not_configured");
+ let payload:unknown;
+ try{
+  if(req.body!==undefined)payload=typeof req.body==="string"?JSON.parse(req.body):req.body;
+  else{
+   const chunks:Buffer[]=[];let total=0;
+   for await(const part of req){
+    const chunk=Buffer.isBuffer(part)?part:Buffer.from(part as Uint8Array);
+    total+=chunk.length;if(total>3200000)return fail(res,413,"body_too_large");
+    chunks.push(chunk);
+   }
+   payload=JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  }
+ }catch{return fail(res,400,"invalid_request");}
+ if(!isMatterPayload(payload)||Buffer.byteLength(JSON.stringify(payload))>3200000)
+  return fail(res,400,"invalid_request");
+ try{
+  const auth=createClient(cfg.url,cfg.publishableKey,{
+   auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
+  });
+  const {data:authData,error:authError}=await auth.auth.getUser(bearer[1]);
+  if(authError||!authData.user?.id)return fail(res,401,"invalid_author_session");
+  const db=createClient(cfg.url,cfg.serviceKey,{
+   auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
+  });
+  const {data:owned,error:dbError}=await db.from("egg_engine_projects")
+   .select("id").eq("id",payload.projectId).eq("owner_id",authData.user.id).maybeSingle();
+  if(dbError)return fail(res,503,"database_unavailable");
+  if(!owned)return fail(res,404,"project_not_found");
+  const provider=providerFromEnv(process.env,req.headers["x-vercel-oidc-token"]);
+  if(!provider)return fail(res,503,"ai_provider_not_configured");
+  const replyText=await matterModelReply(provider,payload);
+  return send(res,200,{ok:true,reply:replyText,materialsSeen:payload.materials.length,
+   imagesSeen:payload.materials.filter(m=>Boolean(m.imageData)).length});
+ }catch(e){
+  const reason=e instanceof Error?e.message:"model_request_failed";
+  if(reason==="ai_rate_limited")return fail(res,429,"ai_rate_limited");
+  if(reason==="ai_model_not_authorized")return fail(res,503,"ai_model_not_authorized");
+  if(reason==="invalid_ai_output")return fail(res,502,"invalid_ai_output");
+  return fail(res,502,"model_request_failed");
+ }
+}
 export default async function handler(req:Request,res:ServerResponse){
+  if(new URL(req.url||"/","https://egg.invalid").searchParams.get("op")==="matter-dialogue")
+    return matterDialogue(req,res);
   res.setHeader("Allow","POST");
   if(req.method!=="POST")return fail(res,405,"method_not_allowed");
   // Block cross-origin browser writes; nothing ever enters the URL.
