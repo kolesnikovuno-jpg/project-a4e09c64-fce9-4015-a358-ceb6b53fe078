@@ -727,8 +727,8 @@ const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen }: Props) => {
         <svg
           data-testid="unocalc-egg-svg"
           viewBox="0 0 760 700"
-          className="block h-auto w-full cursor-grab select-none active:cursor-grabbing"
-          style={{ touchAction: "none" }}
+          className="block h-auto w-full cursor-grab select-none outline-none focus:outline-none active:cursor-grabbing"
+          style={{ touchAction: "none", WebkitTapHighlightColor: "transparent" }}
           role="group"
           aria-label={text[locale].label}
           tabIndex={0}
