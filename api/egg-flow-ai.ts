@@ -9,6 +9,7 @@
 import type {IncomingMessage,ServerResponse} from "node:http";
 import {createClient} from "@supabase/supabase-js";
 import {getEggStorageConfig} from "../src/server/eggStorageConfig.js";
+import {EGG_MATERIAL_RESONANCE_INSTRUCTIONS} from "../src/lib/eggSphereProtocol.js";
 import type {EggProject} from "../src/lib/eggEngine.js";
 import {eggMutationSchema,runEggMutation} from "../src/lib/eggCommands.js";
 import {
@@ -175,6 +176,7 @@ const isMatterPayload=(value:unknown):value is MatterPayload=>{
   (v.focusId===undefined||(typeof v.focusId==="string"&&v.focusId.length<=120));
 };
 const matterInstructions=[
+ ...EGG_MATERIAL_RESONANCE_INSTRUCTIONS,
  "Ты — исследовательский партнёр Автора в сфере EGG «Материальное». Общайся по-русски, компактно, предметно и критически.",
  "Сфера содержит отобранные Автором материалы: изображения, эскизы, тексты, ссылки и другие объекты. Это рабочая подборка, а не обязательно единый проект или уже готовая идея.",
  "Главная цель — исследовать отношения между материалами и идеей: (А) если Автор сформулировал идею в доступном контексте — проверяй соответствие материалов этому замыслу; (Б) если идея не сформулирована — помогай проявить возможные идеи из подборки. Не объявляй режим выбранным без оснований.",
