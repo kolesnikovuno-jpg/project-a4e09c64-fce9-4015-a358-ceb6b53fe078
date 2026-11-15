@@ -261,7 +261,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
   <div ref={field} className="absolute inset-0 touch-none overflow-hidden" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}
    style={{backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}}>
    <div className={"pointer-events-none absolute inset-0 z-10 flex items-center justify-center"+(workspace==="matter"?" hidden":"")}>
-    <div data-egg-anchor className="pointer-events-auto relative shrink-0" style={{width:900,height:620,transform:"scale("+eggScale+")",touchAction:"none"}}
+    <div data-egg-anchor className="pointer-events-auto relative shrink-0 [&_[data-testid=unocalc-maturity-readout]]:hidden [&_[data-testid=unocalc-rotation-hint]]:hidden" style={{width:900,height:620,transform:"scale("+eggScale+")",touchAction:"none"}}
      onPointerDownCapture={eggDown} onPointerMoveCapture={eggMove} onPointerUpCapture={eggUp} onPointerCancelCapture={eggUp}
      onPointerDown={e=>e.stopPropagation()} onPointerMove={e=>e.stopPropagation()} onPointerUp={e=>e.stopPropagation()} onPointerCancel={e=>e.stopPropagation()}
      onWheel={e=>{e.stopPropagation();setEggScale(s=>clamp(s*(e.deltaY>0?.95:1.05),.35,1.8));}}>
@@ -273,10 +273,6 @@ export default function EggProjectField({projectId,children,workspace="field",on
      className={"group absolute select-none cursor-grab active:cursor-grabbing " + (item.type==="image"?"w-max max-w-[240px]":"w-[218px]")}
      style={{left:item.x,top:item.y}}>
      <div className="absolute right-1 top-1 z-30 flex items-center gap-1.5 opacity-90 transition-opacity sm:opacity-60 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100" data-field-actions>
-      <div title="Переместить" role="img" aria-label="Перетащить материал"
-       className="flex h-8 w-8 cursor-grab items-center justify-center rounded-full bg-background/90 text-foreground/75 shadow-[0_2px_9px_rgba(0,0,0,.16)] backdrop-blur-md active:cursor-grabbing">
-       <Move size={14} strokeWidth={1.7}/>
-      </div>
       <button type="button" data-no-drag aria-label={workspace==="field"?"В работу":"Вернуть в общее поле"} title={workspace==="field"?"В работу · Материальное":"Вернуть в общее поле"}
        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-background/95 text-foreground shadow-[0_2px_9px_rgba(0,0,0,.16)] backdrop-blur-md hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
        onClick={()=>moveToWorkspace(item.id)}>{workspace==="field"?<Check size={15}/>:<Undo2 size={15}/>}</button>
