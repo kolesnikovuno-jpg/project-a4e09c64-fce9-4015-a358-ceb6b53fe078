@@ -811,4 +811,20 @@ describe("UNOcalc egg-only geometry", () => {
     const spun = eggPoleNodes({ yaw: Math.PI / 3, tilt: 0 });
     expect(spun).toEqual(initial);
   });
+  it("opens the real EGG Idea and Material canvases from pole and Author clicks instead of legacy panels", () => {
+    const openIdea=vi.fn();
+    const openMatter=vi.fn();
+    const openSphere=vi.fn();
+    render(<UnoEggScene locale="ru" onIdeaOpen={openIdea} onMatterOpen={openMatter} onSphereOpen={openSphere}/>);
+    fireEvent.click(screen.getByTestId("unocalc-idea-hit"));
+    expect(openIdea).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId("unocalc-active-panels")).toBeNull();
+    expect(screen.queryByTestId("unocalc-sphere-workspace")).toBeNull();
+    fireEvent.click(screen.getByTestId("unocalc-matter-hit"));
+    expect(openMatter).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByTestId("unocalc-author-hit"));
+    expect(openIdea).toHaveBeenCalledTimes(2);
+    expect(openSphere).not.toHaveBeenCalled();
+  });
+
 });
