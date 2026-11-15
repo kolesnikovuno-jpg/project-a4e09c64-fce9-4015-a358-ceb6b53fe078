@@ -104,7 +104,7 @@ export default function EggMatterDialogue({
  };
  const firstReview=()=>{setOverviewed(true);void submit("Изучи весь состав холста. Какие мотивы, противоречия и вопросы ты видишь? Отделяй наблюдения от гипотез.");};
  return <aside aria-label="Диалог Материальное" data-testid="egg-matter-dialogue"
-  className="absolute inset-y-0 right-0 z-40 flex w-[min(42%,420px)] min-w-[240px] flex-col border-l border-[#a4afa2]/25 bg-[#f9f7f2]/95 text-[#3b4b40] shadow-[-6px_0_24px_rgba(45,55,40,.07)] backdrop-blur-md">
+  className="absolute inset-y-0 right-0 z-40 flex w-full flex-col bg-[#f9f7f2]/95 text-[#3b4b40] backdrop-blur-md md:w-1/2">
   <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[#a4afa2]/25 px-3 py-3">
    <div className="flex min-w-0 items-center gap-2"><BrainCircuit size={17}/>
     <div className="min-w-0"><h2 className="truncate text-sm font-medium">Материальное</h2>
@@ -121,12 +121,12 @@ export default function EggMatterDialogue({
    {focus?<div className="mt-1 flex items-center gap-2 rounded-lg bg-[#e7ede6] px-2 py-1.5 text-xs">
     <span className="min-w-0 flex-1 truncate" title={focus.text}>Фокус: {focus.text}</span>
     <button type="button" aria-label="Сбросить фокус" onClick={onClearFocus}><X size={14}/></button>
-   </div>:<p className="mt-1 text-[10px] opacity-60">Фокус: весь холст</p>}
-   <p className="mt-1 text-[10px] opacity-55">Сайты и видео представлены описанием; ИИ не просматривает их автоматически.</p>
+   </div>:<p className="mt-1 text-[10px] opacity-60">Фокус: весь холст · наведите на материал или коснитесь его</p>}
+   <p className="mt-1 text-[10px] opacity-55">Фокус применяется к следующему запросу. Весь холст остаётся в контексте. Сайты и видео представлены описанием.</p>
   </div>
   <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-4" aria-live="polite">
    {!messages.length&&<div className="space-y-3">
-    <p className="text-sm leading-relaxed">Начнём с общего обзора материалов, затем можно обсуждать отдельные объекты на холсте.</p>
+    <p className="text-sm leading-relaxed">Начнём с общего обзора. Наведите курсор на карточку слева или коснитесь её, чтобы выбрать предмет обсуждения.</p>
     <button type="button" aria-label="Начать исследование" disabled={busy||!cards.length||overviewed}
      className="rounded-full bg-[#607466] px-4 py-2.5 text-xs text-white disabled:opacity-40"
      onClick={firstReview}>Исследовать весь холст</button>
