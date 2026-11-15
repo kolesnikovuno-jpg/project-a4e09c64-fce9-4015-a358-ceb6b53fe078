@@ -8,7 +8,7 @@ import EggLinkWorkspace, { normalizeSiteUrl } from "./EggLinkWorkspace";
 
 type Point = { x:number; y:number };
 type Workspace = "field" | "matter";
-type Item = { location?:Workspace; fieldPosition?:Point; matterPosition?:Point; id:string; type:"thought"|"link"|"image"|"sketch"|"video"; x:number; y:number; text:string; src?:string; points?:Point[]; strokes?:SketchStroke[]; photoMarkup?:PhotoMarkup; color?:string; strokeWidth?:number; mediaId?:string };
+type Item = { location?:Workspace; fieldPosition?:Point; matterPosition?:Point; id:string; type:"thought"|"link"|"image"|"sketch"|"video"; x:number; y:number; text:string; src?:string; points?:Point[]; strokes?:SketchStroke[]; photoMarkup?:PhotoMarkup; sourceUrl?:string; color?:string; strokeWidth?:number; mediaId?:string };
 type Tool = "thought"|"link"|null;
 type SpeechResult = { results:ArrayLike<ArrayLike<{transcript:string}>> };
 type Recognition = { lang:string; interimResults:boolean; onresult:((event:SpeechResult)=>void)|null; onerror:(()=>void)|null; onend:(()=>void)|null; start:()=>void; stop:()=>void };
@@ -102,6 +102,43 @@ export default function EggProjectField({projectId,children,workspace="field",on
  const change=(fn:(previous:Item[])=>Item[])=>setItems(previous=>fn(previous));
  const add=(type:Item["type"],text:string,src?:string,points?:Point[],mediaId?:string)=>{
   change(previous=>[...previous,{id:uid(),type,location:workspace,x:workspace==="matter"?-110:310+(previous.length%3)*38,y:workspace==="matter"?-120:-210+(previous.length%6)*75,text,src,points,mediaId}]);
+ };
+ const addReferenceText=(text:string,sourceUrl:string)=>{
+  if(!text.trim())return;
+  change(previous=>[...previous,{
+   id:uid(),type:"thought",location:workspace,
+   x:workspace==="matter"?-110:310+(previous.length%3)*38,
+   y:workspace==="matter"?-120:-210+(previous.length%6)*75,
+   text:text.trim(),sourceUrl,
+  }]);
+  setNotice("Текст сохранён в поле с указанием источника");
+ };
+ const addReferenceImage=async(file:File,sourceUrl:string):Promise<boolean>=>{
+  if(!file.type.startsWith("image/"))return false;
+  let blobUrl="";
+  try{
+   const img=new Image();
+   blobUrl=URL.createObjectURL(file);img.src=blobUrl;
+   await img.decode();
+   const canvas=document.createElement("canvas");
+   const scale=Math.min(1,1200/Math.max(img.naturalWidth,img.naturalHeight));
+   canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+   canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+   const context=canvas.getContext("2d");if(!context)throw Error("Canvas unavailable");
+   context.drawImage(img,0,0,canvas.width,canvas.height);
+   const data=canvas.toDataURL("image/jpeg",.8);
+   change(previous=>[...previous,{
+    id:uid(),type:"image",location:workspace,
+    x:workspace==="matter"?-110:310+(previous.length%3)*38,
+    y:workspace==="matter"?-120:-210+(previous.length%6)*75,
+    text:file.name||"Визуальный референс",src:data,sourceUrl,
+   }]);
+   setNotice("Изображение сохранено в поле с указанием источника");
+   return true;
+  }catch{
+   setNotice("Не удалось сохранить изображение. Попробуйте сделать скриншот.");
+   return false;
+  }finally{if(blobUrl)URL.revokeObjectURL(blobUrl);}
  };
  const commit=()=>{
   if(!entry.trim())return;
@@ -290,6 +327,11 @@ export default function EggProjectField({projectId,children,workspace="field",on
         <img draggable={false} src={item.src} alt={item.text} title="Коснитесь, чтобы увеличить"
          className="block h-auto max-h-[300px] max-w-[240px] object-contain" style={{borderRadius:0,clipPath:"none",maskImage:"none",WebkitMaskImage:"none"}}/>
         <PhotoMarkupOverlay markup={item.photoMarkup} onNoteSelect={noteId=>{setFocusedPhotoNoteId(noteId);setOpenId(item.id);}}/>
+        {item.sourceUrl&&<a data-no-drag aria-label="Открыть источник референса" title={item.sourceUrl}
+         href={normalizeSiteUrl(item.sourceUrl)??undefined} target="_blank" rel="noopener noreferrer"
+         className="absolute bottom-1 left-1 z-30 max-w-[90%] truncate rounded-full bg-background/85 px-2 py-1 text-[10px] text-foreground/70 shadow-sm">
+         {new URL(item.sourceUrl).hostname}
+        </a>}
        </div>
       :item.type==="video"?
        <div className="flex h-36 w-full items-center justify-center rounded-lg bg-foreground/[.045] shadow-[0_5px_18px_rgba(0,0,0,.055)]">
@@ -312,6 +354,8 @@ export default function EggProjectField({projectId,children,workspace="field",on
        </div>
       :<div className="min-h-[72px] rounded-lg bg-background/80 px-3 pb-3 pt-11 shadow-[0_4px_16px_rgba(0,0,0,.055)]">
         <p className="line-clamp-8 whitespace-pre-wrap break-words text-[13px] leading-relaxed text-foreground/85">{item.text}</p>
+        {item.sourceUrl&&<a data-no-drag href={normalizeSiteUrl(item.sourceUrl)??undefined} target="_blank" rel="noopener noreferrer"
+         aria-label="Открыть источник текста" className="mt-2 block truncate text-[10px] text-foreground/55 underline underline-offset-2">{new URL(item.sourceUrl).hostname}</a>}
        </div>}
     </div>)}
    </div>
@@ -352,7 +396,8 @@ export default function EggProjectField({projectId,children,workspace="field",on
     setNotice("Фрагмент добавлен на холст рядом с исходным фото");
    }}
    onClose={()=>{setOpenId(null);setFocusedPhotoNoteId(null);}}/>}
-  {active?.type==="link"&&<EggLinkWorkspace key={active.id} address={active.text} onClose={()=>setOpenId(null)}/>}
+  {active?.type==="link"&&<EggLinkWorkspace key={active.id} address={active.text}
+    onCaptureText={addReferenceText} onCaptureImage={addReferenceImage} onClose={()=>setOpenId(null)}/>}
   {active&&!active.src&&active.type!=="link"&&<div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/65 p-4" role="presentation" onClick={()=>setOpenId(null)}>
    <div role="dialog" aria-modal="true" aria-label="Просмотр материала" onClick={e=>e.stopPropagation()} className="relative max-h-[92dvh] w-full max-w-[min(92vw,900px)] overflow-y-auto rounded-2xl bg-background p-4 shadow-2xl sm:p-6">
     <div className="mb-4 flex items-center justify-between gap-3"><span className="truncate text-xs text-foreground/50">{active.text}</span><button type="button" aria-label="Закрыть просмотр" onClick={()=>setOpenId(null)} className="rounded-full p-2 hover:bg-foreground/10"><X size={19}/></button></div>
