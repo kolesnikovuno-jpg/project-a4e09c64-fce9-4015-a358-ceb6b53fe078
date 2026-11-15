@@ -48,6 +48,29 @@ describe("EGG link website preview",()=>{
   await waitFor(()=>expect(onCaptureImage).toHaveBeenCalledWith(file,"https://example.com/image"));
   await waitFor(()=>expect(screen.queryByTestId("egg-site-capture-panel")).toBeNull());
  });
+ it("opens the screenshot picker as fallback when browser screen capture is unavailable",()=>{
+  const onCaptureCrop=vi.fn();
+  render(<EggLinkWorkspace address="https://example.com/reference" onClose={()=>{}} onCaptureCrop={onCaptureCrop}/>);
+  const picker=screen.getByLabelText("Выбрать готовый скриншот") as HTMLInputElement;
+  const click=vi.spyOn(picker,"click").mockImplementation(()=>{});
+  fireEvent.click(screen.getByRole("button",{name:"Скрин сайта"}));
+  expect(click).toHaveBeenCalledTimes(1);
+  expect(onCaptureCrop).not.toHaveBeenCalled();
+ });
+ it("opens imported screenshot directly in rectangle-selection mode without immediately saving it",async()=>{
+  const onCaptureCrop=vi.fn();
+  render(<EggLinkWorkspace address="https://example.com/reference" onClose={()=>{}} onCaptureCrop={onCaptureCrop}/>);
+  const picker=screen.getByLabelText("Выбрать готовый скриншот");
+  const file=new File(["not-a-real-image"],"screenshot.png",{type:"image/png"});
+  fireEvent.change(picker,{target:{files:[file]}});
+  const workspace=await screen.findByTestId("egg-photo-workspace");
+  expect(workspace).toBeTruthy();
+  expect(screen.getByRole("button",{name:"Сохранить выделенный фрагмент"})).toBeTruthy();
+  expect(onCaptureCrop).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button",{name:"Отменить скрин"}));
+  await waitFor(()=>expect(screen.queryByTestId("egg-photo-workspace")).toBeNull());
+  expect(screen.getByTestId("egg-link-workspace")).toBeTruthy();
+ });
  it("does not embed unsafe legacy links",()=>{
   render(<EggLinkWorkspace address="javascript:alert(1)" onClose={()=>{}}/>);
   expect(screen.queryByTestId("egg-site-frame")).toBeNull();
