@@ -21,7 +21,7 @@ export default function EggRadialMenu({ actions, title = "EGG" }: { actions: Egg
   const [path, setPath] = useState<EggMenuAction[]>([]);
   const [rotation, setRotation] = useState(0);
   const dial = useRef<HTMLDivElement>(null);
-  const drag = useRef<{id:number; angle:number; startRotation:number; moved:boolean; itemId:string|null}|null>(null);
+  const drag = useRef<{id:number; angle:number; startRotation:number; travel:number; moved:boolean; itemId:string|null}|null>(null);
   const suppressClick = useRef<{id:string;time:number}|null>(null);
   const current = path[path.length - 1];
   const entries = current?.children ?? actions;
@@ -58,7 +58,7 @@ export default function EggRadialMenu({ actions, title = "EGG" }: { actions: Egg
     if((event.target as Element).closest("[data-dial-hub]"))return;
     if(event.pointerType==="mouse"&&event.button!==0)return;
     const button=(event.target as Element).closest("[data-dial-item]") as HTMLElement|null;
-    drag.current={id:event.pointerId,angle:angleAt(event.clientX,event.clientY),startRotation:rotation,moved:false,itemId:button?.dataset.dialItem??null};
+    drag.current={id:event.pointerId,angle:angleAt(event.clientX,event.clientY),startRotation:rotation,travel:0,moved:false,itemId:button?.dataset.dialItem??null};
     try{event.currentTarget.setPointerCapture(event.pointerId);}catch{/* no capture in synthetic test environments */}
     event.stopPropagation();
   };
@@ -68,7 +68,8 @@ export default function EggRadialMenu({ actions, title = "EGG" }: { actions: Egg
     const nextAngle=angleAt(event.clientX,event.clientY);
     const delta=normalizeDelta(nextAngle-tracking.angle);
     tracking.angle=nextAngle;
-    if(Math.abs(delta)>5)tracking.moved=true;
+    tracking.travel+=Math.abs(delta);
+    if(tracking.travel>5)tracking.moved=true;
     if(tracking.moved){
       // Integrate successive angular changes so a complete revolution has no 180° jump.
       tracking.startRotation+=delta;
