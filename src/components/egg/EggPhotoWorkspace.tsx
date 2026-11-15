@@ -43,15 +43,15 @@ export function PhotoMarkupOverlay({markup,onNoteSelect}:{markup?:PhotoMarkup;on
 }
 
 export default function EggPhotoWorkspace({
-  src, title, initialMarkup, initialFocusNoteId, onSave, onCrop, onClose,
+  src, title, initialMarkup, initialFocusNoteId, cropOnly=false, onSave, onCrop, onClose,
 }:{
-  src:string; title:string; initialMarkup?:PhotoMarkup; initialFocusNoteId?:string;
+  src:string; title:string; initialMarkup?:PhotoMarkup; initialFocusNoteId?:string; cropOnly?:boolean;
   onSave:(value:PhotoMarkup)=>void;
   onCrop:(dataUrl:string)=>void;
   onClose:()=>void;
 }){
  const [markup,setMarkup]=useState<PhotoMarkup>(()=>initialMarkup||empty);
- const [mode,setMode]=useState<Mode>("view");
+ const [mode,setMode]=useState<Mode>(cropOnly?"crop":"view");
  const [color,setColor]=useState(COLORS[2]);
  const [width,setWidth]=useState(2);
  const [draft,setDraft]=useState<PhotoStroke|null>(null);
@@ -219,7 +219,7 @@ export default function EggPhotoWorkspace({
  const IconButton=({label,selected,onClick,children,disabled}:{label:string;selected?:boolean;onClick:()=>void;children:ReactNode;disabled?:boolean})=>
   <button type="button" title={label} aria-label={label} aria-pressed={selected} onClick={onClick} disabled={disabled}
    className={"flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-[0_3px_14px_rgba(0,0,0,.19)] backdrop-blur-md transition-colors disabled:opacity-40 "+(selected?"bg-foreground text-background":"bg-background/95 text-foreground hover:bg-background")}>{children}</button>;
- return <div data-testid="egg-photo-workspace" className="pointer-events-none fixed inset-0 z-[90] flex items-center justify-center p-3" aria-label="Увеличенное фото">
+ return <div data-testid="egg-photo-workspace" className={"pointer-events-none fixed inset-0 flex items-center justify-center p-3 "+(cropOnly?"z-[110]":"z-[90]")} aria-label="Увеличенное фото">
   <div className="pointer-events-auto relative flex max-h-[96dvh] max-w-[95vw] flex-col items-center justify-center">
    <div className="relative max-h-[80dvh] max-w-[92vw] shadow-[0_8px_35px_rgba(0,0,0,.12)]">
     <img ref={image} src={src} alt={title} draggable={false}
@@ -260,15 +260,15 @@ export default function EggPhotoWorkspace({
       </div>
      </div>}
     <div className="absolute right-2 top-2 z-30 flex max-w-[calc(100%-16px)] flex-wrap justify-end gap-1.5">
-     <IconButton label="Перо — пометка" selected={mode==="pen"} onClick={()=>setMode(mode==="pen"?"view":"pen")}><Pencil size={18}/></IconButton>
-     <IconButton label="Ластик по штрихам" selected={mode==="erase"} onClick={()=>setMode(mode==="erase"?"view":"erase")}><Eraser size={18}/></IconButton>
-     <IconButton label="Текстовая пометка" selected={mode==="note"} onClick={()=>setMode(mode==="note"?"view":"note")}><MessageSquareText size={18}/></IconButton>
-     <IconButton label="Выделить фрагмент" selected={mode==="crop"} onClick={()=>{setSelection(null);setMode(mode==="crop"?"view":"crop");}}><Crop size={18}/></IconButton>
-     <IconButton label="Отменить действие" disabled={!undo.current.length} onClick={rollback}><RotateCcw size={18}/></IconButton>
-     <IconButton label="Повторить действие" disabled={!redo.current.length} onClick={forward}><RotateCw size={18}/></IconButton>
+     {!cropOnly&&<IconButton label="Перо — пометка" selected={mode==="pen"} onClick={()=>setMode(mode==="pen"?"view":"pen")}><Pencil size={18}/></IconButton>}
+     {!cropOnly&&<IconButton label="Ластик по штрихам" selected={mode==="erase"} onClick={()=>setMode(mode==="erase"?"view":"erase")}><Eraser size={18}/></IconButton>}
+     {!cropOnly&&<IconButton label="Текстовая пометка" selected={mode==="note"} onClick={()=>setMode(mode==="note"?"view":"note")}><MessageSquareText size={18}/></IconButton>}
+     {!cropOnly&&<IconButton label="Выделить фрагмент" selected={mode==="crop"} onClick={()=>{setSelection(null);setMode(mode==="crop"?"view":"crop");}}><Crop size={18}/></IconButton>}
+     {!cropOnly&&<IconButton label="Отменить действие" disabled={!undo.current.length} onClick={rollback}><RotateCcw size={18}/></IconButton>}
+     {!cropOnly&&<IconButton label="Повторить действие" disabled={!redo.current.length} onClick={forward}><RotateCw size={18}/></IconButton>}
      <IconButton label={mode==="crop"?"Сохранить выделенный фрагмент":"Сохранить пометки"}
       disabled={cropping} onClick={saveCurrent}><Check size={19}/></IconButton>
-     <IconButton label="Закрыть фото" onClick={close}><X size={20}/></IconButton>
+     <IconButton label={cropOnly?"Отменить скрин":"Закрыть фото"} onClick={close}><X size={20}/></IconButton>
     </div>
     {mode==="pen"&&<div className="absolute bottom-3 left-3 z-10 flex items-center gap-2 rounded-full bg-background/90 px-3 py-2 shadow-sm backdrop-blur-md">
      {COLORS.map(c=><button key={c} type="button" onClick={()=>setColor(c)} title={"Цвет "+c} aria-label={"Цвет "+c}
