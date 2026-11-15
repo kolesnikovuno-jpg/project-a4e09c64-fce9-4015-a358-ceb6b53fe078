@@ -3,13 +3,13 @@ import { fireEvent, render, screen, waitFor, cleanup } from "@testing-library/re
 import EggProjectField from "@/components/egg/EggProjectField";
 import EggMatterDialogue from "@/components/egg/EggMatterDialogue";
 
-vi.mock("@/integrations/supabase/client",()=>({
- supabase:{auth:{getSession:vi.fn(async()=>({data:{session:{access_token:"session-token"}}}))}}
+vi.mock("@supabase/supabase-js",()=>({
+ createClient:vi.fn(()=>({auth:{getSession:vi.fn(async()=>({data:{session:{access_token:"session-token"}}}))}}))
 }));
 afterEach(()=>{cleanup();localStorage.clear();vi.unstubAllGlobals();});
 
 describe("Material research workspace",()=>{
- it("places the conversation to the left of the selected-material canvas and focuses a chosen card",()=>{
+ it("places the conversation to the right of the selected-material canvas and focuses a chosen card",()=>{
   const projectId="matter-experiment-01";
   localStorage.setItem("egg:project-field:v1:"+projectId,JSON.stringify([
    {id:"material1",type:"thought",text:"Тихая лёгкая форма",location:"matter",x:0,y:0}
@@ -25,7 +25,9 @@ describe("Material research workspace",()=>{
   expect(screen.getByTestId("egg-matter-dialogue")).toBeTruthy();
  });
  it("sends the full current board once author requests research and stores the real response",async()=>{
-  const fetchMock=vi.fn(async()=>({ok:true,status:200,json:async()=>({ok:true,reply:"Наблюдение: повторяется лёгкость. Вопрос: это цель формы?"})}));
+  const fetchMock=vi.fn(async(input:string)=>input==="/api/egg-config"?
+   {ok:true,status:200,json:async()=>({supabaseUrl:"https://example.supabase.co",publishableKey:"anon-test"})}:
+   {ok:true,status:200,json:async()=>({ok:true,reply:"Наблюдение: повторяется лёгкость. Вопрос: это цель формы?"})});
   vi.stubGlobal("fetch",fetchMock);
   const cards=[
    {id:"ref-1",type:"thought" as const,text:"Лёгкость и воздух"},
@@ -36,8 +38,8 @@ describe("Material research workspace",()=>{
     focusId={null} onClearFocus={()=>{}} onClose={()=>{}} onBack={()=>{}}/>);
   expect(fetchMock).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button",{name:"Начать исследование"}));
-  await waitFor(()=>expect(fetchMock).toHaveBeenCalledTimes(1));
-  const [url,request]=fetchMock.mock.calls[0] as unknown as [string,RequestInit];
+  await waitFor(()=>expect(fetchMock).toHaveBeenCalledTimes(2));
+  const [url,request]=fetchMock.mock.calls[1] as unknown as [string,RequestInit];
   expect(url).toBe("/api/egg-flow-ai?op=matter-dialogue");
   expect((request.headers as Record<string,string>).Authorization).toBe("Bearer session-token");
   const body=JSON.parse(String(request.body)) as {materials:Array<{id:string;url?:string}>;messages:Array<{content:string}>};
