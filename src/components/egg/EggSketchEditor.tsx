@@ -1,5 +1,6 @@
 import { useRef, useState, type PointerEvent } from "react";
-import { Check, Eraser, Pencil, RotateCcw, RotateCw, X } from "lucide-react";
+import { Check, CircleDot, Eraser, Palette, Pencil, RotateCcw, RotateCw, SlidersHorizontal, X } from "lucide-react";
+import EggRadialMenu, { type EggMenuAction } from "./EggRadialMenu";
 
 export type SketchPoint = { x: number; y: number };
 export type SketchStroke = { points: SketchPoint[]; color: string; strokeWidth: number };
@@ -128,39 +129,36 @@ export default function EggSketchEditor({
       : <polyline key={index} points={stroke.points.map(p => p.x + "," + p.y).join(" ")}
           fill="none" stroke={stroke.color} strokeWidth={stroke.strokeWidth} strokeLinecap="round" strokeLinejoin="round" />;
   };
+  const wheelActions: EggMenuAction[] = [
+    {id:"pen",label:"Перо",icon:Pencil,selected:instrument==="pen",onSelect:()=>setInstrument("pen")},
+    {id:"eraser",label:"Ластик",icon:Eraser,selected:instrument==="eraser",onSelect:()=>setInstrument("eraser")},
+    {id:"palette",label:"Цвет",icon:Palette,children:PALETTE.map((value,index)=>({
+      id:"color"+index,label:["Чёрный","Серый","Красный","Охра","Зелёный","Синий","Фиолетовый"][index],
+      icon:CircleDot,tint:value,selected:value===color,
+      onSelect:()=>{setColor(value);setInstrument("pen");}
+    }))},
+    {id:"width",label:"Толщина",icon:SlidersHorizontal,children:[.5,1,2,3,4,6,8,12].map(value=>({
+      id:"width"+value,label:value+" px",icon:CircleDot,selected:strokeWidth===value,
+      onSelect:()=>{setStrokeWidth(value);setInstrument("pen");}
+    }))},
+    {id:"history",label:"История",icon:RotateCcw,children:[
+      {id:"undo",label:"Отменить",icon:RotateCcw,disabled:!previous.current.length,onSelect:undo},
+      {id:"redo",label:"Повторить",icon:RotateCw,disabled:!next.current.length,onSelect:redo},
+    ]},
+    {id:"finish",label:"Завершить",icon:Check,children:[
+      {id:"save",label:"Готово",icon:Check,onSelect:()=>onSave(strokes)},
+      {id:"cancel",label:"Без сохранения",icon:X,onSelect:close},
+    ]},
+  ];
   return (
     <div className="fixed inset-0 z-[110] flex flex-col bg-background" role="dialog" aria-modal="true" aria-label="Редактор скетча">
-      <div className="flex min-h-16 shrink-0 flex-wrap items-center justify-between gap-2 border-b border-foreground/10 bg-background px-3 py-2 sm:px-6">
-        <div className="flex items-center gap-2">
-          <span className="mr-2 text-sm font-medium">Скетч</span>
-          <button type="button" onClick={() => setInstrument("pen")} aria-label="Перо" aria-pressed={instrument === "pen"}
-            className={"rounded-full p-2 " + (instrument === "pen" ? "bg-foreground/10" : "hover:bg-foreground/5")}><Pencil size={19}/></button>
-          <button type="button" onClick={() => setInstrument("eraser")} aria-label="Ластик" aria-pressed={instrument === "eraser"}
-            className={"rounded-full p-2 " + (instrument === "eraser" ? "bg-foreground/10" : "hover:bg-foreground/5")}><Eraser size={19}/></button>
-          <span className="mx-1 h-5 w-px bg-foreground/10" />
-          <button type="button" onClick={undo} disabled={!previous.current.length} aria-label="Отменить штрих"
-            className="rounded-full p-2 disabled:opacity-25"><RotateCcw size={18}/></button>
-          <button type="button" onClick={redo} disabled={!next.current.length} aria-label="Вернуть штрих"
-            className="rounded-full p-2 disabled:opacity-25"><RotateCw size={18}/></button>
-        </div>
-        <div className="flex items-center gap-2">
-          <button type="button" onClick={close} aria-label="Отменить редактирование" className="rounded-full border border-foreground/15 px-3 py-2 text-xs">Отмена <X size={13} className="inline"/></button>
-          <button type="button" onClick={() => { onSave(strokes); }} className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-2 text-xs text-background"><Check size={16}/> Готово</button>
-        </div>
-      </div>
-      <div className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-2 border-b border-foreground/10 bg-background px-4 py-2 sm:px-6">
-        <div className="flex items-center gap-2" role="group" aria-label="Палитра пера">
-          {PALETTE.map(value => <button key={value} type="button" onClick={() => { setColor(value); setInstrument("pen"); }}
-            aria-label={"Цвет " + value} aria-pressed={color === value} className={"h-6 w-6 rounded-full " + (color === value ? "ring-2 ring-offset-2 ring-foreground/60" : "")} style={{backgroundColor:value}} />)}
-        </div>
-        <label className="flex items-center gap-2 text-xs text-foreground/70">Толщина
-          <input type="range" min=".5" max="12" step=".5" value={strokeWidth} onChange={event => setStrokeWidth(Number(event.target.value))} className="w-28 sm:w-40" aria-label="Толщина пера"/>
-          <span className="w-10 text-right tabular-nums">{strokeWidth} px</span>
-        </label>
+      <div className="pointer-events-none absolute left-5 top-[max(1.25rem,env(safe-area-inset-top))] z-10">
+        <span className="text-lg font-light tracking-tight">Скетч</span>
+        <span className="ml-3 text-xs text-foreground/45">{instrument==="pen"?"Перо · "+strokeWidth+" px":"Ластик"} · {strokes.length} штрихов</span>
       </div>
       <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-foreground/[.025] p-2 sm:p-5">
         <div className="relative aspect-[10/7] max-h-full w-full max-w-[1300px] overflow-hidden rounded-xl border border-foreground/10 bg-background shadow-sm"
-          style={{ maxWidth: "min(100%, calc((100dvh - 160px) * 10 / 7))" }}>
+          style={{ maxWidth: "min(100%, calc((100dvh - 60px) * 10 / 7))" }}>
           <svg ref={svg} viewBox="0 0 1000 700" className="block h-full w-full select-none"
             style={{touchAction:"none", cursor:instrument==="pen"?"crosshair":"cell"}}
             aria-label="Лист для рисования" role="img"
@@ -171,9 +169,7 @@ export default function EggSketchEditor({
           </svg>
         </div>
       </div>
-      <p className="shrink-0 px-4 py-2 text-center text-[11px] text-foreground/45">
-        Несколько линий образуют один скетч. Ластик удаляет отдельные штрихи. Сохранение — по кнопке «Готово».
-      </p>
+      <EggRadialMenu actions={wheelActions} title="Скетч"/>
     </div>
   );
 }
