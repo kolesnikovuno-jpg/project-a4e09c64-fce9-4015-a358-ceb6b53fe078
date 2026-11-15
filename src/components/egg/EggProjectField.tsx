@@ -4,11 +4,11 @@ import { Check, Undo2, Camera, CircleDot, FileUp, FolderOpen, Image as ImageIcon
 import EggRadialMenu, { type EggMenuAction } from "./EggRadialMenu";
 import EggSketchEditor, { type SketchStroke } from "./EggSketchEditor";
 import EggPhotoWorkspace, { PhotoMarkupOverlay, type PhotoMarkup } from "./EggPhotoWorkspace";
-import EggLinkWorkspace, { normalizeSiteUrl } from "./EggLinkWorkspace";
+import EggLinkWorkspace, { normalizeSiteUrl, type SiteMark } from "./EggLinkWorkspace";
 
 type Point = { x:number; y:number };
 type Workspace = "field" | "matter";
-type Item = { location?:Workspace; fieldPosition?:Point; matterPosition?:Point; id:string; type:"thought"|"link"|"image"|"sketch"|"video"; x:number; y:number; text:string; src?:string; points?:Point[]; strokes?:SketchStroke[]; photoMarkup?:PhotoMarkup; sourceUrl?:string; color?:string; strokeWidth?:number; mediaId?:string };
+type Item = { location?:Workspace; fieldPosition?:Point; matterPosition?:Point; id:string; type:"thought"|"link"|"image"|"sketch"|"video"; x:number; y:number; text:string; src?:string; points?:Point[]; strokes?:SketchStroke[]; photoMarkup?:PhotoMarkup; siteMarks?:SiteMark[]; sourceUrl?:string; color?:string; strokeWidth?:number; mediaId?:string };
 type Tool = "thought"|"link"|null;
 type SpeechResult = { results:ArrayLike<ArrayLike<{transcript:string}>> };
 type Recognition = { lang:string; interimResults:boolean; onresult:((event:SpeechResult)=>void)|null; onerror:(()=>void)|null; onend:(()=>void)|null; start:()=>void; stop:()=>void };
@@ -102,43 +102,6 @@ export default function EggProjectField({projectId,children,workspace="field",on
  const change=(fn:(previous:Item[])=>Item[])=>setItems(previous=>fn(previous));
  const add=(type:Item["type"],text:string,src?:string,points?:Point[],mediaId?:string)=>{
   change(previous=>[...previous,{id:uid(),type,location:workspace,x:workspace==="matter"?-110:310+(previous.length%3)*38,y:workspace==="matter"?-120:-210+(previous.length%6)*75,text,src,points,mediaId}]);
- };
- const addReferenceText=(text:string,sourceUrl:string)=>{
-  if(!text.trim())return;
-  change(previous=>[...previous,{
-   id:uid(),type:"thought",location:workspace,
-   x:workspace==="matter"?-110:310+(previous.length%3)*38,
-   y:workspace==="matter"?-120:-210+(previous.length%6)*75,
-   text:text.trim(),sourceUrl,
-  }]);
-  setNotice("Текст сохранён в поле с указанием источника");
- };
- const addReferenceImage=async(file:File,sourceUrl:string):Promise<boolean>=>{
-  if(!file.type.startsWith("image/"))return false;
-  let blobUrl="";
-  try{
-   const img=new Image();
-   blobUrl=URL.createObjectURL(file);img.src=blobUrl;
-   await img.decode();
-   const canvas=document.createElement("canvas");
-   const scale=Math.min(1,1200/Math.max(img.naturalWidth,img.naturalHeight));
-   canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
-   canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
-   const context=canvas.getContext("2d");if(!context)throw Error("Canvas unavailable");
-   context.drawImage(img,0,0,canvas.width,canvas.height);
-   const data=canvas.toDataURL("image/jpeg",.8);
-   change(previous=>[...previous,{
-    id:uid(),type:"image",location:workspace,
-    x:workspace==="matter"?-110:310+(previous.length%3)*38,
-    y:workspace==="matter"?-120:-210+(previous.length%6)*75,
-    text:file.name||"Визуальный референс",src:data,sourceUrl,
-   }]);
-   setNotice("Изображение сохранено в поле с указанием источника");
-   return true;
-  }catch{
-   setNotice("Не удалось сохранить изображение. Попробуйте сделать скриншот.");
-   return false;
-  }finally{if(blobUrl)URL.revokeObjectURL(blobUrl);}
  };
  const commit=()=>{
   if(!entry.trim())return;
@@ -397,21 +360,10 @@ export default function EggProjectField({projectId,children,workspace="field",on
    }}
    onClose={()=>{setOpenId(null);setFocusedPhotoNoteId(null);}}/>}
   {active?.type==="link"&&<EggLinkWorkspace key={active.id} address={active.text}
-    onCaptureText={addReferenceText} onCaptureImage={addReferenceImage}
-    onCaptureCrop={(cropped,sourceUrl)=>{
-     const screenW=field.current?.clientWidth||window.innerWidth;
-     const screenH=field.current?.clientHeight||window.innerHeight;
-     const left=(-screenW/2-pan.x)/zoom,right=(screenW/2-pan.x)/zoom;
-     const top=(-screenH/2-pan.y)/zoom,bottom=(screenH/2-pan.y)/zoom;
-     const toRight=active.x+250,toLeft=active.x-260;
-     const x=toRight+240<=right-10?toRight:toLeft>=left+10?toLeft:clamp(-pan.x/zoom-110,left+10,Math.max(left+10,right-250));
-     const y=clamp(active.y+55,top+20,Math.max(top+20,bottom-270));
-     change(previous=>[...previous,{
-      id:uid(),type:"image",location:active.location??workspace,x,y,
-      text:"Фрагмент сайта",src:cropped,sourceUrl,
-     }]);
-     setOpenId(null);
-     setNotice("Фрагмент сайта добавлен рядом с исходной ссылкой");
+    marks={active.siteMarks??[]}
+    onMarksChange={marks=>{
+     // Persist with this link in the project's existing field storage.
+     change(previous=>previous.map(item=>item.id===active.id?{...item,siteMarks:marks}:item));
     }}
     onClose={()=>setOpenId(null)}/>}
   {active&&!active.src&&active.type!=="link"&&<div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/65 p-4" role="presentation" onClick={()=>setOpenId(null)}>
