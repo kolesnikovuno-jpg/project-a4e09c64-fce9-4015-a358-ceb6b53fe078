@@ -328,6 +328,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
     </div>)}
    </div>
   </div>
+  {workspace==="matter"&&<button type="button" aria-label="Вернуться к Яйцу" onClick={()=>onWorkspaceChange?.("field")} className="absolute left-5 top-[116px] z-30 rounded-full border border-foreground/20 bg-background/95 px-3 py-2 text-xs shadow-sm sm:left-8">← К Яйцу</button>}
   {workspace==="matter"&&matterDialogueOpen&&<EggMatterDialogue
     projectId={projectId} cards={matterCards} focusId={matterFocusId} onClearFocus={()=>setMatterFocusId(null)}
     onBack={()=>onWorkspaceChange?.("field")} onClose={()=>setMatterDialogueOpen(false)}/>}
@@ -335,7 +336,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
     className="absolute right-5 top-16 z-40 flex items-center gap-2 rounded-full bg-[#f9f7f2] px-4 py-2 text-xs text-[#45574b] shadow-md"
     onClick={()=>setMatterDialogueOpen(true)}><MessageCircle size={16}/> Диалог с ИИ</button>}
   {workspace==="matter"&&!visibleItems.length&&<p className="pointer-events-none absolute inset-x-8 top-1/2 text-center text-sm text-foreground/45">Выберите карточки в общем поле кнопкой «В работу».</p>}
-  {!tool && !sketchEditor && !openId && <EggRadialMenu actions={menuActions} side={workspace==="matter"?"right":"left"}/>}
+  {!tool && !sketchEditor && !openId && <EggRadialMenu actions={menuActions} side="left"/>}
   {tool!==null&&<div className="absolute bottom-[max(6rem,env(safe-area-inset-bottom))] left-4 z-40 w-[min(340px,calc(100vw-32px))] rounded-2xl border border-foreground/15 bg-background/95 p-3 shadow-xl sm:left-6">
    <div className="flex items-center justify-between px-1 pb-1">
      <span className="text-sm font-medium">{tool==="link"?"Ссылка":"Заметка"}</span>
