@@ -1,7 +1,7 @@
 import {describe,expect,it} from "vitest";
 import {createEggProject} from "../../lib/eggEngine";
 import {startEggFlowCycle} from "../../lib/eggFlowCycle";
-import {EGG_SPHERE_MANIFESTS,EGG_ENTRY_MANIFESTS,EGG_SPHERE_PROTOCOL_VERSION,EGG_MATERIAL_RESONANCE_INSTRUCTIONS,buildEggSphereRoleInstruction} from "../../lib/eggSphereProtocol";
+import {EGG_SPHERE_MANIFESTS,EGG_ENTRY_MANIFESTS,EGG_SPHERE_PROTOCOL_VERSION,EGG_MATERIAL_RESONANCE_INSTRUCTIONS,EGG_LEVEL_DEPTH,buildEggSpherePerceptionInstruction,buildEggSphereRoleInstruction} from "../../lib/eggSphereProtocol";
 import {buildEggSphereIntelligencePrompt} from "../../lib/eggSphereIntelligence";
 
 describe("EGG Sphere Protocol v1.0",()=>{
@@ -31,12 +31,29 @@ describe("EGG Sphere Protocol v1.0",()=>{
   expect(guide).toContain("а не измерение физических частот");
   expect(guide).toContain("не обязательно готовый предмет");
  });
+ it("separates current depth from backward/present/forward perception for all five levels",()=>{
+  expect(Object.keys(EGG_LEVEL_DEPTH)).toHaveLength(5);
+  expect(EGG_LEVEL_DEPTH[1].name).toBe("Идея");
+  expect(EGG_LEVEL_DEPTH[5].name).toBe("Продукт");
+  for(const level of [1,2,3,4,5]){
+   const policy=buildEggSpherePerceptionInstruction(level);
+   expect(policy).toContain("Рабочая глубина");
+   expect(policy).toContain("смотри назад");
+   expect(policy).toContain("в настоящий момент");
+   expect(policy).toContain("вперёд");
+   expect(policy).toContain("не обязывает сейчас");
+  }
+  expect(()=>buildEggSpherePerceptionInstruction(6)).toThrow("Unsupported");
+ });
  it("includes the specific role and explicit capability limits when AI connects",()=>{
   const project=createEggProject({id:"739b6b30-73c1-41aa-9412-0c5dbe8ce5aa",title:"Кресло",seed:"Лёгкое кресло",at:"2026-11-15T10:00:00Z"});
   const cycle=startEggFlowCycle(project,{actor:"author",at:"2026-11-15T10:00:00Z"});
   const prompt=buildEggSphereIntelligencePrompt(cycle,"marketing");
   expect(prompt.instructions).toContain(buildEggSphereRoleInstruction("marketing"));
   expect(prompt.instructions).toContain("ТОЛЬКО если");
+  expect(prompt.instructions).toContain("EGG уровень 1 / 5 — Идея");
+  expect(prompt.instructions).toContain("ОХВАТ ВОСПРИЯТИЯ");
+  expect(JSON.parse(prompt.input).diagnostics.depth.name).toBe("Идея");
   expect(prompt.instructions).toContain("не обрабатывай его повторно");
   expect(JSON.parse(prompt.input).protocolVersion).toBe("1.0");
   expect(prompt.instructions).not.toContain(EGG_SPHERE_MANIFESTS.legal.mission);
