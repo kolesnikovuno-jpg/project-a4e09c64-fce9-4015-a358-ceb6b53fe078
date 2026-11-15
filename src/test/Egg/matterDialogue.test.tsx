@@ -18,7 +18,8 @@ describe("Material research workspace",()=>{
   expect(screen.getByTestId("egg-matter-dialogue")).toBeTruthy();
   const card=container.querySelector('[data-field-item="material1"]') as HTMLElement;
   expect(card).toBeTruthy();
-  fireEvent.pointerEnter(card,{pointerType:"mouse"});
+  // Explicit focus is reliable in JSDOM; hover-specific pointerType is browser tested.
+  fireEvent.click(screen.getByRole("button",{name:"Обсудить материал Тихая лёгкая форма"}));
   expect(screen.getByText("Фокус: Тихая лёгкая форма")).toBeTruthy();
   fireEvent.click(screen.getByRole("button",{name:"Сбросить фокус"}));
   fireEvent.click(screen.getByRole("button",{name:"Обсудить материал Тихая лёгкая форма"}));
