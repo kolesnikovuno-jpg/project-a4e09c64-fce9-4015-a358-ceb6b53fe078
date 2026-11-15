@@ -41,8 +41,17 @@ describe("EGG open photo",()=>{
   fireEvent.click(screen.getByRole("button",{name:"Сохранить пометки"}));
   expect(onSave.mock.calls[0][0].notes).toEqual([expect.objectContaining({text:"Интересная деталь",x:400,y:600})]);
  });
- it("saves a selected fragment separately from the original photo",async()=>{
-  const onCrop=vi.fn();
+ it("explains what is missing if the main check is pressed without a selection",()=>{
+  const onSave=vi.fn(),onCrop=vi.fn();
+  render(<EggPhotoWorkspace src="data:image/jpeg;base64,AA==" title="Photo" onSave={onSave} onCrop={onCrop} onClose={()=>{}}/>);
+  fireEvent.click(screen.getByRole("button",{name:"Выделить фрагмент"}));
+  fireEvent.click(screen.getByRole("button",{name:"Сохранить выделенный фрагмент"}));
+  expect(screen.getByText("Сначала выделите фрагмент рамкой на фотографии.")).toBeTruthy();
+  expect(onCrop).not.toHaveBeenCalled();
+  expect(onSave).not.toHaveBeenCalled();
+ });
+ it("saves a selected fragment separately from the original photo and shows field",async()=>{
+  const onCrop=vi.fn(),onClose=vi.fn();
   const OriginalImage=globalThis.Image;
   const originalContext=HTMLCanvasElement.prototype.getContext;
   const originalToDataUrl=HTMLCanvasElement.prototype.toDataURL;
@@ -56,7 +65,7 @@ describe("EGG open photo",()=>{
    Object.defineProperty(globalThis,"Image",{configurable:true,writable:true,value:MockImage});
    Object.defineProperty(HTMLCanvasElement.prototype,"getContext",{configurable:true,writable:true,value:vi.fn(()=>({drawImage:vi.fn()}))});
    Object.defineProperty(HTMLCanvasElement.prototype,"toDataURL",{configurable:true,writable:true,value:vi.fn(()=>"data:image/jpeg;base64,CROP")});
-   render(<EggPhotoWorkspace src="data:image/jpeg;base64,ORIGINAL" title="Photo" onSave={()=>{}} onCrop={onCrop} onClose={()=>{}}/>);
+   render(<EggPhotoWorkspace src="data:image/jpeg;base64,ORIGINAL" title="Photo" onSave={()=>{}} onCrop={onCrop} onClose={onClose}/>);
    const layer=screen.getByTestId("egg-photo-ink-layer");
    Object.defineProperty(layer,"getBoundingClientRect",{configurable:true,value:()=>({left:0,top:0,width:500,height:500})});
    fireEvent.click(screen.getByRole("button",{name:"Выделить фрагмент"}));
@@ -65,6 +74,8 @@ describe("EGG open photo",()=>{
    sendPointer(layer,"pointerup",310,310,8);
    fireEvent.click(screen.getByRole("button",{name:"Сохранить выделенный фрагмент"}));
    await waitFor(()=>expect(onCrop).toHaveBeenCalledWith("data:image/jpeg;base64,CROP"));
+   expect(onClose).toHaveBeenCalledTimes(1);
+   expect(onCrop).toHaveBeenCalledTimes(1);
   }finally{
    Object.defineProperty(globalThis,"Image",{configurable:true,writable:true,value:OriginalImage});
    Object.defineProperty(HTMLCanvasElement.prototype,"getContext",{configurable:true,writable:true,value:originalContext});
