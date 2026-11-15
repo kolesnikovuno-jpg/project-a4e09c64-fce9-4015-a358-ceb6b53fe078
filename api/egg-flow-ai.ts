@@ -9,7 +9,7 @@
 import type {IncomingMessage,ServerResponse} from "node:http";
 import {createClient} from "@supabase/supabase-js";
 import {getEggStorageConfig} from "../src/server/eggStorageConfig.js";
-import {EGG_MATERIAL_RESONANCE_INSTRUCTIONS} from "../src/lib/eggSphereProtocol.js";
+import {EGG_MATERIAL_RESONANCE_INSTRUCTIONS,EGG_ENTRY_MANIFESTS} from "../src/lib/eggSphereProtocol.js";
 import type {EggProject} from "../src/lib/eggEngine.js";
 import {eggMutationSchema,runEggMutation} from "../src/lib/eggCommands.js";
 import {
@@ -157,7 +157,7 @@ async function generate(model:Provider,prompt:{instructions:string;input:string}
 
 type MatterMaterial={id:string;type:"thought"|"link"|"image"|"sketch"|"video";text:string;url?:string;imageData?:string};
 type MatterMessage={role:"user"|"assistant";content:string};
-type MatterPayload={projectId:string;materials:MatterMaterial[];messages:MatterMessage[];focusId?:string};
+type MatterPayload={projectId:string;materials:MatterMaterial[];messages:MatterMessage[];focusId?:string;intent?:string;constraints?:string;materialInsight?:string};
 const matterTypes=new Set(["thought","link","image","sketch","video"]);
 const isMatterPayload=(value:unknown):value is MatterPayload=>{
  if(!value||typeof value!=="object"||Array.isArray(value))return false;
@@ -173,7 +173,10 @@ const isMatterPayload=(value:unknown):value is MatterPayload=>{
   Array.isArray(v.messages)&&v.messages.length>=1&&v.messages.length<=16&&
   v.messages.every(m=>m&&(m.role==="user"||m.role==="assistant")&&typeof m.content==="string"&&m.content.length<=3000)&&
   v.messages[v.messages.length-1].role==="user"&&
-  (v.focusId===undefined||(typeof v.focusId==="string"&&v.focusId.length<=120));
+  (v.focusId===undefined||(typeof v.focusId==="string"&&v.focusId.length<=120))&&
+  (v.intent===undefined||(typeof v.intent==="string"&&v.intent.length<=3000))&&
+  (v.constraints===undefined||(typeof v.constraints==="string"&&v.constraints.length<=2000))&&
+  (v.materialInsight===undefined||(typeof v.materialInsight==="string"&&v.materialInsight.length<=4000));
 };
 const matterInstructions=[
  ...EGG_MATERIAL_RESONANCE_INSTRUCTIONS,
@@ -192,7 +195,19 @@ const matterInstructions=[
  "Визуально анализируй лишь реально приложенные превью. Содержимое сайтов по URL, видео и документов, не переданных как содержимое, тебе неизвестно. Не выдумывай детали.",
  "Сначала отвечай на конкретный запрос Автора; общую диагностику выполняй только по его просьбе или когда без неё нельзя продвинуть обсуждение.",
 ].join("\n");
-async function matterModelReply(provider:Provider,input:MatterPayload):Promise<string>{
+const ideaInstructions=[
+ "Ты — исследовательский партнёр Автора в сфере EGG «Идея».",
+ "Твоя роль: "+EGG_ENTRY_MANIFESTS.idea.role+". "+EGG_ENTRY_MANIFESTS.idea.mission,
+ "Только Автор инициирует направление и утверждает идею. Рамки Автора имеют приоритет над гипотезами Материального.",
+ "Используй подготовленную карту поля и разрешённые карточки как контекст, а не как готовый или утверждённый концепт.",
+ "Если у Автора есть намерение, развивай его образно-смысловое ядро. Если рамки не заданы, не выдумывай размеры, материалы, назначение или технологию.",
+ "Не своди идею преждевременно к утилитарному предмету либо геометрии; сохраняй образ, характер, аккорд и потенциал.",
+ "Предлагай одну развиваемую версию идеи, отмечай инварианты, гипотезы, противоречия и наиболее важный вопрос Автору.",
+ "Каждая следующая итерация учитывает авторские корректировки, но не утверждает за Автора и не меняет ДНК или уровень EGG.",
+ "Ссылки и документы без прочитанного содержимого не считаются изученными. Не выдумывай источник или визуальные детали.",
+ "Отвечай компактно, сначала на конкретный вопрос Автора. Если нужно — предложи одну ясную формулировку черновика идеи."
+].join("\n");
+async function matterModelReply(provider:Provider,input:MatterPayload,mode:"matter"|"idea"="matter"):Promise<string>{
  const materials=input.materials.map((m,i)=>({
   ref:i+1,id:m.id,type:m.type,text:m.text,url:m.url??null,
   vision:m.imageData?"Визуальное превью приложено":"Изображение/содержимое не передано",
@@ -200,7 +215,7 @@ async function matterModelReply(provider:Provider,input:MatterPayload):Promise<s
  const messages=input.messages.map(m=>m.role+": "+m.content).join("\n\n");
  const prompt="Состав материального холста ("+materials.length+" материалов):\n"+
   JSON.stringify(materials)+"\n\nФокус: "+(input.focusId??"весь холст")+
-  "\n\nДиалог:\n"+messages;
+  (mode==="idea"?"\n\nИнициация Автора: "+(input.intent??"не задана")+"\nРамки: "+(input.constraints??"не заданы")+"\nЧерновая карта из Материального: "+(input.materialInsight??"нет"):"")+"\n\nДиалог:\n"+messages;
  const controller=new AbortController();
  const timeout=setTimeout(()=>controller.abort(),45000);
  try{
@@ -211,7 +226,7 @@ async function matterModelReply(provider:Provider,input:MatterPayload):Promise<s
     method:"POST",redirect:"error",signal:controller.signal,
     headers:{"x-goog-api-key":provider.key,"Content-Type":"application/json"},
     body:JSON.stringify({
-     systemInstruction:{parts:[{text:matterInstructions}]},
+     systemInstruction:{parts:[{text:mode==="idea"?ideaInstructions:matterInstructions}]},
      contents:[{role:"user",parts:[{text:prompt},...images.map(src=>({
       inlineData:{mimeType:"image/jpeg",data:src.slice("data:image/jpeg;base64,".length)}
      }))]}],
@@ -223,7 +238,7 @@ async function matterModelReply(provider:Provider,input:MatterPayload):Promise<s
     method:"POST",redirect:"error",signal:controller.signal,
     headers:{Authorization:"Bearer "+provider.key,"Content-Type":"application/json"},
     body:JSON.stringify({
-     model:provider.model,instructions:matterInstructions,store:false,max_output_tokens:2400,
+     model:provider.model,instructions:mode==="idea"?ideaInstructions:matterInstructions,store:false,max_output_tokens:2400,
      input:[{role:"user",content:[{type:"input_text",text:prompt},
       ...images.map(src=>({type:"input_image",image_url:src,detail:"low"}))]}]
     })
@@ -252,7 +267,7 @@ async function matterModelReply(provider:Provider,input:MatterPayload):Promise<s
   return result.trim();
  }finally{clearTimeout(timeout);}
 }
-async function matterDialogue(req:Request,res:ServerResponse){
+async function matterDialogue(req:Request,res:ServerResponse,mode:"matter"|"idea"="matter"){
  if(req.method!=="POST")return fail(res,405,"method_not_allowed");
  if(req.headers.origin){
   try{
@@ -295,7 +310,8 @@ async function matterDialogue(req:Request,res:ServerResponse){
   if(!owned)return fail(res,404,"project_not_found");
   const provider=providerFromEnv(process.env,req.headers["x-vercel-oidc-token"]);
   if(!provider)return fail(res,503,"ai_provider_not_configured");
-  const replyText=await matterModelReply(provider,payload);
+  if(mode==="idea"&&!payload.intent?.trim())return fail(res,400,"invalid_request");
+  const replyText=await matterModelReply(provider,payload,mode);
   return send(res,200,{ok:true,reply:replyText,materialsSeen:payload.materials.length,
    imagesSeen:payload.materials.filter(m=>Boolean(m.imageData)).length});
  }catch(e){
@@ -308,8 +324,9 @@ async function matterDialogue(req:Request,res:ServerResponse){
  }
 }
 export default async function handler(req:Request,res:ServerResponse){
-  if(new URL(req.url||"/","https://egg.invalid").searchParams.get("op")==="matter-dialogue")
-    return matterDialogue(req,res);
+  const dialogueOp=new URL(req.url||"/","https://egg.invalid").searchParams.get("op");
+  if(dialogueOp==="matter-dialogue"||dialogueOp==="idea-dialogue")
+    return matterDialogue(req,res,dialogueOp==="idea-dialogue"?"idea":"matter");
   res.setHeader("Allow","POST");
   if(req.method!=="POST")return fail(res,405,"method_not_allowed");
   // Block cross-origin browser writes; nothing ever enters the URL.
