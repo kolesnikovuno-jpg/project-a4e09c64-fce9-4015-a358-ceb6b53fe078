@@ -2,6 +2,12 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import EggPhotoWorkspace from "@/components/egg/EggPhotoWorkspace";
 
+const sendPointer=(node:Element,type:string,clientX:number,clientY:number,pointerId:number)=>{
+ const event=new MouseEvent(type,{bubbles:true,clientX,clientY,button:0});
+ Object.defineProperty(event,"pointerId",{value:pointerId});
+ Object.defineProperty(event,"pointerType",{value:"pen"});
+ fireEvent(node,event);
+};
 describe("EGG open photo",()=>{
  it("shows the photo without a blocking shade, frame or oval crop, and saves pen annotations",()=>{
   const onSave=vi.fn(),onClose=vi.fn();
@@ -9,15 +15,15 @@ describe("EGG open photo",()=>{
   expect(screen.getByTestId("egg-photo-workspace")).toBeTruthy();
   expect(container.querySelector(".bg-black\\/65")).toBeNull();
   const img=screen.getByAltText("Sample") as HTMLImageElement;
-  expect(img.style.borderRadius).toBe("0px");
+  expect(img.style.borderRadius).toBe("0");
   expect(img.style.clipPath).toBe("none");
   expect(screen.getByRole("button",{name:"Закрыть фото"})).toBeTruthy();
   const layer=screen.getByTestId("egg-photo-ink-layer");
   Object.defineProperty(layer,"getBoundingClientRect",{configurable:true,value:()=>({left:0,top:0,width:800,height:600})});
   fireEvent.click(screen.getByRole("button",{name:"Перо — пометка"}));
-  fireEvent.pointerDown(layer,{pointerId:1,pointerType:"pen",clientX:20,clientY:25});
-  fireEvent.pointerMove(layer,{pointerId:1,pointerType:"pen",clientX:150,clientY:175});
-  fireEvent.pointerUp(layer,{pointerId:1,pointerType:"pen",clientX:150,clientY:175});
+  sendPointer(layer,"pointerdown",20,25,1);
+  sendPointer(layer,"pointermove",150,175,1);
+  sendPointer(layer,"pointerup",150,175,1);
   fireEvent.click(screen.getByRole("button",{name:"Сохранить пометки"}));
   expect(onSave).toHaveBeenCalledTimes(1);
   expect(onSave.mock.calls[0][0].strokes).toHaveLength(1);
@@ -29,7 +35,7 @@ describe("EGG open photo",()=>{
   const layer=screen.getByTestId("egg-photo-ink-layer");
   Object.defineProperty(layer,"getBoundingClientRect",{configurable:true,value:()=>({left:0,top:0,width:500,height:500})});
   fireEvent.click(screen.getByRole("button",{name:"Текстовая пометка"}));
-  fireEvent.pointerDown(layer,{pointerId:5,pointerType:"pen",clientX:200,clientY:300});
+  sendPointer(layer,"pointerdown",200,300,5);
   fireEvent.change(screen.getByRole("textbox",{name:"Текст пометки"}),{target:{value:"Интересная деталь"}});
   fireEvent.click(screen.getByRole("button",{name:"Сохранить текстовую пометку"}));
   fireEvent.click(screen.getByRole("button",{name:"Сохранить пометки"}));
@@ -54,9 +60,9 @@ describe("EGG open photo",()=>{
    const layer=screen.getByTestId("egg-photo-ink-layer");
    Object.defineProperty(layer,"getBoundingClientRect",{configurable:true,value:()=>({left:0,top:0,width:500,height:500})});
    fireEvent.click(screen.getByRole("button",{name:"Выделить фрагмент"}));
-   fireEvent.pointerDown(layer,{pointerId:8,pointerType:"pen",clientX:60,clientY:70});
-   fireEvent.pointerMove(layer,{pointerId:8,pointerType:"pen",clientX:310,clientY:310});
-   fireEvent.pointerUp(layer,{pointerId:8,pointerType:"pen",clientX:310,clientY:310});
+   sendPointer(layer,"pointerdown",60,70,8);
+   sendPointer(layer,"pointermove",310,310,8);
+   sendPointer(layer,"pointerup",310,310,8);
    fireEvent.click(screen.getByRole("button",{name:"Сохранить выделенный фрагмент"}));
    await waitFor(()=>expect(onCrop).toHaveBeenCalledWith("data:image/jpeg;base64,CROP"));
   }finally{
