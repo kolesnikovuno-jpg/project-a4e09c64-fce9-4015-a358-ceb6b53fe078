@@ -3,10 +3,11 @@ import type { ReactNode, PointerEvent as ReactPointerEvent, WheelEvent as ReactW
 import { Check, Undo2, Camera, CircleDot, FileUp, FolderOpen, Image as ImageIcon, Layers, Link2, Maximize2, Mic, Minus, Move, Pencil, Plus, RotateCcw, UserRound, Video, X, ZoomIn, ZoomOut } from "lucide-react";
 import EggRadialMenu, { type EggMenuAction } from "./EggRadialMenu";
 import EggSketchEditor, { type SketchStroke } from "./EggSketchEditor";
+import EggPhotoWorkspace, { PhotoMarkupOverlay, type PhotoMarkup } from "./EggPhotoWorkspace";
 
 type Point = { x:number; y:number };
 type Workspace = "field" | "matter";
-type Item = { location?:Workspace; fieldPosition?:Point; matterPosition?:Point; id:string; type:"thought"|"link"|"image"|"sketch"|"video"; x:number; y:number; text:string; src?:string; points?:Point[]; strokes?:SketchStroke[]; color?:string; strokeWidth?:number; mediaId?:string };
+type Item = { location?:Workspace; fieldPosition?:Point; matterPosition?:Point; id:string; type:"thought"|"link"|"image"|"sketch"|"video"; x:number; y:number; text:string; src?:string; points?:Point[]; strokes?:SketchStroke[]; photoMarkup?:PhotoMarkup; color?:string; strokeWidth?:number; mediaId?:string };
 type Tool = "thought"|"link"|null;
 type SpeechResult = { results:ArrayLike<ArrayLike<{transcript:string}>> };
 type Recognition = { lang:string; interimResults:boolean; onresult:((event:SpeechResult)=>void)|null; onerror:(()=>void)|null; onend:(()=>void)|null; start:()=>void; stop:()=>void };
@@ -275,8 +276,11 @@ export default function EggProjectField({projectId,children,workspace="field",on
        onClick={()=>change(v=>v.filter(x=>x.id!==item.id))}><X size={14} strokeWidth={1.7}/></button>
      </div>
      {item.src?
-       <img draggable={false} src={item.src} alt={item.text} title="Коснитесь, чтобы увеличить"
-        className="block h-auto max-h-[300px] max-w-[240px] rounded-[3px] object-contain shadow-[0_5px_20px_rgba(0,0,0,.10)]"/>
+       <div className="relative inline-block max-w-[240px] shadow-[0_5px_20px_rgba(0,0,0,.10)]">
+        <img draggable={false} src={item.src} alt={item.text} title="Коснитесь, чтобы увеличить"
+         className="block h-auto max-h-[300px] max-w-[240px] object-contain" style={{borderRadius:0,clipPath:"none",maskImage:"none",WebkitMaskImage:"none"}}/>
+        <PhotoMarkupOverlay markup={item.photoMarkup}/>
+       </div>
       :item.type==="video"?
        <div className="flex h-36 w-full items-center justify-center rounded-lg bg-foreground/[.045] shadow-[0_5px_18px_rgba(0,0,0,.055)]">
         <Video size={31} strokeWidth={1} className="text-foreground/55"/>
@@ -318,7 +322,12 @@ export default function EggProjectField({projectId,children,workspace="field",on
   <input ref={imageInput} type="file" accept="image/*" multiple className="hidden" onChange={e=>{void images(e.target.files);e.target.value="";}}/>
   <input ref={videoInput} type="file" accept="video/*" multiple className="hidden" onChange={e=>{void videos(e.target.files);e.target.value="";}}/>
   {notice&&<div role="status" className="absolute bottom-5 left-1/2 z-50 max-w-[90vw] -translate-x-1/2 rounded-full border border-foreground/10 bg-background px-4 py-2 text-xs shadow-md" onClick={()=>setNotice("")}>{notice}</div>}
-  {active&&<div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/65 p-4" role="presentation" onClick={()=>setOpenId(null)}>
+  {active?.src&&<EggPhotoWorkspace key={active.id} src={active.src} title={active.text} initialMarkup={active.photoMarkup}
+   onSave={markup=>change(previous=>previous.map(item=>item.id===active.id?{...item,photoMarkup:markup}:item))}
+   onCrop={cropped=>{change(previous=>[...previous,{id:uid(),type:"image",location:active.location??workspace,
+    x:active.x+260,y:active.y+95,text:active.text+" · фрагмент",src:cropped}]);setNotice("Фрагмент сохранён как отдельный объект");}}
+   onClose={()=>setOpenId(null)}/>}
+  {active&&!active.src&&<div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/65 p-4" role="presentation" onClick={()=>setOpenId(null)}>
    <div role="dialog" aria-modal="true" aria-label="Просмотр материала" onClick={e=>e.stopPropagation()} className="relative max-h-[92dvh] w-full max-w-[min(92vw,900px)] overflow-y-auto rounded-2xl bg-background p-4 shadow-2xl sm:p-6">
     <div className="mb-4 flex items-center justify-between gap-3"><span className="truncate text-xs text-foreground/50">{active.text}</span><button type="button" aria-label="Закрыть просмотр" onClick={()=>setOpenId(null)} className="rounded-full p-2 hover:bg-foreground/10"><X size={19}/></button></div>
     {active.src?<img src={active.src} alt={active.text} className="mx-auto max-h-[72dvh] w-auto max-w-full rounded-lg object-contain"/>
