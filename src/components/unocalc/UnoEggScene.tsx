@@ -28,7 +28,7 @@ import {
 } from "@/lib/unocalcEgg3d";
 
 type Locale = "ru" | "uk" | "en";
-type Props = { locale: Locale; onSphereOpen?: (sphere: string) => void };
+type Props = { locale: Locale; onMatterOpen?: () => void; onSphereOpen?: (sphere: string) => void };
 type InteractiveNode = "retail" | "commerce" | "design" | "production" | "marketing" | "testDrive" | "procurement" | "legal" | "idea" | "matter";
 type EggHitNode = InteractiveNode | "author";
 type NodeDetail = { title: string; description: string; number: string; openLabel: string; closeLabel: string };
@@ -105,10 +105,10 @@ const text = {
     ideaCloseLabel: "Закрыть описание полюса «Концепт»",
     ideaDescription: "Исходный замысел объекта. Здесь возникает смысл, определяющий, зачем он должен существовать и что стремится воплотить.",
     ideaNode: "Полюс / 01",
-    matter: "Материя",
-    matterLabel: "Открыть описание полюса «Материя»",
+    matter: "Материальное",
+    matterLabel: "Открыть сферу «Материальное»",
     matterCloseLabel: "Закрыть описание полюса «Материя»",
-    matterDescription: "Материальная основа объекта. Материалы, компоненты и комплектующие, из которых формируется его физическая структура.",
+    matterDescription: "Отобранные из общего поля изображения, скетчи, заметки и другие материалы для работы над идеей.",
     matterNode: "Полюс / 02",
   },
   uk: {
@@ -306,7 +306,7 @@ const NodeDescription = ({ node, detail }: { node: InteractiveNode; detail: Node
   );
 };
 
-const UnoEggScene = ({ locale, onSphereOpen }: Props) => {
+const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen }: Props) => {
   const [orientation, setOrientation] = useState<EggOrientation>(INITIAL);
   const [selectedNodes, setSelectedNodes] = useState<InteractiveNode[]>([]);
   const [workspaceNode, setWorkspaceNode] = useState<EggHitNode | null>(null);
@@ -496,6 +496,7 @@ const UnoEggScene = ({ locale, onSphereOpen }: Props) => {
   }, []);
 
   const openWorkspace = (node: EggHitNode) => {
+    if (node === "matter" && onMatterOpen) { onMatterOpen(); return; }
     if (onSphereOpen && node !== "idea" && node !== "matter" && node !== "author") { onSphereOpen(node); return; }
     if (workspaceExitTimer.current !== null) {
       window.clearTimeout(workspaceExitTimer.current);

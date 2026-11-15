@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode, PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from "react";
-import { Camera, CircleDot, FileUp, FolderOpen, Image as ImageIcon, Layers, Link2, Maximize2, Mic, Minus, Move, Pencil, Plus, RotateCcw, UserRound, Video, X, ZoomIn, ZoomOut } from "lucide-react";
+import { Check, Undo2, Camera, CircleDot, FileUp, FolderOpen, Image as ImageIcon, Layers, Link2, Maximize2, Mic, Minus, Move, Pencil, Plus, RotateCcw, UserRound, Video, X, ZoomIn, ZoomOut } from "lucide-react";
 import EggRadialMenu, { type EggMenuAction } from "./EggRadialMenu";
 import EggSketchEditor, { type SketchStroke } from "./EggSketchEditor";
 
 type Point = { x:number; y:number };
-type Item = { id:string; type:"thought"|"link"|"image"|"sketch"|"video"; x:number; y:number; text:string; src?:string; points?:Point[]; strokes?:SketchStroke[]; color?:string; strokeWidth?:number; mediaId?:string };
+type Workspace = "field" | "matter";
+type Item = { location?:Workspace; fieldPosition?:Point; matterPosition?:Point; id:string; type:"thought"|"link"|"image"|"sketch"|"video"; x:number; y:number; text:string; src?:string; points?:Point[]; strokes?:SketchStroke[]; color?:string; strokeWidth?:number; mediaId?:string };
 type Tool = "thought"|"link"|null;
 type SpeechResult = { results:ArrayLike<ArrayLike<{transcript:string}>> };
 type Recognition = { lang:string; interimResults:boolean; onresult:((event:SpeechResult)=>void)|null; onerror:(()=>void)|null; onend:(()=>void)|null; start:()=>void; stop:()=>void };
@@ -33,10 +34,11 @@ async function readVideo(key:string):Promise<Blob|null>{
  finally{db.close();}
 }
 
-export default function EggProjectField({projectId,children,onOpenAuthor,onOpenProject,onOpenYolk,onOpenAccount}:{projectId:string;children:ReactNode;onOpenAuthor?:()=>void;onOpenProject?:()=>void;onOpenYolk?:()=>void;onOpenAccount?:()=>void}){
+export default function EggProjectField({projectId,children,workspace="field",onWorkspaceChange,onOpenAuthor,onOpenProject,onOpenYolk,onOpenAccount}:{workspace?:Workspace;onWorkspaceChange?:(workspace:Workspace)=>void;projectId:string;children:ReactNode;onOpenAuthor?:()=>void;onOpenProject?:()=>void;onOpenYolk?:()=>void;onOpenAccount?:()=>void}){
  const key="egg:project-field:v1:"+projectId;
  const [items,setItems]=useState<Item[]>([]);
- const [ready,setReady]=useState(false);
+ const [loadedKey,setLoadedKey]=useState<string|null>(null);
+ const ready=loadedKey===key;
  const [tool,setTool]=useState<Tool>(null);
  const [entry,setEntry]=useState("");
  const [zoom,setZoom]=useState(1);
@@ -60,10 +62,10 @@ export default function EggProjectField({projectId,children,onOpenAuthor,onOpenP
  const videoKeys=items.filter(item=>item.type==="video"&&item.mediaId).map(item=>item.mediaId).join("|");
 
  useEffect(()=>{
-  setReady(false);
+  setLoadedKey(null);
   try{const raw=localStorage.getItem(key);const saved=raw?JSON.parse(raw):[];setItems(Array.isArray(saved)?saved:[]);}
   catch{setItems([]);}
-  setSketchEditor(null);setPan({x:0,y:0});setZoom(1);setReady(true);
+  setSketchEditor(null);setPan({x:0,y:0});setZoom(1);setLoadedKey(key);
  },[key]);
  useEffect(()=>{if(ready)try{localStorage.setItem(key,JSON.stringify(items));}catch{setNotice("Место для сохранения заполнено. Некоторые изменения могут не сохраниться.");}},[items,key,ready]);
  useEffect(()=>{
@@ -74,11 +76,29 @@ export default function EggProjectField({projectId,children,onOpenAuthor,onOpenP
   return()=>{active=false;urls.forEach(url=>URL.revokeObjectURL(url));};
  },[videoKeys]);
  useEffect(()=>()=>{recognition.current?.stop();},[]);
+ useEffect(()=>{
+  setPan({x:0,y:0});setZoom(1);setOpenId(null);setTool(null);setSketchEditor(null);
+  gesture.current=null;pointers.current.clear();pinch.current=null;
+ },[workspace]);
+ const visibleItems=items.filter(item=>(item.location??"field")===workspace);
+ const moveToWorkspace=(id:string)=>{
+  const destination:Workspace=workspace==="field"?"matter":"field";
+  const count=items.filter(item=>(item.location??"field")===destination).length;
+  const next=items.map(item=>{
+   if(item.id!==id)return item;
+   const position=destination==="matter"?(item.matterPosition??{x:-110+(count%3)*250,y:-120+Math.floor(count/3)*340}):(item.fieldPosition??{x:310,y:-210});
+   return {...item,[workspace==="field"?"fieldPosition":"matterPosition"]:{x:item.x,y:item.y},location:destination,...position};
+  });
+  try{localStorage.setItem(key,JSON.stringify(next));}
+  catch{setNotice("Не удалось сохранить перенос. Карточка осталась на месте.");return;}
+  setItems(next);setOpenId(null);
+  setNotice(destination==="matter"?"В работе · Материальное":"Возвращено в общее поле");
+ };
  const center=()=>({x:(field.current?.clientWidth||window.innerWidth)/2,y:(field.current?.clientHeight||window.innerHeight)/2});
  const world=(x:number,y:number)=>{const c=center();return{x:(x-c.x-pan.x)/zoom,y:(y-c.y-pan.y)/zoom};};
  const change=(fn:(previous:Item[])=>Item[])=>setItems(previous=>fn(previous));
  const add=(type:Item["type"],text:string,src?:string,points?:Point[],mediaId?:string)=>{
-  change(previous=>[...previous,{id:uid(),type,x:310+(previous.length%3)*38,y:-210+(previous.length%6)*75,text,src,points,mediaId}]);
+  change(previous=>[...previous,{id:uid(),type,location:workspace,x:workspace==="matter"?-110:310+(previous.length%3)*38,y:workspace==="matter"?-120:-210+(previous.length%6)*75,text,src,points,mediaId}]);
  };
  const commit=()=>{if(!entry.trim())return;add(tool==="link"?"link":"thought",entry.trim());setEntry("");setTool(null);};
  async function images(files:FileList|null){
@@ -190,11 +210,12 @@ export default function EggProjectField({projectId,children,onOpenAuthor,onOpenP
   if(editing.id){
    change(previous=>previous.map(item=>item.id===editing.id?{...item,strokes,points:undefined}:item));
   }else if(strokes.length){
-   change(previous=>[...previous,{id:uid(),type:"sketch",text:"Скетч",x:300+(previous.length%3)*45,y:-200+(previous.length%6)*70,strokes}]);
+   change(previous=>[...previous,{id:uid(),type:"sketch",text:"Скетч",location:workspace,x:workspace==="matter"?-110:300+(previous.length%3)*45,y:workspace==="matter"?-120:-200+(previous.length%6)*70,strokes}]);
   }
   setSketchEditor(null);
  };
  const menuActions: EggMenuAction[] = [
+  {id:"workspace",label:workspace==="field"?"Материальное":"Общее поле",icon:Layers,onSelect:()=>onWorkspaceChange?.(workspace==="field"?"matter":"field")},
   {id:"collect",label:"Добавить",icon:Layers,children:[
    {id:"thought",label:"Заметка",icon:Pencil,onSelect:()=>{setTool("thought");setEntry("");}},
    {id:"photo",label:"Фото",icon:Camera,onSelect:()=>camera.current?.click()},
@@ -223,10 +244,10 @@ export default function EggProjectField({projectId,children,onOpenAuthor,onOpenP
  ];
  const active=items.find(item=>item.id===openId);
  const currentScale=Math.round(zoom*100);
- return <section className="absolute inset-0 overflow-hidden bg-background" aria-label="Поле проекта EGG" data-testid="egg-project-field">
+ return <section className="absolute inset-0 overflow-hidden bg-background" aria-label={workspace==="matter"?"Холст сферы Материальное":"Поле проекта EGG"} data-workspace={workspace} data-testid="egg-project-field">
   <div ref={field} className="absolute inset-0 touch-none overflow-hidden" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}
    style={{backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}}>
-   <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+   <div className={"pointer-events-none absolute inset-0 z-10 flex items-center justify-center"+(workspace==="matter"?" hidden":"")}>
     <div data-egg-anchor className="pointer-events-auto relative shrink-0" style={{width:900,height:620,transform:"scale("+eggScale+")",touchAction:"none"}}
      onPointerDownCapture={eggDown} onPointerMoveCapture={eggMove} onPointerUpCapture={eggUp} onPointerCancelCapture={eggUp}
      onPointerDown={e=>e.stopPropagation()} onPointerMove={e=>e.stopPropagation()} onPointerUp={e=>e.stopPropagation()} onPointerCancel={e=>e.stopPropagation()}
@@ -235,7 +256,7 @@ export default function EggProjectField({projectId,children,onOpenAuthor,onOpenP
     </div>
    </div>
    <div className="absolute left-0 top-0 z-20" style={{transform:"translate("+(center().x+pan.x)+"px,"+(center().y+pan.y)+"px) scale("+zoom+")",transformOrigin:"0 0"}}>
-    {items.map(item=><div key={item.id} data-field-item={item.id}
+    {visibleItems.map(item=><div key={item.id} data-field-item={item.id}
      className={"group absolute select-none cursor-grab active:cursor-grabbing " + (item.type==="image"?"w-max max-w-[240px]":"w-[218px]")}
      style={{left:item.x,top:item.y}}>
      <div className="absolute right-1 top-1 z-30 flex items-center gap-1.5 opacity-90 transition-opacity sm:opacity-60 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100" data-field-actions>
@@ -243,6 +264,9 @@ export default function EggProjectField({projectId,children,onOpenAuthor,onOpenP
        className="flex h-8 w-8 cursor-grab items-center justify-center rounded-full bg-background/90 text-foreground/75 shadow-[0_2px_9px_rgba(0,0,0,.16)] backdrop-blur-md active:cursor-grabbing">
        <Move size={14} strokeWidth={1.7}/>
       </div>
+      <button type="button" data-no-drag aria-label={workspace==="field"?"В работу":"Вернуть в общее поле"} title={workspace==="field"?"В работу · Материальное":"Вернуть в общее поле"}
+       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-background/95 text-foreground shadow-[0_2px_9px_rgba(0,0,0,.16)] backdrop-blur-md hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+       onClick={()=>moveToWorkspace(item.id)}>{workspace==="field"?<Check size={15}/>:<Undo2 size={15}/>}</button>
       <button type="button" data-no-drag aria-label="Развернуть элемент" title="Развернуть"
        className="flex h-8 w-8 items-center justify-center rounded-full bg-background/90 text-foreground/75 shadow-[0_2px_9px_rgba(0,0,0,.16)] backdrop-blur-md transition-colors hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
        onClick={()=>setOpenId(item.id)}><Maximize2 size={14} strokeWidth={1.7}/></button>
@@ -277,6 +301,8 @@ export default function EggProjectField({projectId,children,onOpenAuthor,onOpenP
     </div>)}
    </div>
   </div>
+  {workspace==="matter"&&<div className="pointer-events-none absolute left-5 top-16 z-30 sm:left-8"><h2 className="text-lg font-light">Материальное</h2><p className="mt-1 text-xs text-foreground/50">Материал для работы · {visibleItems.length}</p></div>}
+  {workspace==="matter"&&!visibleItems.length&&<p className="pointer-events-none absolute inset-x-8 top-1/2 text-center text-sm text-foreground/45">Выберите карточки в общем поле кнопкой «В работу».</p>}
   {!tool && !sketchEditor && !openId && <EggRadialMenu actions={menuActions}/>}
   {tool!==null&&<div className="absolute bottom-[max(6rem,env(safe-area-inset-bottom))] left-4 z-40 w-[min(340px,calc(100vw-32px))] rounded-2xl border border-foreground/15 bg-background/95 p-3 shadow-xl sm:left-6">
    <div className="flex items-center justify-between px-1 pb-1">
@@ -286,7 +312,7 @@ export default function EggProjectField({projectId,children,onOpenAuthor,onOpenP
    <div className="mt-3 border-t border-foreground/10 pt-3"><div className="relative">
       <textarea rows={3} value={entry} onChange={e=>setEntry(e.target.value)} placeholder={tool==="link"?"Вставьте ссылку":"Запишите мысль или наблюдение"} className="w-full resize-y rounded-xl border border-foreground/15 bg-background p-3 pr-10 text-sm"/>
       {tool==="thought"&&<button type="button" title="Голосовой ввод" aria-label="Голосовой ввод" className={"absolute right-2 top-2 rounded-full p-1.5 "+(listening?"bg-red-100 text-red-700":"text-foreground/65")} onClick={voice}><Mic size={18}/></button>}
-     </div><div className="mt-2 flex justify-between gap-2"><button onClick={commit} disabled={!entry.trim()} className="rounded-full bg-foreground px-4 py-2 text-xs text-background disabled:opacity-40">Добавить в поле</button><button className="px-2 text-xs text-foreground/60" onClick={()=>setTool(null)}>Закрыть</button></div></div>
+     </div><div className="mt-2 flex justify-between gap-2"><button onClick={commit} disabled={!entry.trim()} className="rounded-full bg-foreground px-4 py-2 text-xs text-background disabled:opacity-40">{workspace==="matter"?"Добавить в Материальное":"Добавить в поле"}</button><button className="px-2 text-xs text-foreground/60" onClick={()=>setTool(null)}>Закрыть</button></div></div>
   </div>}
   <input ref={camera} type="file" accept="image/*" capture="environment" className="hidden" onChange={e=>{void images(e.target.files);e.target.value="";}}/>
   <input ref={imageInput} type="file" accept="image/*" multiple className="hidden" onChange={e=>{void images(e.target.files);e.target.value="";}}/>

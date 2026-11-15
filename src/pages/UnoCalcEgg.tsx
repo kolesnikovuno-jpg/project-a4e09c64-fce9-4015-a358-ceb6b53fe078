@@ -20,6 +20,7 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
   const fieldMode = eggBrand && hasProject;
   const [activeSphere, setActiveSphere] = useState<string | null>(null);
   const [selectedWorkSphere, setSelectedWorkSphere] = useState<SphereId | null>(null);
+  const [fieldWorkspace,setFieldWorkspace]=useState<"field"|"matter">("field");
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelExpanded, setPanelExpanded] = useState(false);
   useEffect(() => {
@@ -70,12 +71,14 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
         </header>
         <section className={fieldMode ? "absolute inset-0" : "mt-3"} aria-label={eggBrand ? "EGG — interactive project workspace" : "UNOcalc — egg geometry"}>
           {eggBrand && hasProject ? <EggProjectField
+            key={params.get("project") || ""}
             projectId={params.get("project") || ""}
+            workspace={fieldWorkspace} onWorkspaceChange={setFieldWorkspace}
             onOpenAuthor={() => { setActiveSphere("author"); setPanelOpen(true); }}
             onOpenProject={() => { setActiveSphere(null); setPanelOpen(true); }}
             onOpenYolk={() => navigate("/egg/yolk?project=" + encodeURIComponent(params.get("project") || ""))}
             onOpenAccount={() => navigate("/egg/connect")}
-          ><UnoEggScene locale={locale} onSphereOpen={(sphere) => setSelectedWorkSphere(sphere as SphereId)} /></EggProjectField> : <UnoEggScene locale={locale} onSphereOpen={eggBrand ? (sphere) => setSelectedWorkSphere(sphere as SphereId) : undefined} />}
+          ><UnoEggScene locale={locale} onMatterOpen={()=>setFieldWorkspace("matter")} onSphereOpen={(sphere) => setSelectedWorkSphere(sphere as SphereId)} /></EggProjectField> : <UnoEggScene locale={locale} onSphereOpen={eggBrand ? (sphere) => setSelectedWorkSphere(sphere as SphereId) : undefined} />}
         </section>
         {eggBrand && !fieldMode && <div className="flex flex-wrap items-center justify-center gap-3 py-5">
           {hasProject && <button type="button" onClick={() => { setActiveSphere("author"); setPanelOpen(true); }} className="rounded-full bg-foreground px-5 py-3 text-sm text-background" data-testid="egg-open-concept">Идея · решение по ДНК</button>}
