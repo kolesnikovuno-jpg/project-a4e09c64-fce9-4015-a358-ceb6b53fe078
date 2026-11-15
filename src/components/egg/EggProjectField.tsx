@@ -4,6 +4,7 @@ import { Check, Undo2, Camera, CircleDot, FileUp, FolderOpen, Image as ImageIcon
 import EggRadialMenu, { type EggMenuAction } from "./EggRadialMenu";
 import EggSketchEditor, { type SketchStroke } from "./EggSketchEditor";
 import EggPhotoWorkspace, { PhotoMarkupOverlay, type PhotoMarkup } from "./EggPhotoWorkspace";
+import EggLinkWorkspace, { normalizeSiteUrl } from "./EggLinkWorkspace";
 
 type Point = { x:number; y:number };
 type Workspace = "field" | "matter";
@@ -102,7 +103,15 @@ export default function EggProjectField({projectId,children,workspace="field",on
  const add=(type:Item["type"],text:string,src?:string,points?:Point[],mediaId?:string)=>{
   change(previous=>[...previous,{id:uid(),type,location:workspace,x:workspace==="matter"?-110:310+(previous.length%3)*38,y:workspace==="matter"?-120:-210+(previous.length%6)*75,text,src,points,mediaId}]);
  };
- const commit=()=>{if(!entry.trim())return;add(tool==="link"?"link":"thought",entry.trim());setEntry("");setTool(null);};
+ const commit=()=>{
+  if(!entry.trim())return;
+  if(tool==="link"){
+   const link=normalizeSiteUrl(entry);
+   if(!link){setNotice("Укажи правильную ссылку на сайт (http или https).");return;}
+   add("link",link);
+  }else add("thought",entry.trim());
+  setEntry("");setTool(null);
+ };
  async function images(files:FileList|null){
   if(!files)return;
   for(const file of Array.from(files).slice(0,5)){
@@ -297,8 +306,9 @@ export default function EggProjectField({projectId,children,workspace="field",on
        </svg>
       :item.type==="link"?
        <div className="min-h-[64px] rounded-lg bg-background/80 px-3 pb-3 pt-11 shadow-[0_4px_16px_rgba(0,0,0,.055)]">
-        <a data-no-drag href={/^https?:\/\//.test(item.text)?item.text:undefined} target="_blank" rel="noopener noreferrer"
-         className="block break-all text-[12px] leading-relaxed text-foreground/80 underline decoration-foreground/25 underline-offset-2">{item.text}</a>
+        <button type="button" data-no-drag aria-label={"Просмотреть сайт "+item.text}
+         onClick={()=>setOpenId(item.id)}
+         className="block w-full break-all text-left text-[12px] leading-relaxed text-foreground/80 underline decoration-foreground/25 underline-offset-2">{item.text}</button>
        </div>
       :<div className="min-h-[72px] rounded-lg bg-background/80 px-3 pb-3 pt-11 shadow-[0_4px_16px_rgba(0,0,0,.055)]">
         <p className="line-clamp-8 whitespace-pre-wrap break-words text-[13px] leading-relaxed text-foreground/85">{item.text}</p>
@@ -342,7 +352,8 @@ export default function EggProjectField({projectId,children,workspace="field",on
     setNotice("Фрагмент добавлен на холст рядом с исходным фото");
    }}
    onClose={()=>{setOpenId(null);setFocusedPhotoNoteId(null);}}/>}
-  {active&&!active.src&&<div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/65 p-4" role="presentation" onClick={()=>setOpenId(null)}>
+  {active?.type==="link"&&<EggLinkWorkspace key={active.id} address={active.text} onClose={()=>setOpenId(null)}/>}
+  {active&&!active.src&&active.type!=="link"&&<div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/65 p-4" role="presentation" onClick={()=>setOpenId(null)}>
    <div role="dialog" aria-modal="true" aria-label="Просмотр материала" onClick={e=>e.stopPropagation()} className="relative max-h-[92dvh] w-full max-w-[min(92vw,900px)] overflow-y-auto rounded-2xl bg-background p-4 shadow-2xl sm:p-6">
     <div className="mb-4 flex items-center justify-between gap-3"><span className="truncate text-xs text-foreground/50">{active.text}</span><button type="button" aria-label="Закрыть просмотр" onClick={()=>setOpenId(null)} className="rounded-full p-2 hover:bg-foreground/10"><X size={19}/></button></div>
     {active.src?<img src={active.src} alt={active.text} className="mx-auto max-h-[72dvh] w-auto max-w-full rounded-lg object-contain"/>
