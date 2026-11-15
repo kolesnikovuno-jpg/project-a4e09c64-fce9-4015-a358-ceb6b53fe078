@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { initialLocale } from "@/i18n/storage";
 import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft, Dna, History, MessageCircle, FileText, Layers3, Info, X } from "lucide-react";
 import EggYolkViewer from "./EggYolkViewer";
+import EggWorkspaceNavigation from "./EggWorkspaceNavigation";
 import EggSpherePanel from "./EggSpherePanel";
 import EggDocumentationPanel from "./EggDocumentationPanel";
 import EggFlowCyclePanel from "./EggFlowCyclePanel";
@@ -80,7 +82,12 @@ function YolkTypewriter({title,description,number,side}:{title:string;descriptio
 
 export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
   const [params]=useSearchParams();
+  const navigate=useNavigate();
   const id=params.get("project");
+  // The standalone Yolk route retains the project while navigating back to
+  // the correct canvas of the current Egg. No mutation or level change.
+  const eggCanvasPath=(canvas:"field"|"matter"|"idea"|"concept")=>
+    "/"+initialLocale()+"/egg"+(id?"?project="+encodeURIComponent(id)+"&start="+canvas:"?start="+canvas);
   const [project,setProject]=useState<Project|null>(null);
   const [revision,setRevision]=useState<number|null>(null);
   const [selected,setSelected]=useState<SphereId|null>(null);
@@ -259,17 +266,20 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
   };
   if (view === "yolk") return (
     <main className="relative flex h-[100dvh] w-full items-center justify-center overflow-hidden bg-background" data-testid="yolk-experience" aria-label="Желток — объект">
-      <div className="absolute left-5 top-5 z-20 flex items-center gap-4">
-        <Link to={"/ru/egg"+(id?"?project="+encodeURIComponent(id):"")} className="text-xs text-foreground/60 hover:text-foreground" aria-label="Вернуться к Яйцу">← EGG</Link>
-        <span className="text-xs tracking-[.14em] text-foreground/45">ЖЕЛТОК</span>
-      </div>
+
       <section className="relative aspect-square w-[min(96vw,94dvh)] max-w-[1100px]" data-testid="yolk-central-object" aria-label="Пространственный объект">
         <EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
           level={timeline?.level??project?.level??1}
           iteration={timeline?.iteration??project?.iteration??1}
           projectId={project?.id} visualVersion={timeline?.visual??null} minimalControls/>
       </section>
-      {id&&!project&&!loading&&<p role="alert" className="absolute bottom-6 left-5 right-5 text-center text-xs text-foreground/65">{notice||"Проект не загружен; отображается демонстрационный эскиз."}</p>}
+      {id&&!project&&!loading&&<p role="alert" className="pointer-events-none absolute inset-x-5 top-5 text-center text-xs text-foreground/65">{notice||"Проект не загружен; отображается демонстрационный эскиз."}</p>}
+      <EggWorkspaceNavigation active="yolk"
+        onOpenField={()=>navigate(eggCanvasPath("field"))}
+        onOpenMatter={()=>navigate(eggCanvasPath("matter"))}
+        onOpenIdea={()=>navigate(eggCanvasPath("idea"))}
+        onOpenConcept={()=>navigate(eggCanvasPath("concept"))}
+        onOpenYolk={()=>{}}/>
     </main>
   );
   return (
