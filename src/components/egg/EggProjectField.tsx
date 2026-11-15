@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode, PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from "react";
-import { Image as ImageIcon, Link2, Maximize2, Mic, Minus, Move, Pencil, Plus, Video, X } from "lucide-react";
+import { Camera, CircleDot, FileUp, FolderOpen, Image as ImageIcon, Layers, Link2, Maximize2, Mic, Minus, Move, Pencil, Plus, RotateCcw, UserRound, Video, X, ZoomIn, ZoomOut } from "lucide-react";
+import EggRadialMenu, { type EggMenuAction } from "./EggRadialMenu";
 import EggSketchEditor, { type SketchStroke } from "./EggSketchEditor";
 
 type Point = { x:number; y:number };
@@ -32,7 +33,7 @@ async function readVideo(key:string):Promise<Blob|null>{
  finally{db.close();}
 }
 
-export default function EggProjectField({projectId,children}:{projectId:string;children:ReactNode}){
+export default function EggProjectField({projectId,children,onOpenAuthor,onOpenProject,onOpenYolk,onOpenAccount}:{projectId:string;children:ReactNode;onOpenAuthor?:()=>void;onOpenProject?:()=>void;onOpenYolk?:()=>void;onOpenAccount?:()=>void}){
  const key="egg:project-field:v1:"+projectId;
  const [items,setItems]=useState<Item[]>([]);
  const [ready,setReady]=useState(false);
@@ -41,7 +42,6 @@ export default function EggProjectField({projectId,children}:{projectId:string;c
  const [zoom,setZoom]=useState(1);
  const [pan,setPan]=useState<Point>({x:0,y:0});
  const [eggScale,setEggScale]=useState(.8);
- const [eggControls,setEggControls]=useState(false);
  const [sketchEditor,setSketchEditor]=useState<{id:string|null;initialStrokes:SketchStroke[]}|null>(null);
  const [openId,setOpenId]=useState<string|null>(null);
  const [notice,setNotice]=useState("");
@@ -187,6 +187,33 @@ export default function EggProjectField({projectId,children}:{projectId:string;c
   }
   setSketchEditor(null);
  };
+ const menuActions: EggMenuAction[] = [
+  {id:"collect",label:"Добавить",icon:Layers,children:[
+   {id:"thought",label:"Заметка",icon:Pencil,onSelect:()=>{setTool("thought");setEntry("");}},
+   {id:"photo",label:"Фото",icon:Camera,onSelect:()=>camera.current?.click()},
+   {id:"file",label:"Изображение",icon:ImageIcon,onSelect:()=>imageInput.current?.click()},
+   {id:"video",label:"Видео",icon:Video,onSelect:()=>videoInput.current?.click()},
+   {id:"link",label:"Ссылка",icon:Link2,onSelect:()=>{setTool("link");setEntry("");}},
+  ]},
+  {id:"sketch",label:"Скетч",icon:Pencil,onSelect:()=>{setTool(null);setSketchEditor({id:null,initialStrokes:[]});}},
+  {id:"field",label:"Поле",icon:Move,children:[
+   {id:"center",label:"К центру",icon:Move,onSelect:()=>{setPan({x:0,y:0});setZoom(1);}},
+   {id:"zoomIn",label:"Приблизить",icon:ZoomIn,onSelect:()=>setZoom(v=>clamp(v*1.2,.25,3))},
+   {id:"zoomOut",label:"Отдалить",icon:ZoomOut,onSelect:()=>setZoom(v=>clamp(v/1.2,.25,3))},
+   {id:"resetZoom",label:"Масштаб 100%",icon:RotateCcw,onSelect:()=>setZoom(1)},
+  ]},
+  {id:"egg",label:"Яйцо",icon:CircleDot,children:[
+   {id:"eggIn",label:"Увеличить",icon:ZoomIn,onSelect:()=>setEggScale(v=>clamp(v*1.15,.35,1.8))},
+   {id:"eggOut",label:"Уменьшить",icon:ZoomOut,onSelect:()=>setEggScale(v=>clamp(v/1.15,.35,1.8))},
+   {id:"eggReset",label:"Исходный размер",icon:RotateCcw,onSelect:()=>setEggScale(.8)},
+  ]},
+  {id:"navigation",label:"Разделы",icon:FolderOpen,children:[
+   {id:"author",label:"Автор",icon:UserRound,onSelect:onOpenAuthor},
+   {id:"project",label:"Проект",icon:FolderOpen,onSelect:onOpenProject},
+   {id:"yolk",label:"Желток",icon:CircleDot,onSelect:onOpenYolk},
+   {id:"account",label:"Аккаунт",icon:UserRound,onSelect:onOpenAccount},
+  ]}
+ ];
  const active=items.find(item=>item.id===openId);
  const currentScale=Math.round(zoom*100);
  return <section className="absolute inset-0 overflow-hidden bg-background" aria-label="Поле проекта EGG" data-testid="egg-project-field">
@@ -219,25 +246,11 @@ export default function EggProjectField({projectId,children}:{projectId:string;c
     </div>)}
    </div>
   </div>
-  <div className="absolute left-4 top-[80px] z-30 flex items-center gap-1.5 rounded-full border border-foreground/10 bg-background/95 p-1 shadow-sm sm:left-6">
-   <button type="button" className="flex items-center gap-1.5 rounded-full bg-foreground px-3.5 py-2 text-xs text-background" aria-label="Добавить материал" onClick={()=>setTool(previous=>previous===null?"thought":null)}><Plus size={15}/> Добавить</button>
-   <button type="button" aria-label="Вернуться к центру поля" title="Центр" className="rounded-full p-2 text-foreground/65 hover:bg-foreground/10" onClick={()=>{setPan({x:0,y:0});setZoom(1);}}><Move size={16}/></button>
-   <button type="button" aria-label="Уменьшить масштаб поля" className="rounded-full p-2 text-foreground/65 hover:bg-foreground/10" onClick={()=>setZoom(v=>clamp(v/1.2,.25,3))}><Minus size={14}/></button>
-   <span className="min-w-[36px] text-center text-[10px] tabular-nums text-foreground/50">{currentScale}%</span>
-   <button type="button" aria-label="Увеличить масштаб поля" className="rounded-full p-2 text-foreground/65 hover:bg-foreground/10" onClick={()=>setZoom(v=>clamp(v*1.2,.25,3))}><Plus size={14}/></button>
-  </div>
-  <div className="absolute right-4 top-[80px] z-30 sm:right-6">
-   <button type="button" aria-label="Настроить размер Яйца" className="rounded-full border border-foreground/10 bg-background/95 px-3 py-2 text-xs text-foreground/65 shadow-sm" onClick={()=>setEggControls(v=>!v)}>Яйцо · {Math.round(eggScale*100)}%</button>
-   {eggControls&&<div className="mt-2 w-44 rounded-2xl border border-foreground/10 bg-background/95 p-3 shadow-lg"><label className="block text-[11px] text-foreground/60" htmlFor="egg-object-size">Размер Яйца</label><input id="egg-object-size" aria-label="Размер яйца" className="mt-2 w-full" type="range" min=".35" max="1.8" step=".05" value={eggScale} onChange={e=>setEggScale(Number(e.target.value))}/><button className="mt-1 text-[11px] text-foreground/60" onClick={()=>setEggScale(.8)}>Сбросить размер</button></div>}
-  </div>
-  {tool!==null&&<div className="absolute left-4 top-[132px] z-40 w-[min(340px,calc(100vw-32px))] rounded-2xl border border-foreground/15 bg-background/95 p-3 shadow-xl sm:left-6">
-   <div className="grid grid-cols-3 gap-1.5">
-    <button className={"flex flex-col items-center gap-1 rounded-xl p-2 text-xs "+(tool==="thought"?"bg-foreground/10":"hover:bg-foreground/5")} onClick={()=>{setTool("thought");setEntry("");}}><Pencil size={17}/> Заметка</button>
-    <button className="flex flex-col items-center gap-1 rounded-xl p-2 text-xs hover:bg-foreground/5" onClick={()=>camera.current?.click()}><ImageIcon size={17}/> Фото</button>
-    <button className="flex flex-col items-center gap-1 rounded-xl p-2 text-xs hover:bg-foreground/5" onClick={()=>imageInput.current?.click()}><ImageIcon size={17}/> Файл</button>
-    <button className="flex flex-col items-center gap-1 rounded-xl p-2 text-xs hover:bg-foreground/5" onClick={()=>{setTool(null);setSketchEditor({id:null,initialStrokes:[]});}}><Pencil size={17}/> Скетч</button>
-    <button className={"flex flex-col items-center gap-1 rounded-xl p-2 text-xs "+(tool==="link"?"bg-foreground/10":"hover:bg-foreground/5")} onClick={()=>setTool("link")}><Link2 size={17}/> Ссылка</button>
-    <button className="flex flex-col items-center gap-1 rounded-xl p-2 text-xs hover:bg-foreground/5" onClick={()=>videoInput.current?.click()}><Video size={17}/> Видео</button>
+  {!tool && !sketchEditor && !openId && <EggRadialMenu actions={menuActions}/>}
+  {tool!==null&&<div className="absolute bottom-[max(6rem,env(safe-area-inset-bottom))] left-4 z-40 w-[min(340px,calc(100vw-32px))] rounded-2xl border border-foreground/15 bg-background/95 p-3 shadow-xl sm:left-6">
+   <div className="flex items-center justify-between px-1 pb-1">
+     <span className="text-sm font-medium">{tool==="link"?"Ссылка":"Заметка"}</span>
+     <button type="button" aria-label="Закрыть ввод" className="rounded-full p-1 text-foreground/60" onClick={()=>setTool(null)}><X size={17}/></button>
    </div>
    <div className="mt-3 border-t border-foreground/10 pt-3"><div className="relative">
       <textarea rows={3} value={entry} onChange={e=>setEntry(e.target.value)} placeholder={tool==="link"?"Вставьте ссылку":"Запишите мысль или наблюдение"} className="w-full resize-y rounded-xl border border-foreground/15 bg-background p-3 pr-10 text-sm"/>
