@@ -46,28 +46,28 @@ describe("EGG link website preview",()=>{
   expect(screen.queryByRole("button",{name:"Добавить изображение с сайта"})).toBeNull();
   expect(screen.queryByRole("button",{name:"Скрин сайта"})).toBeNull();
  });
- it("opens the screenshot picker as fallback when browser screen capture is unavailable",()=>{
+ it("never opens Photos or camera when browser screenshot is unsupported",()=>{
   const onCaptureCrop=vi.fn();
   render(<EggLinkWorkspace address="https://example.com/reference" onClose={()=>{}} onCaptureCrop={onCaptureCrop}/>);
-  const picker=screen.getByLabelText("Выбрать готовый скриншот") as HTMLInputElement;
-  const click=vi.spyOn(picker,"click").mockImplementation(()=>{});
   fireEvent.click(screen.getByRole("button",{name:"Фрагмент сайта"}));
-  expect(click).toHaveBeenCalledTimes(1);
+  expect(screen.getByRole("alert").textContent).toContain("браузер не поддерживает захват вкладки");
+  expect(screen.queryByLabelText("Выбрать готовый скриншот")).toBeNull();
   expect(onCaptureCrop).not.toHaveBeenCalled();
  });
- it("opens imported screenshot directly in rectangle-selection mode without immediately saving it",async()=>{
-  const onCaptureCrop=vi.fn();
-  render(<EggLinkWorkspace address="https://example.com/reference" onClose={()=>{}} onCaptureCrop={onCaptureCrop}/>);
-  const picker=screen.getByLabelText("Выбрать готовый скриншот");
-  const file=new File(["not-a-real-image"],"screenshot.png",{type:"image/png"});
-  fireEvent.change(picker,{target:{files:[file]}});
-  const workspace=await screen.findByTestId("egg-photo-workspace");
-  expect(workspace).toBeTruthy();
-  expect(screen.getByRole("button",{name:"Сохранить выделенный фрагмент"})).toBeTruthy();
-  expect(onCaptureCrop).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button",{name:"Отменить скрин"}));
-  await waitFor(()=>expect(screen.queryByTestId("egg-photo-workspace")).toBeNull());
-  expect(screen.getByTestId("egg-link-workspace")).toBeTruthy();
+ it("invokes browser screen capture rather than a file picker when supported",async()=>{
+  const getDisplayMedia=vi.fn(async()=>{const error=new Error("cancelled");error.name="NotAllowedError";throw error;});
+  const media=Object.getOwnPropertyDescriptor(navigator,"mediaDevices");
+  try{
+   Object.defineProperty(navigator,"mediaDevices",{configurable:true,value:{getDisplayMedia}});
+   render(<EggLinkWorkspace address="https://example.com/reference" onClose={()=>{}} onCaptureCrop={()=>{}}/>);
+   fireEvent.click(screen.getByRole("button",{name:"Фрагмент сайта"}));
+   await waitFor(()=>expect(getDisplayMedia).toHaveBeenCalledWith({video:true,audio:false}));
+   expect(screen.queryByLabelText("Выбрать готовый скриншот")).toBeNull();
+   await waitFor(()=>expect(screen.getByRole("alert").textContent).toContain("Захват отменён"));
+  }finally{
+   if(media)Object.defineProperty(navigator,"mediaDevices",media);
+   else Reflect.deleteProperty(navigator,"mediaDevices");
+  }
  });
  it("does not embed unsafe legacy links",()=>{
   render(<EggLinkWorkspace address="javascript:alert(1)" onClose={()=>{}}/>);
