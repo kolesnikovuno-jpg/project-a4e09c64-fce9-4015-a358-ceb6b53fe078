@@ -10,7 +10,7 @@ describe("EGG Sphere Protocol v1.0",()=>{
   expect(Object.keys(EGG_SPHERE_MANIFESTS)).toHaveLength(8);
   expect(Object.keys(EGG_ENTRY_MANIFESTS)).toEqual(["matter","idea"]);
   expect(EGG_ENTRY_MANIFESTS.matter.mission).toContain("базовую обработку");
-  expect(EGG_ENTRY_MANIFESTS.idea.humanRole).toContain("Только Автор");
+  expect(EGG_ENTRY_MANIFESTS.idea.humanRole).toContain("Автор инициирует идею");
   const roles=Object.values(EGG_SPHERE_MANIFESTS).map(m=>m.role);
   expect(new Set(roles).size).toBe(8);
   for(const manifest of Object.values(EGG_SPHERE_MANIFESTS)){
@@ -27,7 +27,7 @@ describe("EGG Sphere Protocol v1.0",()=>{
   const guide=EGG_MATERIAL_RESONANCE_INSTRUCTIONS.join(" ");
   expect(guide).toContain("аккорд");
   expect(guide).toContain("потенциала");
-  expect(guide).toContain("Только Автор");
+  expect(guide).toContain("только Автором");
   expect(guide).toContain("а не измерение физических частот");
   expect(guide).toContain("не обязательно готовый предмет");
  });
