@@ -47,7 +47,7 @@ export default function EggProjectField({projectId,children,onOpenAuthor,onOpenP
  const [notice,setNotice]=useState("");
  const [listening,setListening]=useState(false);
  const [videoUrls,setVideoUrls]=useState<Record<string,string>>({});
- const gesture=useRef<{kind:"pan"|"item";id?:string;x:number;y:number;px:number;py:number}|null>(null);
+ const gesture=useRef<{kind:"pan"|"item";id?:string;x:number;y:number;startX:number;startY:number;px:number;py:number}|null>(null);
  const pointers=useRef(new Map<number,Point>());
  const pinch=useRef<{distance:number;zoom:number;pan:Point;world:Point}|null>(null);
  const eggPointers=useRef(new Map<number,Point>());
@@ -131,7 +131,7 @@ export default function EggProjectField({projectId,children,onOpenAuthor,onOpenP
    gesture.current=null;return;
   }
   const target=(e.target as Element).closest("[data-field-item]") as HTMLElement|null;
-  gesture.current={kind:target?"item":"pan",id:target?.dataset.fieldItem,x,y,px:pan.x,py:pan.y};
+  gesture.current={kind:target?"item":"pan",id:target?.dataset.fieldItem,x,y,startX:x,startY:y,px:pan.x,py:pan.y};
   e.currentTarget.setPointerCapture(e.pointerId);
  }
  function move(e:ReactPointerEvent<HTMLDivElement>){
@@ -150,6 +150,13 @@ export default function EggProjectField({projectId,children,onOpenAuthor,onOpenP
  function up(e:ReactPointerEvent<HTMLDivElement>){
   pointers.current.delete(e.pointerId);
   if(pinch.current){if(pointers.current.size<2)pinch.current=null;gesture.current=null;return;}
+  const g=gesture.current;
+  if(g?.kind==="item"&&g.id){
+   const bounds=e.currentTarget.getBoundingClientRect();
+   const travelled=Math.hypot(e.clientX-bounds.left-g.startX,e.clientY-bounds.top-g.startY);
+   // A stationary tap opens the material; a drag only moves it.
+   if(travelled<7&&!((e.target as Element).closest("button,a,input,textarea,[data-no-drag]")))setOpenId(g.id);
+  }
   gesture.current=null;
  }
  function wheel(e:ReactWheelEvent<HTMLDivElement>){
@@ -228,21 +235,45 @@ export default function EggProjectField({projectId,children,onOpenAuthor,onOpenP
     </div>
    </div>
    <div className="absolute left-0 top-0 z-20" style={{transform:"translate("+(center().x+pan.x)+"px,"+(center().y+pan.y)+"px) scale("+zoom+")",transformOrigin:"0 0"}}>
-    {items.map(item=><div key={item.id} data-field-item={item.id} className="group absolute w-[218px] cursor-grab rounded-2xl border border-foreground/10 bg-background/95 p-2 shadow-[0_10px_32px_rgba(0,0,0,.09)] backdrop-blur-md transition-shadow hover:shadow-[0_15px_42px_rgba(0,0,0,.14)] active:cursor-grabbing"
+    {items.map(item=><div key={item.id} data-field-item={item.id}
+     className={"group absolute select-none cursor-grab active:cursor-grabbing " + (item.type==="image"?"w-max max-w-[240px]":"w-[218px]")}
      style={{left:item.x,top:item.y}}>
-     <div className="mb-1 flex items-center justify-between gap-2 px-1 py-0.5">
-      <span className="truncate text-[10px] tracking-[.06em] text-foreground/45">{item.type==="image"?"Фото":item.type==="thought"?"Заметка":item.type==="link"?"Ссылка":item.type==="video"?"Видео":"Скетч"}</span>
-      <div className="flex gap-1 opacity-80 sm:opacity-0 sm:group-hover:opacity-100">
-       <button type="button" data-no-drag aria-label="Развернуть элемент" className="rounded-full p-1 hover:bg-foreground/10" onClick={()=>setOpenId(item.id)}><Maximize2 size={13}/></button>
-       <button type="button" data-no-drag aria-label="Удалить элемент" className="rounded-full p-1 hover:bg-foreground/10" onClick={()=>change(v=>v.filter(x=>x.id!==item.id))}><X size={13}/></button>
+     <div className="absolute right-1 top-1 z-30 flex items-center gap-1.5 opacity-90 transition-opacity sm:opacity-60 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100" data-field-actions>
+      <div title="Переместить" role="img" aria-label="Перетащить материал"
+       className="flex h-8 w-8 cursor-grab items-center justify-center rounded-full bg-background/90 text-foreground/75 shadow-[0_2px_9px_rgba(0,0,0,.16)] backdrop-blur-md active:cursor-grabbing">
+       <Move size={14} strokeWidth={1.7}/>
       </div>
+      <button type="button" data-no-drag aria-label="Развернуть элемент" title="Развернуть"
+       className="flex h-8 w-8 items-center justify-center rounded-full bg-background/90 text-foreground/75 shadow-[0_2px_9px_rgba(0,0,0,.16)] backdrop-blur-md transition-colors hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+       onClick={()=>setOpenId(item.id)}><Maximize2 size={14} strokeWidth={1.7}/></button>
+      <button type="button" data-no-drag aria-label="Удалить элемент" title="Удалить"
+       className="flex h-8 w-8 items-center justify-center rounded-full bg-background/90 text-foreground/75 shadow-[0_2px_9px_rgba(0,0,0,.16)] backdrop-blur-md transition-colors hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+       onClick={()=>change(v=>v.filter(x=>x.id!==item.id))}><X size={14} strokeWidth={1.7}/></button>
      </div>
-     {item.src?<button type="button" data-no-drag className="block w-full overflow-hidden rounded-xl bg-foreground/[.025]" onClick={()=>setOpenId(item.id)}><img src={item.src} alt={item.text} className="max-h-[180px] w-full object-contain"/></button>
-      :item.type==="video"?<button type="button" data-no-drag className="flex h-28 w-full items-center justify-center rounded-xl bg-foreground/5" onClick={()=>setOpenId(item.id)}><Video size={28} strokeWidth={1}/></button>
-      :item.strokes?.length?<button type="button" data-no-drag className="w-full" onClick={()=>setOpenId(item.id)}><svg viewBox="0 0 1000 700" className="h-32 w-full" aria-label="Скетч">{item.strokes.map((stroke,i)=><polyline key={i} points={stroke.points.map(p=>p.x+","+p.y).join(" ")} fill="none" stroke={stroke.color} strokeWidth={stroke.strokeWidth} strokeLinecap="round" strokeLinejoin="round"/>)}</svg></button>
-      :item.points?<button type="button" data-no-drag className="w-full" onClick={()=>setOpenId(item.id)}><svg viewBox={"0 0 "+(Math.max(1,...item.points.map(p=>p.x))+4)+" "+(Math.max(1,...item.points.map(p=>p.y))+4)} className="h-24 w-full" aria-label="Скетч"><polyline points={item.points.map(p=>p.x+","+p.y).join(" ")} fill="none" stroke={item.color||"currentColor"} strokeWidth={item.strokeWidth||2} strokeLinecap="round" strokeLinejoin="round"/></svg></button>
-      :item.type==="link"?<a href={/^https?:\/\//.test(item.text)?item.text:undefined} target="_blank" rel="noopener noreferrer" className="block break-all px-1 py-2 text-[12px] text-foreground/75 underline underline-offset-2">{item.text}</a>
-      :<button type="button" data-no-drag className="block w-full px-1 py-2 text-left" onClick={()=>setOpenId(item.id)}><p className="line-clamp-6 whitespace-pre-wrap break-words text-[13px] leading-relaxed text-foreground/85">{item.text}</p></button>}
+     {item.src?
+       <img draggable={false} src={item.src} alt={item.text} title="Коснитесь, чтобы увеличить"
+        className="block h-auto max-h-[300px] max-w-[240px] rounded-[3px] object-contain shadow-[0_5px_20px_rgba(0,0,0,.10)]"/>
+      :item.type==="video"?
+       <div className="flex h-36 w-full items-center justify-center rounded-lg bg-foreground/[.045] shadow-[0_5px_18px_rgba(0,0,0,.055)]">
+        <Video size={31} strokeWidth={1} className="text-foreground/55"/>
+       </div>
+      :item.strokes?.length?
+       <svg viewBox="0 0 1000 700" className="h-36 w-full rounded-[3px] bg-background/55 shadow-[0_3px_14px_rgba(0,0,0,.045)]" aria-label="Скетч">
+        {item.strokes.map((stroke,i)=><polyline key={i} points={stroke.points.map(p=>p.x+","+p.y).join(" ")} fill="none" stroke={stroke.color} strokeWidth={stroke.strokeWidth} strokeLinecap="round" strokeLinejoin="round"/>)}
+       </svg>
+      :item.points?
+       <svg viewBox={"0 0 "+(Math.max(1,...item.points.map(p=>p.x))+4)+" "+(Math.max(1,...item.points.map(p=>p.y))+4)}
+        className="h-28 w-full rounded-[3px] bg-background/55 shadow-[0_3px_14px_rgba(0,0,0,.045)]" aria-label="Скетч">
+        <polyline points={item.points.map(p=>p.x+","+p.y).join(" ")} fill="none" stroke={item.color||"currentColor"} strokeWidth={item.strokeWidth||2} strokeLinecap="round" strokeLinejoin="round"/>
+       </svg>
+      :item.type==="link"?
+       <div className="min-h-[64px] rounded-lg bg-background/80 px-3 pb-3 pt-11 shadow-[0_4px_16px_rgba(0,0,0,.055)]">
+        <a data-no-drag href={/^https?:\/\//.test(item.text)?item.text:undefined} target="_blank" rel="noopener noreferrer"
+         className="block break-all text-[12px] leading-relaxed text-foreground/80 underline decoration-foreground/25 underline-offset-2">{item.text}</a>
+       </div>
+      :<div className="min-h-[72px] rounded-lg bg-background/80 px-3 pb-3 pt-11 shadow-[0_4px_16px_rgba(0,0,0,.055)]">
+        <p className="line-clamp-8 whitespace-pre-wrap break-words text-[13px] leading-relaxed text-foreground/85">{item.text}</p>
+       </div>}
     </div>)}
    </div>
   </div>
