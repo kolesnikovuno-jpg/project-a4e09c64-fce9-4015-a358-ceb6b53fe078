@@ -13,22 +13,39 @@ const clamp=(v:number,min:number,max:number)=>Math.max(min,Math.min(max,v));
 const empty:PhotoMarkup={strokes:[],notes:[]};
 const uid=()=>Math.random().toString(36).slice(2);
 
-export function PhotoMarkupOverlay({markup}:{markup?:PhotoMarkup}){
+/**
+ * A legible, touch-size pin independent of the SVG drawing layer.
+ * The translucent marker is 32px on an open photo (28px on a thumbnail),
+ * with a 44px/36px tap target on touch devices.
+ */
+function PhotoNotePin({note,index,compact=false,onClick}:{note:PhotoNote;index:number;compact?:boolean;onClick?:()=>void}){
+ const position={left:clamp(note.x/10,0,100)+"%",top:clamp(note.y/10,0,100)+"%",transform:"translate(-50%,-50%)"};
+ const outer="absolute z-20 flex items-center justify-center rounded-full "+(compact?"h-9 w-9":"h-11 w-11")+(onClick?" pointer-events-auto cursor-pointer touch-manipulation":" pointer-events-none");
+ const inner=<span className={"flex items-center justify-center rounded-full border border-white/60 bg-neutral-900/65 font-semibold text-white shadow-[0_2px_9px_rgba(0,0,0,.16)] backdrop-blur-[2px] "+(compact?"h-7 w-7 text-xs":"h-9 w-9 text-sm")}>{index+1}</span>;
+ if(!onClick)return <span aria-hidden="true" className={outer} style={position}>{inner}</span>;
+ return <button type="button" data-no-drag title={"Открыть пометку "+(index+1)}
+  aria-label={"Открыть пометку "+(index+1)+": "+note.text} className={outer}
+  style={position} onPointerDown={e=>e.stopPropagation()} onClick={e=>{e.stopPropagation();onClick();}}>
+  {inner}
+ </button>;
+}
+
+export function PhotoMarkupOverlay({markup,onNoteSelect}:{markup?:PhotoMarkup;onNoteSelect?:(noteId:string)=>void}){
  if(!markup?.strokes?.length&&!markup?.notes?.length)return null;
- return <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-  {markup.strokes.map((stroke,i)=><polyline key={i} points={stroke.points.map(p=>p.x+","+p.y).join(" ")}
-   fill="none" stroke={stroke.color} strokeWidth={stroke.width} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>)}
-  {markup.notes.map((note,i)=><g key={note.id}>
-   <circle cx={note.x} cy={note.y} r="14" vectorEffect="non-scaling-stroke" fill="#f5f3ef" stroke="#292929" strokeWidth="2"/>
-   <text x={note.x} y={note.y+5} textAnchor="middle" fontSize="16" fontWeight="600" fill="#292929">{i+1}</text>
-  </g>)}
- </svg>;
+ return <>
+  <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+   {markup.strokes.map((stroke,i)=><polyline key={i} points={stroke.points.map(p=>p.x+","+p.y).join(" ")}
+    fill="none" stroke={stroke.color} strokeWidth={stroke.width} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>)}
+  </svg>
+  {markup.notes.map((note,i)=><PhotoNotePin key={note.id} note={note} index={i} compact
+   onClick={onNoteSelect?()=>onNoteSelect(note.id):undefined}/>)}
+ </>;
 }
 
 export default function EggPhotoWorkspace({
-  src, title, initialMarkup, onSave, onCrop, onClose,
+  src, title, initialMarkup, initialFocusNoteId, onSave, onCrop, onClose,
 }:{
-  src:string; title:string; initialMarkup?:PhotoMarkup;
+  src:string; title:string; initialMarkup?:PhotoMarkup; initialFocusNoteId?:string;
   onSave:(value:PhotoMarkup)=>void;
   onCrop:(dataUrl:string)=>void;
   onClose:()=>void;
@@ -41,6 +58,8 @@ export default function EggPhotoWorkspace({
  const [selection,setSelection]=useState<Selection|null>(null);
  const [pendingNote,setPendingNote]=useState<PhotoPoint|null>(null);
  const [noteText,setNoteText]=useState("");
+ const [openNoteId,setOpenNoteId]=useState<string|null>(initialFocusNoteId??null);
+ const [editedNoteText,setEditedNoteText]=useState(()=>initialMarkup?.notes?.find(n=>n.id===initialFocusNoteId)?.text??"");
  const [error,setError]=useState("");
  const [dirty,setDirty]=useState(false);
  const [cropping,setCropping]=useState(false);
@@ -51,10 +70,10 @@ export default function EggPhotoWorkspace({
  const image=useRef<HTMLImageElement|null>(null);
 
  useEffect(()=>{
-  const onKey=(e:KeyboardEvent)=>{if(e.key==="Escape"){e.stopPropagation();if(dirty&&!window.confirm("Закрыть фото без сохранения пометок?"))return;onClose();}};
+  const onKey=(e:KeyboardEvent)=>{if(e.key==="Escape"){e.stopPropagation();if(openNoteId){setOpenNoteId(null);return;}if(pendingNote){setPendingNote(null);return;}if(dirty&&!window.confirm("Закрыть фото без сохранения пометок?"))return;onClose();}};
   window.addEventListener("keydown",onKey,true);
   return ()=>window.removeEventListener("keydown",onKey,true);
- },[onClose,dirty]);
+ },[onClose,dirty,openNoteId,pendingNote]);
  const commit=(next:PhotoMarkup)=>{
   undo.current.push(markup);
   if(undo.current.length>60)undo.current.shift();
@@ -131,11 +150,36 @@ export default function EggPhotoWorkspace({
   }
   try{if(e.currentTarget.hasPointerCapture?.(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);}catch{/* auto released */}
  };
+ const openNote=(note:PhotoNote)=>{
+  setPendingNote(null);
+  setOpenNoteId(note.id);
+  setEditedNoteText(note.text);
+ };
  const addNote=()=>{
   if(!pendingNote||!noteText.trim())return;
-  commit({...markup,notes:[...markup.notes,{id:uid(),...pendingNote,text:noteText.trim()}]});
-  setPendingNote(null);setNoteText("");setMode("view");
+  const note={id:uid(),...pendingNote,text:noteText.trim()};
+  const next={...markup,notes:[...markup.notes,note]};
+  commit(next);
+  onSave(next);setDirty(false); // A confirmed text note survives closing the photo.
+  setPendingNote(null);setNoteText("");setMode("view");openNote(note);
  };
+ const saveNoteEdit=()=>{
+  const text=editedNoteText.trim();
+  if(!openNoteId||!text)return;
+  const current=markup.notes.find(n=>n.id===openNoteId);
+  if(!current)return;
+  if(text!==current.text){
+   const next={...markup,notes:markup.notes.map(n=>n.id===openNoteId?{...n,text}:n)};
+   commit(next);onSave(next);setDirty(false);
+  }
+  setOpenNoteId(null);
+ };
+ const deleteNote=()=>{
+  if(!openNoteId)return;
+  const next={...markup,notes:markup.notes.filter(n=>n.id!==openNoteId)};
+  commit(next);onSave(next);setDirty(false);setOpenNoteId(null);
+ };
+ const activeNote=markup.notes.find(n=>n.id===openNoteId);
  const crop=async()=>{
   const box=selection,el=image.current;
   if(cropping)return;
@@ -190,15 +234,32 @@ export default function EggPhotoWorkspace({
        stroke={stroke.color} strokeWidth={stroke.width} strokeLinecap="round" strokeLinejoin="round" fill="none" vectorEffect="non-scaling-stroke"/>)}
       {draft&&<polyline points={draft.points.map(p=>p.x+","+p.y).join(" ")}
        stroke={draft.color} strokeWidth={draft.width} strokeLinecap="round" fill="none" vectorEffect="non-scaling-stroke"/>}
-      {markup.notes.map((note,i)=><g key={note.id}>
-       <circle cx={note.x} cy={note.y} r="13" fill="#f6f4f0" stroke="#252525" strokeWidth="1.7" vectorEffect="non-scaling-stroke"/>
-       <text x={note.x} y={note.y+5} textAnchor="middle" fill="#252525" fontSize="16">{i+1}</text>
-      </g>)}
+
       {selection&&<rect x={selection.x} y={selection.y} width={selection.width} height={selection.height}
        stroke="#f9f9f9" strokeWidth="2" strokeDasharray="8 6" vectorEffect="non-scaling-stroke"
        fill="#f9f9f9" fillOpacity=".14"/>}
     </svg>
-    <div className="absolute right-2 top-2 z-10 flex max-w-[calc(100%-16px)] flex-wrap justify-end gap-1.5">
+    {markup.notes.map((note,i)=><PhotoNotePin key={note.id} note={note} index={i} onClick={()=>openNote(note)}/>)}
+    {activeNote&&<div data-testid="egg-photo-note-popover" role="group" aria-label="Текст пометки"
+      className="pointer-events-auto absolute z-40 w-[min(300px,78vw)] rounded-xl bg-background/95 p-3 text-foreground shadow-[0_7px_25px_rgba(0,0,0,.20)] backdrop-blur-md"
+      style={{left:clamp(activeNote.x/10,12,88)+"%",top:clamp(activeNote.y/10,12,88)+"%",
+       transform:activeNote.y<350?"translate(-50%, 26px)":"translate(-50%, calc(-100% - 26px))"}}>
+      <div className="mb-2 flex items-center justify-between gap-2">
+       <span className="text-xs font-medium text-foreground/70">Пометка {markup.notes.findIndex(n=>n.id===activeNote.id)+1}</span>
+       <button type="button" aria-label="Закрыть пометку" className="rounded-full p-1.5 hover:bg-foreground/10"
+        onClick={()=>setOpenNoteId(null)}><X size={16}/></button>
+      </div>
+      <textarea aria-label="Редактировать текст пометки" rows={3} value={editedNoteText}
+       onChange={e=>setEditedNoteText(e.target.value)}
+       className="block min-h-20 w-full resize-y rounded-lg bg-foreground/[.045] p-2.5 text-sm leading-relaxed outline-none focus-visible:ring-1 focus-visible:ring-foreground/30"/>
+      <div className="mt-2 flex justify-end gap-2">
+       <button type="button" aria-label="Удалить пометку" onClick={deleteNote}
+        className="rounded-full px-3 py-2 text-xs text-foreground/65 hover:bg-foreground/10">Удалить</button>
+       <button type="button" aria-label="Сохранить изменение пометки" disabled={!editedNoteText.trim()} onClick={saveNoteEdit}
+        className="rounded-full bg-foreground px-4 py-2 text-xs text-background disabled:opacity-40">Готово</button>
+      </div>
+     </div>}
+    <div className="absolute right-2 top-2 z-30 flex max-w-[calc(100%-16px)] flex-wrap justify-end gap-1.5">
      <IconButton label="Перо — пометка" selected={mode==="pen"} onClick={()=>setMode(mode==="pen"?"view":"pen")}><Pencil size={18}/></IconButton>
      <IconButton label="Ластик по штрихам" selected={mode==="erase"} onClick={()=>setMode(mode==="erase"?"view":"erase")}><Eraser size={18}/></IconButton>
      <IconButton label="Текстовая пометка" selected={mode==="note"} onClick={()=>setMode(mode==="note"?"view":"note")}><MessageSquareText size={18}/></IconButton>
@@ -227,9 +288,9 @@ export default function EggPhotoWorkspace({
     </div>}
    </div>
    {markup.notes.length>0&&<div className="pointer-events-auto mt-2 flex max-h-24 w-full max-w-[92vw] flex-wrap gap-1.5 overflow-y-auto">
-    {markup.notes.map((note,i)=><button type="button" key={note.id} title="Удалить эту пометку"
-      className="bg-background/90 px-3 py-1.5 text-left text-xs text-foreground/85 shadow-sm"
-      onClick={()=>commit({...markup,notes:markup.notes.filter(v=>v.id!==note.id)})}>{i+1}. {note.text} <X size={12} className="ml-1 inline"/></button>)}
+    {markup.notes.map((note,i)=><button type="button" key={note.id} title="Открыть текст пометки"
+      className="rounded-full bg-background/90 px-3 py-1.5 text-left text-xs text-foreground/85 shadow-sm"
+      onClick={()=>openNote(note)}>{i+1}. {note.text}</button>)}
    </div>}
    <div className="pointer-events-none mt-1 max-w-[90vw] text-center text-[11px] text-foreground/60">
     {error|| (mode==="crop"?(selection?"Галочка сверху создаст новый объект на поле":"Проведите по фото, чтобы выделить фрагмент"):mode==="pen"?"Рисуйте прямо на фотографии":mode==="note"?"Коснитесь нужного места на фото":"")}
