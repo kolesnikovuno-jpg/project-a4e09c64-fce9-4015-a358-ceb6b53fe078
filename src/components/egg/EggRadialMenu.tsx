@@ -69,23 +69,23 @@ export default function EggRadialMenu({ actions, title = "EGG" }: { actions: Egg
   };
   if (!open) return (
     <button type="button" aria-label="Открыть круговое меню" title="Меню EGG" onClick={() => setOpen(true)}
-      className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-[max(1.25rem,env(safe-area-inset-left))] z-[75] flex h-16 w-16 items-center justify-center rounded-full border border-foreground/10 bg-foreground text-background shadow-[0_10px_30px_rgba(0,0,0,.18)] transition-transform hover:scale-105">
+      className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-[max(1.25rem,env(safe-area-inset-left))] z-[75] flex h-16 w-16 items-center justify-center rounded-full border border-[#63766a]/25 bg-[#607466] text-[#faf8f3] shadow-[0_10px_30px_rgba(57,68,55,.18)] transition-transform hover:scale-105">
       <CircleDot size={26} strokeWidth={1.25}/>
     </button>
   );
   return (
     <div className="fixed inset-0 z-[75]" aria-label="Круговое меню EGG">
-      <button type="button" aria-label="Закрыть круговое меню" className="absolute inset-0 cursor-default bg-background/10 backdrop-blur-[1px]" onClick={close} />
+      <button type="button" aria-label="Закрыть круговое меню" className="absolute inset-0 cursor-default bg-[#f6f1e9]/15 backdrop-blur-[1px]" onClick={close} />
       <div className="absolute bottom-[max(.75rem,env(safe-area-inset-bottom))] left-[max(.5rem,env(safe-area-inset-left))] h-[min(330px,calc(100vw-1rem))] w-[min(330px,calc(100vw-1rem))] select-none touch-none"
         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}>
         <svg viewBox="0 0 330 330" className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
-          <circle cx="165" cy="165" r="149" fill="hsl(var(--background))" fillOpacity=".95" stroke="currentColor" strokeOpacity=".13" />
-          <circle cx="165" cy="165" r="130" fill="none" stroke="currentColor" strokeOpacity=".09" />
-          <circle cx="165" cy="165" r="56" fill="none" stroke="currentColor" strokeOpacity=".14" />
+          <circle cx="165" cy="165" r="149" fill="#f8f5ef" fillOpacity=".97" stroke="#8d978a" strokeOpacity=".28" />
+          <circle cx="165" cy="165" r="130" fill="none" stroke="#8d978a" strokeOpacity=".18" />
+          <circle cx="165" cy="165" r="56" fill="none" stroke="#8d978a" strokeOpacity=".22" />
           {Array.from({length:6}, (_,i) => {
             const a = (i * 60 - 120) * Math.PI / 180;
             return <line key={i} x1={165+62*Math.cos(a)} y1={165+62*Math.sin(a)}
-              x2={165+143*Math.cos(a)} y2={165+143*Math.sin(a)} stroke="currentColor" strokeOpacity=".08" />;
+              x2={165+143*Math.cos(a)} y2={165+143*Math.sin(a)} stroke="#8d978a" strokeOpacity=".12" />;
           })}
         </svg>
         {positions.map((entry, slot) => {
@@ -95,8 +95,8 @@ export default function EggRadialMenu({ actions, title = "EGG" }: { actions: Egg
           return <button type="button" key={entry.id} disabled={entry.disabled} aria-label={entry.label}
             onPointerDown={e=>e.stopPropagation()}
             onClick={() => select(entry)} style={style}
-            className={"absolute flex h-[76px] w-[76px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full border bg-background/95 p-1 text-foreground shadow-sm transition-colors hover:bg-foreground/5 disabled:opacity-35 " +
-              (entry.selected?"border-foreground/55":"border-foreground/10")}>
+            className={"absolute flex h-[76px] w-[76px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full border bg-[#fffdf8]/95 p-1 text-[#45534a] shadow-sm transition-colors hover:bg-[#eaf0e8] disabled:opacity-35 " +
+              (entry.selected?"border-[#607466]/70 bg-[#ecf0e9]":"border-[#8a978b]/20")}>
             <Icon size={21} strokeWidth={1.5} color={entry.tint}/>
             <span className="max-w-[69px] text-center text-[10px] leading-[1.05rem]">{entry.label}</span>
           </button>;
@@ -104,16 +104,16 @@ export default function EggRadialMenu({ actions, title = "EGG" }: { actions: Egg
         <button type="button" aria-label={path.length ? "Назад к разделам" : "Закрыть меню"}
           onPointerDown={e=>e.stopPropagation()}
           onClick={() => { if (path.length) setPath(v=>v.slice(0,-1)); else close(); }}
-          className="absolute left-1/2 top-1/2 flex h-[100px] w-[100px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full bg-foreground text-background shadow-lg">
+          className="absolute left-1/2 top-1/2 flex h-[100px] w-[100px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full bg-[#607466] text-[#faf8f3] shadow-lg">
           {path.length?<ChevronLeft size={25}/>:<Menu size={25} strokeWidth={1.5}/>}
           <span className="max-w-[83px] text-center text-[12px] font-medium leading-tight">{current?.label || title}</span>
         </button>
         <button type="button" aria-label="Прокрутить меню назад" title="Назад" onPointerDown={e=>e.stopPropagation()} onClick={()=>setPage(-1)}
-          className="absolute bottom-2 left-[37%] rounded-full p-2 text-foreground/55 hover:bg-foreground/5"><ChevronLeft size={17}/></button>
+          className="absolute bottom-2 left-[37%] rounded-full p-2 text-[#64766a] hover:bg-[#eaf0e8]"><ChevronLeft size={17}/></button>
         <button type="button" aria-label="Прокрутить меню вперёд" title="Дальше" onPointerDown={e=>e.stopPropagation()} onClick={()=>setPage(1)}
-          className="absolute bottom-2 right-[37%] rounded-full p-2 text-foreground/55 hover:bg-foreground/5"><ChevronRight size={17}/></button>
+          className="absolute bottom-2 right-[37%] rounded-full p-2 text-[#64766a] hover:bg-[#eaf0e8]"><ChevronRight size={17}/></button>
         <button type="button" aria-label="Свернуть меню" title="Свернуть" onPointerDown={e=>e.stopPropagation()} onClick={close}
-          className="absolute right-2 top-2 rounded-full bg-background/95 p-2 text-foreground/65"><X size={16}/></button>
+          className="absolute right-2 top-2 rounded-full bg-[#fffdf8]/95 p-2 text-[#64766a]"><X size={16}/></button>
       </div>
     </div>
   );
