@@ -1,13 +1,16 @@
 import {describe,expect,it} from "vitest";
 import {createEggProject} from "../../lib/eggEngine";
 import {startEggFlowCycle} from "../../lib/eggFlowCycle";
-import {EGG_SPHERE_MANIFESTS,EGG_SPHERE_PROTOCOL_VERSION,buildEggSphereRoleInstruction} from "../../lib/eggSphereProtocol";
+import {EGG_SPHERE_MANIFESTS,EGG_ENTRY_MANIFESTS,EGG_SPHERE_PROTOCOL_VERSION,buildEggSphereRoleInstruction} from "../../lib/eggSphereProtocol";
 import {buildEggSphereIntelligencePrompt} from "../../lib/eggSphereIntelligence";
 
 describe("EGG Sphere Protocol v1.0",()=>{
  it("defines eight distinct functional roles, not a generic chat personality",()=>{
   expect(EGG_SPHERE_PROTOCOL_VERSION).toBe("1.0");
   expect(Object.keys(EGG_SPHERE_MANIFESTS)).toHaveLength(8);
+  expect(Object.keys(EGG_ENTRY_MANIFESTS)).toEqual(["matter","idea"]);
+  expect(EGG_ENTRY_MANIFESTS.matter.mission).toContain("подборки");
+  expect(EGG_ENTRY_MANIFESTS.idea.humanRole).toContain("Только Автор");
   const roles=Object.values(EGG_SPHERE_MANIFESTS).map(m=>m.role);
   expect(new Set(roles).size).toBe(8);
   for(const manifest of Object.values(EGG_SPHERE_MANIFESTS)){
