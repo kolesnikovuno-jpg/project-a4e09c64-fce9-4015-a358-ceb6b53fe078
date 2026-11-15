@@ -16,7 +16,7 @@ export type EggMenuAction = {
  * One fixed dial: the compact launcher and the expanded hub share a center.
  * All actions orbit around it continuously instead of replacing fixed slots.
  */
-export default function EggRadialMenu({ actions, title = "EGG" }: { actions: EggMenuAction[]; title?: string }) {
+export default function EggRadialMenu({ actions, title = "EGG", side = "left" }: { actions: EggMenuAction[]; title?: string; side?:"left"|"right" }) {
   const [open, setOpen] = useState(false);
   const [path, setPath] = useState<EggMenuAction[]>([]);
   const [rotation, setRotation] = useState(0);
@@ -88,7 +88,7 @@ export default function EggRadialMenu({ actions, title = "EGG" }: { actions: Egg
     }
     event.stopPropagation();
   };
-  const position="fixed bottom-[max(.75rem,env(safe-area-inset-bottom))] left-[max(.5rem,env(safe-area-inset-left))] h-[min(330px,calc(100vw-1rem))] w-[min(330px,calc(100vw-1rem))]";
+  const position="fixed bottom-[max(.75rem,env(safe-area-inset-bottom))] "+(side==="right"?"right-[max(.5rem,env(safe-area-inset-right))] ":"left-[max(.5rem,env(safe-area-inset-left))] ")+"h-[min(330px,calc(100vw-1rem))] w-[min(330px,calc(100vw-1rem))]";
   if(!open)return (
     <div className={position+" pointer-events-none z-[75]"} data-testid="egg-menu-fixed-position">
       <button type="button" aria-label="Открыть круговое меню" title="Меню EGG" onClick={()=>setOpen(true)}
