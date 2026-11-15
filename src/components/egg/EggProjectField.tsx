@@ -324,8 +324,22 @@ export default function EggProjectField({projectId,children,workspace="field",on
   {notice&&<div role="status" className="absolute bottom-5 left-1/2 z-50 max-w-[90vw] -translate-x-1/2 rounded-full border border-foreground/10 bg-background px-4 py-2 text-xs shadow-md" onClick={()=>setNotice("")}>{notice}</div>}
   {active?.src&&<EggPhotoWorkspace key={active.id} src={active.src} title={active.text} initialMarkup={active.photoMarkup}
    onSave={markup=>change(previous=>previous.map(item=>item.id===active.id?{...item,photoMarkup:markup}:item))}
-   onCrop={cropped=>{change(previous=>[...previous,{id:uid(),type:"image",location:active.location??workspace,
-    x:active.x+260,y:active.y+95,text:active.text+" · фрагмент",src:cropped}]);setNotice("Фрагмент сохранён как отдельный объект");}}
+   onCrop={cropped=>{
+    // Place the new reference inside the currently visible canvas, beside the source if possible.
+    const screenW=field.current?.clientWidth||window.innerWidth;
+    const screenH=field.current?.clientHeight||window.innerHeight;
+    const left=(-screenW/2-pan.x)/zoom;
+    const right=(screenW/2-pan.x)/zoom;
+    const top=(-screenH/2-pan.y)/zoom;
+    const bottom=(screenH/2-pan.y)/zoom;
+    const toRight=active.x+270;
+    const toLeft=active.x-270;
+    const x=toRight+240<=right-10?toRight:toLeft>=left+10?toLeft:clamp(-pan.x/zoom-110,left+10,Math.max(left+10,right-250));
+    const y=clamp(active.y+65,top+20,Math.max(top+20,bottom-270));
+    change(previous=>[...previous,{id:uid(),type:"image",location:active.location??workspace,
+     x,y,text:active.text+" · фрагмент",src:cropped}]);
+    setNotice("Фрагмент добавлен на холст рядом с исходным фото");
+   }}
    onClose={()=>setOpenId(null)}/>}
   {active&&!active.src&&<div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/65 p-4" role="presentation" onClick={()=>setOpenId(null)}>
    <div role="dialog" aria-modal="true" aria-label="Просмотр материала" onClick={e=>e.stopPropagation()} className="relative max-h-[92dvh] w-full max-w-[min(92vw,900px)] overflow-y-auto rounded-2xl bg-background p-4 shadow-2xl sm:p-6">
