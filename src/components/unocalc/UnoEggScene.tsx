@@ -28,7 +28,7 @@ import {
 } from "@/lib/unocalcEgg3d";
 
 type Locale = "ru" | "uk" | "en";
-type Props = { locale: Locale; onMatterOpen?: () => void; onIdeaOpen?: () => void; onSphereOpen?: (sphere: string) => void };
+type Props = { locale: Locale; onMatterOpen?: () => void; onIdeaOpen?: () => void; onConceptOpen?: () => void; onSphereOpen?: (sphere: string) => void };
 type InteractiveNode = "retail" | "commerce" | "design" | "production" | "marketing" | "testDrive" | "procurement" | "legal" | "idea" | "matter";
 type EggHitNode = InteractiveNode | "author";
 type NodeDetail = { title: string; description: string; number: string; openLabel: string; closeLabel: string };
@@ -306,7 +306,7 @@ const NodeDescription = ({ node, detail }: { node: InteractiveNode; detail: Node
   );
 };
 
-const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen }: Props) => {
+const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen, onConceptOpen }: Props) => {
   const [orientation, setOrientation] = useState<EggOrientation>(INITIAL);
   const [selectedNodes, setSelectedNodes] = useState<InteractiveNode[]>([]);
   const [workspaceNode, setWorkspaceNode] = useState<EggHitNode | null>(null);
@@ -356,9 +356,9 @@ const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen }: Props) 
     testDrive: { title: copy.testDrive, description: copy.testDriveDescription, number: copy.testDriveNode, openLabel: copy.testDriveLabel, closeLabel: copy.testDriveCloseLabel },
     procurement: { title: copy.procurement, description: copy.procurementDescription, number: copy.procurementNode, openLabel: copy.procurementLabel, closeLabel: copy.procurementCloseLabel },
     legal: { title: copy.legal, description: copy.legalDescription, number: copy.legalNode, openLabel: copy.legalLabel, closeLabel: copy.legalCloseLabel },
-    idea: { title: onIdeaOpen ? (locale === "ru" ? "Идея" : locale === "uk" ? "Ідея" : "Idea") : copy.idea, description: copy.ideaDescription, number: copy.ideaNode,
-      openLabel: onIdeaOpen ? (locale === "ru" ? "Открыть сферу «Идея»" : locale === "uk" ? "Відкрити сферу «Ідея»" : "Open Idea sphere") : copy.ideaLabel,
-      closeLabel: onIdeaOpen ? (locale === "ru" ? "Сфера «Идея»" : locale === "uk" ? "Сфера «Ідея»" : "Idea sphere") : copy.ideaCloseLabel },
+    idea: { title: onConceptOpen ? (locale === "ru" ? "Концепт" : locale === "uk" ? "Концепт" : "Concept") : copy.idea, description: copy.ideaDescription, number: copy.ideaNode,
+      openLabel: onConceptOpen ? (locale === "ru" ? "Открыть сферу «Концепт»" : locale === "uk" ? "Відкрити сферу «Концепт»" : "Open Concept sphere") : copy.ideaLabel,
+      closeLabel: onConceptOpen ? (locale === "ru" ? "Сфера «Концепт»" : locale === "uk" ? "Сфера «Концепт»" : "Concept sphere") : copy.ideaCloseLabel },
     matter: { title: copy.matter, description: copy.matterDescription, number: copy.matterNode, openLabel: copy.matterLabel, closeLabel: copy.matterCloseLabel },
   };
   const hasIdea = ideaDraft.trim().length > 0;
@@ -500,7 +500,8 @@ const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen }: Props) 
   const openWorkspace = (node: EggHitNode) => {
     // In a real EGG project, route the poles directly to their dedicated canvases.
     // The legacy UNOcalc panels remain available only when these callbacks are absent.
-    if ((node === "idea" || node === "author") && onIdeaOpen) { onIdeaOpen(); return; }
+    if (node === "author" && onIdeaOpen) { onIdeaOpen(); return; }
+    if (node === "idea" && onConceptOpen) { onConceptOpen(); return; }
     if (node === "matter" && onMatterOpen) { onMatterOpen(); return; }
     if (onSphereOpen && node !== "idea" && node !== "matter" && node !== "author") { onSphereOpen(node); return; }
     if (workspaceExitTimer.current !== null) {
@@ -546,7 +547,7 @@ const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen }: Props) 
   const activateNode = (node: InteractiveNode) => {
     // In project mode a single tap must open the current Matter/Idea canvas,
     // never a misleading local prototype description or old Author panel.
-    if (node === "idea" && onIdeaOpen) { onIdeaOpen(); giveNodeFeedback(); return; }
+    if (node === "idea" && onConceptOpen) { onConceptOpen(); giveNodeFeedback(); return; }
     if (node === "matter" && onMatterOpen) { onMatterOpen(); giveNodeFeedback(); return; }
     // Every sphere can be selected for its short description; execution gates remain in the workspace.
     if (node === "design" && hasIdea) {
