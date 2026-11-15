@@ -95,6 +95,25 @@ describe("EGG link website preview",()=>{
    serverFetch.mockRestore();
   }
  });
+ it("offers iPad-compatible screenshot import without a dead screen capture button",async()=>{
+  const original=Object.getOwnPropertyDescriptor(navigator,"mediaDevices");
+  try{
+   Object.defineProperty(navigator,"mediaDevices",{configurable:true,value:undefined});
+   render(<EggLinkWorkspace address="https://example.com/view" onClose={()=>{}} onCaptureCrop={()=>{}}/>);
+   fireEvent.click(screen.getByRole("button",{name:"Фрагмент сайта"}));
+   expect(screen.queryByRole("button",{name:"Снять текущий экран"})).toBeNull();
+   expect(screen.getByRole("button",{name:"Вставить снимок экрана"})).toBeTruthy();
+   const fileInput=screen.getByLabelText("Выбрать скриншот из Фото") as HTMLInputElement;
+   const chooser=vi.spyOn(fileInput,"click").mockImplementation(()=>{});
+   fireEvent.click(screen.getByRole("button",{name:"Выбрать снимок из Фото"}));
+   expect(chooser).toHaveBeenCalledTimes(1);
+   fireEvent.change(fileInput,{target:{files:[new File(["fake"],"screenshot.png",{type:"image/png"})]}});
+   expect(await screen.findByTestId("egg-photo-workspace")).toBeTruthy();
+  }finally{
+   if(original)Object.defineProperty(navigator,"mediaDevices",original);
+   else Reflect.deleteProperty(navigator,"mediaDevices");
+  }
+ });
  it("does not embed unsafe legacy links",()=>{
   render(<EggLinkWorkspace address="javascript:alert(1)" onClose={()=>{}}/>);
   expect(screen.queryByTestId("egg-site-frame")).toBeNull();
