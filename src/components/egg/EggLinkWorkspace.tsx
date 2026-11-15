@@ -31,7 +31,8 @@ export default function EggLinkWorkspace({
  const [screenshot,setScreenshot]=useState<string|null>(null);
  const [error,setError]=useState("");
  const [capturing,setCapturing]=useState(false);
- const requestScreenshot=async()=>{
+ const [captureChoices,setCaptureChoices]=useState(false);
+ const requestServerScreenshot=async()=>{
   if(!url||capturing)return;
   setCapturing(true);setError("");
   try{
@@ -50,10 +51,47 @@ export default function EggLinkWorkspace({
     return;
    }
    setScreenshot(result.imageDataUrl);
+   setCaptureChoices(false);
    setTextOpen(false);
   }catch{
    setError("Сервис снимков недоступен. Попробуйте ещё раз.");
   }finally{setCapturing(false);}
+ };
+ const requestVisibleScreenshot=async()=>{
+  const capture=navigator.mediaDevices?.getDisplayMedia;
+  if(typeof capture!=="function"){
+   setError("Захват текущего экрана недоступен в этом браузере. Серверный снимок открывает страницу с начала.");
+   return;
+  }
+  if(capturing)return;
+  setCapturing(true);setError("");setCaptureChoices(false);
+  let stream:MediaStream|null=null;
+  try{
+   // User grants access to a tab/window. Never attempt to inspect cross-origin iframe state.
+   stream=await capture.call(navigator.mediaDevices,{video:true,audio:false});
+   const video=document.createElement("video");
+   video.muted=true;video.playsInline=true;video.srcObject=stream;
+   await new Promise<void>((resolve,reject)=>{
+    const timer=window.setTimeout(()=>reject(new Error("timeout")),8000);
+    const ready=()=>{window.clearTimeout(timer);resolve();};
+    if(video.readyState>=2&&video.videoWidth>0)ready();
+    else {video.onloadeddata=ready;video.onerror=()=>{window.clearTimeout(timer);reject(new Error("video"));};}
+   });
+   await video.play();
+   const canvas=document.createElement("canvas");
+   const scale=Math.min(1,1800/Math.max(video.videoWidth,video.videoHeight));
+   canvas.width=Math.max(1,Math.round(video.videoWidth*scale));
+   canvas.height=Math.max(1,Math.round(video.videoHeight*scale));
+   const ctx=canvas.getContext("2d");if(!ctx)throw new Error("canvas");
+   ctx.drawImage(video,0,0,canvas.width,canvas.height);
+   video.pause();video.srcObject=null;
+   setScreenshot(canvas.toDataURL("image/jpeg",.88));
+   setTextOpen(false);
+  }catch(e){
+   setError(e instanceof Error&&e.name==="NotAllowedError"
+    ?"Захват отменён. Разрешите доступ и выберите вкладку EGG или окно сайта."
+    :"Не удалось захватить текущий экран.");
+  }finally{stream?.getTracks().forEach(track=>track.stop());setCapturing(false);}
  };
  const saveText=()=>{
   if(!url||!onCaptureText||!text.trim())return;
@@ -65,11 +103,12 @@ export default function EggLinkWorkspace({
    if(event.key!=="Escape"||screenshot)return;
    event.stopPropagation();
    if(textOpen){setTextOpen(false);return;}
+   if(captureChoices){setCaptureChoices(false);return;}
    onClose();
   };
   window.addEventListener("keydown",handler,true);
   return()=>window.removeEventListener("keydown",handler,true);
- },[onClose,textOpen,screenshot]);
+ },[onClose,textOpen,screenshot,captureChoices]);
  const host=url?new URL(url).host:address;
  const control="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background/95 text-foreground shadow-[0_3px_14px_rgba(0,0,0,.15)] backdrop-blur-md hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
  return <section data-testid="egg-link-workspace" aria-label="Просмотр сайта" role="dialog"
@@ -81,8 +120,8 @@ export default function EggLinkWorkspace({
      <Globe2 size={13} className="mr-1 inline"/>{host}
     </span>
     <div className="pointer-events-auto flex items-center gap-1.5">
-     {url&&onCaptureCrop&&<button type="button" aria-label="Фрагмент сайта" title="Получить снимок публичной страницы и выделить фрагмент"
-       className={control} disabled={capturing} onClick={()=>void requestScreenshot()}><Camera size={18}/></button>}
+     {url&&onCaptureCrop&&<button type="button" aria-label="Фрагмент сайта" title="Выбрать способ захвата фрагмента"
+       className={control} disabled={capturing} onClick={()=>{setCaptureChoices(v=>!v);setTextOpen(false);setError("");}}><Camera size={18}/></button>}
      {url&&onCaptureText&&<button type="button" aria-label="Текст сайта" title="Сохранить текст"
        className={control} onClick={()=>{setTextOpen(v=>!v);setError("");}}><FileText size={18}/></button>}
      {url&&<a data-testid="egg-site-open-external" href={url} target="_blank" rel="noopener noreferrer"
@@ -98,6 +137,25 @@ export default function EggLinkWorkspace({
       <Globe2 size={28} className="text-foreground/45"/>
       <p className="text-sm">Это не адрес сайта. Укажите ссылку с http:// или https://.</p>
       <p className="break-all text-xs text-foreground/55">{address}</p>
+     </div>}
+   {captureChoices&&url&&<div data-testid="egg-capture-options"
+      className="pointer-events-auto absolute bottom-3 right-3 z-30 w-[min(340px,calc(100%-24px))] rounded-xl bg-background/95 p-3 shadow-[0_5px_28px_rgba(0,0,0,.22)] backdrop-blur-md">
+      <div className="mb-2 flex items-center justify-between">
+       <span className="text-sm font-medium">Снимок фрагмента</span>
+       <button type="button" aria-label="Закрыть выбор захвата" className="rounded-full p-2 hover:bg-foreground/10" onClick={()=>setCaptureChoices(false)}><X size={16}/></button>
+      </div>
+      <button type="button" aria-label="Снять текущий экран" disabled={capturing}
+       className="w-full rounded-lg border border-foreground/15 px-3 py-3 text-left text-sm disabled:opacity-50"
+       onClick={()=>void requestVisibleScreenshot()}>
+       Текущий экран
+       <span className="mt-1 block text-xs text-foreground/55">Выбрать вкладку или окно в разрешении браузера. Прокрутка сохраняется.</span>
+      </button>
+      <button type="button" aria-label="Снять страницу с начала" disabled={capturing}
+       className="mt-2 w-full rounded-lg border border-foreground/15 px-3 py-3 text-left text-sm disabled:opacity-50"
+       onClick={()=>void requestServerScreenshot()}>
+       Страница с начала
+       <span className="mt-1 block text-xs text-foreground/55">Серверное превью публичного URL. Прокрутка не передаётся.</span>
+      </button>
      </div>}
    {textOpen&&url&&<div data-testid="egg-site-text-panel"
      className="pointer-events-auto absolute bottom-3 right-3 z-30 w-[min(330px,calc(100%-24px))] rounded-xl bg-background/95 p-3 shadow-[0_5px_28px_rgba(0,0,0,.22)] backdrop-blur-md">
@@ -115,8 +173,8 @@ export default function EggLinkWorkspace({
      </button>
     </div>}
    {error&&<div role="alert" className="absolute bottom-3 left-3 z-30 rounded-full bg-background/95 px-3 py-2 text-xs shadow-md">{error}</div>}
-   {!textOpen&&url&&<div className="pointer-events-none absolute bottom-2 left-1/2 z-20 max-w-[92%] -translate-x-1/2 rounded-full bg-background/90 px-3 py-2 text-center text-[11px] text-foreground/65 shadow-sm backdrop-blur-md">
-    «Фрагмент» передаёт публичный URL сервису WordPress.com для снимка. Это не текущий экран; снимок может быть устаревшим.
+   {!textOpen&&!captureChoices&&url&&<div className="pointer-events-none absolute bottom-2 left-1/2 z-20 max-w-[92%] -translate-x-1/2 rounded-full bg-background/90 px-3 py-2 text-center text-[11px] text-foreground/65 shadow-sm backdrop-blur-md">
+    Серверное превью передаёт публичный URL WordPress.com. Для текущей прокрутки выбирайте «Текущий экран».
    </div>}
   </div>
   {screenshot&&url&&onCaptureCrop&&<EggPhotoWorkspace src={screenshot} title="Выделите область скриншота" cropOnly
