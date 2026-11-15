@@ -47,6 +47,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
  const [eggScale,setEggScale]=useState(.8);
  const [sketchEditor,setSketchEditor]=useState<{id:string|null;initialStrokes:SketchStroke[]}|null>(null);
  const [openId,setOpenId]=useState<string|null>(null);
+ const [focusedPhotoNoteId,setFocusedPhotoNoteId]=useState<string|null>(null);
  const [notice,setNotice]=useState("");
  const [listening,setListening]=useState(false);
  const [videoUrls,setVideoUrls]=useState<Record<string,string>>({});
@@ -78,7 +79,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
  },[videoKeys]);
  useEffect(()=>()=>{recognition.current?.stop();},[]);
  useEffect(()=>{
-  setPan({x:0,y:0});setZoom(1);setOpenId(null);setTool(null);setSketchEditor(null);
+  setPan({x:0,y:0});setZoom(1);setOpenId(null);setFocusedPhotoNoteId(null);setTool(null);setSketchEditor(null);
   gesture.current=null;pointers.current.clear();pinch.current=null;
  },[workspace]);
  const visibleItems=items.filter(item=>(item.location??"field")===workspace);
@@ -270,7 +271,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
        onClick={()=>moveToWorkspace(item.id)}>{workspace==="field"?<Check size={15}/>:<Undo2 size={15}/>}</button>
       <button type="button" data-no-drag aria-label="Развернуть элемент" title="Развернуть"
        className="flex h-8 w-8 items-center justify-center rounded-full bg-background/90 text-foreground/75 shadow-[0_2px_9px_rgba(0,0,0,.16)] backdrop-blur-md transition-colors hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
-       onClick={()=>setOpenId(item.id)}><Maximize2 size={14} strokeWidth={1.7}/></button>
+       onClick={()=>{setFocusedPhotoNoteId(null);setOpenId(item.id);}}><Maximize2 size={14} strokeWidth={1.7}/></button>
       <button type="button" data-no-drag aria-label="Удалить элемент" title="Удалить"
        className="flex h-8 w-8 items-center justify-center rounded-full bg-background/90 text-foreground/75 shadow-[0_2px_9px_rgba(0,0,0,.16)] backdrop-blur-md transition-colors hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
        onClick={()=>change(v=>v.filter(x=>x.id!==item.id))}><X size={14} strokeWidth={1.7}/></button>
@@ -279,7 +280,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
        <div className="relative inline-block max-w-[240px] shadow-[0_5px_20px_rgba(0,0,0,.10)]">
         <img draggable={false} src={item.src} alt={item.text} title="Коснитесь, чтобы увеличить"
          className="block h-auto max-h-[300px] max-w-[240px] object-contain" style={{borderRadius:0,clipPath:"none",maskImage:"none",WebkitMaskImage:"none"}}/>
-        <PhotoMarkupOverlay markup={item.photoMarkup}/>
+        <PhotoMarkupOverlay markup={item.photoMarkup} onNoteSelect={noteId=>{setFocusedPhotoNoteId(noteId);setOpenId(item.id);}}/>
        </div>
       :item.type==="video"?
        <div className="flex h-36 w-full items-center justify-center rounded-lg bg-foreground/[.045] shadow-[0_5px_18px_rgba(0,0,0,.055)]">
@@ -322,7 +323,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
   <input ref={imageInput} type="file" accept="image/*" multiple className="hidden" onChange={e=>{void images(e.target.files);e.target.value="";}}/>
   <input ref={videoInput} type="file" accept="video/*" multiple className="hidden" onChange={e=>{void videos(e.target.files);e.target.value="";}}/>
   {notice&&<div role="status" className="absolute bottom-5 left-1/2 z-50 max-w-[90vw] -translate-x-1/2 rounded-full border border-foreground/10 bg-background px-4 py-2 text-xs shadow-md" onClick={()=>setNotice("")}>{notice}</div>}
-  {active?.src&&<EggPhotoWorkspace key={active.id} src={active.src} title={active.text} initialMarkup={active.photoMarkup}
+  {active?.src&&<EggPhotoWorkspace key={active.id} src={active.src} title={active.text} initialMarkup={active.photoMarkup} initialFocusNoteId={focusedPhotoNoteId??undefined}
    onSave={markup=>change(previous=>previous.map(item=>item.id===active.id?{...item,photoMarkup:markup}:item))}
    onCrop={cropped=>{
     // Place the new reference inside the currently visible canvas, beside the source if possible.
@@ -340,7 +341,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
      x,y,text:active.text+" · фрагмент",src:cropped}]);
     setNotice("Фрагмент добавлен на холст рядом с исходным фото");
    }}
-   onClose={()=>setOpenId(null)}/>}
+   onClose={()=>{setOpenId(null);setFocusedPhotoNoteId(null);}}/>}
   {active&&!active.src&&<div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/65 p-4" role="presentation" onClick={()=>setOpenId(null)}>
    <div role="dialog" aria-modal="true" aria-label="Просмотр материала" onClick={e=>e.stopPropagation()} className="relative max-h-[92dvh] w-full max-w-[min(92vw,900px)] overflow-y-auto rounded-2xl bg-background p-4 shadow-2xl sm:p-6">
     <div className="mb-4 flex items-center justify-between gap-3"><span className="truncate text-xs text-foreground/50">{active.text}</span><button type="button" aria-label="Закрыть просмотр" onClick={()=>setOpenId(null)} className="rounded-full p-2 hover:bg-foreground/10"><X size={19}/></button></div>
