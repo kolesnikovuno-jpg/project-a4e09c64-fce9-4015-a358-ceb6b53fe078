@@ -25,6 +25,7 @@ describe("EGG field material appearance", () => {
     expect(photo.closest("button")).toBeNull();
     expect(photo.getAttribute("draggable")).toBe("false");
     fireEvent.click(within(itemElements[0] as HTMLElement).getByRole("button",{name:"Развернуть элемент"}));
-    expect(screen.getByRole("dialog",{name:"Просмотр материала"})).toBeTruthy();
+    expect(screen.getByTestId("egg-photo-workspace")).toBeTruthy();
+    expect(container.querySelector(".bg-black\\/65")).toBeNull();
   });
 });
