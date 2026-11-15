@@ -397,7 +397,23 @@ export default function EggProjectField({projectId,children,workspace="field",on
    }}
    onClose={()=>{setOpenId(null);setFocusedPhotoNoteId(null);}}/>}
   {active?.type==="link"&&<EggLinkWorkspace key={active.id} address={active.text}
-    onCaptureText={addReferenceText} onCaptureImage={addReferenceImage} onClose={()=>setOpenId(null)}/>}
+    onCaptureText={addReferenceText} onCaptureImage={addReferenceImage}
+    onCaptureCrop={(cropped,sourceUrl)=>{
+     const screenW=field.current?.clientWidth||window.innerWidth;
+     const screenH=field.current?.clientHeight||window.innerHeight;
+     const left=(-screenW/2-pan.x)/zoom,right=(screenW/2-pan.x)/zoom;
+     const top=(-screenH/2-pan.y)/zoom,bottom=(screenH/2-pan.y)/zoom;
+     const toRight=active.x+250,toLeft=active.x-260;
+     const x=toRight+240<=right-10?toRight:toLeft>=left+10?toLeft:clamp(-pan.x/zoom-110,left+10,Math.max(left+10,right-250));
+     const y=clamp(active.y+55,top+20,Math.max(top+20,bottom-270));
+     change(previous=>[...previous,{
+      id:uid(),type:"image",location:active.location??workspace,x,y,
+      text:"Фрагмент сайта",src:cropped,sourceUrl,
+     }]);
+     setOpenId(null);
+     setNotice("Фрагмент сайта добавлен рядом с исходной ссылкой");
+    }}
+    onClose={()=>setOpenId(null)}/>}
   {active&&!active.src&&active.type!=="link"&&<div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/65 p-4" role="presentation" onClick={()=>setOpenId(null)}>
    <div role="dialog" aria-modal="true" aria-label="Просмотр материала" onClick={e=>e.stopPropagation()} className="relative max-h-[92dvh] w-full max-w-[min(92vw,900px)] overflow-y-auto rounded-2xl bg-background p-4 shadow-2xl sm:p-6">
     <div className="mb-4 flex items-center justify-between gap-3"><span className="truncate text-xs text-foreground/50">{active.text}</span><button type="button" aria-label="Закрыть просмотр" onClick={()=>setOpenId(null)} className="rounded-full p-2 hover:bg-foreground/10"><X size={19}/></button></div>
