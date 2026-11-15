@@ -20,7 +20,7 @@ type SpeechRecognitionWindow=Window&{
  webkitSpeechRecognition?:new()=>SpeechRecognitionLike;
 };
 
-const makePreview=async(card:MatterCard):Promise<string|undefined>=>{
+export const makePreview=async(card:MatterCard):Promise<string|undefined>=>{
  try{
   const canvas=document.createElement("canvas");
   const ctx=canvas.getContext("2d");if(!ctx)return undefined;
