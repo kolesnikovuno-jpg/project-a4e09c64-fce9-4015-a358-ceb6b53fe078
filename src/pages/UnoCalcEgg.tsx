@@ -34,6 +34,7 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
     const requested = params.get("start");
     if(requested === "idea" || requested === "author") {openEntry("idea");return;}
     if(requested === "concept") {openEntry("concept");return;}
+    if(requested === "field" || requested === "matter") {openBoard(requested);return;}
     if(requested !== null && Object.prototype.hasOwnProperty.call(EGG_SPHERES, requested)) {
       setActiveSphere(requested);
       setPanelOpen(true);
