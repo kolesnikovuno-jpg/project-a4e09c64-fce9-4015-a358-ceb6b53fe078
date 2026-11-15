@@ -98,7 +98,7 @@ export default function EggMatterDialogue({
  };
  const firstReview=()=>{setOverviewed(true);void submit("Изучи весь состав холста. Какие мотивы, противоречия и вопросы ты видишь? Отделяй наблюдения от гипотез.");};
  return <aside aria-label="Диалог Материальное" data-testid="egg-matter-dialogue"
-  className="absolute inset-y-0 left-0 z-40 flex w-[min(42%,420px)] min-w-[240px] flex-col border-r border-[#a4afa2]/25 bg-[#f9f7f2]/95 text-[#3b4b40] shadow-[6px_0_24px_rgba(45,55,40,.07)] backdrop-blur-md">
+  className="absolute inset-y-0 right-0 z-40 flex w-[min(42%,420px)] min-w-[240px] flex-col border-l border-[#a4afa2]/25 bg-[#f9f7f2]/95 text-[#3b4b40] shadow-[-6px_0_24px_rgba(45,55,40,.07)] backdrop-blur-md">
   <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[#a4afa2]/25 px-3 py-3">
    <div className="flex min-w-0 items-center gap-2"><BrainCircuit size={17}/>
     <div className="min-w-0"><h2 className="truncate text-sm font-medium">Материальное</h2>
