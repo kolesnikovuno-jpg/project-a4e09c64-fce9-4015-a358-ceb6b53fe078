@@ -5,7 +5,7 @@ import { makePreview, type MatterCard } from "./EggMatterDialogue";
 
 type Message={role:"user"|"assistant";content:string};
 type FieldItem=MatterCard&{location?:string;sourceUrl?:string};
-type IdeaRecord={intent:string;constraints:string;messages:Message[];savedDraft:string};
+type IdeaRecord={intent:string;constraints:string;messages:Message[];savedDraft:string;spacePhoto:string};
 const readJSON=(key:string):unknown=>{
  try{return JSON.parse(localStorage.getItem(key)??"null");}catch{return null;}
 };
@@ -17,6 +17,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter}:{
  const [constraints,setConstraints]=useState("");
  const [draft,setDraft]=useState("");
  const [savedDraft,setSavedDraft]=useState("");
+ const [spacePhoto,setSpacePhoto]=useState("");
  const [messages,setMessages]=useState<Message[]>([]);
  const [materials,setMaterials]=useState<FieldItem[]>([]);
  const [materialInsight,setMaterialInsight]=useState("");
@@ -30,6 +31,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter}:{
    setIntent(typeof state.intent==="string"?state.intent:"");
    setConstraints(typeof state.constraints==="string"?state.constraints:"");
    setSavedDraft(typeof state.savedDraft==="string"?state.savedDraft:"");
+   setSpacePhoto(typeof state.spacePhoto==="string"&&/^data:image\/jpeg;base64,/.test(state.spacePhoto)&&state.spacePhoto.length<210000?state.spacePhoto:"");
    setMessages(Array.isArray(state.messages)?state.messages.filter(m=>m&&(m.role==="user"||m.role==="assistant")&&typeof m.content==="string").slice(-40):[]);
   }
   const source=readJSON("egg:project-field:v1:"+projectId);
@@ -42,10 +44,28 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter}:{
   setLoaded(true);
  },[key,projectId]);
  useEffect(()=>{
-  if(loaded)try{localStorage.setItem(key,JSON.stringify({intent,constraints,messages:messages.slice(-40),savedDraft}));}catch{setError("Недостаточно места для сохранения черновика.");}
- },[key,intent,constraints,messages,savedDraft,loaded]);
+  if(loaded)try{localStorage.setItem(key,JSON.stringify({intent,constraints,messages:messages.slice(-40),savedDraft,spacePhoto}));}catch{setError("Недостаточно места для сохранения черновика.");}
+ },[key,intent,constraints,messages,savedDraft,spacePhoto,loaded]);
  useEffect(()=>{bottom.current?.scrollIntoView?.({behavior:"smooth",block:"nearest"});},[messages,busy]);
  const latestAnswer=useMemo(()=>[...messages].reverse().find(m=>m.role==="assistant")?.content??"",[messages]);
+ const addSpacePhoto=async(file:File|undefined)=>{
+  if(!file)return;
+  if(!file.type.startsWith("image/")||file.size>12_000_000){
+   setError("Выберите изображение до 12 МБ.");return;
+  }
+  setError("");
+  try{
+   const src=await new Promise<string>((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>typeof reader.result==="string"?resolve(reader.result):reject(Error("file_read_failed"));
+    reader.onerror=()=>reject(Error("file_read_failed"));
+    reader.readAsDataURL(file);
+   });
+   const preview=await makePreview({id:"space-context-photo",type:"image",text:"Контекст существующего пространства",src});
+   if(!preview||preview.length>=210000)throw Error("preview_failed");
+   setSpacePhoto(preview);
+  }catch{setError("Не удалось прочитать фотографию. Попробуйте JPG или PNG.");}
+ };
  const submit=async(text:string)=>{
   if(!intent.trim()||!text.trim()||busy)return;
   const next:Message={role:"user",content:text.trim().slice(0,3000)};
@@ -58,14 +78,15 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter}:{
    const auth=createClient(cfg.supabaseUrl,cfg.publishableKey);
    const {data:{session}}=await auth.auth.getSession();
    if(!session?.access_token)throw Error("Войдите в аккаунт EGG.");
-   const payloadMaterials=await Promise.all(materials.map(async(m,i)=>({
+   const payloadMaterials=await Promise.all(materials.slice(0,spacePhoto?99:100).map(async(m,i)=>({
     id:m.id,type:m.type,text:m.text.slice(0,2000),
     ...(m.type==="link"&&/^https?:\/\//.test(m.text)?{url:m.text.slice(0,2048)}:{}),
     ...(i<12&&(m.type==="image"||m.type==="sketch")?{imageData:await makePreview(m)}:{})
    })));
+   const ideaMaterials=spacePhoto?[{id:"space-context-photo",type:"image" as const,text:"Фотография существующего пространства — контекст размещения, НЕ референс формы проектируемого объекта",imageData:spacePhoto},...payloadMaterials]:payloadMaterials;
    const response=await fetch("/api/egg-flow-ai?op=idea-dialogue",{
     method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},
-    body:JSON.stringify({projectId,materials:payloadMaterials,messages:history,intent:intent.slice(0,3000),constraints:constraints.slice(0,2000),materialInsight})
+    body:JSON.stringify({projectId,materials:ideaMaterials,messages:history,intent:intent.slice(0,3000),constraints:constraints.slice(0,2000),materialInsight})
    });
    const data=await response.json() as {ok?:boolean;reply?:string;error?:string};
    if(!response.ok||!data.ok||!data.reply)throw Error(data.error==="model_incomplete"?"ИИ не завершил мысль. Попробуйте уточнить запрос.":data.error??"Ошибка ИИ.");
@@ -92,6 +113,18 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter}:{
       placeholder="Габариты, среда, характер, ограничения — только если определены"
       className="mt-2 w-full resize-y rounded-xl border border-foreground/15 bg-background/80 p-3 text-sm outline-none focus:border-foreground/40"/>
     </label>
+    <div className="space-y-2 rounded-xl border border-foreground/10 bg-background/40 p-3">
+     <label className="block text-xs text-foreground/70">Фото пространства · контекст, не референс формы
+      <input aria-label="Загрузить фото пространства" type="file" accept="image/*"
+       onChange={e=>{void addSpacePhoto(e.currentTarget.files?.[0]);e.currentTarget.value="";}}
+       className="mt-2 block w-full text-xs file:mr-3 file:rounded-full file:border-0 file:bg-foreground/10 file:px-3 file:py-2"/>
+     </label>
+     {spacePhoto&&<div className="flex items-start gap-2">
+      <img src={spacePhoto} alt="Загруженное фото пространства" className="max-h-36 min-w-0 flex-1 rounded-lg object-contain"/>
+      <button type="button" onClick={()=>setSpacePhoto("")} aria-label="Удалить фото пространства" className="rounded-full border border-foreground/20 p-2"><X size={14}/></button>
+     </div>}
+     <p className="text-[10px] opacity-55">Имеет значение видимая среда; точные размеры из фотографии не определяются. Фото сохраняется локально в уменьшенном виде.</p>
+    </div>
     <div className="space-y-2">
      <div className="text-xs text-foreground/70">Поле из «Материального» · {materials.length} материалов</div>
      {materialInsight?<p className="max-h-32 overflow-y-auto whitespace-pre-wrap text-xs leading-relaxed text-foreground/65">{materialInsight}</p>:<p className="text-xs opacity-50">Карты исследования пока нет. Идею можно инициировать самостоятельно.</p>}
