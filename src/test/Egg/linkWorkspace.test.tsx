@@ -24,36 +24,34 @@ describe("EGG link website preview",()=>{
   expect(external.getAttribute("href")).toBe("https://example.com/gallery");
   expect(external.target).toBe("_blank");
   expect(external.rel).toContain("noopener");
-  fireEvent.click(screen.getByRole("button",{name:"Развернуть окно сайта"}));
-  expect(screen.getByRole("button",{name:"Уменьшить окно сайта"})).toBeTruthy();
+  expect(screen.queryByRole("button",{name:"Развернуть окно сайта"})).toBeNull();
   fireEvent.click(screen.getByRole("button",{name:"Закрыть сайт"}));
   expect(onClose).toHaveBeenCalledTimes(1);
  });
  it("captures copied text with the original site URL without reading iframe internals",()=>{
   const onCaptureText=vi.fn();
   render(<EggLinkWorkspace address="https://example.com/design" onClose={()=>{}} onCaptureText={onCaptureText}/>);
-  fireEvent.click(screen.getByRole("button",{name:"Сохранить материал сайта"}));
+  fireEvent.click(screen.getByRole("button",{name:"Текст сайта"}));
   fireEvent.change(screen.getByRole("textbox",{name:"Текст с сайта"}),{target:{value:"A useful selected passage"}});
   fireEvent.click(screen.getByRole("button",{name:"Добавить текст в поле"}));
   expect(onCaptureText).toHaveBeenCalledWith("A useful selected passage","https://example.com/design");
-  expect(screen.queryByTestId("egg-site-capture-panel")).toBeNull();
+  expect(screen.queryByTestId("egg-site-text-panel")).toBeNull();
  });
- it("allows importing a visual reference from a file with its originating URL",async()=>{
-  const onCaptureImage=vi.fn(async()=>true);
-  render(<EggLinkWorkspace address="https://example.com/image" onClose={()=>{}} onCaptureImage={onCaptureImage}/>);
-  fireEvent.click(screen.getByRole("button",{name:"Сохранить материал сайта"}));
-  const input=screen.getByLabelText("Выбрать изображение с сайта") as HTMLInputElement;
-  const file=new File(["image"],"reference.png",{type:"image/png"});
-  fireEvent.change(input,{target:{files:[file]}});
-  await waitFor(()=>expect(onCaptureImage).toHaveBeenCalledWith(file,"https://example.com/image"));
-  await waitFor(()=>expect(screen.queryByTestId("egg-site-capture-panel")).toBeNull());
+ it("has only four distinct top actions and does not offer duplicate image upload",()=>{
+  render(<EggLinkWorkspace address="https://example.com/image" onClose={()=>{}} onCaptureText={()=>{}}
+    onCaptureImage={async()=>true} onCaptureCrop={()=>{}}/>);
+  for(const name of ["Фрагмент сайта","Текст сайта","Открыть сайт отдельно","Закрыть сайт"])
+   expect(screen.getByRole(name==="Открыть сайт отдельно"?"link":"button",{name})).toBeTruthy();
+  expect(screen.queryByRole("button",{name:"Сохранить материал сайта"})).toBeNull();
+  expect(screen.queryByRole("button",{name:"Добавить изображение с сайта"})).toBeNull();
+  expect(screen.queryByRole("button",{name:"Скрин сайта"})).toBeNull();
  });
  it("opens the screenshot picker as fallback when browser screen capture is unavailable",()=>{
   const onCaptureCrop=vi.fn();
   render(<EggLinkWorkspace address="https://example.com/reference" onClose={()=>{}} onCaptureCrop={onCaptureCrop}/>);
   const picker=screen.getByLabelText("Выбрать готовый скриншот") as HTMLInputElement;
   const click=vi.spyOn(picker,"click").mockImplementation(()=>{});
-  fireEvent.click(screen.getByRole("button",{name:"Скрин сайта"}));
+  fireEvent.click(screen.getByRole("button",{name:"Фрагмент сайта"}));
   expect(click).toHaveBeenCalledTimes(1);
   expect(onCaptureCrop).not.toHaveBeenCalled();
  });
