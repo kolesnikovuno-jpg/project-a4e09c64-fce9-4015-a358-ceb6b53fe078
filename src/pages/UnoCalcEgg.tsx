@@ -94,9 +94,15 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
           <button type="button" onClick={() => { setActiveSphere(null); setPanelOpen(true); }} className="rounded-full border border-foreground/30 px-5 py-3 text-sm text-foreground/80">{hasProject ? "Открыть проект и результаты сфер" : "Познакомиться с EGG"}</button>
           <span className="text-xs text-foreground/50">Сферы открывают исходные боковые панели; обзор проекта доступен отдельно</span>
         </div>}
-        {eggBrand && fieldMode && entryWorkspace==="idea" && <EggIdeaWorkspace projectId={params.get("project") || ""}
+        {eggBrand && fieldMode && entryWorkspace==="idea" && <EggIdeaWorkspace key={params.get("project") || ""}
+          projectId={params.get("project") || ""}
           onClose={()=>setEntryWorkspace(null)} onOpenMatter={()=>openBoard("matter")} onOpenField={()=>openBoard("field")}
-          onOpenConcept={()=>openEntry("concept")} onOpenYolk={openYolk}/>}
+          onOpenConcept={()=>openEntry("concept")} onOpenYolk={openYolk}
+          onProjectCreated={(newId)=>{
+            setActiveSphere(null);setSelectedWorkSphere(null);setPanelOpen(false);
+            setFieldWorkspace("field");setEntryWorkspace("idea");
+            navigate(localePath("/egg")+"?project="+encodeURIComponent(newId)+"&start=idea");
+          }}/>}
         {eggBrand && fieldMode && entryWorkspace==="concept" && <EggConceptWorkspace projectId={params.get("project") || ""}
           onClose={()=>setEntryWorkspace(null)} onOpenIdea={()=>openEntry("idea")} onOpenMatter={()=>openBoard("matter")}
           onOpenField={()=>openBoard("field")} onOpenYolk={openYolk}/>}

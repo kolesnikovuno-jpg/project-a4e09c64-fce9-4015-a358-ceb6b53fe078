@@ -84,6 +84,19 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
   return()=>{active=false};
  },[spacePhoto]);
  const cycle=project?currentEggFlowCycle(project):null;
+ // The editor's local draft is not automatically the same snapshot that
+ // started an older server cycle. Do not render old results as a new analysis.
+ const isCurrentIdeaCycle=Boolean(cycle?.ideaHandoff &&
+  cycle.ideaHandoff.intent===intent.trim() &&
+  cycle.ideaHandoff.constraints===constraints.trim().slice(0,1600) &&
+  cycle.ideaHandoff.materialInsight===materialInsight.trim().slice(0,1400) &&
+  cycle.ideaHandoff.materials.length===materials.length &&
+  cycle.ideaHandoff.materials.every((item,i)=>item.id===materials[i]?.id &&
+   item.type===materials[i]?.type && item.text===materials[i]?.text.slice(0,500)) &&
+  (spacePhoto?
+   Boolean(packedPhoto&&cycle.ideaHandoff.spatialContext?.imageData===packedPhoto):
+   !cycle.ideaHandoff.spatialContext));
+ const historicalCycle=Boolean(cycle&&!isCurrentIdeaCycle);
  const handoff=useMemo(():EggIdeaHandoff|null=>{
   if(!intent.trim()||!dnaDraft.trim()||materials.length>20||photoPending||photoError||(spacePhoto&&!packedPhoto))
    return null;
@@ -125,7 +138,25 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
   <div className="mt-3 space-y-3 text-xs leading-relaxed">
    <p className="text-foreground/65">Одна авторская опора → два потока → Желток → одно решение Автора. Черновик ИИ не утверждается автоматически.</p>
    {loading?<p role="status">Читаем состояние EGG…</p>:notice?<p role="alert">{notice} <button type="button" className="underline" onClick={()=>setRefresh(v=>v+1)}>Повторить</button></p>:null}
-   {project&&<>
+   {project&&historicalCycle&&cycle&&<div className="rounded-xl border border-foreground/15 bg-background/80 p-3" data-testid="egg-idea-history-not-current">
+    <p className="text-xs font-medium">История этого проекта · предыдущая итерация</p>
+    <p className="mt-2 text-xs leading-relaxed text-foreground/70">
+     Итерация {cycle.iteration}, уровень {cycle.level}. Её выводы относятся к ранее сохранённой ДНК и
+     <strong> не являются анализом текущего холста «Идея»</strong>.
+     Фото, намерение или отобранные материалы могли измениться после запуска.
+    </p>
+    <p className="mt-2 text-xs text-foreground/65">
+     Для самостоятельной идеи используйте «Создать проект из этой идеи» выше.
+     Исторические результаты остаются доступны только по раскрытию.
+    </p>
+    <details className="mt-3 rounded-lg border border-foreground/15 p-2" data-testid="egg-idea-archived-cycle">
+     <summary className="cursor-pointer text-xs">История · посмотреть прошлый цикл</summary>
+     <div className="mt-3">
+      <EggFlowCyclePanel project={project} revision={revision} authorControls={false}/>
+     </div>
+    </details>
+   </div>}
+   {project&&!historicalCycle&&<>
     <details className="rounded-lg border border-foreground/10 p-3" data-testid="egg-original-seed-details" open={!project.seed.text.trim()}>
      <summary className="cursor-pointer text-xs font-medium">Исходная ДНК проекта · подробности</summary>
      <p className="mt-2 text-foreground/50">Исходное зерно не изменяется при новых итерациях.</p>

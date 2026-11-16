@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { makePreview, type MatterCard } from "./EggMatterDialogue";
 import EggWorkspaceNavigation from "./EggWorkspaceNavigation";
 import EggIterationBridge from "./EggIterationBridge";
+import EggIdeaProjectFork from "./EggIdeaProjectFork";
 
 type Message={role:"user"|"assistant";content:string};
 type FieldItem=MatterCard&{location?:string;sourceUrl?:string};
@@ -11,9 +12,10 @@ type IdeaRecord={intent:string;constraints:string;messages:Message[];savedDraft:
 const readJSON=(key:string):unknown=>{
  try{return JSON.parse(localStorage.getItem(key)??"null");}catch{return null;}
 };
-export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenField,onOpenConcept,onOpenYolk}:{
+export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenField,onOpenConcept,onOpenYolk,onProjectCreated}:{
  projectId:string;onClose:()=>void;onOpenMatter:()=>void;
  onOpenField?:()=>void;onOpenConcept?:()=>void;onOpenYolk?:()=>void;
+ onProjectCreated?:(projectId:string)=>void;
 }){
  const key="egg:idea-workspace:v1:"+projectId;
  const [intent,setIntent]=useState("");
@@ -151,6 +153,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
      <div className="text-xs font-medium">Сохранённый черновик · не утверждён</div>
      <p className="whitespace-pre-wrap text-xs">{savedDraft}</p>
     </div>}
+    {onProjectCreated&&<EggIdeaProjectFork draft={{intent,constraints,savedDraft,spacePhoto,messages,materials,materialInsight}} onCreated={onProjectCreated}/>}
     <div className="min-w-0 rounded-[14px] border border-foreground/15 bg-background/90 p-2 sm:p-3">
      <button type="button" aria-expanded={cycleEntryOpen} onClick={()=>setCycleEntryOpen(v=>!v)}
       className="w-full py-1 text-left text-sm font-medium" data-testid="egg-open-iteration">
