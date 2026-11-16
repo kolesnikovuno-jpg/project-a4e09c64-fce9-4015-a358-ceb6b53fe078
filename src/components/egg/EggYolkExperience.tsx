@@ -220,6 +220,10 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
   const currentText=concept?.text??project?.seed.text??demoConcept;
   const candidateText=concept?.status==="proposed";
   const dna=project?.seed.text??demoSeed;
+  // The current first-level non-utilitarian experiment is NOT a chair.
+  // This only selects an exploratory parametric family; it does not infer form from AI.
+  const exploratoryStudyKind=/кресл|chair|armchair/i.test((project?.seed.text??"")+" "+(project?.flowCycles?.at(-1)?.ideaHandoff?.intent??""))
+    ?"chair" as const:"object" as const;
   const selectedMeta=YOLK_SPHERES.find(s=>s.id===selected)??null;
   const sphereTasks=(project?.tasks??[]).filter(t=>t.sphere===selected);
   const sphereArtifacts=(project?.artifacts??[]).filter(a=>a.sphere===selected);
@@ -271,8 +275,16 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
         <EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
           level={timeline?.level??project?.level??1}
           iteration={timeline?.iteration??project?.iteration??1}
-          projectId={project?.id} visualVersion={timeline?.visual??null} minimalControls/>
+          projectId={project?.id} visualVersion={timeline?.visual??null}
+          studyKind={exploratoryStudyKind}/>
       </section>
+      <div className="pointer-events-none absolute left-1/2 top-5 z-30 w-[min(92vw,620px)] -translate-x-1/2 rounded-xl border border-foreground/15 bg-background/90 px-4 py-3 text-center shadow-sm backdrop-blur-sm" data-testid="yolk-3d-study-notice">
+        <p className="text-xs font-medium">Желток · эскизная 3D-лаборатория</p>
+        <p className="mt-1 text-[11px] leading-relaxed text-foreground/65">
+          Три поворотных геометрических гипотезы. Это тест формообразования, а не результат синтеза ИИ и не утверждённая модель.
+          {project?" Уровень "+(timeline?.level??project.level)+" · итерация "+(timeline?.iteration??project.iteration)+".":" Демонстрационный режим."}
+        </p>
+      </div>
       {id&&!project&&!loading&&<p role="alert" className="pointer-events-none absolute inset-x-5 top-5 text-center text-xs text-foreground/65">{notice||"Проект не загружен; отображается демонстрационный эскиз."}</p>}
       <EggWorkspaceNavigation active="yolk"
         onOpenField={()=>navigate(eggCanvasPath("field"))}
@@ -328,7 +340,8 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
                 <EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
                   level={timeline?.level??project?.level??1}
                   iteration={timeline?.iteration??project?.iteration??1}
-                  projectId={project?.id} visualVersion={timeline?.visual??null} minimalControls/>
+                  projectId={project?.id} visualVersion={timeline?.visual??null}
+          studyKind={exploratoryStudyKind} minimalControls/>
               </div>
               <div className={(view==="egg"?"":"hidden")+" pointer-events-none absolute inset-[7%] rounded-[50%] border border-foreground/10"} aria-hidden="true"/>
               <div className={(view==="egg"?"":"hidden")+" pointer-events-none absolute inset-[18%] rounded-[50%] border border-foreground/[.06]"} aria-hidden="true"/>
