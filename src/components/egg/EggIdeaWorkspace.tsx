@@ -3,6 +3,7 @@ import { ArrowLeft, BrainCircuit, Check, Send, X } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import { makePreview, type MatterCard } from "./EggMatterDialogue";
 import EggWorkspaceNavigation from "./EggWorkspaceNavigation";
+import EggIterationBridge from "./EggIterationBridge";
 
 type Message={role:"user"|"assistant";content:string};
 type FieldItem=MatterCard&{location?:string;sourceUrl?:string};
@@ -24,6 +25,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
  const [materials,setMaterials]=useState<FieldItem[]>([]);
  const [materialInsight,setMaterialInsight]=useState("");
  const [loaded,setLoaded]=useState(false);
+ const [cycleEntryOpen,setCycleEntryOpen]=useState(false);
  const [mobilePane,setMobilePane]=useState<"canvas"|"dialogue">("canvas");
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState("");
@@ -149,6 +151,14 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
      <div className="text-xs font-medium">Сохранённый черновик · не утверждён</div>
      <p className="whitespace-pre-wrap text-xs">{savedDraft}</p>
     </div>}
+    <div className="rounded-xl border border-foreground/15 bg-background/70 p-3">
+     <button type="button" aria-expanded={cycleEntryOpen} onClick={()=>setCycleEntryOpen(v=>!v)}
+      className="w-full py-1 text-left text-sm font-medium" data-testid="egg-open-iteration">
+      {cycleEntryOpen?"Свернуть · ДНК и итерация":"ДНК → первый круг восьми сфер"}
+     </button>
+     {cycleEntryOpen&&<EggIterationBridge projectId={projectId} intent={intent} constraints={constraints}
+      savedDraft={savedDraft} spacePhoto={spacePhoto} materials={materials} materialInsight={materialInsight}/>}
+    </div>
    </div>
   </div>
   <div data-testid="egg-idea-dialogue-pane" className={"min-h-0 min-w-0 w-full flex-1 flex-col px-4 py-3 md:w-1/2 md:px-6 md:py-5 "+(mobilePane==="dialogue"?"flex":"hidden md:flex")}>

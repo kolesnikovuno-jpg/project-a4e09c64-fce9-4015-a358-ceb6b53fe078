@@ -12,6 +12,7 @@ import {buildEggBalanceOverview,registerEggBalanceTension,decideEggBalanceTensio
 import {buildEggEvolutionOverview,recordEggEvolutionAssessment} from "./eggEvolution.js";
 import {buildEggVisualHistory,registerEggVisualVersion} from "./eggVisualHistory.js";
 import {eggLegalSimilaritySchema,type EggLegalSimilarityDraft} from "./eggLegalSimilarity.js";
+import {eggIdeaHandoffSchema} from "./eggIdeaHandoff.js";
 import {eggYolkReviewDraftSchema,contributeEggYolkReview,buildEggYolkReviewBrief,
   type EggYolkReviewDraft} from "./eggYolkSemantic.js";
 import {
@@ -78,7 +79,8 @@ export const eggMutationSchema = z.discriminatedUnion("command", [
   shared.extend({
     command: z.literal("next_iteration"), reason: valueText,
   }).strict(),
-  shared.extend({command:z.literal("start_flow_cycle"),brief:z.string().trim().max(3000).optional()}).strict(),
+  shared.extend({command:z.literal("start_flow_cycle"),brief:z.string().trim().max(3000).optional(),
+    ideaHandoff:eggIdeaHandoffSchema.optional()}).strict(),
   shared.extend({command:z.literal("complete_flow_sphere"),
     sphere,text:valueText,evidence:z.enum(["observation","hypothesis","question"]),
     sourceRefs:z.array(z.string().min(1).max(600)).max(20).optional(),
@@ -171,7 +173,7 @@ export const runEggMutation = (
     throw new Error("Concept DNA is locked during a running flow; the Author intervenes after Yolk synthesis");
   switch (mutation.command) {
     case "start_flow_cycle":
-      return startEggFlowCycle(state,{actor,at,brief:mutation.brief});
+      return startEggFlowCycle(state,{actor,at,brief:mutation.brief,ideaHandoff:mutation.ideaHandoff});
     case "complete_flow_sphere":
       return contributeEggFlowSphere(state,{actor,at,
         sphere:mutation.sphere,text:mutation.text,evidence:mutation.evidence,

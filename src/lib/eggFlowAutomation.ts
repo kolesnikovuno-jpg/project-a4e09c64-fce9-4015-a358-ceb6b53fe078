@@ -55,9 +55,14 @@ export const automatedSphereOutputSchema=z.object({
 export function buildEggAutomationPrompt(project:EggProject,step:EggAutomationStep){
   if(step.kind==="sphere"){
     const brief=buildEggSphereIntelligencePrompt(project,step.sphere);
+    const cycle=currentEggFlowCycle(project);
+    const withSpatialPhoto=Boolean(cycle?.ideaHandoff?.spatialContext)&&
+      (step.sphere==="design"||step.sphere==="testDrive"||step.sphere==="production");
     return {
       instructions:brief.instructions+"\n"+[
-        "AUTOMATED TEXT-ONLY MODE: You have NO browser, registry, file-opening, image/3D inspection or physical testing tools in this request.",
+        withSpatialPhoto
+          ?"AUTOMATED MULTIMODAL MODE: one real photo of the EXISTING ENVIRONMENT is attached, not a design reference. Infer only visible spatial relationships, not measurements."
+          :"AUTOMATED TEXT-ONLY MODE: You have NO visual input, browser, registry, file-opening or physical testing tools in this request.",
         "Do not assert you searched a database, inspected a real image/3D file, checked real suppliers, made strength calculations, or verified facts.",
         "Do not invent sourceRefs or URLs. SourceRefs and legalSimilarity must be OMITTED; for Legal explain the need for an external rights review.",
         "Keep a single evolving recommendation about the existing concept, never generate three alternatives.",
@@ -67,6 +72,7 @@ export function buildEggAutomationPrompt(project:EggProject,step:EggAutomationSt
         "Do not include any additional fields, sourceRefs, legalSimilarity or external searches.",
       ].join("\n"),
       input:brief.input,
+      ...(withSpatialPhoto?{imageData:cycle!.ideaHandoff!.spatialContext!.imageData}:{}),
     };
   }
   if(step.kind==="yolk"){

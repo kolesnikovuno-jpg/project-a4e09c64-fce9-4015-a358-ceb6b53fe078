@@ -92,9 +92,9 @@ export function providerFromEnv(env:NodeJS.ProcessEnv,oidcHeader?:string|string[
   };
   return null;
 }
-async function generate(model:Provider,prompt:{instructions:string;input:string},
+async function generate(model:Provider,prompt:{instructions:string;input:string;imageData?:string},
   maxTokens=2200):Promise<string>{
-  if(Buffer.byteLength(prompt.instructions)+Buffer.byteLength(prompt.input)>60000)
+  if(Buffer.byteLength(prompt.instructions)+Buffer.byteLength(prompt.input)+(prompt.imageData?.length??0)>115000)
     throw Error("ai_context_too_large");
   const controller=new AbortController();
   const timeout=setTimeout(()=>controller.abort(),50000);
@@ -107,7 +107,7 @@ async function generate(model:Provider,prompt:{instructions:string;input:string}
         signal:controller.signal,redirect:"error",
         body:JSON.stringify({
           systemInstruction:{parts:[{text:prompt.instructions}]},
-          contents:[{role:"user",parts:[{text:prompt.input}]}],
+          contents:[{role:"user",parts:[{text:prompt.input},...(prompt.imageData?[{inlineData:{mimeType:"image/jpeg",data:prompt.imageData.slice("data:image/jpeg;base64,".length)}}]:[])]}],
           generationConfig:{responseMimeType:"application/json",maxOutputTokens:maxTokens,...(model.model.startsWith("gemini-3")?{thinkingConfig:{thinkingLevel:"minimal"}}:{})},
         }),
       });
@@ -117,7 +117,9 @@ async function generate(model:Provider,prompt:{instructions:string;input:string}
       signal:controller.signal,
       redirect:"error",
       body:JSON.stringify({
-        model:model.model,instructions:prompt.instructions,input:prompt.input,
+        model:model.model,instructions:prompt.instructions,
+        input:prompt.imageData?[{role:"user",content:[{type:"input_text",text:prompt.input},
+          {type:"input_image",image_url:prompt.imageData}]}]:prompt.input,
         max_output_tokens:maxTokens,store:false,
         text:{format:{type:"json_object"}},
       }),

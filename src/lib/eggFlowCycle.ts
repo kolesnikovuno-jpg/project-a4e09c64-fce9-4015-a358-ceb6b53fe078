@@ -19,6 +19,7 @@ import {
   validateEggLegalSimilarity,getEggLegalScreeningGaps,
 } from "./eggLegalSimilarity.js";
 import type {EggYolkSemanticReview} from "./eggYolkSemantic.js";
+import type {EggIdeaHandoff} from "./eggIdeaHandoff.js";
 
 export const EGG_FLOW_ROUTES={
   first:["marketing","design","testDrive","commerce"],
@@ -74,6 +75,8 @@ export type EggFlowCycle={
   id:string;level:number;iteration:number;startedAt:string;
   source:"idea"; authorBrief:string;
   status:"running"|"awaiting_author"|"accepted"|"revision_requested";
+  /** Snapshot approved by Author at the Idea boundary; never rewrites original seed. */
+  ideaHandoff?:EggIdeaHandoff;
   first:EggSphereVisit[];second:EggSphereVisit[];
   synthesis?:EggYolkSynthesis;
   /** AI's interpretation of a finished synthesis, never an Author decision. */
@@ -113,7 +116,7 @@ const uniqueSpheres=(values:SphereId[])=>{
      values.some(s=>!EGG_FIXED_ROUTE.includes(s)))throw new EggEngineError("Invalid sphere addresses");
   return values;
 };
-function makeCycle(p:EggFlowProject,at:string,authorBrief:string,active:SphereId[]):EggFlowCycle{
+function makeCycle(p:EggFlowProject,at:string,authorBrief:string,active:SphereId[],ideaHandoff?:EggIdeaHandoff):EggFlowCycle{
   const make=(branch:EggFlowBranch):EggSphereVisit[]=>
     EGG_FLOW_ROUTES[branch].map((sphere,position):EggSphereVisit=>({
       sphere,branch,position,mode:active.includes(sphere)?"work":"transit",
@@ -122,6 +125,7 @@ function makeCycle(p:EggFlowProject,at:string,authorBrief:string,active:SphereId
   return {
     id:"cycle-"+p.nextSequence,level:p.level,iteration:p.iteration,
     startedAt:at,source:"idea",authorBrief,
+    ...(ideaHandoff?{ideaHandoff}:{}),
     status:"running",first:make("first"),second:make("second"),
   };
 }
@@ -223,7 +227,7 @@ function moveTransits(p:EggFlowProject,at:string):EggFlowProject{
 }
 /** Author initiates a first/full cycle on the current level. */
 export function startEggFlowCycle(p:EggFlowProject,input:{
-  actor:EggActor;at:string;brief?:string;
+  actor:EggActor;at:string;brief?:string;ideaHandoff?:EggIdeaHandoff;
 }):EggFlowProject{
   assertAuthor(input.actor);date(input.at);
   if(!p.seed.text.trim())throw new EggEngineError("Concept DNA / Author seed is required");
@@ -234,7 +238,7 @@ export function startEggFlowCycle(p:EggFlowProject,input:{
   if((p.flowCycles??[]).length&&current(p).level===5&&current(p).status==="accepted")
     throw new EggEngineError("Final level already accepted");
   const at=input.at,brief=input.brief?.trim()??"";
-  const cycle=makeCycle(p,at,brief,[...EGG_FIXED_ROUTE]);
+  const cycle=makeCycle(p,at,brief,[...EGG_FIXED_ROUTE],input.ideaHandoff);
   let next:EggFlowProject={...p,flowCycles:[...(p.flowCycles??[]),cycle]};
   next=event(next,"cycle_started","author",at,cycle.id+" / full");
   return moveTransits(next,at);
@@ -329,7 +333,8 @@ export function decideEggFlowCycle(p:EggFlowProject,input:{
   if(!Number.isSafeInteger(p.iteration+1))
     throw new EggEngineError("Iteration exceeds safe range");
   next={...next,iteration:p.iteration+1};
-  const revisionCycle=makeCycle(next,at,reason,addressed);
+  // A targeted iteration retains the explicitly approved entry snapshot.
+  const revisionCycle=makeCycle(next,at,reason,addressed,cycle.ideaHandoff);
   next={...next,flowCycles:[...(next.flowCycles??[]),revisionCycle]};
   next=event(next,"cycle_started","author",at,revisionCycle.id+" / addressed: "+addressed.join(","));
   return moveTransits(next,at);

@@ -1,4 +1,5 @@
-import {useRef,useState} from "react";
+import {useEffect,useRef,useState} from "react";
+import type {EggIdeaHandoff} from "../../lib/eggIdeaHandoff";
 import {createClient} from "@supabase/supabase-js";
 import {EGG_FLOW_ROUTES,currentEggFlowCycle,type EggFlowBranch,type EggSphereVisit} from "../../lib/eggFlowCycle";
 import type {EggProject,SphereId} from "../../lib/eggEngine";
@@ -24,9 +25,10 @@ const routeNames:Record<EggFlowBranch,string>={
 };
 
 export default function EggFlowCyclePanel({
-  project,revision,authorControls=false,onSaved,
+  project,revision,authorControls=false,onSaved,initialHandoff,
 }:{
   project:EggProject;revision:number|null;authorControls?:boolean;onSaved?:()=>void;
+  initialHandoff?:EggIdeaHandoff;
 }){
   const cycle=currentEggFlowCycle(project);
   const [outcome,setOutcome]=useState<"accept"|"revise">("revise");
@@ -39,7 +41,8 @@ export default function EggFlowCyclePanel({
   const [aiMessage,setAiMessage]=useState("");
   const [aiProgress,setAiProgress]=useState(0);
   const stopAi=useRef(false);
-  const canStart=authorControls&&revision!==null&&project.seed.text.trim()&&
+  useEffect(()=>()=>{stopAi.current=true;},[]);
+  const canStart=authorControls&&revision!==null&&project.seed.text.trim()&&Boolean(initialHandoff)&&
     (!cycle || cycle.status==="accepted"&&cycle.level<5);
   const canDecide=authorControls&&revision!==null&&cycle?.status==="awaiting_author";
   const cycles=project.flowCycles??[];
@@ -55,7 +58,8 @@ export default function EggFlowCyclePanel({
       const {data}=await client.auth.getSession();
       if(!data.session?.access_token)throw Error("auth");
       const body=command==="start_flow_cycle"?
-        {command,projectId:project.id,expectedRevision:revision}:
+        {command,projectId:project.id,expectedRevision:revision,
+          brief:initialHandoff?.intent.slice(0,3000),ideaHandoff:initialHandoff}:
         {command,projectId:project.id,expectedRevision:revision,outcome,reason:remark.trim(),
           addressedSpheres:outcome==="revise"?targets:[]};
       const response=await fetch("/api/egg",{method:"POST",headers:{
@@ -103,6 +107,7 @@ export default function EggFlowCyclePanel({
           "Content-Type":"application/json",Authorization:"Bearer "+token,
         },body:JSON.stringify({
           command:"start_flow_cycle",projectId:project.id,expectedRevision:currentRevision,
+          brief:initialHandoff?.intent.slice(0,3000),ideaHandoff:initialHandoff,
         })});
         if(!started.ok)throw Error(started.status===409?"revision_conflict":"start_failed");
         const value=await started.json() as {revision:number};
@@ -167,17 +172,17 @@ export default function EggFlowCyclePanel({
       </span>
     </div>
     {!cycle&&<p className="mt-3 text-xs text-foreground/65">
-      Новый потоковый цикл ещё не запускался. Старые записи и документы остаются в памяти проекта.
+      Новый цикл ещё не запускался. Начните в сфере «Идея»: проверьте рабочую ДНК, материалы, фото и утвердите пакет Автором.
     </p>}
     {authorControls&&(canStart||canRunAI||aiBusy)&&<div className="mt-4 space-y-3 rounded-lg border border-foreground/25 p-3 sm:p-4"
       data-testid="egg-ai-flow-controls">
       <h4 className="text-sm font-medium">Первый запуск · восемь сфер → Желток</h4>
-      <p className="text-xs text-foreground/70">Перед запуском проверяется доступ к модели. Решение по результату остаётся за Автором.</p>
+      <p className="text-xs text-foreground/70">Доступ к модели проверяется перед запуском. Версия из «Идеи» фиксируется на весь круг; решение остаётся за Автором.</p>
       {(canStart||canRunAI)&&!aiBusy&&<button type="button"
         disabled={busy} onClick={()=>void runAICycle(Boolean(canStart))}
         className="w-full rounded-lg bg-foreground px-4 py-3 text-sm font-medium text-background disabled:opacity-40 sm:w-auto"
         data-testid="egg-ai-run-cycle">
-        {canStart?"Начать цикл с ИИ":"Продолжить цикл ИИ до Желтка"}
+        {canStart?"Утвердить пакет и запустить цикл":"Продолжить цикл ИИ до Желтка"}
       </button>}
       {aiBusy&&<button type="button" onClick={()=>{stopAi.current=true;setAiMessage("Останавливаем после текущего шага...")}}
         className="rounded-full border border-foreground/35 px-4 py-2 text-xs"
