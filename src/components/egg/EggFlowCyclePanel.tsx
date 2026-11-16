@@ -5,6 +5,7 @@ import {EGG_FLOW_ROUTES,currentEggFlowCycle,type EggFlowBranch,type EggSphereVis
 import type {EggProject,SphereId} from "../../lib/eggEngine";
 import EggYolkPassport from "./EggYolkPassport";
 import EggYolkSemanticPanel from "./EggYolkSemanticPanel";
+import EggCycleSummary from "./EggCycleSummary";
 import EggDynamicBalancePanel from "./EggDynamicBalancePanel";
 import EggEvolutionPanel from "./EggEvolutionPanel";
 import EggVisualHistoryPanel from "./EggVisualHistoryPanel";
@@ -171,18 +172,25 @@ export default function EggFlowCyclePanel({
         {cycle?"Уровень "+cycle.level+"/5 · итерация "+cycle.iteration:"5 уровней · Идея / Материя"}
       </span>
     </div>
+    {cycle&&<EggCycleSummary project={project} cycle={cycle}/>}
     {!cycle&&<p className="mt-3 text-xs text-foreground/65">
       Новый цикл ещё не запускался. Начните в сфере «Идея»: проверьте рабочую ДНК, материалы, фото и утвердите пакет Автором.
     </p>}
     {authorControls&&(canStart||canRunAI||aiBusy)&&<div className="mt-4 space-y-3 rounded-lg border border-foreground/25 p-3 sm:p-4"
       data-testid="egg-ai-flow-controls">
-      <h4 className="text-sm font-medium">Первый запуск · восемь сфер → Желток</h4>
-      <p className="text-xs text-foreground/70">Доступ к модели проверяется перед запуском. Версия из «Идеи» фиксируется на весь круг; решение остаётся за Автором.</p>
+      <h4 className="text-sm font-medium">{canStart?"Запуск первого круга":
+        cycle?.status==="awaiting_author"?"Желток · смысловой разбор":
+        "Продолжить обработку сфер"}</h4>
+      <p className="text-xs text-foreground/70">{canStart?
+        "Доступ к модели проверяется перед запуском. Авторская рабочая ДНК фиксируется на весь круг.":
+        cycle?.status==="awaiting_author"?
+        "Восемь сфер уже завершены. Этот запрос создаст только черновой смысловой анализ Желтка, без повторного запуска сфер и без решения за Автора.":
+        "Продолжится лишь незавершённая часть текущего цикла. Уже записанные результаты сохраняются."}</p>
       {(canStart||canRunAI)&&!aiBusy&&<button type="button"
         disabled={busy} onClick={()=>void runAICycle(Boolean(canStart))}
         className="w-full rounded-lg bg-foreground px-4 py-3 text-sm font-medium text-background disabled:opacity-40 sm:w-auto"
         data-testid="egg-ai-run-cycle">
-        {canStart?"Утвердить пакет и запустить цикл":"Продолжить цикл ИИ до Желтка"}
+        {canStart?"Утвердить пакет и запустить цикл":cycle?.status==="awaiting_author"?"Сопоставить выводы в Желтке":"Продолжить цикл ИИ до Желтка"}
       </button>}
       {aiBusy&&<button type="button" onClick={()=>{stopAi.current=true;setAiMessage("Останавливаем после текущего шага...")}}
         className="rounded-full border border-foreground/35 px-4 py-2 text-xs"
@@ -191,7 +199,7 @@ export default function EggFlowCyclePanel({
         className="text-xs leading-relaxed text-foreground/65">{aiMessage}
         {aiBusy?" · шагов сохранено: "+aiProgress:""}</p>}
     </div>}
-    <details className="mt-4 rounded-lg border border-foreground/10 p-3"><summary className="cursor-pointer text-xs font-medium">Подробности · восемь сфер и состояние Желтка</summary>
+    <details className="mt-4 rounded-lg border border-foreground/10 p-3" data-testid="egg-cycle-technical-details"><summary className="cursor-pointer text-xs font-medium">Журнал и подробности · восемь сфер, все вопросы, история</summary>
     <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-4">
       {(["first","second"] as EggFlowBranch[]).map(branch=><div key={branch}
         className="rounded-lg border border-foreground/10 p-2 sm:p-3">
@@ -320,8 +328,9 @@ export default function EggFlowCyclePanel({
       </button>
       <p className="mt-2 text-[11px] text-foreground/55">В ручном режиме цикл только создаётся; результаты восьми сфер потребуется внести отдельно.</p>
     </details>}
-    {canDecide&&<div className="mt-4 space-y-3 border-t border-foreground/10 pt-4">
-      <h4 className="text-sm font-medium">Решение Автора · после синтеза</h4>
+    {canDecide&&<details className="mt-4 space-y-3 rounded-lg border border-foreground/20 p-3" data-testid="egg-author-decision-panel">
+      <summary className="cursor-pointer text-sm font-medium">Решение Автора · принять уровень или уточнить сферы</summary>
+      <p className="mt-3 text-xs text-foreground/60">Сначала ознакомьтесь с итогом, при необходимости раскройте журнал. Решение сохраняется только после вашего подтверждения.</p>
       <label className="block text-xs">Результат цикла
         <select className="mt-1 block w-full rounded border border-foreground/20 bg-background p-2"
           value={outcome} onChange={e=>setOutcome(e.target.value as "accept"|"revise")}>
@@ -350,7 +359,7 @@ export default function EggFlowCyclePanel({
         data-testid="decide-flow-cycle">
         {busy?"Сохраняем…":outcome==="accept"?"Принять полный цикл":"Запустить адресную итерацию"}
       </button>
-    </div>}
+    </details>}
     {cycles.length>1&&<div className="mt-4 border-t border-foreground/10 pt-3">
       <button type="button" className="text-xs underline underline-offset-4"
         aria-expanded={historyOpen} onClick={()=>setHistoryOpen(v=>!v)}>

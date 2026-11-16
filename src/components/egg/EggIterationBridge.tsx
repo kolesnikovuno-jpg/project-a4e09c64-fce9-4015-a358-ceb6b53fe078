@@ -126,14 +126,15 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
    <p className="text-foreground/65">Одна авторская опора → два потока → Желток → одно решение Автора. Черновик ИИ не утверждается автоматически.</p>
    {loading?<p role="status">Читаем состояние EGG…</p>:notice?<p role="alert">{notice} <button type="button" className="underline" onClick={()=>setRefresh(v=>v+1)}>Повторить</button></p>:null}
    {project&&<>
-    <div className="rounded-lg border border-foreground/10 p-3">
-     <p className="text-foreground/50">Исходная ДНК проекта · неизменная</p>
+    <details className="rounded-lg border border-foreground/10 p-3" data-testid="egg-original-seed-details" open={!project.seed.text.trim()}>
+     <summary className="cursor-pointer text-xs font-medium">Исходная ДНК проекта · подробности</summary>
+     <p className="mt-2 text-foreground/50">Исходное зерно не изменяется при новых итерациях.</p>
      <p className="mt-1 whitespace-pre-wrap">{project.seed.text||"Не задана — сначала требуется утвердить исходное зерно проекта."}</p>
      {!project.seed.text.trim()&&<button type="button" disabled={!dnaDraft.trim()||seeding}
       onClick={()=>void fixOriginalSeed()} data-testid="egg-approve-original-seed"
       className="mt-3 rounded-full border border-foreground/35 px-3 py-2 text-xs disabled:opacity-40">
       {seeding?"Сохраняем…":"Утвердить исходную ДНК (один раз)"}</button>}
-    </div>
+    </details>
     {(!cycle||cycle.status==="accepted")&&<>
      <label className="block text-xs font-medium">Рабочая версия ДНК для текущего круга
       <textarea aria-label="Рабочая ДНК первого круга" value={dnaDraft} onChange={e=>{setDnaDraft(e.target.value);setDnaEdited(true);}}
