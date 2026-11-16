@@ -24,6 +24,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
  const [materials,setMaterials]=useState<FieldItem[]>([]);
  const [materialInsight,setMaterialInsight]=useState("");
  const [loaded,setLoaded]=useState(false);
+ const [mobilePane,setMobilePane]=useState<"canvas"|"dialogue">("canvas");
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState("");
  const bottom=useRef<HTMLDivElement>(null);
@@ -97,23 +98,30 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
   finally{setBusy(false);}
  };
  return <section aria-label="Сфера Идея — мастерская" data-testid="egg-idea-workspace"
-  className="fixed inset-0 z-[90] flex bg-background text-foreground"
+  className="fixed inset-0 z-[90] flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-background text-foreground md:flex-row"
   style={{backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}}>
-  <div className="flex min-w-0 w-1/2 flex-col px-4 py-5 sm:px-8">
+  <div className="shrink-0 border-b border-foreground/10 bg-background/95 px-4 pb-2 pt-[max(.65rem,env(safe-area-inset-top))] md:hidden" data-testid="egg-idea-mobile-tabs">
+  <div className="flex items-center justify-between gap-2"><span className="text-sm font-medium">Идея</span><button type="button" aria-label="Закрыть сферу Идея" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full border border-foreground/15"><X size={17}/></button></div>
+  <div className="mt-1 grid grid-cols-2 gap-2" role="tablist" aria-label="Режим мастерской Идея">
+   <button type="button" role="tab" aria-selected={mobilePane==="canvas"} onClick={()=>setMobilePane("canvas")} className={"min-h-10 rounded-full px-3 text-sm "+(mobilePane==="canvas"?"bg-[#607466] text-white":"bg-foreground/5 text-foreground/75")}>Холст</button>
+   <button type="button" role="tab" aria-selected={mobilePane==="dialogue"} onClick={()=>setMobilePane("dialogue")} className={"min-h-10 rounded-full px-3 text-sm "+(mobilePane==="dialogue"?"bg-[#607466] text-white":"bg-foreground/5 text-foreground/75")}>Диалог с ИИ</button>
+  </div>
+ </div>
+ <div data-testid="egg-idea-canvas-pane" className={"min-h-0 min-w-0 w-full flex-1 flex-col px-4 py-3 md:w-1/2 md:px-8 md:py-5 "+(mobilePane==="canvas"?"flex":"hidden md:flex")}>
    <div className="mb-6 flex items-center justify-between gap-2">
     <h2 className="text-lg font-light">Идея <span className="text-xs opacity-50">· Автор инициирует</span></h2>
     <button type="button" onClick={onOpenMatter} className="flex items-center gap-1 rounded-full bg-background/80 px-3 py-2 text-xs shadow-sm"><ArrowLeft size={14}/> Материальное</button>
    </div>
-   <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pb-5">
+   <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pb-36 md:pb-5">
     <label className="block text-xs text-foreground/60">Намерение Автора
      <textarea aria-label="Намерение Автора" value={intent} maxLength={3000} rows={4} onChange={e=>setIntent(e.target.value)}
       placeholder="Что хочешь инициировать? Например: неутилитарный элемент пространства — отдельная нота…"
-      className="mt-2 w-full resize-y rounded-xl border border-foreground/15 bg-background/80 p-3 text-sm outline-none focus:border-foreground/40"/>
+      className="mt-2 w-full resize-y rounded-xl border border-foreground/15 bg-background/80 p-3 text-base outline-none focus:border-foreground/40 md:text-sm"/>
     </label>
     <label className="block text-xs text-foreground/60">Рамки · необязательно
      <textarea aria-label="Рамки идеи" value={constraints} maxLength={2000} rows={2} onChange={e=>setConstraints(e.target.value)}
       placeholder="Габариты, среда, характер, ограничения — только если определены"
-      className="mt-2 w-full resize-y rounded-xl border border-foreground/15 bg-background/80 p-3 text-sm outline-none focus:border-foreground/40"/>
+      className="mt-2 w-full resize-y rounded-xl border border-foreground/15 bg-background/80 p-3 text-base outline-none focus:border-foreground/40 md:text-sm"/>
     </label>
     <div className="space-y-2 rounded-xl border border-foreground/10 bg-background/40 p-3">
      <label className="block text-xs text-foreground/70">Фото пространства · контекст, не референс формы
@@ -143,12 +151,12 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
     </div>}
    </div>
   </div>
-  <div className="flex min-w-0 w-1/2 flex-col px-3 py-5 sm:px-6">
+  <div data-testid="egg-idea-dialogue-pane" className={"min-h-0 min-w-0 w-full flex-1 flex-col px-4 py-3 md:w-1/2 md:px-6 md:py-5 "+(mobilePane==="dialogue"?"flex":"hidden md:flex")}>
    <div className="mb-3 flex items-center justify-between gap-2">
     <div className="flex items-center gap-2 text-sm"><BrainCircuit size={16}/> Идея · Автор ↔ ИИ</div>
     <button type="button" onClick={onClose} aria-label="Закрыть сферу Идея" className="rounded-full bg-background/70 p-2"><X size={17}/></button>
    </div>
-   <div className="min-h-0 flex-1 space-y-3 overflow-y-auto py-3" aria-live="polite">
+   <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pb-24 pt-3 md:pb-3" aria-live="polite">
     {!messages.length&&<div className="space-y-3 text-sm text-foreground/65">
      <p>Задай намерение слева. ИИ подтянет материалы и последний анализ из «Материального», затем поможет проявить первую версию идеи.</p>
      <button type="button" disabled={!intent.trim()||busy} onClick={()=>void submit("Исследуй моё намерение в контексте поля. Предложи первую образно-смысловую версию идеи, её инварианты и один вопрос мне.")} className="rounded-full bg-[#607466] px-4 py-2 text-xs text-white disabled:opacity-35">Проявить идею</button>
@@ -166,7 +174,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
    <form className="flex shrink-0 gap-2 pb-[max(.5rem,env(safe-area-inset-bottom))]" onSubmit={e=>{e.preventDefault();void submit(draft);}}>
     <textarea aria-label="Уточнение идеи" rows={2} maxLength={3000} value={draft} onChange={e=>setDraft(e.target.value)}
      placeholder={intent.trim()?"Уточни, возрази, предложи образ…":"Сначала задай намерение слева"}
-     className="min-w-0 flex-1 resize-none rounded-xl border border-foreground/15 bg-background/90 p-3 text-sm outline-none"/>
+     className="min-w-0 flex-1 resize-none rounded-xl border border-foreground/15 bg-background/90 p-3 text-base outline-none md:text-sm"/>
     <button type="submit" aria-label="Отправить уточнение идеи" disabled={!draft.trim()||!intent.trim()||busy}
      className="self-end rounded-full bg-[#607466] p-3 text-white disabled:opacity-35"><Send size={17}/></button>
    </form>

@@ -23,6 +23,7 @@ export default function EggConceptWorkspace({projectId,onClose,onOpenIdea,onOpen
  const [description,setDescription]=useState("");
  const [images,setImages]=useState<ConceptImage[]>([]);
  const [loaded,setLoaded]=useState(false);
+ const [mobilePane,setMobilePane]=useState<"canvas"|"description">("canvas");
  const [notice,setNotice]=useState("");
  useEffect(()=>{
   const rawIdea=readJSON("egg:idea-workspace:v1:"+projectId) as IdeaRecord|null;
@@ -64,16 +65,23 @@ export default function EggConceptWorkspace({projectId,onClose,onOpenIdea,onOpen
   }catch{setNotice("Не удалось подготовить изображение. Попробуйте JPG или PNG.");}
  };
  return <section data-testid="egg-concept-workspace" aria-label="Сфера Концепт — рабочий холст"
-  className="fixed inset-0 z-[90] flex flex-col bg-background text-foreground md:flex-row"
+  className="fixed inset-0 z-[90] flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-background text-foreground md:flex-row"
   style={{backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}}>
-  <div className="flex min-h-0 min-w-0 flex-1 flex-col border-b border-foreground/10 px-4 py-5 md:border-b-0 md:border-r md:px-8">
+  <div className="shrink-0 border-b border-foreground/10 bg-background/95 px-4 pb-2 pt-[max(.65rem,env(safe-area-inset-top))] md:hidden" data-testid="egg-concept-mobile-tabs">
+  <div className="flex items-center justify-between gap-2"><span className="text-sm font-medium">Концепт</span><button type="button" aria-label="Закрыть сферу Концепт" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full border border-foreground/15"><X size={17}/></button></div>
+  <div className="mt-1 grid grid-cols-2 gap-2" role="tablist" aria-label="Режим мастерской Концепт">
+   <button type="button" role="tab" aria-selected={mobilePane==="canvas"} onClick={()=>setMobilePane("canvas")} className={"min-h-10 rounded-full px-3 text-sm "+(mobilePane==="canvas"?"bg-[#607466] text-white":"bg-foreground/5 text-foreground/75")}>Холст</button>
+   <button type="button" role="tab" aria-selected={mobilePane==="description"} onClick={()=>setMobilePane("description")} className={"min-h-10 rounded-full px-3 text-sm "+(mobilePane==="description"?"bg-[#607466] text-white":"bg-foreground/5 text-foreground/75")}>Описание</button>
+  </div>
+ </div>
+ <div data-testid="egg-concept-canvas-pane" className={"min-h-0 min-w-0 w-full flex-1 flex-col border-b border-foreground/10 px-4 py-3 md:w-auto md:border-b-0 md:border-r md:px-8 md:py-5 "+(mobilePane==="canvas"?"flex":"hidden md:flex")}>
    <div className="flex shrink-0 items-center justify-between gap-3">
     <h2 className="text-lg font-light">Концепт <span className="text-xs opacity-50">· образ и форма</span></h2>
     <button type="button" onClick={onOpenIdea} className="flex items-center gap-1 rounded-full bg-background/80 px-3 py-2 text-xs shadow-sm">
      <ArrowLeft size={14}/> Идея
     </button>
    </div>
-   <div className="mt-5 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-28">
+   <div className="mt-4 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain pb-36 md:pb-28">
     <div className="rounded-xl border border-foreground/15 bg-background/65 p-4">
      <p className="text-xs text-foreground/55">Опора · черновик из сферы «Идея»</p>
      <p className="mt-2 whitespace-pre-wrap text-sm">{idea.savedDraft||idea.intent||"В сфере «Идея» пока нет сохранённого замысла."}</p>
@@ -102,19 +110,19 @@ export default function EggConceptWorkspace({projectId,onClose,onOpenIdea,onOpen
      </div>}
    </div>
   </div>
-  <div className="flex min-h-0 min-w-0 flex-1 flex-col px-4 py-5 md:max-w-[480px] md:px-6">
+  <div data-testid="egg-concept-description-pane" className={"min-h-0 min-w-0 w-full flex-1 flex-col px-4 py-3 md:w-auto md:max-w-[480px] md:px-6 md:py-5 "+(mobilePane==="description"?"flex":"hidden md:flex")}>
    <div className="flex items-center justify-between gap-3">
     <span className="text-sm">Концепт · рабочая версия</span>
     <button type="button" aria-label="Закрыть сферу Концепт" onClick={onClose}
      className="rounded-full bg-background/70 p-2"><X size={17}/></button>
    </div>
-   <div className="mt-5 min-h-0 flex-1 overflow-y-auto pb-32">
+   <div className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain pb-36 md:pb-32">
     <p className="text-sm leading-relaxed text-foreground/65">Здесь замысел переводится в визуальные и функциональные гипотезы. Это отдельная мастерская, не копия Идеи и пока не автоматическое проектирование.</p>
     <label className="mt-6 block text-xs text-foreground/60">Рабочее описание концепта
      <textarea aria-label="Описание концепта" value={description} rows={8} maxLength={8000}
       onChange={e=>setDescription(e.target.value)}
       placeholder="Характер формы, взаимодействие с пространством, предполагаемая функция, открытые вопросы…"
-      className="mt-2 w-full resize-y rounded-xl border border-foreground/15 bg-background/85 p-3 text-sm outline-none focus:border-foreground/40"/>
+      className="mt-2 w-full resize-y rounded-xl border border-foreground/15 bg-background/85 p-3 text-base outline-none focus:border-foreground/40 md:text-sm"/>
     </label>
     <p className="mt-2 text-[11px] text-foreground/50">Черновик автоматически сохраняется только в этом браузере; не утверждает уровень «Концепт» и не меняет ДНК.</p>
     {notice&&<p role="status" className="mt-3 text-xs text-foreground/70">{notice}</p>}

@@ -49,13 +49,19 @@ export default function EggProjectField({projectId,children,workspace="field",on
  const [zoom,setZoom]=useState(1);
  const [pan,setPan]=useState<Point>({x:0,y:0});
  const [eggScale,setEggScale]=useState(.8);
+ const [eggViewport,setEggViewport]=useState(()=>({
+  width:typeof window==="undefined"?900:window.innerWidth,
+  height:typeof window==="undefined"?700:window.innerHeight,
+ }));
+ // Preserve the 900px scene geometry while fitting the viewport on phones.
+ const eggFit=Math.min(1,Math.max(.3,(eggViewport.width-24)/720),Math.max(.3,(eggViewport.height-130)/650));
  const [sketchEditor,setSketchEditor]=useState<{id:string|null;initialStrokes:SketchStroke[]}|null>(null);
  const [openId,setOpenId]=useState<string|null>(null);
  const [focusedPhotoNoteId,setFocusedPhotoNoteId]=useState<string|null>(null);
  const [notice,setNotice]=useState("");
  const [listening,setListening]=useState(false);
  const [videoUrls,setVideoUrls]=useState<Record<string,string>>({});
- const [matterDialogueOpen,setMatterDialogueOpen]=useState(true);
+ const [matterDialogueOpen,setMatterDialogueOpen]=useState(()=>typeof window!=="undefined"?(window.matchMedia?.("(min-width: 768px)")?.matches??true):true);
  const [matterFocusId,setMatterFocusId]=useState<string|null>(null);
  const gesture=useRef<{kind:"pan"|"item";id?:string;x:number;y:number;startX:number;startY:number;px:number;py:number}|null>(null);
  const pointers=useRef(new Map<number,Point>());
@@ -68,6 +74,15 @@ export default function EggProjectField({projectId,children,workspace="field",on
  const videoInput=useRef<HTMLInputElement>(null);
  const field=useRef<HTMLDivElement>(null);
  const videoKeys=items.filter(item=>item.type==="video"&&item.mediaId).map(item=>item.mediaId).join("|");
+ useEffect(()=>{
+  const update=()=>{
+   const element=field.current;
+   setEggViewport({width:element?.clientWidth||window.innerWidth,height:element?.clientHeight||window.innerHeight});
+  };
+  update();
+  window.addEventListener("resize",update);
+  return()=>window.removeEventListener("resize",update);
+ },[]);
 
  useEffect(()=>{
   setLoadedKey(null);
@@ -86,7 +101,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
  useEffect(()=>()=>{recognition.current?.stop();},[]);
  useEffect(()=>{
   setPan({x:0,y:0});setZoom(1);setOpenId(null);setFocusedPhotoNoteId(null);setTool(null);setSketchEditor(null);
-  setMatterDialogueOpen(true);setMatterFocusId(null);
+  setMatterDialogueOpen(window.matchMedia?.("(min-width: 768px)")?.matches??true);setMatterFocusId(null);
   gesture.current=null;pointers.current.clear();pinch.current=null;
  },[workspace]);
  const visibleItems=items.filter(item=>(item.location??"field")===workspace);
@@ -289,7 +304,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
  return <section className="absolute inset-0 overflow-hidden bg-background" style={{backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}} aria-label={workspace==="matter"?"Холст сферы Материальное":"Поле проекта EGG"} data-workspace={workspace} data-testid="egg-project-field">
   <div ref={field} className={"absolute inset-y-0 left-0 touch-none overflow-hidden "+(workspace==="matter"&&matterDialogueOpen?"right-0 md:right-1/2":"right-0")} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}>
    <div className={"pointer-events-none absolute inset-0 z-10 flex items-center justify-center"+(workspace==="matter"?" hidden":"")}>
-    <div data-egg-anchor className="pointer-events-auto relative shrink-0 [&_[data-testid=unocalc-maturity-readout]]:hidden [&_[data-testid=unocalc-rotation-hint]]:hidden" style={{width:900,height:620,transform:"scale("+eggScale+")",touchAction:"none"}}
+    <div data-egg-anchor className="pointer-events-auto relative shrink-0 [&_[data-testid=unocalc-maturity-readout]]:hidden [&_[data-testid=unocalc-rotation-hint]]:hidden" style={{width:900,height:620,transform:"scale("+(eggScale*eggFit)+")",touchAction:"none"}}
      onPointerDownCapture={eggDown} onPointerMoveCapture={eggMove} onPointerUpCapture={eggUp} onPointerCancelCapture={eggUp}
      onPointerDown={e=>e.stopPropagation()} onPointerMove={e=>e.stopPropagation()} onPointerUp={e=>e.stopPropagation()} onPointerCancel={e=>e.stopPropagation()}
      onWheel={e=>{e.stopPropagation();setEggScale(s=>clamp(s*(e.deltaY>0?.95:1.05),.35,1.8));}}>

@@ -88,11 +88,11 @@ export default function EggRadialMenu({ actions, title = "EGG", side = "left" }:
     }
     event.stopPropagation();
   };
-  const position="fixed bottom-[max(.75rem,env(safe-area-inset-bottom))] "+(side==="right"?"right-[max(.5rem,env(safe-area-inset-right))] ":"left-[max(.5rem,env(safe-area-inset-left))] ")+"h-[min(330px,calc(100vw-1rem))] w-[min(330px,calc(100vw-1rem))]";
+  const position="egg-menu-dial fixed bottom-[max(.5rem,env(safe-area-inset-bottom))] "+(side==="right"?"right-[max(.5rem,env(safe-area-inset-right))] ":"left-[max(.5rem,env(safe-area-inset-left))] ");
   if(!open)return (
     <div className={position+" pointer-events-none z-[75]"} data-testid="egg-menu-fixed-position">
       <button type="button" aria-label="Открыть круговое меню" title="Меню EGG" onClick={()=>setOpen(true)}
-        className="pointer-events-auto absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#63766a]/25 bg-[#607466] text-[#faf8f3] shadow-[0_10px_30px_rgba(57,68,55,.18)] transition-transform hover:scale-105">
+        className="egg-menu-launcher pointer-events-auto absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#63766a]/25 bg-[#607466] text-[#faf8f3] shadow-[0_10px_30px_rgba(57,68,55,.18)] transition-transform hover:scale-105">
         <CircleDot size={26} strokeWidth={1.25}/>
       </button>
     </div>
@@ -119,16 +119,16 @@ export default function EggRadialMenu({ actions, title = "EGG", side = "left" }:
               if(previous?.id===entry.id&&Date.now()-previous.time<400){suppressClick.current=null;return;}
               select(entry);
             }}
-            className={"absolute flex h-[76px] w-[76px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full border bg-[#fffdf8]/95 p-1 text-[#45534a] shadow-sm transition-[left,top,background-color] duration-75 hover:bg-[#eaf0e8] disabled:opacity-35 "+
+            className={"egg-menu-orbit-item absolute flex h-[76px] w-[76px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full border bg-[#fffdf8]/95 p-1 text-[#45534a] shadow-sm transition-[left,top,background-color] duration-75 hover:bg-[#eaf0e8] disabled:opacity-35 "+
               (entry.selected?"border-[#607466]/70 bg-[#ecf0e9]":"border-[#8a978b]/20")}>
             <Icon size={21} strokeWidth={1.5} color={entry.tint}/>
-            <span className="max-w-[69px] text-center text-[10px] leading-[1.05rem]">{entry.label}</span>
+            <span className="egg-menu-orbit-label max-w-[69px] text-center text-[10px] leading-[1.05rem]">{entry.label}</span>
           </button>;
         })}
         <button type="button" data-dial-hub aria-label={path.length?"Назад к разделам":"Закрыть меню"}
           onPointerDown={e=>e.stopPropagation()}
           onClick={()=>{if(path.length)setPath(v=>v.slice(0,-1));else close();}}
-          className="absolute left-1/2 top-1/2 flex h-[100px] w-[100px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full bg-[#607466] text-[#faf8f3] shadow-lg">
+          className="egg-menu-hub absolute left-1/2 top-1/2 flex h-[100px] w-[100px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full bg-[#607466] text-[#faf8f3] shadow-lg">
           {path.length?<ChevronLeft size={25}/>:<Menu size={25} strokeWidth={1.5}/>}
           <span className="max-w-[83px] text-center text-[12px] font-medium leading-tight">{current?.label||title}</span>
         </button>

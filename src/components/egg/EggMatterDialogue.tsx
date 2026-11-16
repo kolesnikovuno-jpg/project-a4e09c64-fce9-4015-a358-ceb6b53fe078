@@ -166,8 +166,8 @@ export default function EggMatterDialogue({
  };
  const firstReview=()=>{setOverviewed(true);void submit("Изучи весь состав холста. Какие мотивы, противоречия и вопросы ты видишь? Отделяй наблюдения от гипотез.");};
  return <aside aria-label="Диалог Материальное" data-testid="egg-matter-dialogue"
-  className="absolute inset-y-0 right-0 z-40 flex w-full flex-col bg-transparent text-foreground md:w-1/2">
-  <div className="flex shrink-0 items-center justify-between gap-2 px-3 py-3">
+  className="absolute inset-y-0 right-0 z-[60] flex w-full flex-col bg-background/95 text-foreground md:z-40 md:w-1/2 md:bg-background/85">
+  <div className="flex shrink-0 items-center justify-between gap-2 px-3 pb-3 pt-[max(1rem,env(safe-area-inset-top))] md:py-3">
    <div className="flex min-w-0 items-center gap-2"><BrainCircuit size={17}/>
     <div className="min-w-0"><h2 className="truncate text-sm font-medium">Материальное</h2>
      <p className="text-[10px] opacity-65">Автор ↔ ИИ · исследование</p></div></div>
@@ -186,7 +186,7 @@ export default function EggMatterDialogue({
    </div>:<p className="mt-1 text-[10px] opacity-60">Фокус: весь холст · наведите на материал или коснитесь его</p>}
    <p className="mt-1 text-[10px] opacity-55">Фокус применяется к следующему запросу. Весь холст остаётся в контексте. Сайты и видео представлены описанием.</p>
   </div>
-  <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-4" aria-live="polite">
+  <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-3 pb-28 pt-4 md:pb-4" aria-live="polite">
    {!messages.length&&<div className="space-y-3">
     <p className="text-sm leading-relaxed">Начнём с общего обзора. Наведите курсор на карточку слева или коснитесь её, чтобы выбрать предмет обсуждения.</p>
     <button type="button" aria-label="Начать исследование" disabled={busy||!cards.length||overviewed}
@@ -203,11 +203,11 @@ export default function EggMatterDialogue({
    {error&&<p role="alert" className="rounded-lg border border-[#b6aa91]/40 bg-[#fff7e9] p-2 text-xs">{error}</p>}
    <div ref={bottom}/>
   </div>
-  <form className="shrink-0 p-3" onSubmit={event=>{event.preventDefault();void submit(draft);}}>
+  <form className="shrink-0 px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3" onSubmit={event=>{event.preventDefault();void submit(draft);}}>
    <textarea aria-label="Сообщение Автору и ИИ" rows={2} maxLength={3000} value={draft}
     onChange={e=>setDraft(e.target.value)}
     placeholder="Наблюдение, вопрос или уточнение…"
-    className="w-full resize-none rounded-xl border border-[#a4afa2]/35 bg-white/90 p-3 text-sm outline-none focus:border-[#607466]"/>
+    className="w-full resize-none rounded-xl border border-[#a4afa2]/35 bg-white/90 p-3 text-base outline-none focus:border-[#607466] md:text-sm"/>
    <div className="mt-2 flex items-center justify-between gap-2">
     <span className="text-[10px] opacity-55">{listening?"Слушаю… · нажмите, чтобы остановить":"Голос → текст · ответ не утверждает решения"}</span>
     <div className="flex items-center gap-2">
