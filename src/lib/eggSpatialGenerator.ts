@@ -96,6 +96,62 @@ export function buildSpatialSketch(stage:SpatialStage,variant:SpatialVariant,ite
   return {stage,variant,iteration:step,paths,quads:quad};
 }
 
+/** Exploratory non-utilitarian spatial gesture. This is a deliberately abstract
+ * parametric study, NOT AI reconstruction of the Author's idea or an approved object.
+ * A / B / C explore three different configurations with normalized units.
+ */
+export function buildAbstractSpatialSketch(stage:SpatialStage,variant:SpatialVariant,iteration=1):SpatialSketch {
+  const step=clamp(Math.floor(Number.isFinite(iteration)?iteration:1),1,99);
+  const paths:SpatialPath[]=[];
+  const quads:SpatialQuad[]=[];
+  const samples=52;
+  const ribbon=(t:number,offset=0):Vec3=>{
+    const angle=t*Math.PI*2;
+    if(variant==="A"){
+      const r=.66+.18*Math.cos(2*angle+offset);
+      return {x:r*Math.cos(angle),y:.82+.64*Math.sin(angle+.2)+offset*.10,
+        z:.52*Math.sin(angle)+.23*Math.sin(2*angle+offset)};
+    }
+    if(variant==="B"){
+      const r=.32+.47*t;
+      return {x:r*Math.cos(angle*1.48+offset),y:.25+1.43*t,
+        z:r*Math.sin(angle*1.48+offset)};
+    }
+    const r=.28+.48*Math.abs(Math.sin(Math.PI*t));
+    return {x:r*Math.cos(angle*.88+offset),y:.36+1.13*Math.sin(Math.PI*t),
+      z:.9*(t-.5)+.20*Math.sin(angle*1.35+offset)};
+  };
+  const main=Array.from({length:samples+1},(_,i)=>ribbon(i/samples));
+  paths.push({id:"primary-gesture",points:main,radius:stage==="gesture"?.012:.034,
+    material:stage==="gesture"?"guide":"frame"});
+  const secondary=Array.from({length:samples+1},(_,i)=>ribbon(i/samples,.38));
+  if(step>=2 || stage!=="gesture"){
+    paths.push({id:"counter-gesture",points:secondary,radius:stage==="gesture"?.008:.018,
+      material:stage==="gesture"?"guide":"frame"});
+  }
+  if(step>=3 || stage!=="gesture"){
+    paths.push({id:"spatial-axis",points:[
+      {x:0,y:.12,z:0},{x:0,y:1.84,z:0},
+    ],radius:.006,material:"guide"});
+  }
+  if(stage!=="gesture"){
+    for(let i=0;i<=samples;i+=8){
+      paths.push({id:"bridge-"+i,points:[main[i],secondary[i]],
+        radius:.008,material:"guide"});
+    }
+  }
+  if(stage==="volume"){
+    // A translucent ribbon is only a volumetric sketch, not a structure.
+    for(let i=0;i<samples;i+=2){
+      quads.push({id:"surface-"+i,corners:[
+        main[i],main[Math.min(i+2,samples)],
+        secondary[Math.min(i+2,samples)],secondary[i],
+      ]});
+    }
+  }
+  return {stage,variant,iteration:step,paths,quads};
+}
+
 type MaterialName = "guide" | "frame" | "fabric";
 type MeshAccum = {points:number[];triangles:number[]};
 function addVertex(mesh:MeshAccum,p:Vec3):number{
