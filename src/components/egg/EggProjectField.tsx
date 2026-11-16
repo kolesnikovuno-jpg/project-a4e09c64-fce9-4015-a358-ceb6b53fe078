@@ -61,7 +61,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
  const [notice,setNotice]=useState("");
  const [listening,setListening]=useState(false);
  const [videoUrls,setVideoUrls]=useState<Record<string,string>>({});
- const [matterDialogueOpen,setMatterDialogueOpen]=useState(()=>typeof window!=="undefined"?(window.matchMedia?.("(min-width: 768px)")?.matches??true):true);
+ const [matterDialogueOpen,setMatterDialogueOpen]=useState(()=>typeof window==="undefined"||window.innerWidth>=768);
  const [matterFocusId,setMatterFocusId]=useState<string|null>(null);
  const gesture=useRef<{kind:"pan"|"item";id?:string;x:number;y:number;startX:number;startY:number;px:number;py:number}|null>(null);
  const pointers=useRef(new Map<number,Point>());
@@ -101,7 +101,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
  useEffect(()=>()=>{recognition.current?.stop();},[]);
  useEffect(()=>{
   setPan({x:0,y:0});setZoom(1);setOpenId(null);setFocusedPhotoNoteId(null);setTool(null);setSketchEditor(null);
-  setMatterDialogueOpen(window.matchMedia?.("(min-width: 768px)")?.matches??true);setMatterFocusId(null);
+  setMatterDialogueOpen(window.innerWidth>=768);setMatterFocusId(null);
   gesture.current=null;pointers.current.clear();pinch.current=null;
  },[workspace]);
  const visibleItems=items.filter(item=>(item.location??"field")===workspace);

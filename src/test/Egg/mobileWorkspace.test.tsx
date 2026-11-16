@@ -33,6 +33,7 @@ describe("EGG mobile layouts",()=>{
   expect(input).toHaveValue("Схема формы");
  });
  it("starts Matter with the canvas visible on a narrow viewport",()=>{
+  vi.stubGlobal("innerWidth",390);
   vi.stubGlobal("matchMedia",vi.fn(()=>({matches:false,addListener:vi.fn(),removeListener:vi.fn()})));
   render(<EggProjectField projectId={project} workspace="matter"><div>Яйцо</div></EggProjectField>);
   expect(screen.queryByTestId("egg-matter-dialogue")).toBeNull();
