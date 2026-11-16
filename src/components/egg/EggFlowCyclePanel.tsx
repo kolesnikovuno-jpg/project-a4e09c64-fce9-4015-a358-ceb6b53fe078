@@ -10,6 +10,7 @@ import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
 import EggDynamicBalancePanel from "./EggDynamicBalancePanel";
 import EggEvolutionPanel from "./EggEvolutionPanel";
 import EggVisualHistoryPanel from "./EggVisualHistoryPanel";
+import EggFormStudyPanel from "./EggFormStudyPanel";
 
 const names:Record<SphereId,string>={
   marketing:"Маркетинг",design:"Дизайн",testDrive:"Тестдрайв",commerce:"Коммерция",
@@ -220,6 +221,7 @@ export default function EggFlowCyclePanel({
       </span>
     </div>
     {cycle&&<EggCycleSummary project={project} cycle={cycle}/>}
+    {cycle?.synthesis&&<EggFormStudyPanel project={project} cycle={cycle} revision={revision} authorControls={authorControls}/>}
     {!cycle&&<p className="mt-3 text-xs text-foreground/65">
       Новый цикл ещё не запускался. Начните в сфере «Идея»: проверьте рабочую ДНК, материалы, фото и утвердите пакет Автором.
     </p>}
