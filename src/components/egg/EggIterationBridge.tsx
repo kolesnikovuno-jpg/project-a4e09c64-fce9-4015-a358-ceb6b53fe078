@@ -30,9 +30,11 @@ export async function prepareEggSpatialPhoto(src:string):Promise<string>{
 }
 
 export default function EggIterationBridge({projectId,intent,constraints,savedDraft,
- spacePhoto,materials,materialInsight}:{
+ spacePhoto,materials,materialInsight,onRestoreApproved}:{
  projectId:string;intent:string;constraints:string;savedDraft:string;
  spacePhoto:string;materials:MatterCard[];materialInsight:string;
+ /** Restore the immutable server snapshot into the editable local workshop only on Author action. */
+ onRestoreApproved?:(handoff:EggIdeaHandoff)=>void;
 }){
  const [project,setProject]=useState<EggProject|null>(null);
  const [revision,setRevision]=useState<number|null>(null);
@@ -96,7 +98,8 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
   (spacePhoto?
    Boolean(packedPhoto&&cycle.ideaHandoff.spatialContext?.imageData===packedPhoto):
    !cycle.ideaHandoff.spatialContext));
- const historicalCycle=Boolean(cycle&&!isCurrentIdeaCycle);
+ const historicalCycle=Boolean(cycle&&!cycle.ideaHandoff);
+ const needsLocalRecovery=Boolean(cycle?.ideaHandoff&&!isCurrentIdeaCycle);
  const handoff=useMemo(():EggIdeaHandoff|null=>{
   if(!intent.trim()||!dnaDraft.trim()||materials.length>20||photoPending||photoError||(spacePhoto&&!packedPhoto))
    return null;
@@ -138,6 +141,15 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
   <div className="mt-3 space-y-3 text-xs leading-relaxed">
    <p className="text-foreground/65">Одна авторская опора → два потока → Желток → одно решение Автора. Черновик ИИ не утверждается автоматически.</p>
    {loading?<p role="status">Читаем состояние EGG…</p>:notice?<p role="alert">{notice} <button type="button" className="underline" onClick={()=>setRefresh(v=>v+1)}>Повторить</button></p>:null}
+   {project&&needsLocalRecovery&&cycle?.ideaHandoff&&<div className="rounded-xl border border-foreground/20 bg-background p-3" data-testid="egg-current-cycle-recovery">
+    <p className="text-xs font-medium">Текущий цикл сохранён на сервере</p>
+    <p className="mt-2 text-xs leading-relaxed text-foreground/70">Локальный холст отличается от утверждённого пакета. Но рабочая ДНК, фото среды и результаты восьми сфер остаются в серверном цикле. Продолжение обработки доступно ниже, без повторного запуска.</p>
+    {onRestoreApproved&&<button type="button" onClick={()=>onRestoreApproved(cycle.ideaHandoff!)} data-testid="egg-restore-approved-handoff"
+     className="mt-3 min-h-10 rounded-full border border-foreground/30 px-4 py-2 text-xs">
+     Восстановить намерение, материалы и фото из цикла
+    </button>}
+    <p className="mt-2 text-[11px] text-foreground/55">Восстановление заменит соответствующие поля локального холста утверждённой версией; сообщения диалога не затрагиваются. Исходная ДНК и результаты сфер не изменяются.</p>
+   </div>}
    {project&&historicalCycle&&cycle&&<div className="rounded-xl border border-foreground/15 bg-background/80 p-3" data-testid="egg-idea-history-not-current">
     <p className="text-xs font-medium">История этого проекта · предыдущая итерация</p>
     <p className="mt-2 text-xs leading-relaxed text-foreground/70">

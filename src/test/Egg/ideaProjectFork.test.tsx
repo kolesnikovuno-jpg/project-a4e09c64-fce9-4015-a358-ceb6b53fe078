@@ -75,6 +75,34 @@ describe("Separate EGG project initiated from Idea",()=>{
   expect(localStorage.getItem("egg:project-field:v1:"+createdId)).toBe("existing");
  });
 });
+describe("Active cycle survives local Safari draft reset",()=>{
+ it("shows current authorized server cycle and offers explicit snapshot recovery rather than archiving it",async()=>{
+  const approved={
+   intent:draft.intent,workingDna:"Рабочая ДНК — утверждённый инвариант",
+   constraints:draft.constraints,materialInsight:draft.materialInsight,
+   materials:[{id:"selected",type:"thought" as const,text:"Реальный выбранный материал",visualStatus:"text" as const}],
+   spatialContext:{role:"spatial_context" as const,caption:"Фото существующего помещения",imageData:draft.spacePhoto}
+  };
+  const current=startEggFlowCycle(createEggProject({
+   id:originalId,title:"Пространственный объект",seed:"Сохранённая исходная ДНК",
+   at:"2026-11-16T10:00:00Z",
+  }),{actor:"author",at:"2026-11-16T10:00:00Z",ideaHandoff:approved});
+  vi.stubGlobal("fetch",vi.fn(async(path:string)=>{
+   if(path==="/api/egg-config")return {ok:true,json:async()=>({supabaseUrl:"https://example.test",publishableKey:"anon"})};
+   if(path.startsWith("/api/egg-project-state?"))return {ok:true,json:async()=>({project:current,revision:2})};
+   throw Error("Unexpected "+path);
+  }));
+  const restore=vi.fn();
+  render(<EggIterationBridge projectId={originalId} intent="" constraints="" savedDraft=""
+   spacePhoto="" materials={[]} materialInsight="" onRestoreApproved={restore}/>);
+  await screen.findByTestId("egg-current-cycle-recovery");
+  expect(screen.queryByTestId("egg-idea-history-not-current")).toBeNull();
+  expect(screen.getByTestId("egg-ai-run-cycle").textContent).toContain("Продолжить цикл ИИ");
+  expect(screen.getByTestId("egg-cycle-progress").textContent).toContain("0/8");
+  fireEvent.click(screen.getByTestId("egg-restore-approved-handoff"));
+  expect(restore).toHaveBeenCalledWith(approved);
+ });
+});
 describe("Old completed cycle cannot be mistaken for the live Idea canvas",()=>{
  it("moves legacy cycle into a collapsed read-only history",async()=>{
   const old=startEggFlowCycle(createEggProject({

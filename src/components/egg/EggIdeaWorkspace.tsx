@@ -5,6 +5,7 @@ import { makePreview, type MatterCard } from "./EggMatterDialogue";
 import EggWorkspaceNavigation from "./EggWorkspaceNavigation";
 import EggIterationBridge from "./EggIterationBridge";
 import EggIdeaProjectFork from "./EggIdeaProjectFork";
+import type {EggIdeaHandoff} from "../../lib/eggIdeaHandoff";
 
 type Message={role:"user"|"assistant";content:string};
 type FieldItem=MatterCard&{location?:string;sourceUrl?:string};
@@ -72,6 +73,27 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
    if(!preview||preview.length>=210000)throw Error("preview_failed");
    setSpacePhoto(preview);
   }catch{setError("Не удалось прочитать фотографию. Попробуйте JPG или PNG.");}
+ };
+ const restoreApproved=(handoff:EggIdeaHandoff)=>{
+  // Copy only the Author-approved snapshot. Conversation history is local-only.
+  // The running cycle remains on the server, and is not started again here.
+  setIntent(handoff.intent);
+  setConstraints(handoff.constraints);
+  setSpacePhoto(handoff.spatialContext?.imageData??"");
+  setMaterialInsight(handoff.materialInsight);
+  const storageKey="egg:project-field:v1:"+projectId;
+  const stored=readJSON(storageKey);
+  const existing=Array.isArray(stored)?stored.filter((m:FieldItem)=>m&&typeof m.id==="string"):[];
+  const byId=new Map<string,FieldItem>(existing.map((m:FieldItem)=>[m.id,m]));
+  const chosen:FieldItem[]=handoff.materials.map(m=>({
+   ...byId.get(m.id),id:m.id,type:m.type,text:m.text,location:"matter",
+  }));
+  // Preserve anything in the outside field; only the selected matter set is restored.
+  const field=existing.filter((m:FieldItem)=>m.location!=="matter"&&!chosen.some(n=>n.id===m.id));
+  try{localStorage.setItem(storageKey,JSON.stringify([...field,...chosen]));}
+  catch{setError("Не удалось сохранить восстановленные материалы в браузере. Серверный цикл остаётся целым.");}
+  setMaterials(chosen);
+  setCycleEntryOpen(true);
  };
  const submit=async(text:string)=>{
   if(!intent.trim()||!text.trim()||busy)return;
@@ -160,7 +182,8 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
       {cycleEntryOpen?"Свернуть · ДНК и итерация":"ДНК → первый круг восьми сфер"}
      </button>
      {cycleEntryOpen&&<EggIterationBridge projectId={projectId} intent={intent} constraints={constraints}
-      savedDraft={savedDraft} spacePhoto={spacePhoto} materials={materials} materialInsight={materialInsight}/>}
+      savedDraft={savedDraft} spacePhoto={spacePhoto} materials={materials} materialInsight={materialInsight}
+      onRestoreApproved={restoreApproved}/>}
     </div>
    </div>
   </div>
