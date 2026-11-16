@@ -44,6 +44,13 @@ export default function EggFlowCyclePanel({
   const [aiProgress,setAiProgress]=useState(0);
   const stopAi=useRef(false);
   useEffect(()=>()=>{stopAi.current=true;},[]);
+  // Each cycle has its own status. A message from cycle N must never appear
+  // below the progress indicator of newly started cycle N+1.
+  useEffect(()=>{
+    setAiMessage("");
+    setAiProgress(0);
+    setStatus("");
+  },[cycle?.id]);
   const canStart=authorControls&&revision!==null&&project.seed.text.trim()&&Boolean(initialHandoff)&&
     (!cycle || cycle.status==="accepted"&&cycle.level<5);
   const canDecide=authorControls&&revision!==null&&cycle?.status==="awaiting_author";

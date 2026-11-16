@@ -2,7 +2,7 @@
 import {afterEach,describe,it,expect,vi} from "vitest";
 import {cleanup,fireEvent,render,screen,waitFor} from "@testing-library/react";
 import {createEggProject} from "../../lib/eggEngine";
-import {startEggFlowCycle,contributeEggFlowSphere} from "../../lib/eggFlowCycle";
+import {startEggFlowCycle,contributeEggFlowSphere,decideEggFlowCycle} from "../../lib/eggFlowCycle";
 import EggFlowCyclePanel from "../../components/egg/EggFlowCyclePanel";
 
 vi.mock("@supabase/supabase-js",()=>({createClient:vi.fn(()=>({
@@ -58,10 +58,21 @@ describe("Resume completed EGG branches without charging Gemini for preflight",(
    })};
    throw Error("Unexpected "+url);
   }));
-  render(<EggFlowCyclePanel project={finished()} revision={10} authorControls/>);
+  const {rerender}=render(<EggFlowCyclePanel project={finished()} revision={10} authorControls/>);
   fireEvent.click(screen.getByTestId("egg-ai-run-cycle"));
   await waitFor(()=>expect(screen.getByTestId("egg-ai-flow-status").textContent).toContain("суточная квота"));
   expect(calls.filter(x=>x.url==="/api/egg-flow-ai")).toHaveLength(1);
   expect(calls.every(x=>x.url!=="/api/egg")).toBe(true);
+  // A newly created addressed revision must not inherit the old AI failure
+  // or the stale "finished Yolk" message.
+  const next=decideEggFlowCycle(finished(),{
+    actor:"author",outcome:"revise",
+    reason:"Не утверждать форму, проверить Дизайн, Тестдрайв и Производство",
+    addressedSpheres:["design","testDrive","production"],at,
+  });
+  rerender(<EggFlowCyclePanel project={next} revision={11} authorControls/>);
+  await waitFor(()=>expect(screen.queryByTestId("egg-ai-flow-status")).toBeNull());
+  expect(screen.getByTestId("egg-cycle-progress").textContent).toContain("2/8");
+  expect(screen.getByTestId("egg-ai-run-cycle").textContent).toContain("Продолжить цикл ИИ");
  });
 });
