@@ -66,7 +66,7 @@ export default function EggYolkViewer({
   const sketch=useMemo(()=>studyKind==="field"&&fieldState?buildEggYolkField(fieldState):studyKind==="object"?buildAbstractSpatialSketch(stage,effectiveVariant,iteration):buildSpatialSketch(stage,effectiveVariant,iteration),[stage,effectiveVariant,iteration,studyKind,fieldState]);
   useEffect(()=>{onSketchChange?.({stage,variant:effectiveVariant,iteration:sketch.iteration});},[stage,effectiveVariant,sketch.iteration,onSketchChange]);
   const projected=useMemo(()=>{
-    const project=(p:Vec3)=>projectPoint(p,yaw,pitch,zoom);
+    const project=(p:Vec3)=>projectPoint(p,yaw,pitch,zoom*(studyKind==="field"?1.28:1));
     const quads=sketch.quads.map(q=>{
       const pts=q.corners.map(project);
       return {id:q.id,pts,depth:pts.reduce((n,p)=>n+p.depth,0)/pts.length};
@@ -76,8 +76,12 @@ export default function EggYolkViewer({
       return {id:p.id,pts,depth:pts.reduce((n,q)=>n+q.depth,0)/pts.length,
         material:p.material, radius:p.radius};
     }).sort((a,b)=>a.depth-b.depth);
-    return {quads,paths};
-  },[sketch,yaw,pitch,zoom]);
+    const particles=("particles" in sketch?sketch.particles:[]).map(p=>({
+      ...project(p.position),
+      id:p.id,size:p.size,opacity:p.opacity,tone:p.tone,
+    })).sort((a,b)=>a.depth-b.depth);
+    return {quads,paths,particles};
+  },[sketch,yaw,pitch,zoom,studyKind]);
 
   useEffect(()=>{setStage(stageFromLevel(level));},[level]);
   useEffect(()=>{setShowSketch(false);},[visualVersion?.id]);
@@ -250,7 +254,7 @@ export default function EggYolkViewer({
           </div>
         </div>
       ) : !fileUrl?<svg viewBox="0 0 600 600" role="img"
-        aria-label={"Поворотный исследовательский эскиз "+(studyKind==="object"?"неутилитарного объекта":"кресла")+": "+label+", вариант "+variant+"; не утверждённая форма"}
+        aria-label={studyKind==="field"?"Облако точек Желтка: поле плотности, локальные сгущения и скрытые контуры; предварительная визуальная гипотеза":"Поворотный исследовательский эскиз "+(studyKind==="object"?"неутилитарного объекта":"кресла")+": "+label+", вариант "+variant+"; не утверждённая форма"}
         className="h-full w-full overflow-visible cursor-grab select-none touch-none active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{overflow:"visible",touchAction:"none"}}
         tabIndex={0} onPointerDown={dragStart} onPointerMove={dragMove} onPointerUp={dragStop}
         onPointerCancel={dragStop} onLostPointerCapture={dragStop} onTouchStart={touchStart} onTouchMove={touchMove} onTouchEnd={touchEnd} onTouchCancel={touchEnd} onWheel={wheel}
@@ -271,11 +275,17 @@ export default function EggYolkViewer({
           <polyline points={pts(path.pts)} fill="none"
             stroke={path.material==="frame"?"#8a7057":"#766b5e"}
             strokeWidth={studyKind==="field"?Math.max(.9,path.radius*240):(path.material==="frame"?Math.max(4,path.radius*260):1.8)}
-            strokeOpacity={studyKind==="field"?(fieldState?.manifestation? .58:.36):(path.material==="frame"?.83:.78)}
+            strokeOpacity={studyKind==="field"?.08+.15*(fieldState?.manifestation??0):(path.material==="frame"?.83:.78)}
             strokeLinejoin="round" strokeLinecap="round"/>
-          {path.material==="frame"&&<polyline points={pts(path.pts)} fill="none"
+          {studyKind!=="field"&&path.material==="frame"&&<polyline points={pts(path.pts)} fill="none"
             stroke="#d7bd98" strokeWidth="1.2" opacity=".45" strokeLinecap="round"/>}
         </g>)}
+        {studyKind==="field"&&projected.particles.map(p=><circle key={p.id}
+          cx={p.x} cy={p.y}
+          r={p.size*Math.max(.72,1+p.depth*.11)}
+          fill={p.tone==="core"?"#766c60":p.tone==="light"?"#c6b59d":"#988a76"}
+          fillOpacity={Math.min(.91,p.opacity*Math.max(.66,1+p.depth*.12))}
+          data-testid={p.id===0?"yolk-density-field":undefined}/>)}
       </svg>:viewerReady?createElement("model-viewer",{
         src:fileUrl,alt:"Локальная 3D-модель "+fileName,
         "camera-controls":true,"touch-action":"pan-y",
