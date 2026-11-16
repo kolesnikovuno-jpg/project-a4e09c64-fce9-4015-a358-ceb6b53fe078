@@ -12,9 +12,13 @@ afterEach(cleanup);
 
 describe("EGG flow state UI",()=>{
   it("exposes both fixed routes and first author launch without requesting eight independent approvals",()=>{
-    render(<EggFlowCyclePanel project={base()} revision={1} authorControls/>);
+    const initialHandoff={
+      intent:"Исследовать кресло",workingDna:"Лёгкость, спокойствие, отдых",
+      constraints:"",materialInsight:"",materials:[],
+    };
+    render(<EggFlowCyclePanel project={base()} revision={1} authorControls initialHandoff={initialHandoff}/>);
     expect(screen.getByTestId("start-flow-cycle")).toBeTruthy();
-    expect(screen.getByTestId("egg-ai-run-cycle").textContent).toContain("Начать цикл с ИИ");
+    expect(screen.getByTestId("egg-ai-run-cycle").textContent).toContain("Утвердить пакет");
     const aiSection=screen.getByTestId("egg-ai-flow-controls");
     const flowGraph=screen.getByTestId("flow-visit-marketing");
     expect(aiSection.compareDocumentPosition(flowGraph) &
@@ -28,6 +32,12 @@ describe("EGG flow state UI",()=>{
       expect(screen.getByTestId("flow-visit-"+sphere)).toBeTruthy();
     }
     expect(screen.queryByTestId("decide-flow-cycle")).toBeNull();
+  });
+  it("prevents launching an unapproved cycle from the Yolk without a reviewed Idea handoff",()=>{
+    render(<EggFlowCyclePanel project={base()} revision={1} authorControls/>);
+    expect(screen.queryByTestId("start-flow-cycle")).toBeNull();
+    expect(screen.queryByTestId("egg-ai-run-cycle")).toBeNull();
+    expect(screen.getByText(/Начните в сфере «Идея»/)).toBeTruthy();
   });
   it("shows no author actions inside Yolk and awaits both flows",()=>{
     let p=startEggFlowCycle(base(),{actor:"author",at});
