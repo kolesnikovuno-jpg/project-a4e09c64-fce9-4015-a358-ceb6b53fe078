@@ -5,6 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft, Dna, History, MessageCircle, FileText, Layers3, Info, X } from "lucide-react";
 import EggYolkViewer from "./EggYolkViewer";
 import {projectCompleteEggCycleToSpatial} from "../../lib/eggCycleSpatialProjection";
+import {visualSeedFromText,type EggYolkFieldState} from "../../lib/eggYolkField";
 import EggWorkspaceNavigation from "./EggWorkspaceNavigation";
 import EggSpherePanel from "./EggSpherePanel";
 import EggDocumentationPanel from "./EggDocumentationPanel";
@@ -213,6 +214,14 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
   const concept=useMemo(()=>conception(project),[project]);
   const productState=useMemo(()=>project?buildEggYolkProductProjection(project):null,[project]);
   const completedSpatial=useMemo(()=>project?projectCompleteEggCycleToSpatial(project):null,[project]);
+  const yolkField=useMemo<EggYolkFieldState>(()=>({
+    // Until a dedicated Author-approved DNA record exists this is explicitly
+    // a provisional visualization of the original idea, not approved DNA.
+    seed:visualSeedFromText(project?.seed.text??demoSeed),
+    manifestation:completedSpatial?.detail?Math.min(.78,.23+completedSpatial.detail*.11):0,
+    variation:completedSpatial?.detail?completedSpatial.detail*.17:0,
+    status:completedSpatial?"manifested_field":"provisional_seed",
+  }),[project?.seed.text,completedSpatial?.synthesisId,completedSpatial?.detail]);
   const cycleOptions=useMemo(()=>project?eggYolkTimeOptions(project):[],[project]);
   const activeCycleKey=selectedCycleKey&&cycleOptions.some(c=>c.key===selectedCycleKey)
     ?selectedCycleKey:cycleOptions.at(-1)?.key??EGG_YOLK_BASELINE;
@@ -275,9 +284,9 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
 
       <section className="relative aspect-square w-[min(96vw,94dvh)] max-w-[1100px]" data-testid="yolk-central-object" aria-label="Пространственный объект">
         {!loading&&<EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
-          level={1} iteration={completedSpatial?.detail??1}
+          level={1} iteration={1}
           projectId={project?.id} visualVersion={null}
-          studyKind="object" projectedVariant={completedSpatial?.variant??"A"}
+          studyKind="field" fieldState={yolkField}
           minimalControls/>}
       </section>
       {id&&!project&&!loading&&<p role="alert" className="pointer-events-none absolute inset-x-5 top-5 text-center text-xs text-foreground/65">{notice||"Проект не загружен; отображается демонстрационный эскиз."}</p>}
