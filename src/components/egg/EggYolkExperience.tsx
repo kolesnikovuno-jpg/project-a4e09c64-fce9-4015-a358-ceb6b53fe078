@@ -4,6 +4,7 @@ import { initialLocale } from "@/i18n/storage";
 import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft, Dna, History, MessageCircle, FileText, Layers3, Info, X } from "lucide-react";
 import EggYolkViewer from "./EggYolkViewer";
+import {projectCompleteEggCycleToSpatial} from "../../lib/eggCycleSpatialProjection";
 import EggWorkspaceNavigation from "./EggWorkspaceNavigation";
 import EggSpherePanel from "./EggSpherePanel";
 import EggDocumentationPanel from "./EggDocumentationPanel";
@@ -211,6 +212,7 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
   },[id,refresh]);
   const concept=useMemo(()=>conception(project),[project]);
   const productState=useMemo(()=>project?buildEggYolkProductProjection(project):null,[project]);
+  const completedSpatial=useMemo(()=>project?projectCompleteEggCycleToSpatial(project):null,[project]);
   const cycleOptions=useMemo(()=>project?eggYolkTimeOptions(project):[],[project]);
   const activeCycleKey=selectedCycleKey&&cycleOptions.some(c=>c.key===selectedCycleKey)
     ?selectedCycleKey:cycleOptions.at(-1)?.key??EGG_YOLK_BASELINE;
@@ -272,10 +274,11 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
     <main className="relative flex h-[100dvh] w-full items-center justify-center overflow-hidden bg-background" data-testid="yolk-experience" aria-label="Желток — объект">
 
       <section className="relative aspect-square w-[min(96vw,94dvh)] max-w-[1100px]" data-testid="yolk-central-object" aria-label="Пространственный объект">
-        <EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
-          level={1} iteration={1}
+        {!loading&&<EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
+          level={1} iteration={completedSpatial?.detail??1}
           projectId={project?.id} visualVersion={null}
-          studyKind="object" minimalControls/>
+          studyKind="object" projectedVariant={completedSpatial?.variant??"A"}
+          minimalControls/>}
       </section>
       {id&&!project&&!loading&&<p role="alert" className="pointer-events-none absolute inset-x-5 top-5 text-center text-xs text-foreground/65">{notice||"Проект не загружен; отображается демонстрационный эскиз."}</p>}
       <EggWorkspaceNavigation active="yolk"
