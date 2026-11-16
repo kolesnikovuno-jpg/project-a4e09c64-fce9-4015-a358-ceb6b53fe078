@@ -32,7 +32,7 @@ type StepError="method_not_allowed"|"cross_origin_forbidden"|"egg_engine_not_con
   "invalid_request"|"body_too_large"|"author_session_required"|"invalid_author_session"|
   "project_not_found"|"revision_conflict"|"unsupported_project_schema"|"cycle_not_ready"|
   "ai_provider_not_configured"|"model_request_failed"|"ai_model_not_authorized"|
-  "ai_budget_exhausted"|"ai_rate_limited"|"model_incomplete"|"invalid_ai_output"|
+  "ai_budget_exhausted"|"ai_rate_limited"|"ai_provider_bad_request"|"model_incomplete"|"invalid_ai_output"|
   "ai_context_too_large"|"provider_timeout"|"database_unavailable"|"invalid_state_transition"|"invalid_ai_sources"|
   "internal_error";
 type EggRateLimitScope="minute"|"daily"|"unknown";
@@ -192,6 +192,43 @@ export function buildEggYolkGeminiResponseSchema(project:EggProject){
   required:["synthesisId","summary","interpretations","limitations"],
  };
 }
+export function eggOpenAiSphereSchema(){
+ const text={type:"string"} as const;
+ const question={type:"object",additionalProperties:false,
+   properties:{domain:text,question:text,basis:text},required:["domain","question","basis"]};
+ return {type:"object",additionalProperties:false,
+  properties:{text,evidence:{type:"string",enum:["hypothesis","question"]},
+   discoveredQuestions:{type:"array",items:question}},
+  required:["text","evidence","discoveredQuestions"]};
+}
+/** Remove unsupported Gemini-specific schema limits for OpenAI strict JSON. */
+export function eggOpenAiYolkSchema(project:EggProject){
+ const source=buildEggYolkGeminiResponseSchema(project);
+ const clean=(v:unknown):unknown=>{
+  if(Array.isArray(v))return v.map(clean);
+  if(!v||typeof v!=="object")return v;
+  return Object.fromEntries(Object.entries(v)
+   .filter(([k])=>k!=="minItems"&&k!=="maxItems")
+   .map(([k,val])=>[k,clean(val)]));
+ };
+ return clean(source);
+}
+/** Only sanitized metadata is logged; provider messages may contain user data. */
+export async function safeEggProvider400Details(response:Response){
+ let body:unknown;
+ try{body=await response.clone().json();}catch{return {kind:"unknown"};}
+ const raw=body&&typeof body==="object"&&"error" in body?
+  (body as {error?:unknown}).error:null;
+ if(!raw||typeof raw!=="object")return {kind:"unknown"};
+ const e=raw as {type?:unknown;code?:unknown;param?:unknown;message?:unknown};
+ const safe=(v:unknown)=>typeof v==="string"&&/^[a-zA-Z0-9_.-]{1,80}$/.test(v)?v:undefined;
+ const msg=typeof e.message==="string"?e.message.slice(0,700):"";
+ const kind=/json_object|json_schema|response_format|text\.format/i.test(msg)?"response_format":
+  /image_url|input_image|invalid_image|image.*(size|format)/i.test(msg)?"image":
+  /model.*(not found|does not exist|not available|unsupported)/i.test(msg)?"model":
+  /max_output_tokens|reasoning|unsupported parameter|unsupported value/i.test(msg)?"parameter":"unknown";
+ return {kind,type:safe(e.type),code:safe(e.code),param:safe(e.param)};
+}
 async function generate(model:Provider,prompt:{instructions:string;input:string;imageData?:string;responseJsonSchema?:unknown},
   maxTokens=2200):Promise<string>{
   if(Buffer.byteLength(prompt.instructions)+Buffer.byteLength(prompt.input)+(prompt.imageData?.length??0)>115000)
@@ -223,7 +260,11 @@ async function generate(model:Provider,prompt:{instructions:string;input:string;
         input:prompt.imageData?[{role:"user",content:[{type:"input_text",text:prompt.input},
           {type:"input_image",image_url:prompt.imageData}]}]:prompt.input,
         max_output_tokens:maxTokens,store:false,
-        text:{format:{type:"json_object"}},
+        ...(model.kind==="direct_openai"&&model.model==="gpt-6-luna"?
+          {reasoning:{effort:"none"}}:{}),
+        text:{format:model.kind==="direct_openai"&&prompt.responseJsonSchema?
+          {type:"json_schema",name:"egg_structured_step",strict:true,schema:prompt.responseJsonSchema}:
+          {type:"json_object"}},
       }),
     });
   }catch(error){
@@ -232,9 +273,23 @@ async function generate(model:Provider,prompt:{instructions:string;input:string;
     throw Error("model_request_failed");
   }finally{clearTimeout(timeout);}
   if(!response.ok){
+    if(response.status===400&&model.kind==="direct_openai"){
+      console.warn("egg_ai_provider_bad_request",{
+        provider:model.kind,model:model.model,status:400,
+        ...await safeEggProvider400Details(response),
+      });
+      throw Error("ai_provider_bad_request");
+    }
     console.warn("egg_ai_provider_http",{provider:model.kind,model:model.model,status:response.status});
     // Do not echo provider errors; they can include private customer context.
-    if(response.status===429)throw new EggProviderLimitError(await parseEggProviderRateLimit(response));
+    if(response.status===400&&provider.kind==="direct_openai"){
+    console.warn("egg_ai_provider_bad_request",{
+      provider:provider.kind,model:provider.model,status:400,
+      ...await safeEggProvider400Details(response),
+    });
+    throw Error("ai_provider_bad_request");
+   }
+   if(response.status===429)throw new EggProviderLimitError(await parseEggProviderRateLimit(response));
     if(response.status===402)throw Error("ai_budget_exhausted");
     if(response.status===401||response.status===403)throw Error("ai_model_not_authorized");
     throw Error("model_request_failed");
@@ -344,6 +399,7 @@ async function matterModelReply(provider:Provider,input:MatterPayload,mode:"matt
     headers:{Authorization:"Bearer "+provider.key,"Content-Type":"application/json"},
     body:JSON.stringify({
      model:provider.model,instructions:mode==="idea"?ideaInstructions:matterInstructions,store:false,max_output_tokens:2400,
+     ...(provider.kind==="direct_openai"&&provider.model==="gpt-6-luna"?{reasoning:{effort:"none"}}:{}),
      input:[{role:"user",content:[{type:"input_text",text:prompt},
       ...images.map(src=>({type:"input_image",image_url:src,detail:"low"}))]}]
     })
@@ -425,6 +481,7 @@ async function matterDialogue(req:Request,res:ServerResponse,mode:"matter"|"idea
    e instanceof EggProviderLimitError?{rateLimitScope:e.rateLimitScope,
     retryAfterSeconds:e.retryAfterSeconds}:undefined);
   if(reason==="ai_model_not_authorized")return fail(res,503,"ai_model_not_authorized");
+  if(reason==="ai_provider_bad_request")return fail(res,502,"ai_provider_bad_request");
   if(reason==="invalid_ai_output")return fail(res,502,"invalid_ai_output");
   if(reason==="model_incomplete")return fail(res,502,"model_incomplete");
   return fail(res,502,"model_request_failed");
@@ -495,6 +552,7 @@ export default async function handler(req:Request,res:ServerResponse){
             retryAfterSeconds:e.retryAfterSeconds}:undefined);
         if(code==="ai_budget_exhausted")return fail(res,402,"ai_budget_exhausted");
         if(code==="ai_model_not_authorized")return fail(res,503,"ai_model_not_authorized");
+        if(code==="ai_provider_bad_request")return fail(res,502,"ai_provider_bad_request");
         if(code==="provider_timeout")return fail(res,502,"provider_timeout");
         if(code==="model_incomplete")return fail(res,502,"model_incomplete");
         return fail(res,502,"model_request_failed");
@@ -520,13 +578,16 @@ export default async function handler(req:Request,res:ServerResponse){
     const prompt=buildEggAutomationPrompt(project,step);
     let raw:string;
     try{raw=await generate(provider,
-      step.kind==="yolk"?{...prompt,responseJsonSchema:buildEggYolkGeminiResponseSchema(project)}:prompt,
+      provider.kind==="direct_openai"?
+        {...prompt,responseJsonSchema:step.kind==="yolk"?
+          eggOpenAiYolkSchema(project):eggOpenAiSphereSchema()}:
+        step.kind==="yolk"?{...prompt,responseJsonSchema:buildEggYolkGeminiResponseSchema(project)}:prompt,
       step.kind==="yolk"?5800:2200);}
     catch(e){
       const code=(e instanceof Error?e.message:"model_request_failed");
       const known=[
         "ai_context_too_large","provider_timeout","ai_rate_limited",
-        "ai_budget_exhausted","ai_model_not_authorized","model_incomplete",
+        "ai_budget_exhausted","ai_model_not_authorized","ai_provider_bad_request","model_incomplete",
       ] as const;
       const failure=known.find(x=>x===code)??"model_request_failed";
       return fail(res,code==="ai_context_too_large"?413:

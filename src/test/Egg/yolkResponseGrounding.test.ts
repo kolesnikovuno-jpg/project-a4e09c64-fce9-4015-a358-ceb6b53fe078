@@ -2,7 +2,7 @@ import {describe,it,expect} from "vitest";
 import {createEggProject} from "../../lib/eggEngine";
 import {startEggFlowCycle,contributeEggFlowSphere} from "../../lib/eggFlowCycle";
 import {contributeEggYolkReview,prepareGroundedEggYolkReview} from "../../lib/eggYolkSemantic";
-import {buildEggYolkGeminiResponseSchema} from "../../../api/egg-flow-ai";
+import {buildEggYolkGeminiResponseSchema,eggOpenAiYolkSchema,eggOpenAiSphereSchema,safeEggProvider400Details} from "../../../api/egg-flow-ai";
 
 const at="2026-11-16T12:00:00.000Z";
 const base=()=>{
@@ -75,5 +75,33 @@ describe("Gemini Yolk JSON schema and grounded import",()=>{
   expect(()=>prepareGroundedEggYolkReview(p.flowCycles!.at(-1)!.synthesis!,{
    ...draft,synthesisId:"synthesis-incorrect",
   })).toThrow("another synthesis");
+ });
+});
+
+describe("OpenAI Responses strict schema + safe 400 diagnostics",()=>{
+ it("emits a strict-compatible sphere schema without fake fact labels",()=>{
+  const s=eggOpenAiSphereSchema();
+  expect(s.additionalProperties).toBe(false);
+  expect(s.properties.evidence.enum).toEqual(["hypothesis","question"]);
+  expect(s.required).toContain("discoveredQuestions");
+  expect(s.properties.discoveredQuestions.items.required).toContain("basis");
+ });
+ it("restricts Yolk to real source IDs without unsupported minItems/maxItems",()=>{
+  const p=base(),schema=eggOpenAiYolkSchema(p) as Record<string,any>;
+  const ids=schema.properties.interpretations.items.properties.sourceResultIds.items.enum as string[];
+  expect(ids).toHaveLength(8);
+  expect(ids).toContain(p.flowCycles!.at(-1)!.synthesis!.first[0].resultId);
+  expect(JSON.stringify(schema)).not.toContain("maxItems");
+  expect(JSON.stringify(schema)).not.toContain("minItems");
+  expect(schema.properties.interpretations.items.required).toContain("sourceResultIds");
+ });
+ it("reports safe type/code/param but never leaks provider message or project text",async()=>{
+  const error=new Response(JSON.stringify({error:{
+    type:"invalid_request_error",code:"unsupported_parameter",param:"text.format",
+    message:"Unsupported text.format for a private client name and project contents",
+  }}),{status:400});
+  const m=await safeEggProvider400Details(error);
+  expect(m).toMatchObject({kind:"response_format",type:"invalid_request_error",code:"unsupported_parameter",param:"text.format"});
+  expect(JSON.stringify(m)).not.toContain("private client");
  });
 });
