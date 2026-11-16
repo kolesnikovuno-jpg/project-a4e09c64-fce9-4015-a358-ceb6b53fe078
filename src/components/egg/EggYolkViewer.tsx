@@ -2,6 +2,7 @@ import { createElement, useEffect, useMemo, useRef, useState, type ChangeEvent, 
 import { Download, RotateCcw, Upload, X } from "lucide-react";
 import { buildSpatialSketch, buildAbstractSpatialSketch, createSpatialGlb, type SpatialStage, type SpatialVariant, type Vec3 } from "../../lib/eggSpatialGenerator";
 import type {EggVisualSnapshot} from "../../lib/eggVisualHistory";
+import {buildEggYolkField,type EggYolkFieldState} from "../../lib/eggYolkField";
 
 type Projection={x:number;y:number;depth:number};
 const STAGES:Array<{id:SpatialStage;label:string}>= [
@@ -27,7 +28,7 @@ function projectPoint(p:Vec3,yaw:number,pitch:number,zoom:number):Projection{
   return {x:300+x*factor,y:315-y*factor,depth};
 }
 export default function EggYolkViewer({
-  onFileChange, onSketchChange, level=1, iteration=1, projectId, visualVersion=null, minimalControls=false, studyKind="chair", projectedVariant=null
+  onFileChange, onSketchChange, level=1, iteration=1, projectId, visualVersion=null, minimalControls=false, studyKind="chair", projectedVariant=null, fieldState=null
 }:{
   onFileChange?:(fileName:string|null)=>void;
   /** Existing Author-linked source; never inferred from parametric local study. */
@@ -37,7 +38,8 @@ export default function EggYolkViewer({
   iteration?:number;
   projectId?:string;
   minimalControls?:boolean;
-  studyKind?:"chair"|"object";
+  studyKind?:"chair"|"object"|"field";
+  fieldState?:EggYolkFieldState|null;
   projectedVariant?:SpatialVariant|null;
 }){
   const [stage,setStage]=useState<SpatialStage>(()=>stageFromLevel(level));
@@ -61,7 +63,7 @@ export default function EggYolkViewer({
   const clampZoom=(value:number)=>Math.max(.5,Math.min(2.5,value));
   const fileRef=useRef<string|null>(null);
   const effectiveVariant=projectedVariant??variant;
-  const sketch=useMemo(()=>studyKind==="object"?buildAbstractSpatialSketch(stage,effectiveVariant,iteration):buildSpatialSketch(stage,effectiveVariant,iteration),[stage,effectiveVariant,iteration,studyKind]);
+  const sketch=useMemo(()=>studyKind==="field"&&fieldState?buildEggYolkField(fieldState):studyKind==="object"?buildAbstractSpatialSketch(stage,effectiveVariant,iteration):buildSpatialSketch(stage,effectiveVariant,iteration),[stage,effectiveVariant,iteration,studyKind,fieldState]);
   useEffect(()=>{onSketchChange?.({stage,variant:effectiveVariant,iteration:sketch.iteration});},[stage,effectiveVariant,sketch.iteration,onSketchChange]);
   const projected=useMemo(()=>{
     const project=(p:Vec3)=>projectPoint(p,yaw,pitch,zoom);
@@ -264,12 +266,12 @@ export default function EggYolkViewer({
           </linearGradient>
         </defs>
         {projected.quads.map(q=><polygon key={q.id} points={pts(q.pts)}
-          fill="url(#egg-generated-fabric)" opacity=".60" stroke="#b8a88e" strokeWidth=".3" strokeOpacity=".6"/>)}
+          fill="url(#egg-generated-fabric)" opacity={studyKind==="field"?.10:.60} stroke="#b8a88e" strokeWidth=".3" strokeOpacity={studyKind==="field"?.23:.6}/>)}
         {projected.paths.map(path=><g key={path.id}>
           <polyline points={pts(path.pts)} fill="none"
             stroke={path.material==="frame"?"#8a7057":"#766b5e"}
-            strokeWidth={path.material==="frame"?Math.max(4,path.radius*260):1.8}
-            strokeOpacity={path.material==="frame"?.83:.78}
+            strokeWidth={studyKind==="field"?Math.max(.9,path.radius*240):(path.material==="frame"?Math.max(4,path.radius*260):1.8)}
+            strokeOpacity={studyKind==="field"?(fieldState?.manifestation? .58:.36):(path.material==="frame"?.83:.78)}
             strokeLinejoin="round" strokeLinecap="round"/>
           {path.material==="frame"&&<polyline points={pts(path.pts)} fill="none"
             stroke="#d7bd98" strokeWidth="1.2" opacity=".45" strokeLinecap="round"/>}
