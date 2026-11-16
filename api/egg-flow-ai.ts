@@ -123,7 +123,15 @@ export function providerFromEnv(env:NodeJS.ProcessEnv,oidcHeader?:string|string[
     if(!key||!model)return null;
     return {url:url.toString(),key,model,kind:"self_hosted"};
   }
-  // Prefer the already configured Gemini key: it is independent of Gateway billing/auth.
+  // Direct OpenAI is explicitly enabled only when the Author provisions a
+  // server-side key. No silent fallback to Gemini if an OpenAI call fails.
+  // In the absence of this key the existing Gemini installation is unchanged.
+  const directKey=env.OPENAI_API_KEY?.trim();
+  if(directKey)return {
+    url:"https://api.openai.com/v1/responses",key:directKey,kind:"direct_openai",
+    model:env.EGG_AUTOMATION_MODEL?.trim()||"gpt-6-luna",
+  };
+  // Keep Gemini as the configured default until an OpenAI key exists.
   const geminiKey=env.GEMINI_API_KEY?.trim();
   if(geminiKey)return {
     url:"https://generativelanguage.googleapis.com/v1beta/models/",
@@ -136,11 +144,6 @@ export function providerFromEnv(env:NodeJS.ProcessEnv,oidcHeader?:string|string[
   if(gatewayKey)return {
     url:"https://ai-gateway.vercel.sh/v1/responses",key:gatewayKey,kind:"gateway",
     model:env.EGG_AUTOMATION_MODEL?.trim()||"openai/gpt-5.4-mini",
-  };
-  const directKey=env.OPENAI_API_KEY?.trim();
-  if(directKey)return {
-    url:"https://api.openai.com/v1/responses",key:directKey,kind:"direct_openai",
-    model:env.EGG_AUTOMATION_MODEL?.trim()||"gpt-5-mini",
   };
   return null;
 }
