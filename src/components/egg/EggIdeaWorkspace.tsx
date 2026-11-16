@@ -6,6 +6,7 @@ import EggWorkspaceNavigation from "./EggWorkspaceNavigation";
 import EggIterationBridge from "./EggIterationBridge";
 import EggIdeaProjectFork from "./EggIdeaProjectFork";
 import type {EggIdeaHandoff} from "../../lib/eggIdeaHandoff";
+import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
 
 type Message={role:"user"|"assistant";content:string};
 type FieldItem=MatterCard&{location?:string;sourceUrl?:string};
@@ -113,11 +114,17 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
     ...(i<12&&(m.type==="image"||m.type==="sketch")?{imageData:await makePreview(m)}:{})
    })));
    const ideaMaterials=spacePhoto?[{id:"space-context-photo",type:"image" as const,text:"Фотография существующего пространства — контекст размещения, НЕ референс формы проектируемого объекта",imageData:spacePhoto},...payloadMaterials]:payloadMaterials;
+   await waitForEggAiRequest({onWaiting:seconds=>setError("Лимит Gemini: запрос начнётся через "+seconds+" с…")});
+   setError("");
    const response=await fetch("/api/egg-flow-ai?op=idea-dialogue",{
     method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},
     body:JSON.stringify({projectId,materials:ideaMaterials,messages:history,intent:intent.slice(0,3000),constraints:constraints.slice(0,2000),materialInsight})
    });
    const data=await response.json() as {ok?:boolean;reply?:string;error?:string};
+   if(response.status===429){
+    postponeEggAiRequests(70_000);
+    throw Error("Gemini ограничил запросы; черновик сохранён, повторите позже.");
+   }
    if(!response.ok||!data.ok||!data.reply)throw Error(data.error==="model_incomplete"?"ИИ не завершил мысль. Попробуйте уточнить запрос.":data.error??"Ошибка ИИ.");
    setMessages(previous=>[...previous,{role:"assistant",content:data.reply!}]);
   }catch(e){setError(e instanceof Error?e.message:"Не удалось получить ответ ИИ.");}

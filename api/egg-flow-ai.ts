@@ -11,6 +11,7 @@ import {createClient} from "@supabase/supabase-js";
 import {getEggStorageConfig} from "../src/server/eggStorageConfig.js";
 import {EGG_MATERIAL_RESONANCE_INSTRUCTIONS,EGG_ENTRY_MANIFESTS} from "../src/lib/eggSphereProtocol.js";
 import type {EggProject} from "../src/lib/eggEngine.js";
+import {parseEggRetryAfter} from "../src/lib/eggAiPacing.js";
 import {eggMutationSchema,runEggMutation} from "../src/lib/eggCommands.js";
 import {
   eggAutomationRequestSchema,nextEggAutomationStep,
@@ -33,8 +34,58 @@ type StepError="method_not_allowed"|"cross_origin_forbidden"|"egg_engine_not_con
   "ai_budget_exhausted"|"ai_rate_limited"|"model_incomplete"|"invalid_ai_output"|
   "ai_context_too_large"|"provider_timeout"|"database_unavailable"|"invalid_state_transition"|
   "internal_error";
-function fail(res:ServerResponse,status:number,error:StepError){
-  send(res,status,{ok:false,error});
+type EggRateLimitScope="minute"|"daily"|"unknown";
+type EggRateLimitDetails={retryAfterSeconds?:number;rateLimitScope:EggRateLimitScope};
+function fail(res:ServerResponse,status:number,error:StepError,meta?:Partial<EggRateLimitDetails>){
+  send(res,status,{ok:false,error,...(meta??{})});
+}
+class EggProviderLimitError extends Error{
+  readonly retryAfterSeconds?:number;
+  readonly rateLimitScope:EggRateLimitScope;
+  constructor(info:EggRateLimitDetails){
+    super("ai_rate_limited");this.name="EggProviderLimitError";
+    this.retryAfterSeconds=info.retryAfterSeconds;
+    this.rateLimitScope=info.rateLimitScope;
+  }
+}
+/** Read only allowlisted quota hints; never surface raw Google errors,
+ * project identifiers, request data, credentials or provider error text.
+ */
+export async function parseEggProviderRateLimit(response:Response):Promise<EggRateLimitDetails>{
+  const headerSeconds=parseEggRetryAfter(response.headers.get("retry-after"));
+  let body:unknown;
+  try{body=await response.clone().json();}catch{return {rateLimitScope:"unknown",
+    ...(headerSeconds?{retryAfterSeconds:headerSeconds}:{})};}
+  const envelope=body&&typeof body==="object"&&"error" in body?
+    (body as {error?:unknown}).error:undefined;
+  const error=envelope&&typeof envelope==="object"?
+    envelope as {details?:unknown;message?:unknown}:undefined;
+  const items=Array.isArray(error?.details)?error.details:[];
+  const quotaHints:string[]=[];
+  let retry=headerSeconds;
+  for(const detail of items){
+    if(!detail||typeof detail!=="object")continue;
+    const data=detail as {violations?:unknown;retryDelay?:unknown;quotaId?:unknown;quotaMetric?:unknown};
+    const violations=Array.isArray(data.violations)?data.violations:[data];
+    for(const violation of violations){
+      if(!violation||typeof violation!=="object")continue;
+      const q=violation as {quotaId?:unknown;quotaMetric?:unknown};
+      for(const value of [q.quotaId,q.quotaMetric])
+        if(typeof value==="string")quotaHints.push(value.slice(0,180));
+    }
+    if(!retry&&typeof data.retryDelay==="string"){
+      const m=/^(\d+(?:\.\d+)?)s$/.exec(data.retryDelay);
+      if(m)retry=Math.min(86400,Math.ceil(Number(m[1])));
+    }
+  }
+  // Google sometimes supplies only a textual quota hint. Inspect locally,
+  // then discard the source text; clients receive only a coarse classification.
+  const signals=quotaHints.join(" ")+(typeof error?.message==="string"?
+    " "+error.message.slice(0,600):"");
+  const rateLimitScope:EggRateLimitScope=/per.?day|daily|requests.?per.?day|rpd/i.test(signals)?
+    "daily":/per.?minute|requests.?per.?minute|tokens.?per.?minute|rpm|tpm/i.test(signals)?
+    "minute":"unknown";
+  return {rateLimitScope,...(retry?{retryAfterSeconds:retry}:{})};
 }
 async function readBody(req:Request):Promise<unknown>{
   const max=2500;
@@ -132,7 +183,7 @@ async function generate(model:Provider,prompt:{instructions:string;input:string;
   if(!response.ok){
     console.warn("egg_ai_provider_http",{provider:model.kind,model:model.model,status:response.status});
     // Do not echo provider errors; they can include private customer context.
-    if(response.status===429)throw Error("ai_rate_limited");
+    if(response.status===429)throw new EggProviderLimitError(await parseEggProviderRateLimit(response));
     if(response.status===402)throw Error("ai_budget_exhausted");
     if(response.status===401||response.status===403)throw Error("ai_model_not_authorized");
     throw Error("model_request_failed");
@@ -248,7 +299,7 @@ async function matterModelReply(provider:Provider,input:MatterPayload,mode:"matt
    });
   }
   if(!response.ok){
-   if(response.status===429)throw Error("ai_rate_limited");
+   if(response.status===429)throw new EggProviderLimitError(await parseEggProviderRateLimit(response));
    if(response.status===401||response.status===403)throw Error("ai_model_not_authorized");
    throw Error("model_request_failed");
   }
@@ -319,7 +370,9 @@ async function matterDialogue(req:Request,res:ServerResponse,mode:"matter"|"idea
    imagesSeen:payload.materials.filter(m=>Boolean(m.imageData)).length});
  }catch(e){
   const reason=e instanceof Error?e.message:"model_request_failed";
-  if(reason==="ai_rate_limited")return fail(res,429,"ai_rate_limited");
+  if(reason==="ai_rate_limited")return fail(res,429,"ai_rate_limited",
+   e instanceof EggProviderLimitError?{rateLimitScope:e.rateLimitScope,
+    retryAfterSeconds:e.retryAfterSeconds}:undefined);
   if(reason==="ai_model_not_authorized")return fail(res,503,"ai_model_not_authorized");
   if(reason==="invalid_ai_output")return fail(res,502,"invalid_ai_output");
   if(reason==="model_incomplete")return fail(res,502,"model_incomplete");
@@ -386,7 +439,9 @@ export default async function handler(req:Request,res:ServerResponse){
         },350);
       }catch(e){
         const code=e instanceof Error?e.message:"model_request_failed";
-        if(code==="ai_rate_limited")return fail(res,429,"ai_rate_limited");
+        if(code==="ai_rate_limited")return fail(res,429,"ai_rate_limited",
+          e instanceof EggProviderLimitError?{rateLimitScope:e.rateLimitScope,
+            retryAfterSeconds:e.retryAfterSeconds}:undefined);
         if(code==="ai_budget_exhausted")return fail(res,402,"ai_budget_exhausted");
         if(code==="ai_model_not_authorized")return fail(res,503,"ai_model_not_authorized");
         if(code==="provider_timeout")return fail(res,502,"provider_timeout");
@@ -424,7 +479,9 @@ export default async function handler(req:Request,res:ServerResponse){
       return fail(res,code==="ai_context_too_large"?413:
         code==="ai_budget_exhausted"?402:
         code==="ai_rate_limited"?429:
-        code==="ai_model_not_authorized"?503:502,failure);
+        code==="ai_model_not_authorized"?503:502,failure,
+        e instanceof EggProviderLimitError?{rateLimitScope:e.rateLimitScope,
+          retryAfterSeconds:e.retryAfterSeconds}:undefined);
     }
     let generated:ReturnType<typeof parseEggAutomationOutput>;
     try{

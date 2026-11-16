@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, BrainCircuit, Mic, MicOff, Send, X } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
+import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
 
 export type MatterCard={
  id:string;type:"thought"|"link"|"image"|"sketch"|"video";text:string;src?:string;
@@ -154,11 +155,17 @@ export default function EggMatterDialogue({
      ...(attachVisual?{imageData:await makePreview(card)}:{})
     };
    }));
+   await waitForEggAiRequest({onWaiting:seconds=>setError("Лимит Gemini: запрос начнётся через "+seconds+" с…")});
+   setError("");
    const response=await fetch("/api/egg-flow-ai?op=matter-dialogue",{
     method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},
     body:JSON.stringify({projectId,materials,messages:previous,focusId:focus?.id})
    });
    const output=await response.json() as {ok?:boolean;reply?:string;error?:string};
+   if(response.status===429){
+    postponeEggAiRequests(70_000);
+    throw Error("Gemini ограничил запросы; материалы и сообщения сохранены. Повторите позднее.");
+   }
    if(!response.ok||!output.ok||!output.reply)throw Error(output.error??"model_request_failed");
    setMessages(v=>[...v,{role:"assistant",content:output.reply!}]);
   }catch(e){setError(errorMessage(e instanceof Error?e.message:"model_request_failed"));}

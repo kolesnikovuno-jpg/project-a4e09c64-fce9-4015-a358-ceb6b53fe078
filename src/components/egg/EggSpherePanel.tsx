@@ -5,6 +5,7 @@ import type {EggProject,SphereId,EggEvidence} from "../../lib/eggEngine";
 import {EGG_FLOW_ROUTES,currentEggFlowCycle,type EggSphereVisit} from "../../lib/eggFlowCycle";
 import {EGG_SPHERE_MANIFESTS} from "../../lib/eggSphereProtocol";
 import {buildEggSphereBrief} from "../../lib/eggSphereIntelligence";
+import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
 import {nextEggAutomationStep} from "../../lib/eggFlowAutomation";
 
 type Mode="auto"|"symbiosis"|"manual";
@@ -78,12 +79,20 @@ export default function EggSpherePanel({sphere,name,summary,status,projectId,gue
   if(!mayRunAuto||!projectId||busy||revision===null)return;
   setBusy(true);setNotice("");
   try{
+   await waitForEggAiRequest({onWaiting:seconds=>setNotice("Ограничение Gemini: запрос через "+seconds+" с…")});
    const response=await fetch("/api/egg-flow-ai",{method:"POST",headers:{
     "Content-Type":"application/json",Authorization:"Bearer "+token,
    },body:JSON.stringify({projectId,expectedRevision:revision,mode:draftOnly?"draft":"step"})});
    const value=await response.json() as {ok?:boolean;error?:string;sphere?:SphereId;
-    draft?:{text:string;evidence:"hypothesis"|"question"};completed?:{sphere?:SphereId}};
-   if(!response.ok||!value.ok)throw Error(value.error??"ai_request_failed");
+    draft?:{text:string;evidence:"hypothesis"|"question"};completed?:{sphere?:SphereId};
+    retryAfterSeconds?:number;rateLimitScope?:"minute"|"daily"|"unknown"};
+   if(!response.ok||!value.ok){
+    if(response.status===429){
+     if(value.rateLimitScope!=="daily")postponeEggAiRequests((value.retryAfterSeconds??70)*1000);
+     throw Error(value.rateLimitScope==="daily"?"ai_daily_limited":"ai_rate_limited");
+    }
+    throw Error(value.error??"ai_request_failed");
+   }
    if(draftOnly){
     if(value.sphere!==sphere||!value.draft?.text)throw Error("Неверный ответ ИИ для выбранной сферы.");
     setDraft(value.draft.text);setEvidence(value.draft.evidence);
@@ -99,7 +108,8 @@ export default function EggSpherePanel({sphere,name,summary,status,projectId,gue
     revision_conflict:"Проект изменился. Обновите состояние.",
     ai_provider_not_configured:"ИИ-провайдер EGG не настроен.",
     ai_budget_exhausted:"Бюджет ИИ исчерпан; результат не записан.",
-    ai_rate_limited:"Достигнут лимит ИИ. Попробуйте позже.",
+    ai_rate_limited:"Gemini ограничил частоту запросов. Сфера сохранена; повторите позднее.",
+    ai_daily_limited:"Gemini сообщил о суточной квоте. Сфера сохранена; проверьте лимиты в AI Studio.",
     ai_model_not_authorized:"Модель ИИ недоступна для этого проекта.",
     provider_timeout:"Модель не ответила в пределах времени.",
     model_incomplete:"Ответ модели не завершён. Результат не записан.",

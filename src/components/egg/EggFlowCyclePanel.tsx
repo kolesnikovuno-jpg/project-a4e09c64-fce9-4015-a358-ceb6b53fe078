@@ -6,6 +6,7 @@ import type {EggProject,SphereId} from "../../lib/eggEngine";
 import EggYolkPassport from "./EggYolkPassport";
 import EggYolkSemanticPanel from "./EggYolkSemanticPanel";
 import EggCycleSummary from "./EggCycleSummary";
+import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
 import EggDynamicBalancePanel from "./EggDynamicBalancePanel";
 import EggEvolutionPanel from "./EggEvolutionPanel";
 import EggVisualHistoryPanel from "./EggVisualHistoryPanel";
@@ -79,6 +80,7 @@ export default function EggFlowCyclePanel({
     stopAi.current=false;setAiBusy(true);setAiProgress(0);
     setAiMessage("Проверяем доступ и готовим запрос...");
     let completed=0;let currentRevision=revision;let didStart=false;
+    let retryHint="";
     try{
       const response=await fetch("/api/egg-config",{cache:"no-store"});
       if(!response.ok)throw Error("config");
@@ -87,22 +89,42 @@ export default function EggFlowCyclePanel({
       const {data}=await client.auth.getSession();
       if(!data.session?.access_token)throw Error("auth");
       const token=data.session.access_token;
-      // A real low-token provider check happens BEFORE starting a cycle.
-      // If auth, model access or budget fails, the project stays unchanged.
-      const preflight=await fetch("/api/egg-flow-ai",{method:"POST",headers:{
-        "Content-Type":"application/json",Authorization:"Bearer "+token,
-      },body:JSON.stringify({projectId:project.id,
-        expectedRevision:currentRevision,mode:"preflight"})});
-      const preflightResult=await preflight.json() as {
-        ok:boolean;error?:string;ready?:boolean;model?:string;projectChanged?:boolean;
-      };
-      if(!preflight.ok||!preflightResult.ok||!preflightResult.ready)
-        throw Error(preflightResult.error??"model_request_failed");
-      if(stopAi.current){
-        setAiMessage("Отменено до начала работы. Проект не изменён.");
-        return;
+      // Preflight is charged and is required ONLY before the very first
+      // cycle. Continuing a saved cycle must not waste a Gemini request.
+      if(startFirst){
+        const ready=await waitForEggAiRequest({
+          shouldStop:()=>stopAi.current,
+          onWaiting:seconds=>setAiMessage("Соблюдаем лимит ИИ · проверка через "+seconds+" с"),
+        });
+        if(!ready){
+          setAiMessage("Проверка отменена. Проект не изменён.");
+          return;
+        }
+        setAiMessage("Проверяем доступ к модели...");
+        const preflight=await fetch("/api/egg-flow-ai",{method:"POST",headers:{
+          "Content-Type":"application/json",Authorization:"Bearer "+token,
+        },body:JSON.stringify({projectId:project.id,
+          expectedRevision:currentRevision,mode:"preflight"})});
+        const result=await preflight.json() as {
+          ok:boolean;error?:string;ready?:boolean;model?:string;
+          retryAfterSeconds?:number;rateLimitScope?:"minute"|"daily"|"unknown";
+        };
+        if(!preflight.ok||!result.ok||!result.ready){
+          if(preflight.status===429){
+            const wait=result.retryAfterSeconds??70;
+            if(result.rateLimitScope!=="daily")postponeEggAiRequests(wait*1000);
+            retryHint=result.rateLimitScope==="daily"?
+              " Обнаружена возможная суточная квота — короткая пауза её не восстановит.":
+              " Проверку можно повторить после восстановления квоты.";
+          }
+          throw Error(result.error??"model_request_failed");
+        }
+        if(stopAi.current){
+          setAiMessage("Отменено до начала работы. Проект не изменён.");
+          return;
+        }
+        setAiMessage("Доступ к модели "+(result.model??"ИИ")+" подтверждён.");
       }
-      setAiMessage("Доступ к модели "+(preflightResult.model??"ИИ")+" подтверждён.");
       if(startFirst){
         const started=await fetch("/api/egg",{method:"POST",headers:{
           "Content-Type":"application/json",Authorization:"Bearer "+token,
@@ -117,15 +139,31 @@ export default function EggFlowCyclePanel({
       }
       for(let i=0;i<9;i++){
         if(stopAi.current)break;
-        setAiMessage("ИИ выполняет шаг "+(i+1)+" из 9 (включая Желток)...");
+        const ready=await waitForEggAiRequest({
+          shouldStop:()=>stopAi.current,
+          onWaiting:seconds=>setAiMessage("Ограничение запросов · следующий шаг через "+seconds+
+            " с. Сохранено шагов: "+completed),
+        });
+        if(!ready)break;
+        setAiMessage("ИИ выполняет следующий шаг (максимум "+(i+1)+" из 9)...");
         const result=await fetch("/api/egg-flow-ai",{method:"POST",headers:{
           "Content-Type":"application/json",Authorization:"Bearer "+token,
         },body:JSON.stringify({projectId:project.id,expectedRevision:currentRevision})});
         const value=await result.json() as {
           ok:boolean;error?:string;revision:number;done?:boolean;
           completed?:{kind:string;sphere?:SphereId};next?:{kind:string};
+          retryAfterSeconds?:number;rateLimitScope?:"minute"|"daily"|"unknown";
         };
-        if(!result.ok||!value.ok)throw Error(value.error??"model_request_failed");
+        if(!result.ok||!value.ok){
+          if(result.status===429){
+            const wait=value.retryAfterSeconds??70;
+            if(value.rateLimitScope!=="daily")postponeEggAiRequests(wait*1000);
+            retryHint=value.rateLimitScope==="daily"?
+              " Вероятно, исчерпана суточная квота Gemini; повторять запросы каждую минуту не нужно.":
+              " При необходимости откройте Google AI Studio и проверьте текущие RPM/RPD.";
+          }
+          throw Error(value.error??"model_request_failed");
+        }
         if(!Number.isSafeInteger(value.revision))throw Error("invalid_response");
         currentRevision=value.revision;
         if(value.completed?.kind==="sphere"||value.completed?.kind==="yolk")completed++;
@@ -144,7 +182,7 @@ export default function EggFlowCyclePanel({
         ai_provider_not_configured:"Нет подключённого сервера ИИ. Настройте Vercel AI Gateway или серверный API-ключ.",
         ai_model_not_authorized:"Нет доступа к модели через провайдера ИИ. Проверьте AI Gateway.",
         ai_budget_exhausted:"Для вызовов модели недостаточно средств или исчерпан бюджет AI Gateway.",
-        ai_rate_limited:"Превышен лимит запросов к ИИ. Продолжите позже.",
+        ai_rate_limited:"Gemini сообщил о лимите запросов (429). Обработка остановлена безопасно.",
         model_request_failed:"Провайдер модели недоступен. Пройденные шаги сохранены.",
         model_incomplete:"Модель не завершила ответ. Шаг не записан; можно повторить.",
         invalid_ai_output:"ИИ вернул несоответствующий схеме ответ. Шаг не записан; можно повторить.",
@@ -153,7 +191,7 @@ export default function EggFlowCyclePanel({
         step_limit:"Лимит шагов достигнут. Обновите состояние и продолжите.",
       };
       setAiMessage((errors[code]??"Не удалось выполнить следующий шаг ИИ ("+code+").")+
-        (completed||didStart?" Уже записанные результаты сохранены.":""));
+        retryHint+(completed||didStart?" Уже записанные результаты сохранены.":""));
     }finally{
       setAiBusy(false);onSaved?.();
     }
