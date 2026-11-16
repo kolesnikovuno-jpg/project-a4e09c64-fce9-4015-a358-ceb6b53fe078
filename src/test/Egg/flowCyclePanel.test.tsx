@@ -55,7 +55,7 @@ describe("EGG flow state UI",()=>{
       p=contributeEggFlowSphere(p,{actor:"ai",sphere,text:"Вывод "+sphere,evidence:"hypothesis",at});
     render(<EggFlowCyclePanel project={p} revision={14} authorControls/>);
     expect(screen.getByTestId("decide-flow-cycle")).toBeTruthy();
-    expect(screen.getByTestId("egg-ai-run-cycle").textContent).toContain("Продолжить цикл ИИ");
+    expect(screen.getByTestId("egg-ai-run-cycle").textContent).toContain("Сопоставить выводы в Желтке");
     expect(screen.getByTestId("yolk-copy-ai-brief")).toBeTruthy();
     expect(screen.queryByTestId("yolk-semantic-draft")).toBeNull();
     expect(screen.getByTestId("yolk-product-passport").textContent).toContain("Новые");
