@@ -39,7 +39,7 @@ export default function EggFormStudyPanel({project,cycle,revision,authorControls
     (async()=>{
       try{
         const token=await bearer();
-        const url="/api/egg-form?projectId="+encodeURIComponent(project.id)+
+        const url="/api/egg-flow-ai?op=form-study&projectId="+encodeURIComponent(project.id)+
           "&synthesisId="+encodeURIComponent(synthesisId);
         const response=await fetch(url,{cache:"no-store",headers:{Authorization:"Bearer "+token}});
         const value=await response.json() as {ok?:boolean;study?:Study|null};
@@ -53,7 +53,7 @@ export default function EggFormStudyPanel({project,cycle,revision,authorControls
     setBusy(true);setNotice("");
     try{
       const token=await bearer();
-      const response=await fetch("/api/egg-form",{method:"POST",headers:{
+      const response=await fetch("/api/egg-flow-ai?op=form-study",{method:"POST",headers:{
         "Content-Type":"application/json",Authorization:"Bearer "+token,
       },body:JSON.stringify({
         projectId:project.id,synthesisId,expectedRevision:revision,
