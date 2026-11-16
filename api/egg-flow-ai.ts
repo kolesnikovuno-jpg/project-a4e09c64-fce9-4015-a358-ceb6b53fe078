@@ -282,13 +282,6 @@ async function generate(model:Provider,prompt:{instructions:string;input:string;
     }
     console.warn("egg_ai_provider_http",{provider:model.kind,model:model.model,status:response.status});
     // Do not echo provider errors; they can include private customer context.
-    if(response.status===400&&provider.kind==="direct_openai"){
-    console.warn("egg_ai_provider_bad_request",{
-      provider:provider.kind,model:provider.model,status:400,
-      ...await safeEggProvider400Details(response),
-    });
-    throw Error("ai_provider_bad_request");
-   }
    if(response.status===429)throw new EggProviderLimitError(await parseEggProviderRateLimit(response));
     if(response.status===402)throw Error("ai_budget_exhausted");
     if(response.status===401||response.status===403)throw Error("ai_model_not_authorized");
@@ -406,6 +399,13 @@ async function matterModelReply(provider:Provider,input:MatterPayload,mode:"matt
    });
   }
   if(!response.ok){
+   if(response.status===400&&provider.kind==="direct_openai"){
+    console.warn("egg_ai_provider_bad_request",{
+      provider:provider.kind,model:provider.model,status:400,
+      ...await safeEggProvider400Details(response),
+    });
+    throw Error("ai_provider_bad_request");
+   }
    if(response.status===429)throw new EggProviderLimitError(await parseEggProviderRateLimit(response));
    if(response.status===401||response.status===403)throw Error("ai_model_not_authorized");
    throw Error("model_request_failed");
