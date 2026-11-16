@@ -127,10 +127,18 @@ export function providerFromEnv(env:NodeJS.ProcessEnv,oidcHeader?:string|string[
   // server-side key. No silent fallback to Gemini if an OpenAI call fails.
   // In the absence of this key the existing Gemini installation is unchanged.
   const directKey=env.OPENAI_API_KEY?.trim();
-  if(directKey)return {
-    url:"https://api.openai.com/v1/responses",key:directKey,kind:"direct_openai",
-    model:env.EGG_AUTOMATION_MODEL?.trim()||"gpt-6-luna",
-  };
+  if(directKey){
+    // A previous Gemini/Gateway setting must not be sent as an OpenAI model ID.
+    // When the provider changes, retain an explicitly chosen native OpenAI ID,
+    // otherwise use the known low-cost default.
+    const requested=env.EGG_AUTOMATION_MODEL?.trim();
+    const directModel=requested && !/^(google\/|openai\/|gemini[-\/])/i.test(requested)
+      ?requested:"gpt-6-luna";
+    return {
+      url:"https://api.openai.com/v1/responses",key:directKey,kind:"direct_openai",
+      model:directModel,
+    };
+  }
   // Keep Gemini as the configured default until an OpenAI key exists.
   const geminiKey=env.GEMINI_API_KEY?.trim();
   if(geminiKey)return {

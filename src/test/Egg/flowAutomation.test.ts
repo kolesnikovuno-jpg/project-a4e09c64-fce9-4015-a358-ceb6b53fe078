@@ -34,6 +34,9 @@ describe("EGG automated execution / author-preserving circulation",()=>{
      AI_GATEWAY_API_KEY:"old-gateway"} as NodeJS.ProcessEnv))
      .toMatchObject({kind:"direct_openai",model:"gpt-6-luna"});
    expect(providerFromEnv({OPENAI_API_KEY:"direct-key",
+     EGG_AUTOMATION_MODEL:"google/gemini-2.5-flash"} as NodeJS.ProcessEnv))
+     .toMatchObject({kind:"direct_openai",model:"gpt-6-luna"});
+   expect(providerFromEnv({OPENAI_API_KEY:"direct-key",
      EGG_AUTOMATION_MODEL:"gpt-6.1-terra"} as NodeJS.ProcessEnv))
      .toMatchObject({kind:"direct_openai",model:"gpt-6.1-terra"});
    expect(providerFromEnv({GEMINI_API_KEY:"gemini-only"} as NodeJS.ProcessEnv))
