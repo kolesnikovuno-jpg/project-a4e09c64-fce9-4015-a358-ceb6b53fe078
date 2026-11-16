@@ -24,7 +24,7 @@ function complete(c:EggFlowCycle):boolean{
 function signature(c:EggFlowCycle):string{
   if(!c.synthesis)return "";
   return [...c.synthesis.first,...c.synthesis.second]
-    .map(i=>[i.sphere,i.text??"",i.resultId??""].join(":")).join("|");
+    .map(i=>[i.sphere,i.status,i.text??""].join(":")).join("|");
 }
 function hash(value:string):number{
   let h=2166136261;
