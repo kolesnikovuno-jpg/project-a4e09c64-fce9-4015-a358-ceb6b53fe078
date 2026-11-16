@@ -58,6 +58,32 @@ export default function EggCycleSummary({project,cycle}:{
     {info.completed}/{info.total} сфер
    </div>
   </header>
+  {cycle.level===1&&<div className="rounded-[10px] border border-foreground/20 bg-foreground/[.025] p-3" data-testid="egg-level-one-output">
+    <h5 className="text-xs font-medium">Выход первого уровня · Идея + ДНК</h5>
+    <p className="mt-1 text-[11px] leading-relaxed text-foreground/60">
+      Это рабочие входные формулировки цикла, а не автоматически созданная или утверждённая ДНК.
+      Итоговая Идея и постоянное зерно ещё должны быть отдельно сформулированы и приняты Автором.
+    </p>
+    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+      <div className="min-w-0 rounded-[9px] border border-foreground/10 bg-background p-3">
+        <p className="text-xs font-medium">Идея · намерение Автора</p>
+        <p className="mt-2 whitespace-pre-wrap break-words text-xs leading-relaxed text-foreground/75">
+          {cycle.ideaHandoff?.intent?.trim()||project.seed.text||"Намерение ещё не передано в цикл"}
+        </p>
+        <p className="mt-2 text-[11px] text-foreground/50">Исходный материал · не итог уровня</p>
+      </div>
+      <div className="min-w-0 rounded-[9px] border border-foreground/10 bg-background p-3">
+        <p className="text-xs font-medium">Кандидат ДНК · рабочая опора</p>
+        <p className="mt-2 whitespace-pre-wrap break-words text-xs leading-relaxed text-foreground/75">
+          {cycle.ideaHandoff?.workingDna?.trim()||"Отдельный кандидат ДНК пока не сформирован; исходное зерно не заменяет его."}
+        </p>
+        <p className="mt-2 text-[11px] text-foreground/50">Не утверждён · не закреплён в Желтке</p>
+      </div>
+    </div>
+    <p className="mt-3 text-[11px] leading-relaxed text-foreground/60">
+      Текущее действие «Принять цикл» ещё не реализует отдельное утверждение постоянной ДНК. До обновления контракта уровня 1 не считать его фиксацией зерна.
+    </p>
+  </div>}
   {info.source==="legacy_cycle"&&<div role="note" data-testid="egg-cycle-legacy-warning"
    className="rounded-[10px] border border-foreground/20 bg-background p-3 text-xs leading-relaxed">
     <strong>Это предыдущая итерация.</strong> Она <strong>не содержит</strong> утверждённого пакета из новой «Идеи».
@@ -68,7 +94,7 @@ export default function EggCycleSummary({project,cycle}:{
     </details>
    </div>}
   <div className="rounded-[10px] border border-foreground/10 p-3" data-testid="egg-cycle-dna">
-   <h5 className="text-xs font-medium">01 · ДНК / опорный замысел</h5>
+   <h5 className="text-xs font-medium">01 · Рабочая опора цикла</h5>
    <p className="mt-2 line-clamp-2 whitespace-pre-wrap break-words text-xs leading-relaxed text-foreground/75">{info.reference}</p>
    <details className="mt-2 text-xs">
     <summary className="cursor-pointer text-foreground/60">Полная версия и источник</summary>
