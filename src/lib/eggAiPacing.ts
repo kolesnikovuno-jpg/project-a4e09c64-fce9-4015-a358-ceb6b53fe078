@@ -17,17 +17,24 @@ type Store={getItem:(key:string)=>string|null;setItem:(key:string,value:string)=
 function storage():Store|null{
  try{return typeof window==="undefined"?null:window.localStorage;}catch{return null;}
 }
+let memoryOnly=false;
 function readNext(store:Store|null){
+ if(!store)return memoryNext;
  try{
-  const raw=store?.getItem(STORAGE_KEY);
-  if(raw===null||raw===undefined)return memoryNext;
+  const raw=store.getItem(STORAGE_KEY);
+  // Browser storage was deliberately reset: do not keep an obsolete wait
+  // reservation. Use memory fallback only when storage itself is unavailable.
+  if(raw===null)return memoryOnly?memoryNext:0;
   const value=Number(raw);
-  return Number.isFinite(value)&&value>=0?Math.max(value,memoryNext):memoryNext;
- }catch{return memoryNext;}
+  return Number.isFinite(value)&&value>=0?Math.max(value,memoryOnly?memoryNext:0):memoryNext;
+ }catch{memoryOnly=true;return memoryNext;}
 }
 function setNext(at:number,store:Store|null){
  memoryNext=at;
- try{store?.setItem(STORAGE_KEY,String(at));}catch{/* Safari private storage */}
+ try{
+  if(store){store.setItem(STORAGE_KEY,String(at));memoryOnly=false;}
+  else memoryOnly=true;
+ }catch{memoryOnly=true;/* Safari private storage */}
 }
 export function getEggAiCooldownMs(now=Date.now()){
  return Math.max(0,readNext(storage())-now);
