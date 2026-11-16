@@ -1,4 +1,4 @@
-import type {EggFlowCycle,EggSynthesisItem} from "../../lib/eggFlowCycle";
+import type {EggFlowCycle} from "../../lib/eggFlowCycle";
 import type {EggProject,SphereId} from "../../lib/eggEngine";
 
 const names:Record<SphereId,string>={
@@ -42,83 +42,92 @@ export default function EggCycleSummary({project,cycle}:{
  project:EggProject;cycle:EggFlowCycle;
 }){
  const info=readEggCycleSummary(project,cycle);
- return <section className="mt-4 space-y-3 rounded-xl border border-foreground/15 bg-foreground/[.025] p-3 sm:p-4"
+ const note=cycle.status==="awaiting_author"
+  ?"Результаты готовы. Можно запросить смысловой разбор Желтка, затем принять уровень либо назначить уточнения."
+  :cycle.status==="running"?"Продолжается обработка двух ветвей; решение пока недоступно."
+  :"Решение этой итерации записано в историю.";
+ return <section className="mt-3 min-w-0 space-y-3 rounded-[14px] border border-foreground/15 bg-background/85 p-3 sm:p-4"
    aria-label="Краткий итог итерации" data-testid="egg-cycle-summary">
   <header className="flex flex-wrap items-start justify-between gap-2">
-   <div>
-    <p className="text-[10px] uppercase tracking-[.12em] text-foreground/50">Текущая запись · уровень {cycle.level} · итерация {cycle.iteration}</p>
+   <div className="min-w-0 flex-1">
+    <p className="text-[10px] tracking-[.06em] text-foreground/55">УРОВЕНЬ {cycle.level} · ИТЕРАЦИЯ {cycle.iteration} · {info.started}</p>
     <h4 className="mt-1 text-base font-medium">Итог цикла</h4>
-    <p className="mt-1 text-[11px] text-foreground/55">Начало: {info.started} · {info.endState}</p>
+    <p className="mt-1 text-xs text-foreground/65">{info.endState}</p>
    </div>
-   <div className="rounded-full border border-foreground/20 px-3 py-1 text-xs" data-testid="egg-cycle-progress">
+   <div className="shrink-0 rounded-full border border-foreground/20 px-3 py-1 text-xs" data-testid="egg-cycle-progress">
     {info.completed}/{info.total} сфер
    </div>
   </header>
   {info.source==="legacy_cycle"&&<div role="note" data-testid="egg-cycle-legacy-warning"
-   className="rounded-lg border border-foreground/20 bg-background/75 p-3 text-xs leading-relaxed">
-    Это ранее созданный цикл. Он <strong>не содержит</strong> утверждённого пакета новой мастерской «Идея».
-    Новые фотографии, карточки и рабочая ДНК из локального холста не участвовали в его обработке.
-    Для другой идеи нужен отдельный проект либо отдельное авторское решение о продолжении этого.
-   </div>}
-  <div className="grid gap-3 sm:grid-cols-2">
-   <div className="rounded-lg border border-foreground/10 bg-background/60 p-3">
-    <h5 className="text-xs font-medium">01 · ДНК / опорный замысел</h5>
-    <p className="mt-2 line-clamp-3 whitespace-pre-wrap text-xs text-foreground/75">{info.reference}</p>
-    <details className="mt-2 text-xs">
-     <summary className="cursor-pointer text-foreground/55">Полная версия и источник</summary>
-     <p className="mt-2 whitespace-pre-wrap">{info.reference}</p>
-     <p className="mt-2 text-foreground/55">{info.source==="author_handoff"?
-      "Рабочая версия утверждена Автором для этого цикла. Исходное зерно проекта отдельно сохранено.":
-      "Использовано исходное зерно проекта. Новая рабочая версия «Идеи» отсутствует."}</p>
+   className="rounded-[10px] border border-foreground/20 bg-background p-3 text-xs leading-relaxed">
+    <strong>Это предыдущая итерация.</strong> Она <strong>не содержит</strong> утверждённого пакета из новой «Идеи».
+    Фото помещения и новые материалы в этот цикл не вошли.
+    <details className="mt-2">
+     <summary className="cursor-pointer text-foreground/65">Почему это важно</summary>
+     <p className="mt-2">Чтобы развивать другую идею, потребуется новый проект либо отдельное решение Автора о продолжении текущего. Запись не следует считать анализом нового замысла.</p>
     </details>
+   </div>}
+  <div className="rounded-[10px] border border-foreground/10 p-3" data-testid="egg-cycle-dna">
+   <h5 className="text-xs font-medium">01 · ДНК / опорный замысел</h5>
+   <p className="mt-2 line-clamp-2 whitespace-pre-wrap break-words text-xs leading-relaxed text-foreground/75">{info.reference}</p>
+   <details className="mt-2 text-xs">
+    <summary className="cursor-pointer text-foreground/60">Полная версия и источник</summary>
+    <p className="mt-2 whitespace-pre-wrap break-words leading-relaxed">{info.reference}</p>
+    <p className="mt-2 text-foreground/60">{info.source==="author_handoff"
+     ?"Рабочая версия утверждена Автором для этого цикла. Исходное зерно отдельно сохранено."
+     :"Использовано исходное зерно проекта. Новая рабочая версия «Идеи» отсутствует."}</p>
+   </details>
+  </div>
+  <div className="rounded-[10px] border border-foreground/10 p-3" data-testid="egg-cycle-review-status">
+   <h5 className="text-xs font-medium">02 · Сопоставление потоков</h5>
+   {info.review?<><p className="mt-2 line-clamp-3 break-words text-xs leading-relaxed">{info.review.summary}</p>
+    <p className="mt-1 text-[11px] text-foreground/60">Черновик ИИ · требует проверки и решения Автора.</p></>:
+    <p className="mt-2 text-xs leading-relaxed text-foreground/70">{info.hasSynthesis
+     ?"Оба потока собраны, но смысловой анализ совпадений и противоречий ещё не зарегистрирован."
+     :"Ожидаем завершения обоих потоков; синтез ещё не создан."}</p>}
+  </div>
+  <div className="grid grid-cols-2 gap-2" data-testid="egg-cycle-metrics">
+   <div className="rounded-[10px] border border-foreground/10 px-3 py-2">
+    <p className="text-lg tabular-nums">{info.questionsCount}</p>
+    <p className="text-[11px] leading-snug text-foreground/60">открытых вопросов</p>
    </div>
-   <div className="rounded-lg border border-foreground/10 bg-background/60 p-3" data-testid="egg-cycle-review-status">
-    <h5 className="text-xs font-medium">02 · Сопоставление двух потоков</h5>
-    {info.review?<><p className="mt-2 line-clamp-4 whitespace-pre-wrap text-xs">{info.review.summary}</p>
-     <p className="mt-2 text-[11px] text-foreground/55">Интерпретация ИИ. Не проверена и не утверждена Автором.</p></>:
-     <><p className="mt-2 text-xs text-foreground/75">{info.hasSynthesis?
-      "Оба потока собраны структурно, но смысловой анализ совпадений и противоречий ещё не зарегистрирован.":
-      "Ожидаем завершения обоих потоков; синтез ещё не создан."}</p>
-      <p className="mt-2 text-[11px] text-foreground/55">Не называем выводы сфер доказанными фактами.</p></>}
+   <div className="rounded-[10px] border border-foreground/10 px-3 py-2">
+    <p className="text-lg tabular-nums">{info.tensions.length}</p>
+    <p className="text-[11px] leading-snug text-foreground/60">гипотез напряжения в разборе Желтка</p>
    </div>
   </div>
-  <div className="rounded-lg border border-foreground/10 bg-background/60 p-3"
-   data-testid="egg-cycle-tensions">
-   <h5 className="text-xs font-medium">03 · Возможные напряжения и пробелы</h5>
-   {info.tensions.length?
-    <div className="mt-2 space-y-2">{info.tensions.slice(0,2).map(t=>
-     <div key={t.id}><p className="text-xs font-medium">{t.title}</p>
-      <p className="mt-1 text-xs text-foreground/70">{t.explanation}</p>
-      <p className="mt-1 text-[11px] text-foreground/50">Гипотеза ИИ, не подтверждена · источники {t.sourceResultIds.join(", ")}</p>
-     </div>)}</div>:
-    info.gaps.length?
-     <><p className="mt-2 text-[11px] text-foreground/55">Смысловые противоречия ещё не проверены. Зарегистрированы структурные пробелы:</p>
-      <ul className="mt-2 space-y-1 text-xs text-foreground/70">
-       {info.gaps.slice(0,2).map((gap,i)=><li key={i}>— {gap}</li>)}
-      </ul></>:
-     <p className="mt-2 text-xs text-foreground/65">Подтверждённых противоречий нет; текущих данных недостаточно для вывода.</p>}
-  </div>
-  <div className="rounded-lg border border-foreground/10 bg-background/60 p-3"
-   data-testid="egg-cycle-open-questions">
-   <div className="flex flex-wrap items-baseline justify-between gap-2">
-    <h5 className="text-xs font-medium">04 · Что требует проверки</h5>
-    <p className="text-[11px] text-foreground/55">{info.questionsCount} открытых вопросов</p>
+  <details className="rounded-[10px] border border-foreground/15 px-3 py-3" data-testid="egg-cycle-analysis-details">
+   <summary className="cursor-pointer text-xs font-medium">03–04 · Напряжения, пробелы и вопросы</summary>
+   <div className="mt-4 space-y-4">
+    <div data-testid="egg-cycle-tensions">
+     <h5 className="text-xs font-medium">Что пока не согласовано</h5>
+     {info.tensions.length?
+      <div className="mt-2 space-y-3">{info.tensions.slice(0,2).map(t=>
+       <div key={t.id}><p className="text-xs font-medium">{t.title}</p>
+        <p className="mt-1 break-words text-xs leading-relaxed text-foreground/70">{t.explanation}</p>
+        <p className="mt-1 break-all text-[11px] text-foreground/55">Гипотеза ИИ · источники {t.sourceResultIds.join(", ")}</p>
+       </div>)}</div>:info.gaps.length?
+      <><p className="mt-2 text-xs text-foreground/65">Смысловые противоречия ещё не проверены. Зарегистрированы структурные пробелы:</p>
+       <ul className="mt-2 space-y-2">{info.gaps.slice(0,2).map((gap,i)=>
+        <li key={i} className="break-words text-xs leading-relaxed text-foreground/70">— {gap}</li>)}</ul></>:
+      <p className="mt-2 text-xs text-foreground/65">Сведений недостаточно для установления противоречий.</p>}
+    </div>
+    <div className="border-t border-foreground/10 pt-3" data-testid="egg-cycle-open-questions">
+     <h5 className="text-xs font-medium">Что проверить · {info.questionsCount} открытых вопросов</h5>
+     {info.examples.length?
+      <><p className="mt-2 text-[11px] text-foreground/60">Примеры из трёх сфер, без ранжирования важности.</p>
+       <ul className="mt-2 space-y-3">{info.examples.map(q=><li key={q.id} className="break-words text-xs leading-relaxed">
+        <strong>{names[q.sphere]}:</strong> {q.question}
+        <span className="block text-[11px] text-foreground/50">Вопрос · без проверки</span>
+       </li>)}</ul></>:
+      <p className="mt-2 text-xs text-foreground/60">Вопросы пока не зарегистрированы.</p>}
+     {info.questionsCount>info.examples.length&&
+      <p className="mt-2 text-[11px] text-foreground/55">Остальные {info.questionsCount-info.examples.length} — в подробном журнале.</p>}
+    </div>
    </div>
-   {info.examples.length?
-    <><p className="mt-2 text-[11px] text-foreground/55">Примеры из разных сфер; это не ранжирование важности.</p>
-     <ul className="mt-2 space-y-2">{info.examples.map(q=><li key={q.id} className="text-xs">
-      <span className="font-medium">{names[q.sphere]}:</span> {q.question}
-      <span className="block text-[11px] text-foreground/50">Без проверки · вопрос</span>
-     </li>)}</ul></>:
-    <p className="mt-2 text-xs text-foreground/60">Список вопросов пока не создан.</p>}
-   {info.questionsCount>info.examples.length&&
-    <p className="mt-2 text-[11px] text-foreground/55">Остальные {info.questionsCount-info.examples.length} — в подробном журнале ниже.</p>}
-  </div>
-  <p className="text-xs leading-relaxed text-foreground/65" data-testid="egg-cycle-next-step">
-   <strong>05 · Решение Автора.</strong> {cycle.status==="awaiting_author"?
-    "После просмотра полного анализа можно направить конкретные сферы на новую итерацию либо принять текущий уровень. Ни одно решение не принято автоматически.":
-    cycle.status==="running"?
-     "Дождаться результатов восьми сфер и синтеза Желтка.":"Решение этой записи зафиксировано; детали доступны в истории."}
+  </details>
+  <p className="rounded-[10px] bg-foreground/[.035] p-3 text-xs leading-relaxed" data-testid="egg-cycle-next-step">
+   <strong>05 · Решение Автора.</strong> {note}
   </p>
  </section>;
 }

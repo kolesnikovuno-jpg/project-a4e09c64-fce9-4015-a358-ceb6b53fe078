@@ -100,7 +100,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
   finally{setBusy(false);}
  };
  return <section aria-label="Сфера Идея — мастерская" data-testid="egg-idea-workspace"
-  className="fixed inset-0 z-[90] flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-background text-foreground md:flex-row"
+  className={"fixed inset-0 z-[90] flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-background text-foreground md:flex-row"+(cycleEntryOpen?" egg-idea-reading":"")}
   style={{backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}}>
   <div className="shrink-0 border-b border-foreground/10 bg-background/95 px-4 pb-2 pt-[max(.65rem,env(safe-area-inset-top))] md:hidden" data-testid="egg-idea-mobile-tabs">
   <div className="flex items-center justify-between gap-2"><span className="text-sm font-medium">Идея</span><button type="button" aria-label="Закрыть сферу Идея" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full border border-foreground/15"><X size={17}/></button></div>
@@ -151,7 +151,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
      <div className="text-xs font-medium">Сохранённый черновик · не утверждён</div>
      <p className="whitespace-pre-wrap text-xs">{savedDraft}</p>
     </div>}
-    <div className="rounded-xl border border-foreground/15 bg-background/70 p-3">
+    <div className="min-w-0 rounded-[14px] border border-foreground/15 bg-background/90 p-2 sm:p-3">
      <button type="button" aria-expanded={cycleEntryOpen} onClick={()=>setCycleEntryOpen(v=>!v)}
       className="w-full py-1 text-left text-sm font-medium" data-testid="egg-open-iteration">
       {cycleEntryOpen?"Свернуть · ДНК и итерация":"ДНК → первый круг восьми сфер"}

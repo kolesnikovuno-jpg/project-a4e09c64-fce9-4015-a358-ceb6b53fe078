@@ -164,7 +164,7 @@ export default function EggFlowCyclePanel({
   const visits=(branch:EggFlowBranch):EggSphereVisit[]=>cycle?.[branch]??EGG_FLOW_ROUTES[branch].map((sphere,position)=>({
     branch,sphere,position,mode:"work" as const,status:"pending" as const,
   }));
-  return <section className="rounded-xl border border-foreground/15 p-4 sm:p-5"
+  return <section className="min-w-0 rounded-[12px] border-0 p-0 sm:rounded-[14px] sm:border sm:border-foreground/15 sm:p-5"
     data-testid="egg-flow-cycle" aria-label="Два постоянных потока и цикл EGG">
     <div className="flex flex-wrap items-baseline justify-between gap-2">
       <h3 className="text-sm font-medium">Цикл ИИ · восемь сфер → Желток</h3>

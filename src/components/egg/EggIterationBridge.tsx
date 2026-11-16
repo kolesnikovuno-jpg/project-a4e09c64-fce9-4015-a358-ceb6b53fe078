@@ -120,7 +120,7 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
   }catch(e){setNotice(e instanceof Error?e.message:"Ошибка сохранения ДНК.");}
   finally{setSeeding(false);}
  };
- return <section className="rounded-xl border border-foreground/10 bg-background/75 p-2" data-testid="egg-idea-cycle-entry">
+ return <section className="egg-iteration-layout min-w-0 rounded-[12px] border-0 bg-background/85 p-0 sm:border sm:border-foreground/10 sm:p-2" data-testid="egg-idea-cycle-entry">
   <h3 className="text-sm font-medium">Рабочая ДНК · круг восьми сфер</h3>
   <div className="mt-3 space-y-3 text-xs leading-relaxed">
    <p className="text-foreground/65">Одна авторская опора → два потока → Желток → одно решение Автора. Черновик ИИ не утверждается автоматически.</p>

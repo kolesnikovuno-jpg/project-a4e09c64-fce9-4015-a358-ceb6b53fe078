@@ -41,6 +41,9 @@ describe("Readable EGG cycle summary",()=>{
   expect(view.examples).toHaveLength(3);
   render(<EggCycleSummary project={p} cycle={c}/>);
   expect(screen.getByTestId("egg-cycle-progress").textContent).toContain("8/8");
+  expect(screen.getByTestId("egg-cycle-metrics").textContent).toContain("8");
+  const expanded=screen.getByTestId("egg-cycle-analysis-details") as HTMLDetailsElement;
+  expect(expanded.open).toBe(false);
   expect(screen.getByTestId("egg-cycle-legacy-warning").textContent).toContain("не содержит");
   expect(screen.getByTestId("egg-cycle-review-status").textContent).toContain("ещё не зарегистрирован");
   expect(screen.getByTestId("egg-cycle-tensions").textContent).toContain("структурные пробелы");

@@ -209,3 +209,27 @@
  .egg-menu-orbit-label {max-width:54px;font-size:9px;line-height:1.1;}
  .egg-menu-hub > span {font-size:11px;}
 }
+
+/* EGG iteration reader: do not inherit the global 9999px pill radius on
+   article cards. Pill buttons and small status counters keep their own form. */
+@media(max-width:767px){
+ .egg-iteration-layout :is(section,div,details)[class*="rounded"]{
+  border-radius:12px;
+ }
+ .egg-iteration-layout [data-testid="egg-cycle-summary"]{
+  max-width:100%;
+  overflow-wrap:anywhere;
+ }
+ .egg-iteration-layout [data-testid="egg-cycle-summary"] summary{
+  min-height:36px;
+  align-content:center;
+ }
+}
+
+/* Let the long cycle report be read without a bright floating circle
+   over each paragraph. The full navigation remains one tap away. */
+@media(max-width:767px){
+ .egg-idea-reading .egg-menu-launcher{opacity:.33;transition:opacity 150ms ease;}
+ .egg-idea-reading .egg-menu-launcher:focus-visible,
+ .egg-idea-reading .egg-menu-launcher:active{opacity:1;}
+}
