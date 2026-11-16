@@ -258,7 +258,7 @@ export function contributeEggFlowSphere(p:EggFlowProject,input:{
   if(input.actor!=="ai"&&input.actor!=="author")
     throw new EggEngineError("Unrecognized sphere contributor");
   if(input.actor==="author"&&input.mode!=="manual"&&input.mode!=="symbiosis")
-    throw new EggEngineError("Author sphere contribution needs explicit manual or symbiosis mode");
+    throw new EggEngineError("Sphere work belongs to AI unless Author explicitly chooses manual or symbiosis mode");
   if(input.actor==="ai"&&input.mode&&input.mode!=="auto")
     throw new EggEngineError("AI cannot impersonate Author-reviewed contribution");
   const at=date(input.at),cycle=current(p);
