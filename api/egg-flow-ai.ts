@@ -9,6 +9,7 @@
 import type {IncomingMessage,ServerResponse} from "node:http";
 import {createClient} from "@supabase/supabase-js";
 import {getEggStorageConfig} from "../src/server/eggStorageConfig.js";
+import {eggFormImageHandler} from "../src/server/eggFormImage.js";
 import {EGG_MATERIAL_RESONANCE_INSTRUCTIONS,EGG_ENTRY_MANIFESTS} from "../src/lib/eggSphereProtocol.js";
 import {EggEngineError,type EggProject} from "../src/lib/eggEngine.js";
 import {prepareGroundedEggYolkReview} from "../src/lib/eggYolkSemantic.js";
@@ -19,7 +20,7 @@ import {
   buildEggAutomationPrompt,parseEggAutomationOutput,
 } from "../src/lib/eggFlowAutomation.js";
 
-export const config={maxDuration:60};
+export const config={maxDuration:120};
 type Request=IncomingMessage&{body?:unknown};
 const send=(res:ServerResponse,status:number,data:unknown)=>{
   res.statusCode=status;
@@ -489,6 +490,7 @@ async function matterDialogue(req:Request,res:ServerResponse,mode:"matter"|"idea
 }
 export default async function handler(req:Request,res:ServerResponse){
   const dialogueOp=new URL(req.url||"/","https://egg.invalid").searchParams.get("op");
+  if(dialogueOp==="form-study")return eggFormImageHandler(req,res);
   if(dialogueOp==="matter-dialogue"||dialogueOp==="idea-dialogue")
     return matterDialogue(req,res,dialogueOp==="idea-dialogue"?"idea":"matter");
   res.setHeader("Allow","POST");
