@@ -91,7 +91,8 @@ async function formPrompt(key:string,project:EggProject,cycle:EggFlowCycle):Prom
       "attractors, emerging morphological accents, neither a random sphere nor a finished CAD object.",
       "If evidence does not establish scale, materials, geometry or product type, DO NOT invent these as facts.",
       "Treat any visual choices as exploratory hypotheses. Do not claim physical validation.",
-      "No labels, captions, lettering, people, logos, furniture, or diagrams in the image.",
+      "No labels, captions, lettering, people, logos, or diagram annotations.",
+      "Do not invent a product type, building, mechanics, or materials absent from the sources.",
       "Return ONLY JSON with one property: image_prompt (string, 100-1800 chars)."
     ].join(" "),
     input:scope(project,cycle),text:{format:{type:"json_object"}},
@@ -115,7 +116,7 @@ async function generateImage(key:string,prompt:string):Promise<Buffer>{
   const image=await callOpenAI(key,"images/generations",{
     model:IMAGE_MODEL,n:1,size:"1024x1024",quality:"low",
     output_format:"webp",output_compression:72,
-    prompt:prompt+"\nVisual: one isolated art-object presence in a quiet warm ivory",
+    prompt:prompt+"\nVisual: a single source-faithful exploratory form study on a quiet warm ivory",
   },85000);
   if(!image.ok)throw Error(image.status===429?"rate_limited":
     image.status===401||image.status===403?"model_not_authorized":"image_failed");
@@ -212,7 +213,7 @@ export async function eggFormImageHandler(req:Req,res:ServerResponse){
     const {error:uploadError}=await db.storage.from(BUCKET)
       .upload(path,bytes,{contentType:"image/webp",upsert:false,cacheControl:"60"});
     if(uploadError)return fail(res,503,"storage_unavailable");
-    const sourceKind=project.level===1?
+    const sourceKind=cycle.level===1?
       "unapproved_idea_with_completed_cycle":"completed_cycle_visual_hypothesis";
     const {data:saved,error:saveError}=await db.from("egg_form_studies").insert({
       id:studyId,project_id:projectId,owner_id:ownerId,cycle_id:cycle.id,
