@@ -273,10 +273,9 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
 
       <section className="relative aspect-square w-[min(96vw,94dvh)] max-w-[1100px]" data-testid="yolk-central-object" aria-label="Пространственный объект">
         <EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
-          level={timeline?.level??project?.level??1}
-          iteration={timeline?.iteration??project?.iteration??1}
+          level={1} iteration={1}
           projectId={project?.id} visualVersion={null}
-          studyKind={exploratoryStudyKind} minimalControls/>
+          studyKind="object" minimalControls/>
       </section>
       {id&&!project&&!loading&&<p role="alert" className="pointer-events-none absolute inset-x-5 top-5 text-center text-xs text-foreground/65">{notice||"Проект не загружен; отображается демонстрационный эскиз."}</p>}
       <EggWorkspaceNavigation active="yolk"
