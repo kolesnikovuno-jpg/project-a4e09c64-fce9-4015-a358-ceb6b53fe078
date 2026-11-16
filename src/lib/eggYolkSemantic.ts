@@ -31,6 +31,46 @@ export const eggYolkReviewDraftSchema=z.object({
 }).strict();
 
 export type EggYolkReviewDraft=z.infer<typeof eggYolkReviewDraftSchema>;
+
+/**
+ * Restrict model interpretations to ACTUAL result IDs and branches.
+ * Never rewrite an invalid source ID, fabricate a replacement citation or
+ * convert a one-stream claim into a two-stream agreement. Unsafe claims are
+ * explicitly omitted and disclosed in limitations. If all proposed claims
+ * were unsafe, do not save a misleading empty review.
+ */
+export function prepareGroundedEggYolkReview(
+ synthesis:EggYolkSynthesis,draft:EggYolkReviewDraft
+):{draft:EggYolkReviewDraft;discarded:number}{
+ const parsed=eggYolkReviewDraftSchema.parse(draft);
+ if(parsed.synthesisId!==synthesis.id)throw new EggEngineError("Yolk review references another synthesis");
+ const sources=new Map([...synthesis.first,...synthesis.second]
+  .filter(x=>Boolean(x.resultId)).map(x=>[x.resultId!,x.branch]));
+ const seen=new Set<string>();
+ const safe:EggYolkReviewDraft["interpretations"]=[];
+ let discarded=0;
+ for(const item of parsed.interpretations){
+  const title=item.title.trim().toLocaleLowerCase();
+  const ids=item.sourceResultIds;
+  const valid= !seen.has(title) && new Set(ids).size===ids.length &&
+   ids.every(id=>sources.has(id)) &&
+   (!["tension","alignment"].includes(item.kind)||
+     (ids.length>=2 && new Set(ids.map(id=>sources.get(id))).size===2)) &&
+   new Set(item.suggestedSphereTargets??[]).size===(item.suggestedSphereTargets??[]).length;
+  if(!valid){discarded++;continue;}
+  seen.add(title);safe.push(item);
+ }
+ if(discarded>0&&!safe.length)
+   throw new EggEngineError("No grounded Yolk interpretations were provided");
+ const limitations=[...parsed.limitations];
+ if(discarded){
+  const notice="Отклонено интерпретаций без корректной связи с результатами сфер: "+discarded+". Их содержание не включено в выводы Желтка.";
+  if(limitations.length>=8)limitations.pop();
+  limitations.push(notice);
+ }
+ return {draft:{...parsed,interpretations:safe,limitations},discarded};
+}
+
 export type EggYolkSemanticReview={
   id:string;sourceCycleId:string;sourceSynthesisId:string;
   createdAt:string;createdBy:"ai";

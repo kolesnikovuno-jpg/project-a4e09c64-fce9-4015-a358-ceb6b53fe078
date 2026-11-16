@@ -10,7 +10,8 @@ import type {IncomingMessage,ServerResponse} from "node:http";
 import {createClient} from "@supabase/supabase-js";
 import {getEggStorageConfig} from "../src/server/eggStorageConfig.js";
 import {EGG_MATERIAL_RESONANCE_INSTRUCTIONS,EGG_ENTRY_MANIFESTS} from "../src/lib/eggSphereProtocol.js";
-import type {EggProject} from "../src/lib/eggEngine.js";
+import {EggEngineError,type EggProject} from "../src/lib/eggEngine.js";
+import {prepareGroundedEggYolkReview} from "../src/lib/eggYolkSemantic.js";
 import {parseEggRetryAfter} from "../src/lib/eggAiPacing.js";
 import {eggMutationSchema,runEggMutation} from "../src/lib/eggCommands.js";
 import {
@@ -32,7 +33,7 @@ type StepError="method_not_allowed"|"cross_origin_forbidden"|"egg_engine_not_con
   "project_not_found"|"revision_conflict"|"unsupported_project_schema"|"cycle_not_ready"|
   "ai_provider_not_configured"|"model_request_failed"|"ai_model_not_authorized"|
   "ai_budget_exhausted"|"ai_rate_limited"|"model_incomplete"|"invalid_ai_output"|
-  "ai_context_too_large"|"provider_timeout"|"database_unavailable"|"invalid_state_transition"|
+  "ai_context_too_large"|"provider_timeout"|"database_unavailable"|"invalid_state_transition"|"invalid_ai_sources"|
   "internal_error";
 type EggRateLimitScope="minute"|"daily"|"unknown";
 type EggRateLimitDetails={retryAfterSeconds?:number;rateLimitScope:EggRateLimitScope};
@@ -143,7 +144,44 @@ export function providerFromEnv(env:NodeJS.ProcessEnv,oidcHeader?:string|string[
   };
   return null;
 }
-async function generate(model:Provider,prompt:{instructions:string;input:string;imageData?:string},
+/** A small JSON Schema for Gemini generateContent. The source IDs and the
+ * synthesis ID are actual server-side records, not model-invented strings.
+ * Zod plus engine checks remain authoritative after generation.
+ */
+export function buildEggYolkGeminiResponseSchema(project:EggProject){
+ const cycle=project.flowCycles?.at(-1);
+ const synthesis=cycle?.synthesis;
+ if(!synthesis)throw Error("Yolk synthesis is missing");
+ const ids=[...synthesis.first,...synthesis.second]
+  .map(x=>x.resultId).filter((x):x is string=>typeof x==="string"&&x.length>0);
+ if(!ids.length)throw Error("No sphere result IDs");
+ const string={type:"string"} as const;
+ const sphereNames=["marketing","design","testDrive","commerce","legal","production","procurement","retail"];
+ return {
+  type:"object",additionalProperties:false,
+  properties:{
+   synthesisId:{type:"string",enum:[synthesis.id]},
+   summary:string,
+   interpretations:{
+    type:"array",maxItems:4,
+    items:{type:"object",additionalProperties:false,
+     properties:{
+      kind:{type:"string",enum:["alignment","tension","gap","opportunity"]},
+      title:string,
+      explanation:string,
+      sourceResultIds:{type:"array",minItems:1,maxItems:8,items:{type:"string",enum:ids}},
+      suggestedSphereTargets:{type:"array",maxItems:4,items:{type:"string",enum:sphereNames}},
+      verificationNeeded:string,
+     },
+     required:["kind","title","explanation","sourceResultIds","suggestedSphereTargets","verificationNeeded"],
+    },
+   },
+   limitations:{type:"array",minItems:1,maxItems:8,items:string},
+  },
+  required:["synthesisId","summary","interpretations","limitations"],
+ };
+}
+async function generate(model:Provider,prompt:{instructions:string;input:string;imageData?:string;responseJsonSchema?:unknown},
   maxTokens=2200):Promise<string>{
   if(Buffer.byteLength(prompt.instructions)+Buffer.byteLength(prompt.input)+(prompt.imageData?.length??0)>115000)
     throw Error("ai_context_too_large");
@@ -159,7 +197,9 @@ async function generate(model:Provider,prompt:{instructions:string;input:string;
         body:JSON.stringify({
           systemInstruction:{parts:[{text:prompt.instructions}]},
           contents:[{role:"user",parts:[{text:prompt.input},...(prompt.imageData?[{inlineData:{mimeType:"image/jpeg",data:prompt.imageData.slice("data:image/jpeg;base64,".length)}}]:[])]}],
-          generationConfig:{responseMimeType:"application/json",maxOutputTokens:maxTokens,...(model.model.startsWith("gemini-3")?{thinkingConfig:{thinkingLevel:"minimal"}}:{})},
+          generationConfig:{responseMimeType:"application/json",maxOutputTokens:maxTokens,
+            ...(prompt.responseJsonSchema?{responseJsonSchema:prompt.responseJsonSchema}:{}),
+            ...(model.model.startsWith("gemini-3")?{thinkingConfig:{thinkingLevel:"minimal"}}:{})},
         }),
       });
     }else response=await fetch(model.url,{
@@ -468,7 +508,9 @@ export default async function handler(req:Request,res:ServerResponse){
     if(input.mode==="draft"&&step.kind!=="sphere")return fail(res,409,"invalid_state_transition");
     const prompt=buildEggAutomationPrompt(project,step);
     let raw:string;
-    try{raw=await generate(provider,prompt,step.kind==="yolk"?4200:2200);}
+    try{raw=await generate(provider,
+      step.kind==="yolk"?{...prompt,responseJsonSchema:buildEggYolkGeminiResponseSchema(project)}:prompt,
+      step.kind==="yolk"?5800:2200);}
     catch(e){
       const code=(e instanceof Error?e.message:"model_request_failed");
       const known=[
@@ -495,6 +537,15 @@ export default async function handler(req:Request,res:ServerResponse){
         }
       }
       generated=parseEggAutomationOutput(step,raw);
+      if(step.kind==="yolk"&&generated.kind==="yolk"){
+        const synthesis=project.flowCycles?.at(-1)?.synthesis;
+        if(!synthesis)throw new EggEngineError("Missing synthesis");
+        const prepared=prepareGroundedEggYolkReview(synthesis,generated.data);
+        generated={kind:"yolk",data:prepared.draft};
+        if(prepared.discarded)console.warn("egg_flow_ai_interpretations_discarded",{
+          step:"yolk",count:prepared.discarded,reason:"unverified_source_references",
+        });
+      }
     }
     catch(error){
       const issues=error&&typeof error==="object"&&"issues" in error&&Array.isArray((error as {issues?:unknown[]}).issues)?(error as {issues:unknown[]}).issues:[];
@@ -504,9 +555,10 @@ export default async function handler(req:Request,res:ServerResponse){
         outputLength:raw.length,
         issuePaths:issues.slice(0,8).map(issue=>issue&&typeof issue==="object"&&"path" in issue?String((issue as {path:unknown}).path):"unknown"),
         issueCodes:issues.slice(0,8).map(issue=>issue&&typeof issue==="object"&&"code" in issue?String((issue as {code:unknown}).code):"unknown"),
-        parseKind:error instanceof SyntaxError?"json_syntax":"schema",
+        parseKind:error instanceof SyntaxError?"json_syntax":
+          error instanceof EggEngineError?"semantic_grounding":"schema",
       });
-      return fail(res,502,"invalid_ai_output");
+      return fail(res,502,error instanceof EggEngineError?"invalid_ai_sources":"invalid_ai_output");
     }
     if(input.mode==="draft"){
       if(step.kind!=="sphere"||generated.kind!=="sphere")return fail(res,409,"invalid_state_transition");
@@ -535,12 +587,16 @@ export default async function handler(req:Request,res:ServerResponse){
       if(!mutation)throw Error("wrong_step");
       nextProject=runEggMutation(project,mutation,agent,ownerId,new Date().toISOString());
     }catch(error){
+      const message=error instanceof Error?error.message:"";
+      const sourceFailure=step.kind==="yolk"&&(
+        /source IDs|cite both flows|Duplicate semantic interpretation|different synthesis|Duplicate suggested sphere target/i.test(message));
       console.warn("egg_flow_ai_mutation_failure",{
         step:step.kind,provider:provider.kind,model:provider.model,
         errorType:error instanceof Error?error.name:"unknown",
+        failureClass:sourceFailure?"semantic_grounding":"other",
         // Do not log project data, model text or raw error messages.
       });
-      return fail(res,502,"invalid_ai_output");
+      return fail(res,502,sourceFailure?"invalid_ai_sources":"invalid_ai_output");
     }
     const {data:saved,error:saveError}=await db.rpc("egg_engine_cas_update",{
       p_project_id:project.id,p_owner_id:ownerId,
