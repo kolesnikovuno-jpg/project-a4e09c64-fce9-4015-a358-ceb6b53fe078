@@ -43,62 +43,118 @@ export function visualSeedFromText(text:string):EggVisualSeed{
     softness:clamp(.46+frac(h>>>5)*.25+cue(/мягк|плавн|текуч|soft|fluid/)),
   };
 }
-function coords(seed:EggVisualSeed,manifest:number,variation:number,u:number,v:number):Vec3{
-  const phi=u*2*Math.PI;
-  const theta=v*Math.PI;
-  const irregular=.055+.16*seed.asymmetry;
-  const ripple=Math.sin(phi*3+theta*2.2+variation)*irregular+
-    Math.sin(theta*4-phi*2+variation*.35)*(.035+.055*seed.tension);
-  const radius=(.50+.23*seed.openness)*(1+ripple)*(1+.16*manifest);
-  const lean=(.08+.17*seed.rotation)*Math.sin(theta*1.25+variation*.2);
-  const twist=(seed.rotation*.40+manifest*.19)*Math.cos(theta*1.65);
-  const p=phi+twist;
+export type EggYolkParticle={
+  id:number; position:Vec3; size:number; opacity:number;
+  tone:"light"|"body"|"core";
+};
+export type EggYolkFieldSketch=SpatialSketch&{particles:EggYolkParticle[]};
+
+function rng(seed:number){
+  let n=seed||1;
+  return ()=>{n^=n<<13;n^=n>>>17;n^=n<<5;return (n>>>0)/4294967296;};
+}
+function fieldSurface(seed:EggVisualSeed,u:number,v:number):Vec3{
+  // Non-regular, open lobes rather than an ellipsoid or finished object.
+  const phi=u*Math.PI*2,theta=v*Math.PI;
+  const knot=.22*Math.sin(phi*3+theta*2.6+seed.asymmetry*3.5);
+  const waist=.78+.23*Math.cos((v-.41)*Math.PI*2);
+  const radius=(.57+.23*seed.openness)*Math.sin(theta)*waist*(1+knot);
+  const spin=phi+seed.rotation*(v-.5)*2.2;
   return {
-    x:radius*Math.sin(theta)*Math.cos(p)+lean*(v-.5),
-    y:.80+(v-.5)*(1.15+.42*seed.verticality)*(1+.10*manifest),
-    z:(radius*(.74+.28*seed.softness))*Math.sin(theta)*Math.sin(p)+
-      .085*seed.asymmetry*Math.sin(theta*3+variation),
+    x:radius*Math.cos(spin)+.18*seed.asymmetry*Math.sin(theta*2.2),
+    y:.80+(v-.5)*(1.38+.30*seed.verticality)+
+      .12*seed.tension*Math.cos(phi*1.8+v*4),
+    z:radius*(.73+.28*seed.softness)*Math.sin(spin)+
+      .12*seed.asymmetry*Math.sin(v*6+phi),
   };
 }
-/** Same coordinates and core for both field states. A completed synthesis
- * increases structural legibility with more contour paths; never selects
- * unrelated A/B/C object families.
+function seedSignature(seed:EggVisualSeed):number{
+  const values=[seed.density,seed.openness,seed.verticality,seed.tension,
+    seed.asymmetry,seed.rotation,seed.pulse,seed.softness];
+  return hash(values.map(n=>n.toFixed(5)).join("|"));
+}
+/**
+ * Mental form = density cloud + contour attractors + localized knots.
+ * The SAME particle identities and attractors persist across cycles. A full
+ * synthesis only changes their positional attraction and legibility.
+ * Densities are illustrative, NOT a physical or AI semantic simulation.
  */
-export function buildEggYolkField(state:EggYolkFieldState):SpatialSketch{
-  const manifest=clamp(state.manifestation);
+export function buildEggYolkField(state:EggYolkFieldState):EggYolkFieldSketch{
+  const m=clamp(state.manifestation);
   const seed=state.seed;
+  const random=rng(seedSignature(seed));
+  const particles:EggYolkParticle[]=[];
   const paths:SpatialPath[]=[];
   const quads:SpatialQuad[]=[];
-  const rings=13,steps=54;
-  const surface=(u:number,v:number)=>coords(seed,manifest,state.variation,u,v);
-  for(let j=1;j<rings;j++){
-    const v=j/rings;
-    paths.push({
-      id:"field-latitude-"+j,
-      points:Array.from({length:steps+1},(_,i)=>surface(i/steps,v)),
-      radius:.003+manifest*.003,
-      material:manifest>.12?"frame":"guide",
-    });
-  }
-  const meridians=9+Math.round(manifest*7);
-  for(let j=0;j<meridians;j++){
-    const u=j/meridians;
-    paths.push({id:"field-meridian-"+j,
-      points:Array.from({length:31},(_,i)=>surface(u,.035+i*.93/30)),
-      radius:.003+manifest*.004,material:manifest>.35?"frame":"guide"});
-  }
-  // A translucent membrane is shown only after synthesis has manifested.
-  if(manifest>.05){
-    const slices=28,rows=13;
-    for(let j=1;j<rows-1;j++){
-      for(let i=0;i<slices;i++){
-        if((i+j)%3!==0)continue; // Keep membrane light and porous.
-        quads.push({id:"field-membrane-"+i+"-"+j,corners:[
-          surface(i/slices,j/rows),surface((i+1)/slices,j/rows),
-          surface((i+1)/slices,(j+1)/rows),surface(i/slices,(j+1)/rows),
-        ]});
-      }
+  const anchors=[
+    {u:.13,v:.30},{u:.65,v:.64},{u:.89,v:.46},
+  ].map(a=>fieldSurface(seed,a.u,a.v));
+  const total=1350;
+  for(let i=0;i<total;i++){
+    const a=random(),b=random(),c=random(),d=random();
+    const u=a;
+    const v=.06+.88*b;
+    const target=fieldSurface(seed,u,v);
+    let position:Vec3;
+    let tone:EggYolkParticle["tone"]="body";
+    let densityFactor=1;
+    if(i<730){
+      // Volumetric field with a biased central density and gaps/voids.
+      const r=Math.pow(c,.54);
+      const centerShift=(1-r)*(.055+.1*seed.tension);
+      position={
+        x:target.x*r+centerShift*Math.sin(v*9),
+        y:target.y+(d-.5)*.20*(1-r),
+        z:target.z*r+(d-.5)*.13*(1-r),
+      };
+      tone="light";
+      densityFactor=.43+.54*(1-r);
+    }else if(i<1140){
+      // A soft boundary, partial but not an outlined shell.
+      const r=.76+.29*c;
+      position={
+        x:target.x*r+(d-.5)*.09,
+        y:target.y+(c-.5)*.10,
+        z:target.z*r+(d-.5)*.08,
+      };
+      densityFactor=.44+.32*m;
+    }else{
+      // Strong points converge around potential material/detail nodes.
+      const idx=Math.floor(a*anchors.length);
+      const anchor=anchors[Math.min(idx,anchors.length-1)];
+      const scatter=.23-.11*m;
+      position={
+        x:anchor.x+(b-.5)*scatter*2,
+        y:anchor.y+(c-.5)*scatter*2,
+        z:anchor.z+(d-.5)*scatter*2,
+      };
+      tone="core";
+      densityFactor=.64+.34*m;
     }
+    // Tangential pull toward the same latent contour as the form manifests.
+    if(i<1140&&m>0){
+      const pull=.10+.32*m;
+      position={
+        x:position.x*(1-pull)+target.x*pull,
+        y:position.y*(1-pull)+target.y*pull,
+        z:position.z*(1-pull)+target.z*pull,
+      };
+    }
+    const brightness=.52+.48*random();
+    const size=.65+random()*1.35+(tone==="core"?.28:0);
+    const opacity=clamp((.18+brightness*.43)*densityFactor+
+      (tone==="core"?.16:.05)*m);
+    particles.push({id:i,position,size,opacity,tone});
   }
-  return {stage:manifest>.05?"volume":"gesture",variant:"A",iteration:1,paths,quads};
+  // Only a few short traces suggest form; never recreate the old wire grid.
+  const traceCount=3+Math.floor(m*4);
+  for(let i=0;i<traceCount;i++){
+    const u=(i*.236+.12)%1;
+    const v0=.13+(i%3)*.11;
+    const points=Array.from({length:22},(_,j)=>
+      fieldSurface(seed,u+.055*Math.sin(j/21*Math.PI),v0+j/21*.39));
+    paths.push({id:"potential-contour-"+i,points,radius:.002,
+      material:"guide"});
+  }
+  return {stage:"gesture",variant:"A",iteration:1,paths,quads,particles};
 }
