@@ -49,7 +49,9 @@ describe("EGG mobile layouts",()=>{
   ]}/>);
   const closed=screen.getByTestId("egg-menu-fixed-position");
   expect(closed.className).toContain("egg-menu-dial");
+  expect(screen.getByRole("button",{name:"Открыть круговое меню"}).className).toContain("bg-[#f8f6f1]/65");
   fireEvent.click(screen.getByRole("button",{name:"Открыть круговое меню"}));
   expect(screen.getByTestId("egg-menu-fixed-position").className).toContain("egg-menu-dial");
+  expect(screen.getByRole("button",{name:"Закрыть меню"}).className).toContain("bg-[#f8f6f1]/90");
  });
 });

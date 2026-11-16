@@ -197,14 +197,15 @@
   }
 }
 
-/* Compact dial for narrow screens. Open/closed hub remains in one place. */
+/* EGG: quiet, translucent circular nodes rather than a solid navigation button. 
+   The launcher and expanded hub keep an identical geometric center. */
 .egg-menu-dial {width:min(330px,calc(100vw - 1rem));height:min(330px,calc(100vw - 1rem));-webkit-tap-highlight-color:transparent;}
 .egg-menu-dial button {-webkit-tap-highlight-color:transparent;}
 @media (max-width:767px) {
- .egg-menu-dial {width:min(260px,calc(100vw - 1rem));height:min(260px,calc(100vw - 1rem));}
- .egg-menu-launcher {width:56px;height:56px;}
- .egg-menu-orbit-item {width:60px;height:60px;}
- .egg-menu-hub {width:78px;height:78px;}
+ .egg-menu-dial {width:min(232px,calc(100vw - 1rem));height:min(232px,calc(100vw - 1rem));}
+ .egg-menu-launcher {width:44px;height:44px;}
+ .egg-menu-orbit-item {width:54px;height:54px;}
+ .egg-menu-hub {width:72px;height:72px;}
  .egg-menu-orbit-label {max-width:54px;font-size:9px;line-height:1.1;}
  .egg-menu-hub > span {font-size:11px;}
 }

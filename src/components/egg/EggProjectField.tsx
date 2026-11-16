@@ -54,7 +54,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
   height:typeof window==="undefined"?700:window.innerHeight,
  }));
  // Preserve the 900px scene geometry while fitting the viewport on phones.
- const eggFit=Math.min(1,Math.max(.3,(eggViewport.width-24)/720),Math.max(.3,(eggViewport.height-130)/650));
+ const eggFit=Math.min(1,Math.max(.3,(eggViewport.width-24)/480),Math.max(.3,(eggViewport.height-130)/650));
  const [sketchEditor,setSketchEditor]=useState<{id:string|null;initialStrokes:SketchStroke[]}|null>(null);
  const [openId,setOpenId]=useState<string|null>(null);
  const [focusedPhotoNoteId,setFocusedPhotoNoteId]=useState<string|null>(null);

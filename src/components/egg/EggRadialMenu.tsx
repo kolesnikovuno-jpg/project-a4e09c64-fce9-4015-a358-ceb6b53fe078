@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent, type WheelEvent } from "react";
-import { ChevronLeft, CircleDot, Menu, type LucideIcon } from "lucide-react";
+import { ChevronLeft, CircleDot, type LucideIcon } from "lucide-react";
 
 export type EggMenuAction = {
   id: string;
@@ -92,21 +92,21 @@ export default function EggRadialMenu({ actions, title = "EGG", side = "left" }:
   if(!open)return (
     <div className={position+" pointer-events-none z-[75]"} data-testid="egg-menu-fixed-position">
       <button type="button" aria-label="Открыть круговое меню" title="Меню EGG" onClick={()=>setOpen(true)}
-        className="egg-menu-launcher pointer-events-auto absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#63766a]/25 bg-[#607466] text-[#faf8f3] shadow-[0_10px_30px_rgba(57,68,55,.18)] transition-transform hover:scale-105">
-        <CircleDot size={26} strokeWidth={1.25}/>
+        className="egg-menu-launcher pointer-events-auto absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#989a92]/50 bg-[#f8f6f1]/65 text-[#777b73] shadow-[0_2px_12px_rgba(65,64,56,.06)] backdrop-blur-[3px] transition-colors hover:border-[#777b73]/70 hover:bg-[#f8f6f1]/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#989a92]">
+        <CircleDot size={24} strokeWidth={1.05}/>
       </button>
     </div>
   );
   return (
     <div className="fixed inset-0 z-[75]" aria-label="Круговое меню EGG">
-      <button type="button" aria-label="Закрыть круговое меню" className="absolute inset-0 cursor-default bg-[#f6f1e9]/15 backdrop-blur-[1px]" onClick={close}/>
+      <button type="button" aria-label="Закрыть круговое меню" className="absolute inset-0 cursor-default bg-[#f6f1e9]/5" onClick={close}/>
       <div ref={dial} data-testid="egg-menu-fixed-position"
         className={position+" select-none touch-none"}
         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}>
         <svg viewBox="0 0 330 330" className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
-          <circle cx="165" cy="165" r="149" fill="#f8f5ef" fillOpacity=".97" stroke="#8d978a" strokeOpacity=".28"/>
-          <circle cx="165" cy="165" r="113" fill="none" stroke="#8d978a" strokeOpacity=".2"/>
-          <circle cx="165" cy="165" r="56" fill="none" stroke="#8d978a" strokeOpacity=".22"/>
+          <circle cx="165" cy="165" r="149" fill="#f8f5ef" fillOpacity=".13" stroke="#9c9e95" strokeOpacity=".30"/>
+          <circle cx="165" cy="165" r="113" fill="none" stroke="#9c9e95" strokeOpacity=".22"/>
+          <circle cx="165" cy="165" r="56" fill="none" stroke="#9c9e95" strokeOpacity=".26"/>
         </svg>
         {entries.map((entry,index)=>{
           const angle=(-90+index*360/entries.length+rotation)*Math.PI/180;
@@ -119,17 +119,17 @@ export default function EggRadialMenu({ actions, title = "EGG", side = "left" }:
               if(previous?.id===entry.id&&Date.now()-previous.time<400){suppressClick.current=null;return;}
               select(entry);
             }}
-            className={"egg-menu-orbit-item absolute flex h-[76px] w-[76px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full border bg-[#fffdf8]/95 p-1 text-[#45534a] shadow-sm transition-[left,top,background-color] duration-75 hover:bg-[#eaf0e8] disabled:opacity-35 "+
-              (entry.selected?"border-[#607466]/70 bg-[#ecf0e9]":"border-[#8a978b]/20")}>
-            <Icon size={21} strokeWidth={1.5} color={entry.tint}/>
-            <span className="egg-menu-orbit-label max-w-[69px] text-center text-[10px] leading-[1.05rem]">{entry.label}</span>
+            className={"egg-menu-orbit-item absolute flex h-[76px] w-[76px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full border bg-[#faf9f6]/85 p-1 text-[#727770] shadow-[0_2px_12px_rgba(65,64,56,.06)] backdrop-blur-sm transition-[left,top,background-color] duration-75 hover:bg-[#f8f6f1] disabled:opacity-35 "+
+              (entry.selected?"border-[#8b9286]/65 bg-[#ebece7]/90":"border-[#a6a89e]/40")}>
+            <Icon size={20} strokeWidth={1.25} color={entry.tint}/>
+            <span className="egg-menu-orbit-label max-w-[69px] text-center text-[10px] font-normal leading-[1.05rem]">{entry.label}</span>
           </button>;
         })}
         <button type="button" data-dial-hub aria-label={path.length?"Назад к разделам":"Закрыть меню"}
           onPointerDown={e=>e.stopPropagation()}
           onClick={()=>{if(path.length)setPath(v=>v.slice(0,-1));else close();}}
-          className="egg-menu-hub absolute left-1/2 top-1/2 flex h-[100px] w-[100px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full bg-[#607466] text-[#faf8f3] shadow-lg">
-          {path.length?<ChevronLeft size={25}/>:<Menu size={25} strokeWidth={1.5}/>}
+          className="egg-menu-hub absolute left-1/2 top-1/2 flex h-[100px] w-[100px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full border border-[#92958b]/50 bg-[#f8f6f1]/90 text-[#727770] shadow-[0_2px_12px_rgba(65,64,56,.07)] backdrop-blur-sm">
+          {path.length?<ChevronLeft size={23} strokeWidth={1.25}/>:<CircleDot size={25} strokeWidth={1.05}/>}
           <span className="max-w-[83px] text-center text-[12px] font-medium leading-tight">{current?.label||title}</span>
         </button>
       </div>
