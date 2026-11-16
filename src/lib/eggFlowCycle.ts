@@ -38,6 +38,7 @@ export type EggQuestionDraft={domain:string;question:string;basis?:string;source
 export type EggFlowResult={
   id:string; text:string; evidence:EggEvidence; sourceRefs:string[];
   submittedBy:EggActor; at:string;
+  inputMode?:"auto"|"symbiosis"|"manual";
   /** Independently detected, unverified questions, never promoted into DNA. */
   discoveredQuestions?:EggDiscoveredQuestion[];
   legalSimilarity?:EggLegalSimilarityReport;
@@ -61,7 +62,9 @@ export type EggSynthesisItem={
 };
 export type EggYolkSynthesis={
   id:string; at:string;
-  dna:{seed:string;conceptId:string|null;conceptText:string|null};
+  dna:{seed:string;conceptId:string|null;conceptText:string|null;
+    /** Separate Author-approved working reference for this specific cycle. */
+    workingDna?:string;authorIntent?:string};
   first:EggSynthesisItem[];
   second:EggSynthesisItem[];
   endpoints:{commerce:EggSynthesisItem;retail:EggSynthesisItem};
@@ -180,7 +183,9 @@ function synthesize(p:EggFlowProject,cycle:EggFlowCycle,at:string):EggYolkSynthe
     })));
   return {
     id:"synthesis-"+p.nextSequence,at,
-    dna:{seed:p.seed.text,conceptId:concept?.id??null,conceptText:concept?.text??null},
+    dna:{seed:p.seed.text,conceptId:concept?.id??null,conceptText:concept?.text??null,
+      ...(cycle.ideaHandoff?{workingDna:cycle.ideaHandoff.workingDna,
+        authorIntent:cycle.ideaHandoff.intent}:{})},
     first,second,
     endpoints:{commerce:first[3],retail:second[3]},
     gaps,openQuestions,status:"structural_not_expert_verified",
@@ -246,10 +251,16 @@ export function startEggFlowCycle(p:EggFlowProject,input:{
 /** AI submits actual sphere output. Both branches move in their own order. */
 export function contributeEggFlowSphere(p:EggFlowProject,input:{
   actor:EggActor;sphere:SphereId;text:string;evidence:EggEvidence;
+  mode?:"auto"|"symbiosis"|"manual";
   sourceRefs?:string[];discoveredQuestions?:EggQuestionDraft[];
   legalSimilarity?:EggLegalSimilarityDraft;at:string;
 }):EggFlowProject{
-  if(input.actor!=="ai")throw new EggEngineError("Sphere work belongs to AI/assigned sphere agents");
+  if(input.actor!=="ai"&&input.actor!=="author")
+    throw new EggEngineError("Unrecognized sphere contributor");
+  if(input.actor==="author"&&input.mode!=="manual"&&input.mode!=="symbiosis")
+    throw new EggEngineError("Author sphere contribution needs explicit manual or symbiosis mode");
+  if(input.actor==="ai"&&input.mode&&input.mode!=="auto")
+    throw new EggEngineError("AI cannot impersonate Author-reviewed contribution");
   const at=date(input.at),cycle=current(p);
   if(cycle.status!=="running")throw new EggEngineError("Cycle is not running");
   const branch=(Object.keys(EGG_FLOW_ROUTES) as EggFlowBranch[])
@@ -295,13 +306,14 @@ export function contributeEggFlowSphere(p:EggFlowProject,input:{
   const result:EggFlowResult={
     id:"cycle-result-"+p.nextSequence,text,evidence:input.evidence,
     sourceRefs:refs,submittedBy:input.actor,at,discoveredQuestions,
+    inputMode:input.mode??"auto",
     ...(legalSimilarity?{legalSimilarity}:{}),
   };
   const changed=visits.map((v,i)=>i===index?{
     ...v,status:"completed" as const,completedAt:at,result,
   }:v);
   let next=replace(p,{...cycle,[branch]:changed});
-  next=event(next,"cycle_sphere_completed","ai",at,cycle.id+" / "+input.sphere+" / "+result.id);
+  next=event(next,"cycle_sphere_completed",input.actor,at,cycle.id+" / "+input.sphere+" / "+result.id);
   return moveTransits(next,at);
 }
 /** Author receives one integrated state, never eight separate approval prompts. */

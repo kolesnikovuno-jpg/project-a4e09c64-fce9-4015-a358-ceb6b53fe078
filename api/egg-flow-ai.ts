@@ -410,6 +410,7 @@ export default async function handler(req:Request,res:ServerResponse){
     if(step.kind==="done")return send(res,200,{
       ok:true,revision:row.revision,done:true,completed:{kind:"done"},next:step,
     });
+    if(input.mode==="draft"&&step.kind!=="sphere")return fail(res,409,"invalid_state_transition");
     const prompt=buildEggAutomationPrompt(project,step);
     let raw:string;
     try{raw=await generate(provider,prompt,step.kind==="yolk"?4200:2200);}
@@ -450,6 +451,13 @@ export default async function handler(req:Request,res:ServerResponse){
       });
       return fail(res,502,"invalid_ai_output");
     }
+    if(input.mode==="draft"){
+      if(step.kind!=="sphere"||generated.kind!=="sphere")return fail(res,409,"invalid_state_transition");
+      // Symbiosis: real AI draft, never an automatic contribution, DB update or
+      // Author approval. The Author edits and explicitly submits it separately.
+      return send(res,200,{ok:true,revision:row.revision,
+        sphere:step.sphere,draft:generated.data,saved:false});
+    }
     const agent={kind:"agent" as const,projectId:project.id,ownerId,
       scopes:["contribute" as const]};
     let nextProject:EggProject;
@@ -457,7 +465,7 @@ export default async function handler(req:Request,res:ServerResponse){
       const mutation=step.kind==="sphere"&&generated.kind==="sphere"?
         eggMutationSchema.parse({
           command:"complete_flow_sphere",projectId:project.id,expectedRevision:row.revision,
-          sphere:step.sphere,text:generated.data.text,evidence:generated.data.evidence,
+          sphere:step.sphere,text:generated.data.text,evidence:generated.data.evidence,mode:"auto",
           discoveredQuestions:generated.data.discoveredQuestions?.map(q=>({
             domain:q.domain,question:q.question,basis:q.basis,
           })),

@@ -83,6 +83,7 @@ export const eggMutationSchema = z.discriminatedUnion("command", [
     ideaHandoff:eggIdeaHandoffSchema.optional()}).strict(),
   shared.extend({command:z.literal("complete_flow_sphere"),
     sphere,text:valueText,evidence:z.enum(["observation","hypothesis","question"]),
+    mode:z.enum(["auto","symbiosis","manual"]).optional(),
     sourceRefs:z.array(z.string().min(1).max(600)).max(20).optional(),
     discoveredQuestions:diagnosticQuestions.optional(),
     legalSimilarity:eggLegalSimilaritySchema.optional(),
@@ -176,7 +177,7 @@ export const runEggMutation = (
       return startEggFlowCycle(state,{actor,at,brief:mutation.brief,ideaHandoff:mutation.ideaHandoff});
     case "complete_flow_sphere":
       return contributeEggFlowSphere(state,{actor,at,
-        sphere:mutation.sphere,text:mutation.text,evidence:mutation.evidence,
+        sphere:mutation.sphere,text:mutation.text,evidence:mutation.evidence,mode:mutation.mode,
         sourceRefs:mutation.sourceRefs,
         discoveredQuestions:mutation.discoveredQuestions?.map(q=>({
           domain:q.domain!,question:q.question!,basis:q.basis,sourceRefs:q.sourceRefs,
