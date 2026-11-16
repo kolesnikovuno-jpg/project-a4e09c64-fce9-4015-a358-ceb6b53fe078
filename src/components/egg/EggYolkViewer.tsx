@@ -1,6 +1,6 @@
 import { createElement, useEffect, useMemo, useRef, useState, type ChangeEvent, type PointerEvent, type WheelEvent, type TouchEvent } from "react";
 import { Download, RotateCcw, Upload, X } from "lucide-react";
-import { buildSpatialSketch, createSpatialGlb, type SpatialStage, type SpatialVariant, type Vec3 } from "../../lib/eggSpatialGenerator";
+import { buildSpatialSketch, buildAbstractSpatialSketch, createSpatialGlb, type SpatialStage, type SpatialVariant, type Vec3 } from "../../lib/eggSpatialGenerator";
 import type {EggVisualSnapshot} from "../../lib/eggVisualHistory";
 
 type Projection={x:number;y:number;depth:number};
@@ -27,7 +27,7 @@ function projectPoint(p:Vec3,yaw:number,pitch:number,zoom:number):Projection{
   return {x:300+x*factor,y:315-y*factor,depth};
 }
 export default function EggYolkViewer({
-  onFileChange, onSketchChange, level=1, iteration=1, projectId, visualVersion=null, minimalControls=false
+  onFileChange, onSketchChange, level=1, iteration=1, projectId, visualVersion=null, minimalControls=false, studyKind="chair"
 }:{
   onFileChange?:(fileName:string|null)=>void;
   /** Existing Author-linked source; never inferred from parametric local study. */
@@ -37,8 +37,9 @@ export default function EggYolkViewer({
   iteration?:number;
   projectId?:string;
   minimalControls?:boolean;
+  studyKind?:"chair"|"object";
 }){
-  const [stage,setStage]=useState<SpatialStage>(()=>minimalControls?"volume":stageFromLevel(level));
+  const [stage,setStage]=useState<SpatialStage>(()=>stageFromLevel(level));
   const [variant,setVariant]=useState<SpatialVariant>("A");
   const [yaw,setYaw]=useState(-.52);
   const [pitch,setPitch]=useState(-.16);
@@ -58,7 +59,7 @@ export default function EggYolkViewer({
   const touchDistance=useRef<number|null>(null);
   const clampZoom=(value:number)=>Math.max(.5,Math.min(2.5,value));
   const fileRef=useRef<string|null>(null);
-  const sketch=useMemo(()=>buildSpatialSketch(stage,variant,iteration),[stage,variant,iteration]);
+  const sketch=useMemo(()=>studyKind==="object"?buildAbstractSpatialSketch(stage,variant,iteration):buildSpatialSketch(stage,variant,iteration),[stage,variant,iteration,studyKind]);
   useEffect(()=>{onSketchChange?.({stage,variant,iteration:sketch.iteration});},[stage,variant,sketch.iteration,onSketchChange]);
   const projected=useMemo(()=>{
     const project=(p:Vec3)=>projectPoint(p,yaw,pitch,zoom);
@@ -74,7 +75,7 @@ export default function EggYolkViewer({
     return {quads,paths};
   },[sketch,yaw,pitch,zoom]);
 
-  useEffect(()=>{setStage(minimalControls?"volume":stageFromLevel(level));},[level,minimalControls]);
+  useEffect(()=>{setStage(stageFromLevel(level));},[level]);
   useEffect(()=>{setShowSketch(false);},[visualVersion?.id]);
   useEffect(()=>()=>{if(fileRef.current)URL.revokeObjectURL(fileRef.current);},[]);
   useEffect(()=>{
@@ -201,6 +202,11 @@ export default function EggYolkViewer({
     }
   }
   const label=STAGES.find(s=>s.id===stage)?.label??"Линии";
+  const variants=studyKind==="object"?[
+    {id:"A" as const,label:"А · Петля"},
+    {id:"B" as const,label:"Б · Спираль"},
+    {id:"C" as const,label:"В · Дуга"},
+  ]:VARIANTS;
   const pts=(points:Projection[])=>points.map(p=>p.x.toFixed(1)+","+p.y.toFixed(1)).join(" ");
   return <div className="relative flex h-full min-h-0 w-full flex-col items-center justify-center" data-testid="yolk-viewer">
     {!minimalControls&&!showingBound&&<div className="absolute inset-x-0 top-[4%] z-20 flex flex-wrap justify-center gap-2 px-2" role="group" aria-label="Уровень пространственной проработки">
@@ -240,7 +246,7 @@ export default function EggYolkViewer({
           </div>
         </div>
       ) : !fileUrl?<svg viewBox="0 0 600 600" role="img"
-        aria-label={"Поворотный пространственный эскиз кресла: "+label+", вариант "+variant+"; не утверждённый объект"}
+        aria-label={"Поворотный исследовательский эскиз "+(studyKind==="object"?"неутилитарного объекта":"кресла")+": "+label+", вариант "+variant+"; не утверждённая форма"}
         className="h-full w-full overflow-visible cursor-grab select-none touch-none active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{overflow:"visible",touchAction:"none"}}
         tabIndex={0} onPointerDown={dragStart} onPointerMove={dragMove} onPointerUp={dragStop}
         onPointerCancel={dragStop} onLostPointerCapture={dragStop} onTouchStart={touchStart} onTouchMove={touchMove} onTouchEnd={touchEnd} onTouchCancel={touchEnd} onWheel={wheel}
@@ -274,7 +280,7 @@ export default function EggYolkViewer({
       }):<div className="grid h-full place-items-center text-xs text-foreground/60">Подключаем 3D-просмотрщик…</div>}
     </div>
     {!minimalControls&&!showingBound&&<div className="absolute inset-x-0 bottom-[12%] z-20 flex flex-wrap justify-center gap-1.5 px-2" role="group" aria-label="Линии формообразования">
-      {VARIANTS.map(v=><button type="button" key={v.id} onClick={()=>setVariant(v.id)}
+      {variants.map(v=><button type="button" key={v.id} onClick={()=>setVariant(v.id)}
         aria-pressed={variant===v.id} data-testid={"yolk-variant-"+v.id}
         className={"min-h-8 rounded-full border px-2.5 py-1 text-[10px] font-light backdrop-blur-sm "+
           (variant===v.id?"border-foreground/50 bg-background/95 text-foreground":"border-foreground/15 bg-background/70 text-foreground/55 hover:border-foreground/40")}>
@@ -300,6 +306,6 @@ export default function EggYolkViewer({
       </label>}
     </div>
     {fileError&&<p role="alert" className="absolute bottom-[22%] left-5 right-5 z-30 rounded bg-background/95 p-2 text-center text-xs text-red-600">{fileError}</p>}
-    <span className="sr-only">Три режима: линии, каркас, объём. Три альтернативные пространственные трактовки исходной идеи. Вращайте одним пальцем, приближайте и отдаляйте двумя пальцами или колесом мыши. Сохранение GLB выгружает геометрию локально, без утверждения и отправки на сервер.</span>
+    <span className="sr-only">Три режима: линии, каркас, объём. Три условных геометрических варианта, не выведенных ИИ из содержания идеи. Вращайте одним пальцем, приближайте и отдаляйте двумя пальцами или колесом мыши. Сохранение GLB выгружает геометрию локально, без утверждения и отправки на сервер.</span>
   </div>;
 }
