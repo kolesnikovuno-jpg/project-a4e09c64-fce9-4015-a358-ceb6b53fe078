@@ -27,7 +27,7 @@ function projectPoint(p:Vec3,yaw:number,pitch:number,zoom:number):Projection{
   return {x:300+x*factor,y:315-y*factor,depth};
 }
 export default function EggYolkViewer({
-  onFileChange, onSketchChange, level=1, iteration=1, projectId, visualVersion=null, minimalControls=false, studyKind="chair"
+  onFileChange, onSketchChange, level=1, iteration=1, projectId, visualVersion=null, minimalControls=false, studyKind="chair", projectedVariant=null
 }:{
   onFileChange?:(fileName:string|null)=>void;
   /** Existing Author-linked source; never inferred from parametric local study. */
@@ -38,6 +38,7 @@ export default function EggYolkViewer({
   projectId?:string;
   minimalControls?:boolean;
   studyKind?:"chair"|"object";
+  projectedVariant?:SpatialVariant|null;
 }){
   const [stage,setStage]=useState<SpatialStage>(()=>stageFromLevel(level));
   const [variant,setVariant]=useState<SpatialVariant>("A");
@@ -59,8 +60,9 @@ export default function EggYolkViewer({
   const touchDistance=useRef<number|null>(null);
   const clampZoom=(value:number)=>Math.max(.5,Math.min(2.5,value));
   const fileRef=useRef<string|null>(null);
-  const sketch=useMemo(()=>studyKind==="object"?buildAbstractSpatialSketch(stage,variant,iteration):buildSpatialSketch(stage,variant,iteration),[stage,variant,iteration,studyKind]);
-  useEffect(()=>{onSketchChange?.({stage,variant,iteration:sketch.iteration});},[stage,variant,sketch.iteration,onSketchChange]);
+  const effectiveVariant=projectedVariant??variant;
+  const sketch=useMemo(()=>studyKind==="object"?buildAbstractSpatialSketch(stage,effectiveVariant,iteration):buildSpatialSketch(stage,effectiveVariant,iteration),[stage,effectiveVariant,iteration,studyKind]);
+  useEffect(()=>{onSketchChange?.({stage,variant:effectiveVariant,iteration:sketch.iteration});},[stage,effectiveVariant,sketch.iteration,onSketchChange]);
   const projected=useMemo(()=>{
     const project=(p:Vec3)=>projectPoint(p,yaw,pitch,zoom);
     const quads=sketch.quads.map(q=>{
