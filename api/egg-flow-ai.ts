@@ -243,7 +243,14 @@ export async function safeEggProvider400Details(response:Response){
   /max_output_tokens|reasoning|unsupported parameter|unsupported value/i.test(msg)?"parameter":"unknown";
  return {kind,type:safe(e.type),code:safe(e.code),param:safe(e.param)};
 }
-async function generate(model:Provider,prompt:{instructions:string;input:string;imageData?:string;responseJsonSchema?:unknown},
+/** JSON mode requires JSON to appear in a real Responses input message,
+ * not merely in top-level instructions. Applies to charged preflight AND
+ * all eight sphere/Yolk requests, whether textual or multimodal.
+ */
+export function eggOpenAiJsonInput(input:string):string{
+ return input+"\n\nReturn exactly one valid JSON object. Do not wrap it in Markdown.";
+}
+export async function generate(model:Provider,prompt:{instructions:string;input:string;imageData?:string;responseJsonSchema?:unknown},
   maxTokens=2200):Promise<string>{
   if(Buffer.byteLength(prompt.instructions)+Buffer.byteLength(prompt.input)+(prompt.imageData?.length??0)>115000)
     throw Error("ai_context_too_large");
@@ -271,8 +278,8 @@ async function generate(model:Provider,prompt:{instructions:string;input:string;
       redirect:"error",
       body:JSON.stringify({
         model:model.model,instructions:prompt.instructions,
-        input:prompt.imageData?[{role:"user",content:[{type:"input_text",text:prompt.input},
-          {type:"input_image",image_url:prompt.imageData}]}]:prompt.input,
+        input:prompt.imageData?[{role:"user",content:[{type:"input_text",text:eggOpenAiJsonInput(prompt.input)},
+          {type:"input_image",image_url:prompt.imageData}]}]:eggOpenAiJsonInput(prompt.input),
         max_output_tokens:maxTokens,store:false,
         ...(model.kind==="direct_openai"&&model.model==="gpt-6-luna"?
           {reasoning:{effort:"none"}}:{}),
