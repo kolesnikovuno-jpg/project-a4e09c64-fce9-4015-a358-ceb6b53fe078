@@ -79,6 +79,7 @@ type Props<T>={
 export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
  onRestore,isEmpty,className=""}:Props<T>){
  const [status,setStatus]=useState<Status>("connecting");
+ const [retryTick,setRetryTick]=useState(0);
  const [notice,setNotice]=useState("");
  const [conflict,setConflict]=useState<Remote|null>(null);
  const [serverRevision,setServerRevision]=useState(0);
@@ -196,7 +197,7 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
   })();
   return()=>{active=false;initializedRef.current=false;clientRef.current=null;};
  // Scope is a stable logical record; snapshots are observed in the second effect.
- },[projectId,scope,ready]);
+ },[projectId,scope,ready,retryTick]);
  useEffect(()=>{
   if(!ready||!initializedRef.current||!clientRef.current||status==="conflict"||status==="local"||
    status==="connecting"||status==="error"||valueHash===savedHashRef.current)return;
@@ -234,8 +235,12 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
   data-testid={"egg-workspace-sync-"+scope}>
   {status==="synced"?<span title={"Серверная версия "+serverRevision}>В EGG · синхронизировано</span>:
    status==="saving"||status==="connecting"?<span>{status==="saving"?"Сохранение в EGG…":"Проверка синхронизации…"}</span>:
-   status==="local"?<span title={notice}>Только на этом устройстве · нет подключения к EGG</span>:
-   status==="error"?<span role="status" className="text-amber-800">Не синхронизировано · {notice}</span>:
+   status==="local"||status==="error"?<div className="flex flex-wrap items-center gap-2">
+    <span role="status" className="text-amber-800">{status==="local"?"Только на этом устройстве":"Не синхронизировано"} · {notice}</span>
+    <button type="button" className="underline underline-offset-2" onClick={()=>setRetryTick(v=>v+1)}>Повторить</button>
+    <button type="button" className="underline underline-offset-2"
+     onClick={()=>exportLocal(projectId,scope,valueRef.current)}>Экспорт</button>
+   </div>:
    <div className="max-w-md space-y-2 rounded-xl border border-amber-700/25 bg-background/95 p-3 text-xs text-foreground/80"
     data-testid={"egg-sync-conflict-"+scope}>
     <p>Есть две разные версии. Ни одна не перезаписана.</p>
