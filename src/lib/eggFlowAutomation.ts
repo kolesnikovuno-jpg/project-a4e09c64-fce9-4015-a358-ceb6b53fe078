@@ -11,7 +11,7 @@ import {z} from "zod";
 import type {EggProject,SphereId} from "./eggEngine.js";
 import {EGG_FLOW_ROUTES,currentEggFlowCycle} from "./eggFlowCycle.js";
 import {buildEggSphereIntelligencePrompt} from "./eggSphereIntelligence.js";
-import {buildEggYolkReviewBrief,eggYolkReviewDraftSchema} from "./eggYolkSemantic.js";
+import {buildEggYolkReviewBrief,eggYolkReviewDraftSchema,eggYolkMorphologySchema} from "./eggYolkSemantic.js";
 
 export const EGG_AUTOMATION_ORDER=[
   "marketing","legal","design","production",
@@ -107,7 +107,20 @@ export function parseEggAutomationOutput(step:EggAutomationStep,raw:string){
   if(raw.length>25000)throw Error("AI output exceeds max length");
   const json:unknown=JSON.parse(raw);
   if(step.kind==="sphere")return {kind:"sphere" as const,data:automatedSphereOutputSchema.parse(json)};
-  if(step.kind==="yolk")return {kind:"yolk" as const,data:eggYolkReviewDraftSchema.parse(json)};
+  if(step.kind==="yolk"){
+    // Never block the established eight-sphere semantic synthesis because an
+    // OPTIONAL visual hypothesis was malformed. Fail closed to morphology:null.
+    if(json&&typeof json==="object"&&!Array.isArray(json)){
+      const draft=json as Record<string,unknown>;
+      if(draft.morphology!==undefined&&draft.morphology!==null&&
+        !eggYolkMorphologySchema.safeParse(draft.morphology).success){
+        draft.morphology=null;
+        if(Array.isArray(draft.limitations)&&draft.limitations.length<8)
+          draft.limitations.push("Морфологическая гипотеза ИИ не прошла проверку формата и исключена.");
+      }
+    }
+    return {kind:"yolk" as const,data:eggYolkReviewDraftSchema.parse(json)};
+  }
   throw Error("No active step");
 }
 
