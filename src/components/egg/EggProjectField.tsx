@@ -6,6 +6,7 @@ import EggSketchEditor, { type SketchStroke } from "./EggSketchEditor";
 import EggPhotoWorkspace, { PhotoMarkupOverlay, type PhotoMarkup } from "./EggPhotoWorkspace";
 import EggLinkWorkspace, { normalizeSiteUrl } from "./EggLinkWorkspace";
 import EggMatterDialogue, { type MatterCard } from "./EggMatterDialogue";
+import EggWorkspaceSync from "./EggWorkspaceSync";
 
 type Point = { x:number; y:number };
 // Retain legacy mark records in saved project data; never display viewport-only anchors as content anchors.
@@ -368,6 +369,11 @@ export default function EggProjectField({projectId,children,workspace="field",on
     </div>)}
    </div>
   </div>
+  <EggWorkspaceSync projectId={projectId} scope="field" ready={ready}
+   value={items} onRestore={next=>{if(Array.isArray(next))setItems(next.filter(
+    item=>item&&typeof item.id==="string"&&typeof item.type==="string").slice(0,500));}}
+   isEmpty={value=>value.length===0}
+   className="pointer-events-auto absolute bottom-6 right-5 z-40 max-w-[55vw] rounded-lg bg-background/85 px-2 py-1 shadow-sm" />
   {workspace==="matter"&&<button type="button" aria-label="Показать все материалы" onClick={fitMatterItems} className="absolute left-5 top-[164px] z-30 rounded-full bg-background/90 px-3 py-2 text-xs text-foreground/70 shadow-sm sm:left-8">Показать всё</button>}
   {workspace==="matter"&&<button type="button" aria-label="Вернуться к Яйцу" onClick={()=>onWorkspaceChange?.("field")} className="absolute left-5 top-[116px] z-30 rounded-full border border-foreground/20 bg-background/95 px-3 py-2 text-xs shadow-sm sm:left-8">← К Яйцу</button>}
   {workspace==="matter"&&matterDialogueOpen&&<EggMatterDialogue
