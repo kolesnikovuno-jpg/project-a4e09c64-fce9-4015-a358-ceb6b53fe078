@@ -14,6 +14,7 @@ import {EGG_MATERIAL_RESONANCE_INSTRUCTIONS,EGG_ENTRY_MANIFESTS} from "../src/li
 import {EggEngineError,type EggProject} from "../src/lib/eggEngine.js";
 import {prepareGroundedEggYolkReview} from "../src/lib/eggYolkSemantic.js";
 import {parseEggRetryAfter} from "../src/lib/eggAiPacing.js";
+import {validateMaterialMapSources,type EggMaterialMapDraft} from "../src/lib/eggMaterialMap.js";
 import {eggMutationSchema,runEggMutation} from "../src/lib/eggCommands.js";
 import {
   eggAutomationRequestSchema,nextEggAutomationStep,
@@ -322,7 +323,7 @@ async function generate(model:Provider,prompt:{instructions:string;input:string;
 
 type MatterMaterial={id:string;type:"thought"|"link"|"image"|"sketch"|"video";text:string;url?:string;imageData?:string};
 type MatterMessage={role:"user"|"assistant";content:string};
-type MatterPayload={projectId:string;materials:MatterMaterial[];messages:MatterMessage[];focusId?:string;intent?:string;constraints?:string;materialInsight?:string};
+type MatterPayload={projectId:string;materials:MatterMaterial[];messages:MatterMessage[];focusId?:string;intent?:string;constraints?:string;materialInsight?:string;mapRequested?:boolean};
 const matterTypes=new Set(["thought","link","image","sketch","video"]);
 const isMatterPayload=(value:unknown):value is MatterPayload=>{
  if(!value||typeof value!=="object"||Array.isArray(value))return false;
@@ -341,7 +342,8 @@ const isMatterPayload=(value:unknown):value is MatterPayload=>{
   (v.focusId===undefined||(typeof v.focusId==="string"&&v.focusId.length<=120))&&
   (v.intent===undefined||(typeof v.intent==="string"&&v.intent.length<=3000))&&
   (v.constraints===undefined||(typeof v.constraints==="string"&&v.constraints.length<=2000))&&
-  (v.materialInsight===undefined||(typeof v.materialInsight==="string"&&v.materialInsight.length<=4000));
+  (v.materialInsight===undefined||(typeof v.materialInsight==="string"&&v.materialInsight.length<=4000))&&
+  (v.mapRequested===undefined||typeof v.mapRequested==="boolean");
 };
 const matterInstructions=[
  ...EGG_MATERIAL_RESONANCE_INSTRUCTIONS,
@@ -373,7 +375,30 @@ const ideaInstructions=[
  "Ссылки и документы без прочитанного содержимого не считаются изученными. Не выдумывай источник или визуальные детали.",
  "Отвечай компактно, сначала на конкретный вопрос Автора. Если нужно — предложи одну ясную формулировку черновика идеи."
 ].join("\n");
-async function matterModelReply(provider:Provider,input:MatterPayload,mode:"matter"|"idea"="matter"):Promise<string>{
+export type MaterialModelResponse={reply:string;materialMap?:EggMaterialMapDraft};
+const mapInstructions=[
+ "РЕЖИМ КАРТЫ ИССЛЕДОВАНИЯ: это тот же ОДИН анализ холста, НЕ второй AI-вызов и НЕ утверждение решения.",
+ "Верни строго один JSON-объект с ключами reply и map. Никаких Markdown-ограждений или текста вне JSON.",
+ "reply: короткое объяснение на русском (1–4 предложения).",
+ "map: объект ровно с массивами observations, connections, tensions, hypotheses, questions.",
+ "Для observations/connections/tensions/hypotheses каждый элемент — объект {text:string,sourceIds:string[]}. sourceIds — ИСКЛЮЧИТЕЛЬНО точные id реально предоставленных карточек. Минимум 1 действительный id в каждом элементе.",
+ "observations (1–6): только проверяемые признаки доступных текстов и реально приложенных изображений; connections (0–5): связи и мотивы; tensions (0–5): противоречия; hypotheses (0–5): осторожные предположения; questions (0–5): открытые вопросы Автору (строки).",
+ "Никогда не приписывай URL, видео или картинке без приложенного превью неувиденное содержание. Если доказательств мало, заполни 1 минимальное наблюдение о том, что пользователь предоставил, а остальное оставь [].",
+ "Не создавай из анализа ДНК, форму, готовый концепт или решение за Автора. Автор позднее редактирует и принимает карту.",
+].join("\n");
+export function parseEggMaterialModelResponse(raw:string,ids:string[]):MaterialModelResponse{
+ let data:unknown;
+ try{data=JSON.parse(raw);}catch{throw Error("invalid_ai_output");}
+ if(!data||typeof data!=="object"||Array.isArray(data))throw Error("invalid_ai_output");
+ const result=data as {reply?:unknown;map?:unknown};
+ if(typeof result.reply!=="string"||!result.reply.trim()||result.reply.length>2500)
+  throw Error("invalid_ai_output");
+ const map=validateMaterialMapSources(result.map,ids);
+ if(!map)throw Error("invalid_ai_output");
+ return {reply:result.reply.trim(),materialMap:map};
+}
+async function matterModelReply(provider:Provider,input:MatterPayload,mode:"matter"|"idea"="matter"):Promise<MaterialModelResponse>{
+ const mapRequested=mode==="matter"&&input.mapRequested===true;
  const materials=input.materials.map((m,i)=>({
   ref:i+1,id:m.id,type:m.type,text:m.text,url:m.url??null,
   vision:m.imageData?"Визуальное превью приложено":"Изображение/содержимое не передано",
@@ -392,11 +417,13 @@ async function matterModelReply(provider:Provider,input:MatterPayload,mode:"matt
     method:"POST",redirect:"error",signal:controller.signal,
     headers:{"x-goog-api-key":provider.key,"Content-Type":"application/json"},
     body:JSON.stringify({
-     systemInstruction:{parts:[{text:mode==="idea"?ideaInstructions:matterInstructions}]},
+     systemInstruction:{parts:[{text:(mode==="idea"?ideaInstructions:matterInstructions)+(mapRequested?"\n"+mapInstructions:"")}]},
      contents:[{role:"user",parts:[{text:prompt},...images.map(src=>({
       inlineData:{mimeType:"image/jpeg",data:src.slice("data:image/jpeg;base64,".length)}
      }))]}],
-     generationConfig:{maxOutputTokens:2400,...(provider.model.startsWith("gemini-3")?{thinkingConfig:{thinkingLevel:"minimal"}}:{})}
+     generationConfig:{maxOutputTokens:mapRequested?3600:2400,
+      ...(mapRequested?{responseMimeType:"application/json"}:{}),
+      ...(provider.model.startsWith("gemini-3")?{thinkingConfig:{thinkingLevel:"minimal"}}:{})}
     })
    });
   }else{
@@ -404,7 +431,10 @@ async function matterModelReply(provider:Provider,input:MatterPayload,mode:"matt
     method:"POST",redirect:"error",signal:controller.signal,
     headers:{Authorization:"Bearer "+provider.key,"Content-Type":"application/json"},
     body:JSON.stringify({
-     model:provider.model,instructions:mode==="idea"?ideaInstructions:matterInstructions,store:false,max_output_tokens:2400,
+     model:provider.model,
+     instructions:(mode==="idea"?ideaInstructions:matterInstructions)+(mapRequested?"\n"+mapInstructions:""),
+     store:false,max_output_tokens:mapRequested?3600:2400,
+     ...(mapRequested?{text:{format:{type:"json_object"}}}:{}),
      ...(provider.kind==="direct_openai"&&provider.model==="gpt-6-luna"?{reasoning:{effort:"none"}}:{}),
      input:[{role:"user",content:[{type:"input_text",text:prompt},
       ...images.map(src=>({type:"input_image",image_url:src,detail:"low"}))]}]
@@ -438,7 +468,8 @@ async function matterModelReply(provider:Provider,input:MatterPayload,mode:"matt
    (data.output??[]).flatMap(x=>x.type==="message"?x.content??[]:[])
     .filter(x=>x.type==="output_text").map(x=>x.text??"").join("");
   if(!result.trim()||result.length>8000)throw Error("invalid_ai_output");
-  return result.trim();
+  return mapRequested?parseEggMaterialModelResponse(result.trim(),input.materials.map(m=>m.id)):
+   {reply:result.trim()};
  }finally{clearTimeout(timeout);}
 }
 async function matterDialogue(req:Request,res:ServerResponse,mode:"matter"|"idea"="matter"){
@@ -485,8 +516,8 @@ async function matterDialogue(req:Request,res:ServerResponse,mode:"matter"|"idea
   const provider=providerFromEnv(process.env,req.headers["x-vercel-oidc-token"]);
   if(!provider)return fail(res,503,"ai_provider_not_configured");
   if(mode==="idea"&&!payload.intent?.trim())return fail(res,400,"invalid_request");
-  const replyText=await matterModelReply(provider,payload,mode);
-  return send(res,200,{ok:true,reply:replyText,materialsSeen:payload.materials.length,
+  const modelResult=await matterModelReply(provider,payload,mode);
+  return send(res,200,{ok:true,...modelResult,materialsSeen:payload.materials.length,
    imagesSeen:payload.materials.filter(m=>Boolean(m.imageData)).length});
  }catch(e){
   const reason=e instanceof Error?e.message:"model_request_failed";
