@@ -41,10 +41,11 @@ describe("Material research workspace",()=>{
   ];
   render(<EggMatterDialogue projectId="1b3d29f0-fbc4-41ed-b31a-2e0db7fa2fe9" cards={cards}
     focusId={null} onClearFocus={()=>{}} onClose={()=>{}} onBack={()=>{}}/>);
-  expect(fetchMock).not.toHaveBeenCalled();
+  // A separate background request may inspect EGG server snapshot; AI work starts only on author action.
+  expect(fetchMock.mock.calls.some(([url])=>String(url).includes("op=matter-dialogue"))).toBe(false);
   fireEvent.click(screen.getByRole("button",{name:"Начать исследование"}));
-  await waitFor(()=>expect(fetchMock).toHaveBeenCalledTimes(2));
-  const [url,request]=fetchMock.mock.calls[1] as unknown as [string,RequestInit];
+  await waitFor(()=>expect(fetchMock.mock.calls.filter(([url])=>String(url).includes("op=matter-dialogue"))).toHaveLength(1));
+  const [url,request]=fetchMock.mock.calls.find(([url])=>String(url).includes("op=matter-dialogue"))! as unknown as [string,RequestInit];
   expect(url).toBe("/api/egg-flow-ai?op=matter-dialogue");
   expect((request.headers as Record<string,string>).Authorization).toBe("Bearer session-token");
   const body=JSON.parse(String(request.body)) as {materials:Array<{id:string;url?:string}>;messages:Array<{content:string}>};
