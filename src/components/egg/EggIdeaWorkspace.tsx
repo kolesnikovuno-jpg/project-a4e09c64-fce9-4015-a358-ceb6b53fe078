@@ -236,7 +236,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
      </summary>
      <div className="mt-3 space-y-1.5 text-[11px] leading-relaxed text-foreground/65">
       <p><strong>Проект EGG:</strong> <code className="break-all">{projectId}</code></p>
-      <p><strong>Версия сайта:</strong> <code>{__EGG_BUILD_SHA__}</code> · GitHub → Vercel</p>
+      <p><strong>Версия сайта:</strong> <code>{typeof __EGG_BUILD_SHA__==="string"?__EGG_BUILD_SHA__:"local"}</code> · GitHub → Vercel</p>
       <p><strong>Рабочая линия:</strong> integration/egg-unified-2026-11-12</p>
       <p><strong>Этот холст:</strong> черновик в браузере данного устройства. Он не равен утверждённому серверному циклу и пока не синхронизируется между устройствами.</p>
      </div>
