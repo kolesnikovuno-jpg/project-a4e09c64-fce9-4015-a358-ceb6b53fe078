@@ -61,6 +61,21 @@ export default function EggYolkSemanticPanel({project}:{project:EggProject}){
         </p>}
         <p className="mt-1 text-[11px] text-foreground/50">Гипотеза ИИ · не подтверждена</p>
       </div>)}
+      {report.morphology&&<details className="rounded border border-foreground/10 p-2"
+        data-testid="yolk-semantic-morphology">
+        <summary className="cursor-pointer text-[11px] text-foreground/70">
+          Морфология Желтка · гипотеза ИИ
+        </summary>
+        <p className="mt-2 text-xs leading-relaxed text-foreground/70">
+          {report.morphology.rationale}
+        </p>
+        <p className="mt-2 text-[11px] text-foreground/55">
+          Основания: {report.morphology.sourceResultIds.join(" · ")}
+        </p>
+        <p className="mt-1 text-[11px] text-foreground/50">
+          Параметры управляют предварительным полем, не утверждают геометрию и ДНК.
+        </p>
+      </details>}
       <details className="rounded border border-foreground/10 p-2">
         <summary className="cursor-pointer text-[11px] text-foreground/70">
           Границы анализа ({report.limitations.length})
