@@ -40,13 +40,16 @@ describe("Field material selection",()=>{
   expect(next.container.querySelector('[data-field-item="source"]')).toBeTruthy();
   expect(JSON.parse(localStorage.getItem(key)!)).toEqual([expect.objectContaining({...original,location:"field"})]);
  });
- it("keeps the card in place if storage rejects the transfer",()=>{
+ it("does not block a transfer when browser storage is full and shows a clear warning",()=>{
   localStorage.setItem(key,JSON.stringify([{id:"source",type:"thought",text:"Keep me",x:0,y:0}]));
   const view=render(<Workspace/>);
   vi.spyOn(Storage.prototype,"setItem").mockImplementation(()=>{throw new Error("quota");});
   fireEvent.click(screen.getByRole("button",{name:"В работу"}));
-  expect(view.container.querySelector('[data-field-item="source"]')).toBeTruthy();
-  expect(screen.getByRole("status").textContent).toContain("Карточка осталась на месте");
+  expect(view.container.querySelector('[data-field-item="source"]')).toBeNull();
+  expect(screen.getByTestId("egg-field-transfer-feedback").textContent)
+   .toContain("Память браузера заполнена");
+  fireEvent.click(screen.getByRole("button",{name:"Открыть Материальное"}));
+  expect(view.container.querySelector('[data-field-item="source"]')).not.toBeNull();
  });
  it("does not overwrite another project's board when the project changes",()=>{
   localStorage.setItem(key,JSON.stringify([{id:"a",type:"thought",text:"A",x:0,y:0}]));
