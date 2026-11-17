@@ -91,7 +91,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
   catch{setItems([]);}
   setSketchEditor(null);setPan({x:0,y:0});setZoom(1);setLoadedKey(key);
  },[key]);
- useEffect(()=>{if(ready)try{localStorage.setItem(key,JSON.stringify(items));}catch{setNotice("Место для сохранения заполнено. Некоторые изменения могут не сохраниться.");}},[items,key,ready]);
+ useEffect(()=>{if(ready)try{localStorage.setItem(key,JSON.stringify(items));}catch{setNotice("Память браузера заполнена. Карточки изменены на холсте, но локальное сохранение не удалось; проверьте синхронизацию EGG.");}},[items,key,ready]);
  useEffect(()=>{
   let active=true;const urls:string[]=[];
   void (async()=>{const next:Record<string,string>={};for(const mediaId of videoKeys.split("|").filter(Boolean)){
