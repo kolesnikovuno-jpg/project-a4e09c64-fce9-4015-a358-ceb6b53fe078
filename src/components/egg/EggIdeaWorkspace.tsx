@@ -32,6 +32,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
  const [materialInsight,setMaterialInsight]=useState("");
  const [loaded,setLoaded]=useState(false);
  const [cycleEntryOpen,setCycleEntryOpen]=useState(false);
+ const [experimentsOpen,setExperimentsOpen]=useState(false);
  const [mobilePane,setMobilePane]=useState<"canvas"|"dialogue">("canvas");
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState("");
@@ -148,8 +149,6 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
     <button type="button" onClick={onOpenMatter} className="flex items-center gap-1 rounded-full bg-background/80 px-3 py-2 text-xs shadow-sm"><ArrowLeft size={14}/> Материальное</button>
    </div>
    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pb-36 md:pb-5">
-    <EggFormStudyAccess projectId={projectId} intent={intent} constraints={constraints}
-      savedDraft={savedDraft} materialInsight={materialInsight} materials={materials} spacePhoto={spacePhoto}/>
     <label className="block text-xs text-foreground/60">Намерение Автора
      <textarea aria-label="Намерение Автора" value={intent} maxLength={3000} rows={4} onChange={e=>{setIntent(e.target.value);setDraftSavedNotice(false);}}
       placeholder="Что хочешь инициировать? Например: неутилитарный элемент пространства — отдельная нота…"
@@ -163,6 +162,19 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
       <Check size={13} className="mr-1 inline"/> Сохранить черновик идеи
      </button>
      {draftSavedNotice&&<span role="status" className="text-[11px] text-foreground/60">Сохранено в этом браузере · не утверждено</span>}
+     <button type="button" data-testid="egg-open-current-idea-yolk"
+      disabled={!intent.trim()||!loaded}
+      onClick={()=>{
+       // Snapshot only; Author has not approved a cycle or DNA.
+       try{localStorage.setItem(key,JSON.stringify({
+        intent,constraints,messages:messages.slice(-40),savedDraft,spacePhoto,
+       }));}catch{/* local draft remains unaffected */}
+       if(onOpenYolk)onOpenYolk();
+       else window.location.assign("/egg/yolk?project="+encodeURIComponent(projectId));
+      }}
+      className="rounded-full border border-foreground/35 bg-background px-3 py-2 text-xs disabled:opacity-40">
+      Желток · 3D-поле
+     </button>
     </div>
     <label className="block text-xs text-foreground/60">Рамки · необязательно
      <textarea aria-label="Рамки идеи" value={constraints} maxLength={2000} rows={2} onChange={e=>setConstraints(e.target.value)}
@@ -205,6 +217,17 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
       savedDraft={savedDraft} spacePhoto={spacePhoto} materials={materials} materialInsight={materialInsight}
       onRestoreApproved={restoreApproved}/>}
     </div>
+    <details className="rounded-xl border border-foreground/10 bg-background/40 p-3"
+      open={experimentsOpen}
+      onToggle={e=>setExperimentsOpen(e.currentTarget.open)}>
+     <summary className="cursor-pointer text-xs text-foreground/60">
+      Архив визуальных экспериментов · вне основного цикла
+     </summary>
+     {experimentsOpen&&<div className="mt-3">
+      <EggFormStudyAccess projectId={projectId} intent={intent} constraints={constraints}
+       savedDraft={savedDraft} materialInsight={materialInsight} materials={materials} spacePhoto={spacePhoto}/>
+     </div>}
+    </details>
    </div>
   </div>
   <div data-testid="egg-idea-dialogue-pane" className={"min-h-0 min-w-0 w-full flex-1 flex-col px-4 py-3 md:w-1/2 md:px-6 md:py-5 "+(mobilePane==="dialogue"?"flex":"hidden md:flex")}>
