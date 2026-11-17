@@ -72,18 +72,22 @@ export function eggMaterialInsight(
  record:EggMaterialMapRecord|null,cards:EggMaterialSource[],
 ):string{
  if(!record||record.status!=="accepted"||!isEggMaterialMapCurrent(record,cards))return "";
+ // Every category gets a bounded share of the cycle's 1400-character
+ // handoff. Otherwise long observations silently bury tensions/hypotheses.
  const sections=[
-  ["НАБЛЮДЕНИЯ",record.map.observations],
-  ["СВЯЗИ",record.map.connections],
-  ["НАПРЯЖЕНИЯ",record.map.tensions],
-  ["ГИПОТЕЗЫ",record.map.hypotheses],
+  ["НАБЛЮДЕНИЯ",record.map.observations,315],
+  ["СВЯЗИ",record.map.connections,235],
+  ["НАПРЯЖЕНИЯ",record.map.tensions,235],
+  ["ГИПОТЕЗЫ",record.map.hypotheses,270],
  ] as const;
  const parts:string[]=[];
- for(const [title,entries] of sections){
+ for(const [title,entries,budget] of sections){
   if(!entries.length)continue;
-  parts.push(title+": "+entries.map(e=>e.text+" [источники: "+e.sourceIds.join(", ")+"]").join("; "));
+  const text=entries.map(e=>e.text+" ["+e.sourceIds.join(",")+"]").join("; ");
+  parts.push(title+": "+text.slice(0,budget));
  }
- if(record.map.questions.length)parts.push("ВОПРОСЫ: "+record.map.questions.join("; "));
+ if(record.map.questions.length)
+  parts.push("ВОПРОСЫ: "+record.map.questions.join("; ").slice(0,145));
  return parts.join("\n").slice(0,1400);
 }
 export function readLocalEggMaterialMap(projectId:string):EggMaterialMapRecord|null{
