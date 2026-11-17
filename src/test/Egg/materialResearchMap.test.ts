@@ -39,7 +39,7 @@ describe("EGG Material research map: explicit author gate",()=>{
   expect(current?.status).toBe("accepted");
   const insight=eggMaterialInsight(current,cards);
   expect(insight).toContain("НАБЛЮДЕНИЯ");
-  expect(insight).toContain("ИСТОЧНИКИ".toLowerCase());
+  expect(insight).toContain("[ref-1]");
   expect(insight).toContain("ГИПОТЕЗЫ");
   expect(eggMaterialInsight(current,[{...cards[0],text:"Сменили фото"},cards[1]])).toBe("");
   expect(isEggMaterialMapCurrent(current,cards)).toBe(true);
