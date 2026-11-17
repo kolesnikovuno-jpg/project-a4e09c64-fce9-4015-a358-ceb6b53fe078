@@ -397,7 +397,7 @@ export function parseEggMaterialModelResponse(raw:string,ids:string[]):MaterialM
  if(!map)throw Error("invalid_ai_output");
  return {reply:result.reply.trim(),materialMap:map};
 }
-async function matterModelReply(provider:Provider,input:MatterPayload,mode:"matter"|"idea"="matter"):Promise<MaterialModelResponse>{
+export async function matterModelReply(provider:Provider,input:MatterPayload,mode:"matter"|"idea"="matter"):Promise<MaterialModelResponse>{
  const mapRequested=mode==="matter"&&input.mapRequested===true;
  const materials=input.materials.map((m,i)=>({
   ref:i+1,id:m.id,type:m.type,text:m.text,url:m.url??null,
@@ -436,7 +436,12 @@ async function matterModelReply(provider:Provider,input:MatterPayload,mode:"matt
      store:false,max_output_tokens:mapRequested?3600:2400,
      ...(mapRequested?{text:{format:{type:"json_object"}}}:{}),
      ...(provider.kind==="direct_openai"&&provider.model==="gpt-6-luna"?{reasoning:{effort:"none"}}:{}),
-     input:[{role:"user",content:[{type:"input_text",text:prompt},
+     // OpenAI Responses validates JSON mode against the INPUT message.
+     // The top-level "instructions" text does not satisfy that requirement.
+     // Without this explicit JSON instruction the request fails with HTTP 400.
+     input:[{role:"user",content:[{type:"input_text",text:mapRequested?
+      prompt+"\\n\\nВерни ответ строго в формате JSON-объекта с полями reply и map.":
+      prompt},
       ...images.map(src=>({type:"input_image",image_url:src,detail:"low"}))]}]
     })
    });
