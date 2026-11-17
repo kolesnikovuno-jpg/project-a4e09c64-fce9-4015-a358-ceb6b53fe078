@@ -147,7 +147,8 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
     <button type="button" onClick={onOpenMatter} className="flex items-center gap-1 rounded-full bg-background/80 px-3 py-2 text-xs shadow-sm"><ArrowLeft size={14}/> Материальное</button>
    </div>
    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pb-36 md:pb-5">
-    <EggFormStudyAccess projectId={projectId}/>
+    <EggFormStudyAccess projectId={projectId} intent={intent} constraints={constraints}
+      savedDraft={savedDraft} materialInsight={materialInsight} materials={materials}/>
     <label className="block text-xs text-foreground/60">Намерение Автора
      <textarea aria-label="Намерение Автора" value={intent} maxLength={3000} rows={4} onChange={e=>setIntent(e.target.value)}
       placeholder="Что хочешь инициировать? Например: неутилитарный элемент пространства — отдельная нота…"
