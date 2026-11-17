@@ -4,7 +4,7 @@ import { initialLocale } from "@/i18n/storage";
 import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft, Dna, History, MessageCircle, FileText, Layers3, Info, X } from "lucide-react";
 import EggYolkViewer from "./EggYolkViewer";
-import {projectCompleteEggCycleToSpatial} from "../../lib/eggCycleSpatialProjection";
+import {resolveEggYolkFormBasis,type YolkLocalIdea} from "../../lib/eggYolkFormBasis";
 import {visualSeedFromText,type EggYolkFieldState} from "../../lib/eggYolkField";
 import EggWorkspaceNavigation from "./EggWorkspaceNavigation";
 import EggSpherePanel from "./EggSpherePanel";
@@ -91,6 +91,7 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
   const eggCanvasPath=(canvas:"field"|"matter"|"idea"|"concept")=>
     "/"+initialLocale()+"/egg"+(id?"?project="+encodeURIComponent(id)+"&start="+canvas:"?start="+canvas);
   const [project,setProject]=useState<Project|null>(null);
+  const [localIdea,setLocalIdea]=useState<YolkLocalIdea|null>(null);
   const [revision,setRevision]=useState<number|null>(null);
   const [selected,setSelected]=useState<SphereId|null>(null);
   const [utilityPanel,setUtilityPanel]=useState<"author"|"history"|"work"|null>(null);
@@ -211,17 +212,30 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
     })();
     return()=>{active=false};
   },[id,refresh]);
+  useEffect(()=>{
+    if(!id){setLocalIdea(null);return;}
+    try{
+      const raw=window.localStorage.getItem("egg:idea-workspace:v1:"+id);
+      const value=raw?JSON.parse(raw) as Partial<YolkLocalIdea>:null;
+      setLocalIdea(value&&typeof value.intent==="string"&&value.intent.trim()?{
+        intent:value.intent.slice(0,3000),
+        savedDraft:typeof value.savedDraft==="string"?value.savedDraft.slice(0,4000):"",
+      }:null);
+    }catch{setLocalIdea(null);}
+  },[id]);
   const concept=useMemo(()=>conception(project),[project]);
   const productState=useMemo(()=>project?buildEggYolkProductProjection(project):null,[project]);
-  const completedSpatial=useMemo(()=>project?projectCompleteEggCycleToSpatial(project):null,[project]);
+  const formBasis=useMemo(()=>resolveEggYolkFormBasis(project,localIdea,demoSeed),
+    [project,localIdea]);
+  const completedSpatial=formBasis.synthesis;
   const yolkField=useMemo<EggYolkFieldState>(()=>({
-    // Until a dedicated Author-approved DNA record exists this is explicitly
-    // a provisional visualization of the original idea, not approved DNA.
-    seed:visualSeedFromText(project?.seed.text??demoSeed),
+    // This previews the CURRENT Idea, never a random or unrelated past shape.
+    // Until an Author-approved DNA record exists it is explicitly provisional.
+    seed:visualSeedFromText(formBasis.text),
     manifestation:completedSpatial?.detail?Math.min(.78,.23+completedSpatial.detail*.11):0,
     variation:completedSpatial?.detail?completedSpatial.detail*.17:0,
     status:completedSpatial?"manifested_field":"provisional_seed",
-  }),[project?.seed.text,completedSpatial?.synthesisId,completedSpatial?.detail]);
+  }),[formBasis.text,completedSpatial?.synthesisId,completedSpatial?.detail]);
   const cycleOptions=useMemo(()=>project?eggYolkTimeOptions(project):[],[project]);
   const activeCycleKey=selectedCycleKey&&cycleOptions.some(c=>c.key===selectedCycleKey)
     ?selectedCycleKey:cycleOptions.at(-1)?.key??EGG_YOLK_BASELINE;
