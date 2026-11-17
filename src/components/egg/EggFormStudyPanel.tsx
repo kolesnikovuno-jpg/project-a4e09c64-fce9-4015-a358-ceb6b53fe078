@@ -24,6 +24,13 @@ const errors:Record<string,string>={
   image_failed:"Не удалось создать изображение. Списания/ошибку проверьте в OpenAI.",
   storage_unavailable:"Хранилище изображений временно недоступно.",
   revision_conflict:"Проект изменился. Обновите его состояние.",
+  prompt_request_invalid:"OpenAI отклонил запрос интерпретации. Ошибка модели или параметров.",
+  prompt_failed:"OpenAI не выполнил интерпретацию идеи.",
+  prompt_incomplete:"Интерпретация не завершилась. Повторите запрос.",
+  invalid_prompt:"ИИ вернул неподходящий формообразующий запрос.",
+  image_request_invalid:"OpenAI отклонил запрос на изображение. Ошибка модели или параметров.",
+  invalid_image:"OpenAI не вернул подходящее изображение.",
+  generation_failed:"Серверная ошибка генерации; причина сохранена в журнале EGG.",
 };
 export default function EggFormStudyPanel({project,cycle,revision,authorControls}:{
   project:EggProject;cycle:EggFlowCycle;revision:number|null;authorControls:boolean;
@@ -60,7 +67,7 @@ export default function EggFormStudyPanel({project,cycle,revision,authorControls
       })});
       const data=await response.json() as {ok?:boolean;error?:string;study?:Study};
       if(!response.ok||!data.ok||!data.study)
-        throw Error(errors[data.error??""]??"Генерация недоступна. Проверьте подключение OpenAI.");
+        throw Error(errors[data.error??""]??"Генерация не завершилась. Сервер вернул неизвестную ошибку.");
       setStudy(data.study);
       setNotice("Исследовательский образ сохранён в проекте.");
     }catch(e){setNotice(e instanceof Error?e.message:"Не удалось получить изображение.");}
