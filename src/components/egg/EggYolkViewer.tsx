@@ -70,6 +70,12 @@ export default function EggYolkViewer({
   const clampZoom=(value:number)=>Math.max(.5,Math.min(2.5,value));
   const fileRef=useRef<string|null>(null);
   const effectiveVariant=projectedVariant??variant;
+  const glbProvenance=useMemo(()=>isForm&&formStudy?{
+    projectId,
+    sourceSynthesisId:formStudy.sourceSynthesisId,
+    sourceResultIds:formStudy.sourceResultIds,
+    origin:"egg_morphology_parametric_prototype" as const,
+  }:undefined,[isForm,formStudy,projectId]);
   const sketch=useMemo(()=>isForm&&formStudy?formStudy.sketch:
     studyKind==="field"&&fieldState?buildEggYolkField(fieldState):
     studyKind==="object"?buildAbstractSpatialSketch(stage,effectiveVariant,iteration):
@@ -79,7 +85,7 @@ export default function EggYolkViewer({
     if(!isForm){setGeneratedGlbUrl(null);return;}
     let url:string|null=null;
     try{
-      const bytes=createSpatialGlb(sketch);
+      const bytes=createSpatialGlb(sketch,glbProvenance);
       url=URL.createObjectURL(new Blob([new Uint8Array(bytes)],{type:"model/gltf-binary"}));
       setGeneratedGlbUrl(url);
     }catch{
@@ -87,7 +93,7 @@ export default function EggYolkViewer({
       setGeneratedGlbUrl(null);
     }
     return()=>{if(url)URL.revokeObjectURL(url);};
-  },[isForm,sketch]);
+  },[isForm,sketch,glbProvenance]);
   useEffect(()=>{onSketchChange?.({stage,variant:effectiveVariant,iteration:sketch.iteration});},[stage,effectiveVariant,sketch.iteration,onSketchChange]);
   const projected=useMemo(()=>{
     const project=(p:Vec3)=>projectPoint(p,yaw,pitch,zoom*(studyKind==="field"&&!isForm?1.28:1));
@@ -217,13 +223,15 @@ export default function EggYolkViewer({
   }
   function download(){
     try{
-      const bytes=createSpatialGlb(sketch);
+      const bytes=createSpatialGlb(sketch,glbProvenance);
       const blob=new Blob([new Uint8Array(bytes)],{type:"model/gltf-binary"});
       const uri=URL.createObjectURL(blob);
       const anchor=document.createElement("a");
       const safeId=(projectId??"demo").slice(0,12).replace(/[^a-zA-Z0-9-]/g,"");
       anchor.href=uri;
-      anchor.download="EGG-"+safeId+"-v"+sketch.iteration+"-"+variant+"-"+stage+".glb";
+      anchor.download=isForm&&formStudy
+        ?"EGG-"+safeId+"-spatial-form-"+formStudy.sourceSynthesisId.slice(0,16)+".glb"
+        :"EGG-"+safeId+"-v"+sketch.iteration+"-"+variant+"-"+stage+".glb";
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
