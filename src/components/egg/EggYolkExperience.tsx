@@ -7,6 +7,7 @@ import EggYolkViewer from "./EggYolkViewer";
 import {resolveEggYolkFormBasis,type YolkLocalIdea} from "../../lib/eggYolkFormBasis";
 import {visualSeedFromText,blendEggYolkVisualSeed,type EggYolkFieldState} from "../../lib/eggYolkField";
 import {hasGroundedEggYolkMorphology} from "../../lib/eggYolkSemantic";
+import {buildEggSpatialForm} from "../../lib/eggSpatialFormEngine";
 import EggWorkspaceNavigation from "./EggWorkspaceNavigation";
 import EggSpherePanel from "./EggSpherePanel";
 import EggDocumentationPanel from "./EggDocumentationPanel";
@@ -241,6 +242,15 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
       return null;
     return review.morphology;
   },[project,completedSpatial?.synthesisId,completedSpatial?.cycleId]);
+  const spatialForm=useMemo(()=>buildEggSpatialForm({
+    intent:formBasis.identityText,
+    // Validated results from BOTH branches of this very same complete synthesis.
+    morphology:aiMorphology,
+    synthesisId:completedSpatial?.synthesisId??null,
+    level:completedSpatial?.level??1,
+    iteration:completedSpatial?.iteration??1,
+  }),[formBasis.identityText,aiMorphology,completedSpatial?.synthesisId,
+      completedSpatial?.level,completedSpatial?.iteration]);
   const yolkField=useMemo<EggYolkFieldState>(()=>{
     // Preserve identity of this Author Idea across all iterations.
     const original=visualSeedFromText(formBasis.identityText);
@@ -318,11 +328,13 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
 
       <section className="relative aspect-square w-[min(96vw,94dvh)] max-w-[1100px]" data-testid="yolk-central-object"
         data-morphology-source={aiMorphology?"cited_eight_spheres":completedSpatial?"structural_cycle":"provisional_idea"}
+        data-spatial-form={spatialForm?.status??"none"}
         aria-label="Пространственный объект">
         {!loading&&<EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
           level={1} iteration={1}
           projectId={project?.id} visualVersion={null}
           studyKind="field" fieldState={yolkField}
+          formStudy={spatialForm}
           minimalControls/>}
       </section>
       {id&&!project&&!loading&&<p role="alert" className="pointer-events-none absolute inset-x-5 top-5 text-center text-xs text-foreground/65">{notice||"Проект не загружен; отображается демонстрационный эскиз."}</p>}
@@ -381,7 +393,10 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
                   level={timeline?.level??project?.level??1}
                   iteration={timeline?.iteration??project?.iteration??1}
                   projectId={project?.id} visualVersion={timeline?.visual??null}
-          studyKind={exploratoryStudyKind} minimalControls/>
+                  studyKind={spatialForm?"field":exploratoryStudyKind}
+                  fieldState={yolkField}
+                  formStudy={activeCycleKey===cycleOptions.at(-1)?.key?spatialForm:null}
+                  minimalControls/>
               </div>
               <div className={(view==="egg"?"":"hidden")+" pointer-events-none absolute inset-[7%] rounded-[50%] border border-foreground/10"} aria-hidden="true"/>
               <div className={(view==="egg"?"":"hidden")+" pointer-events-none absolute inset-[18%] rounded-[50%] border border-foreground/[.06]"} aria-hidden="true"/>
