@@ -33,11 +33,20 @@ function hash(value:string):number{
   }
   return h>>>0;
 }
+/** Supplying current Author intent prevents an unrelated historic cycle from
+ * changing the visible field. Missing handoff never counts as a match.
+ */
 export function projectCompleteEggCycleToSpatial(
   project:EggProject,
+  authorIntent?:string,
 ):EggCycleSpatialProjection|null{
   const cycles=project.flowCycles??[];
-  const cycle=[...cycles].reverse().find(complete);
+  const normalized=authorIntent?.trim().toLocaleLowerCase();
+  const cycle=[...cycles].reverse().find(c=>complete(c)&&
+    (!normalized||(
+      (c.ideaHandoff?.intent??c.synthesis?.dna.authorIntent??"")
+        .trim().toLocaleLowerCase()===normalized
+    )));
   if(!cycle||!cycle.synthesis)return null;
   const h=hash(signature(cycle));
   const variants:SpatialVariant[]=["A","B","C"];
