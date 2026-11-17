@@ -89,11 +89,13 @@ export function eggMaterialInsight(
 export function readLocalEggMaterialMap(projectId:string):EggMaterialMapRecord|null{
  // A compact session backup keeps explicit Author approval visible when
  // Safari's localStorage is filled by image data URLs.
+ let latest:EggMaterialMapRecord|null=null;
  for(const storage of [localStorage,sessionStorage]){
   try{
    const record=readEggMaterialMapRecord(JSON.parse(storage.getItem(eggMaterialMapKey(projectId))||"null"));
-   if(record)return record;
+   if(record&&(!latest||Date.parse(record.acceptedAt??record.updatedAt)>
+     Date.parse(latest.acceptedAt??latest.updatedAt)))latest=record;
   }catch{/* Try the next local store, cloud remains separately authoritative. */}
  }
- return null;
+ return latest;
 }
