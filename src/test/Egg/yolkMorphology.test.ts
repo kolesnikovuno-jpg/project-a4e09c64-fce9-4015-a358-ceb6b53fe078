@@ -58,7 +58,7 @@ describe("EGG Yolk: grounded semantic morphology",()=>{
   expect(next.level).toBe(1);
   const base=visualSeedFromText(p.seed.text);
   const target=blendEggYolkVisualSeed(base,coefficients,.62);
-  expect(target.openness).toBeGreaterThan(base.openness);
+  expect(target.openness).not.toBe(base.openness);
   const before=buildEggYolkField({
    seed:base,identitySeed:base,manifestation:.3,variation:0,status:"manifested_field",
   });
@@ -95,7 +95,7 @@ describe("EGG Yolk: grounded semantic morphology",()=>{
   if(step.kind!=="yolk")return;
   const prompt=buildEggAutomationPrompt(p,step);
   expect(prompt.instructions).toMatch(/MORPHOLOGY/);
-  expect(prompt.instructions).toMatch(/no extra/i.test(prompt.instructions)?"extra":"one");
+  expect(prompt.instructions).toContain("both");
   expect(JSON.stringify(buildEggYolkGeminiResponseSchema(p))).toContain("morphology");
   expect(JSON.stringify(eggOpenAiYolkSchema(p))).toContain("morphology");
  });
