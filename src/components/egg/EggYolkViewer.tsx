@@ -3,6 +3,7 @@ import { Download, RotateCcw, Upload, X } from "lucide-react";
 import { buildSpatialSketch, buildAbstractSpatialSketch, createSpatialGlb, type SpatialStage, type SpatialVariant, type Vec3 } from "../../lib/eggSpatialGenerator";
 import type {EggVisualSnapshot} from "../../lib/eggVisualHistory";
 import {buildEggYolkField,type EggYolkFieldState} from "../../lib/eggYolkField";
+import type {EggSpatialFormStudy} from "../../lib/eggSpatialFormEngine";
 
 type Projection={x:number;y:number;depth:number};
 const STAGES:Array<{id:SpatialStage;label:string}>= [
@@ -28,7 +29,7 @@ function projectPoint(p:Vec3,yaw:number,pitch:number,zoom:number):Projection{
   return {x:300+x*factor,y:315-y*factor,depth};
 }
 export default function EggYolkViewer({
-  onFileChange, onSketchChange, level=1, iteration=1, projectId, visualVersion=null, minimalControls=false, studyKind="chair", projectedVariant=null, fieldState=null
+  onFileChange, onSketchChange, level=1, iteration=1, projectId, visualVersion=null, minimalControls=false, studyKind="chair", projectedVariant=null, fieldState=null, formStudy=null
 }:{
   onFileChange?:(fileName:string|null)=>void;
   /** Existing Author-linked source; never inferred from parametric local study. */
@@ -40,6 +41,8 @@ export default function EggYolkViewer({
   minimalControls?:boolean;
   studyKind?:"chair"|"object"|"field";
   fieldState?:EggYolkFieldState|null;
+  /** Sourced geometry from an existing eight-sphere Yolk review. Never AI image reconstruction. */
+  formStudy?:EggSpatialFormStudy|null;
   projectedVariant?:SpatialVariant|null;
 }){
   const [stage,setStage]=useState<SpatialStage>(()=>stageFromLevel(level));
@@ -52,7 +55,11 @@ export default function EggYolkViewer({
   const [fileError,setFileError]=useState("");
   const [viewerReady,setViewerReady]=useState(false);
   const [showSketch,setShowSketch]=useState(false);
-  const showingBound=!!visualVersion&&!showSketch;
+  const [showForm,setShowForm]=useState(true);
+  const [generatedGlbUrl,setGeneratedGlbUrl]=useState<string|null>(null);
+  const isForm=Boolean(formStudy&&showForm);
+  // Active sourced geometry takes priority over a historical, independent 2D image.
+  const showingBound=!!visualVersion&&!showSketch&&!formStudy;
   const directModel=showingBound&&visualVersion?.media==="model"&&
     visualVersion.sourceKind==="concept"&&
     /\.(?:glb|gltf)$/i.test(new URL(visualVersion.url).pathname)
@@ -63,10 +70,27 @@ export default function EggYolkViewer({
   const clampZoom=(value:number)=>Math.max(.5,Math.min(2.5,value));
   const fileRef=useRef<string|null>(null);
   const effectiveVariant=projectedVariant??variant;
-  const sketch=useMemo(()=>studyKind==="field"&&fieldState?buildEggYolkField(fieldState):studyKind==="object"?buildAbstractSpatialSketch(stage,effectiveVariant,iteration):buildSpatialSketch(stage,effectiveVariant,iteration),[stage,effectiveVariant,iteration,studyKind,fieldState]);
+  const sketch=useMemo(()=>isForm&&formStudy?formStudy.sketch:
+    studyKind==="field"&&fieldState?buildEggYolkField(fieldState):
+    studyKind==="object"?buildAbstractSpatialSketch(stage,effectiveVariant,iteration):
+    buildSpatialSketch(stage,effectiveVariant,iteration),
+    [stage,effectiveVariant,iteration,studyKind,fieldState,isForm,formStudy]);
+  useEffect(()=>{
+    if(!isForm){setGeneratedGlbUrl(null);return;}
+    let url:string|null=null;
+    try{
+      const bytes=createSpatialGlb(sketch);
+      url=URL.createObjectURL(new Blob([new Uint8Array(bytes)],{type:"model/gltf-binary"}));
+      setGeneratedGlbUrl(url);
+    }catch{
+      // Fallback to the very same rotated 3D quad geometry via SVG.
+      setGeneratedGlbUrl(null);
+    }
+    return()=>{if(url)URL.revokeObjectURL(url);};
+  },[isForm,sketch]);
   useEffect(()=>{onSketchChange?.({stage,variant:effectiveVariant,iteration:sketch.iteration});},[stage,effectiveVariant,sketch.iteration,onSketchChange]);
   const projected=useMemo(()=>{
-    const project=(p:Vec3)=>projectPoint(p,yaw,pitch,zoom*(studyKind==="field"?1.28:1));
+    const project=(p:Vec3)=>projectPoint(p,yaw,pitch,zoom*(studyKind==="field"&&!isForm?1.28:1));
     const quads=sketch.quads.map(q=>{
       const pts=q.corners.map(project);
       return {id:q.id,pts,depth:pts.reduce((n,p)=>n+p.depth,0)/pts.length};
@@ -81,13 +105,13 @@ export default function EggYolkViewer({
       id:p.id,size:p.size,opacity:p.opacity,tone:p.tone,
     })).sort((a,b)=>a.depth-b.depth);
     return {quads,paths,particles};
-  },[sketch,yaw,pitch,zoom,studyKind]);
+  },[sketch,yaw,pitch,zoom,studyKind,isForm]);
 
   useEffect(()=>{setStage(stageFromLevel(level));},[level]);
   useEffect(()=>{setShowSketch(false);},[visualVersion?.id]);
   useEffect(()=>()=>{if(fileRef.current)URL.revokeObjectURL(fileRef.current);},[]);
   useEffect(()=>{
-    if(!fileUrl&&!directModel)return;
+    if(!fileUrl&&!directModel&&!(isForm&&generatedGlbUrl))return;
     if(window.customElements?.get("model-viewer")){setViewerReady(true);return;}
     let script=document.querySelector<HTMLScriptElement>("#egg-yolk-model-viewer");
     if(!script){
@@ -102,7 +126,7 @@ export default function EggYolkViewer({
     script.addEventListener("error",fail);
     window.customElements.whenDefined("model-viewer").then(()=>{if(active)setViewerReady(true)});
     return()=>{active=false;script?.removeEventListener("error",fail)};
-  },[fileUrl,directModel]);
+  },[fileUrl,directModel,isForm,generatedGlbUrl]);
   function dragStart(e:PointerEvent<SVGSVGElement>){
     if(e.pointerType==="touch")return;
     pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -217,7 +241,7 @@ export default function EggYolkViewer({
   ]:VARIANTS;
   const pts=(points:Projection[])=>points.map(p=>p.x.toFixed(1)+","+p.y.toFixed(1)).join(" ");
   return <div className="relative flex h-full min-h-0 w-full flex-col items-center justify-center" data-testid="yolk-viewer">
-    {!minimalControls&&!showingBound&&<div className="absolute inset-x-0 top-[4%] z-20 flex flex-wrap justify-center gap-2 px-2" role="group" aria-label="Уровень пространственной проработки">
+    {!minimalControls&&!showingBound&&!isForm&&<div className="absolute inset-x-0 top-[4%] z-20 flex flex-wrap justify-center gap-2 px-2" role="group" aria-label="Уровень пространственной проработки">
       {STAGES.map(s=><button key={s.id} type="button" onClick={()=>setStage(s.id)} aria-pressed={stage===s.id}
         data-testid={"yolk-stage-"+s.id}
         className={"min-h-8 rounded-full border px-3 py-1 text-[11px] font-light backdrop-blur-sm transition-colors "+
@@ -253,8 +277,22 @@ export default function EggYolkViewer({
             </a>
           </div>
         </div>
-      ) : !fileUrl?<svg viewBox="0 0 600 600" role="img"
-        aria-label={studyKind==="field"?"Облако точек Желтка: поле плотности, локальные сгущения и скрытые контуры; предварительная визуальная гипотеза":"Поворотный исследовательский эскиз "+(studyKind==="object"?"неутилитарного объекта":"кресла")+": "+label+", вариант "+variant+"; не утверждённая форма"}
+      ) : isForm&&generatedGlbUrl&&viewerReady&&!fileUrl
+        ?createElement("model-viewer",{
+          src:generatedGlbUrl,
+          alt:"Исследовательская параметрическая 3D-форма кресла на основе синтеза восьми сфер",
+          "camera-controls":true,
+          "auto-rotate":false,
+          "interaction-prompt":"none",
+          "touch-action":"pan-y",
+          "shadow-intensity":"0.35",
+          "exposure":"1.05",
+          "data-testid":"yolk-spatial-form-3d",
+          style:{height:"100%",width:"100%",background:"transparent"},
+        })
+        : !fileUrl?<svg viewBox="0 0 600 600" role="img"
+        aria-label={isForm?"Поворотная параметрическая форма кресла: сиденье, перфорированная спинка и опоры; предварительная пространственная гипотеза":
+          studyKind==="field"?"Облако точек Желтка: поле плотности, локальные сгущения и скрытые контуры; предварительная визуальная гипотеза":"Поворотный исследовательский эскиз "+(studyKind==="object"?"неутилитарного объекта":"кресла")+": "+label+", вариант "+variant+"; не утверждённая форма"}
         className="h-full w-full overflow-visible cursor-grab select-none touch-none active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{overflow:"visible",touchAction:"none"}}
         tabIndex={0} onPointerDown={dragStart} onPointerMove={dragMove} onPointerUp={dragStop}
         onPointerCancel={dragStop} onLostPointerCapture={dragStop} onTouchStart={touchStart} onTouchMove={touchMove} onTouchEnd={touchEnd} onTouchCancel={touchEnd} onWheel={wheel}
@@ -270,17 +308,18 @@ export default function EggYolkViewer({
           </linearGradient>
         </defs>
         {projected.quads.map(q=><polygon key={q.id} points={pts(q.pts)}
-          fill="url(#egg-generated-fabric)" opacity={studyKind==="field"?.10:.60} stroke="#b8a88e" strokeWidth=".3" strokeOpacity={studyKind==="field"?.23:.6}/>)}
+          fill="url(#egg-generated-fabric)" opacity={isForm?.90:studyKind==="field"?.10:.60}
+          stroke="#b8a88e" strokeWidth=".3" strokeOpacity={isForm?.32:studyKind==="field"?.23:.6}/>)}
         {projected.paths.map(path=><g key={path.id}>
           <polyline points={pts(path.pts)} fill="none"
             stroke={path.material==="frame"?"#8a7057":"#766b5e"}
-            strokeWidth={studyKind==="field"?Math.max(.9,path.radius*240):(path.material==="frame"?Math.max(4,path.radius*260):1.8)}
-            strokeOpacity={studyKind==="field"?.08+.15*(fieldState?.manifestation??0):(path.material==="frame"?.83:.78)}
+            strokeWidth={isForm?Math.max(2,path.radius*185):studyKind==="field"?Math.max(.9,path.radius*240):(path.material==="frame"?Math.max(4,path.radius*260):1.8)}
+            strokeOpacity={isForm?.80:studyKind==="field"?.08+.15*(fieldState?.manifestation??0):(path.material==="frame"?.83:.78)}
             strokeLinejoin="round" strokeLinecap="round"/>
-          {studyKind!=="field"&&path.material==="frame"&&<polyline points={pts(path.pts)} fill="none"
+          {(studyKind!=="field"||isForm)&&path.material==="frame"&&<polyline points={pts(path.pts)} fill="none"
             stroke="#d7bd98" strokeWidth="1.2" opacity=".45" strokeLinecap="round"/>}
         </g>)}
-        {studyKind==="field"&&projected.particles.map(p=><circle key={p.id}
+        {studyKind==="field"&&!isForm&&projected.particles.map(p=><circle key={p.id}
           cx={p.x} cy={p.y}
           r={p.size*Math.max(.72,1+p.depth*.11)}
           fill={p.tone==="core"?"#766c60":p.tone==="light"?"#c6b59d":"#988a76"}
@@ -293,12 +332,31 @@ export default function EggYolkViewer({
         style:{height:"100%",width:"100%",background:"transparent"}
       }):<div className="grid h-full place-items-center text-xs text-foreground/60">Подключаем 3D-просмотрщик…</div>}
     </div>
-    {!minimalControls&&!showingBound&&<div className="absolute inset-x-0 bottom-[12%] z-20 flex flex-wrap justify-center gap-1.5 px-2" role="group" aria-label="Линии формообразования">
+    {!minimalControls&&!showingBound&&!isForm&&<div className="absolute inset-x-0 bottom-[12%] z-20 flex flex-wrap justify-center gap-1.5 px-2" role="group" aria-label="Линии формообразования">
       {variants.map(v=><button type="button" key={v.id} onClick={()=>setVariant(v.id)}
         aria-pressed={variant===v.id} data-testid={"yolk-variant-"+v.id}
         className={"min-h-8 rounded-full border px-2.5 py-1 text-[10px] font-light backdrop-blur-sm "+
           (variant===v.id?"border-foreground/50 bg-background/95 text-foreground":"border-foreground/15 bg-background/70 text-foreground/55 hover:border-foreground/40")}>
         {v.label}</button>)}
+    </div>}
+    {formStudy&&!showingBound&&<div className="absolute bottom-[10%] left-0 right-0 z-20 flex flex-col items-center gap-1 pointer-events-none"
+      data-testid="yolk-spatial-form-status">
+      <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-foreground/15 bg-background/85 px-3 py-1.5 text-[11px] shadow-sm backdrop-blur">
+        <button type="button" data-testid="yolk-form-toggle" aria-pressed={isForm}
+          onClick={()=>{setShowForm(true);setFileError("");}}
+          className={isForm?"font-medium text-foreground":"text-foreground/55"}>Форма</button>
+        <span className="text-foreground/25">/</span>
+        <button type="button" data-testid="yolk-field-toggle" aria-pressed={!isForm}
+          onClick={()=>{setShowForm(false);setFileError("");}}
+          className={!isForm?"font-medium text-foreground":"text-foreground/55"}>Поле</button>
+        {isForm&&<button type="button" data-testid="yolk-form-download" onClick={download}
+          className="ml-1 border-l border-foreground/20 pl-2 text-foreground/60">
+          GLB ↓
+        </button>}
+      </div>
+      <span className="max-w-[85%] text-center text-[10px] leading-snug text-foreground/55">
+        {isForm?"3D-гипотеза · не утверждена":"Исходное поле · не утверждено"}
+      </span>
     </div>}
     <div className={(minimalControls?"hidden":"flex")+" absolute inset-x-2 bottom-[2%] z-20 flex flex-wrap items-center justify-center gap-2 text-[11px]"}>
       {visualVersion&&<button type="button" onClick={()=>setShowSketch(v=>!v)}
@@ -320,6 +378,10 @@ export default function EggYolkViewer({
       </label>}
     </div>
     {fileError&&<p role="alert" className="absolute bottom-[22%] left-5 right-5 z-30 rounded bg-background/95 p-2 text-center text-xs text-red-600">{fileError}</p>}
-    <span className="sr-only">Три режима: линии, каркас, объём. Три условных геометрических варианта, не выведенных ИИ из содержания идеи. Вращайте одним пальцем, приближайте и отдаляйте двумя пальцами или колесом мыши. Сохранение GLB выгружает геометрию локально, без утверждения и отправки на сервер.</span>
+    <span className="sr-only">{formStudy?
+      "Исследовательская 3D-форма выведена из существующего синтеза восьми сфер с сохранением идентичности параметрической геометрии. Это не цифровая реконструкция изображения и не готовая конструкция.":
+      "Три режима: линии, каркас, объём. Три условных геометрических варианта, не выведенных ИИ из содержания идеи."}
+      Вращайте модель, приближайте и отдаляйте двумя пальцами или колесом мыши.
+      Сохранение GLB выгружает геометрию локально, без утверждения и отправки на сервер.</span>
   </div>;
 }
