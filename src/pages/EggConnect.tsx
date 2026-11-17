@@ -275,7 +275,7 @@ export default function EggConnect() {
       </section>}
       <section className="rounded-xl border border-border p-6">
         <h2 className="mb-3 text-xl font-medium">Мои проекты</h2>
-        <p className="mb-3 text-sm text-muted-foreground">Проекты ниже читаются из EGG Engine. Визуальное Яйцо пока сохраняет изменения локально: эти два состояния ещё не синхронизированы.</p>
+        <p className="mb-3 text-sm text-muted-foreground">Проекты ниже читаются из EGG Engine. Холсты синхронизируются с отдельными черновиками EGG при действующем входе и соединении. Перед сменой устройства проверьте отметку «В EGG · синхронизировано» на нужном холсте; при конфликте версия выбирается Автором.</p>
         {user && client && <EggNewProject client={client} />}
         {user && projectError && <p role="status" className="mb-3 text-sm">{projectError}</p>}
         {user && projects === null && !projectError && <p className="mb-3 text-sm">Загружаем проекты…</p>}
