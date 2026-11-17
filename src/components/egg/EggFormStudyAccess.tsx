@@ -32,6 +32,7 @@ export default function EggFormStudyAccess({projectId,intent,constraints,
 }){
  const [snapshot,setSnapshot]=useState<{revision:number;token:string}|null>(null);
  const [study,setStudy]=useState<FormStudy|null>(null);
+ const [studies,setStudies]=useState<FormStudy[]>([]);
  const [busy,setBusy]=useState(false);
  const [notice,setNotice]=useState("");
  const source=useMemo<Source>(()=>normalizeEggIdeaFormSource({
@@ -68,15 +69,18 @@ export default function EggFormStudyAccess({projectId,intent,constraints,
  useEffect(()=>{
   if(!snapshot||!canGenerate)return;
   let active=true;
-  setStudy(null);
+  setStudy(null);setStudies([]);
   const timer=setTimeout(()=>{void (async()=>{
    try{
     const response=await fetch("/api/egg-flow-ai?op=form-study&projectId="+
       encodeURIComponent(projectId)+"&synthesisId="+encodeURIComponent(sourceId),{
       cache:"no-store",headers:{Authorization:"Bearer "+snapshot.token},
     });
-    const data=await response.json() as {ok?:boolean;study?:FormStudy|null};
-    if(active&&response.ok&&data.ok)setStudy(data.study??null);
+    const data=await response.json() as {ok?:boolean;study?:FormStudy|null;studies?:FormStudy[]};
+    if(active&&response.ok&&data.ok){
+     const available=data.studies??(data.study?[data.study]:[]);
+     setStudies(available);setStudy(available[0]??null);
+    }
    }catch{/* Image is optional; no fake local fallback. */}
   })();},300);
   return()=>{active=false;clearTimeout(timer);};
@@ -94,6 +98,7 @@ export default function EggFormStudyAccess({projectId,intent,constraints,
    if(!result.ok||!data.ok||!data.study)
     throw Error(errorText[data.error??""]??"Ошибка генерации образа");
    setStudy(data.study);
+   setStudies(previous=>[data.study!,...previous.filter(v=>v.id!==data.study!.id)].slice(0,3));
    setNotice("Образ сохранён в проекте.");
   }catch(e){setNotice(e instanceof Error?e.message:"Не удалось создать образ");}
   finally{setBusy(false);}
@@ -108,16 +113,27 @@ export default function EggFormStudyAccess({projectId,intent,constraints,
      </p>
     </div>
     <button type="button" onClick={()=>void generate()}
-     disabled={!snapshot||!canGenerate||busy}
+     disabled={!snapshot||!canGenerate||busy||studies.length>=3}
      data-testid="egg-generate-form-image"
      className="min-h-10 rounded-full border border-foreground/40 px-3 py-2 text-xs disabled:opacity-45">
-     {busy?"Создаётся образ…":study?"Новый вариант":"Создать образ"}
+     {busy?"Создаётся образ…":studies.length>=3?"3 варианта":study?"Новый вариант":"Создать образ"}
     </button>
    </div>
    {study&&<div className="space-y-2" data-testid="egg-generated-form-image">
     <img src={study.imageUrl} alt="Пробный образ формы по текущему замыслу Автора"
      className="mx-auto max-h-[480px] w-full max-w-[600px] rounded-xl object-contain"
      referrerPolicy="no-referrer"/>
+    {studies.length>1&&<div className="flex items-center gap-2 overflow-x-auto pb-1" aria-label="Варианты исследования формы">
+      {studies.slice().reverse().map((version,i)=><button key={version.id}
+        type="button" onClick={()=>setStudy(version)}
+        aria-label={"Показать вариант "+(i+1)}
+        aria-pressed={study.id===version.id}
+        className={"shrink-0 rounded-lg border p-1 transition-opacity "+
+          (study.id===version.id?"border-foreground/60":"border-foreground/15 opacity-70")}>
+        <img src={version.imageUrl} alt={"Вариант "+(i+1)}
+          className="h-14 w-14 rounded object-cover" loading="lazy" referrerPolicy="no-referrer"/>
+      </button>)}
+     </div>}
     <details className="text-xs text-foreground/65">
      <summary className="cursor-pointer">Показать запрос к ИИ</summary>
      <p className="mt-2 max-h-36 overflow-y-auto whitespace-pre-wrap break-words rounded-lg bg-foreground/[.035] p-3 font-mono text-[11px] leading-relaxed">{study.prompt}</p>
