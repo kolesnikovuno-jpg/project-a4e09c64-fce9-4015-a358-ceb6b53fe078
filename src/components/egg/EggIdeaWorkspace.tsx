@@ -5,6 +5,7 @@ import { makePreview, type MatterCard } from "./EggMatterDialogue";
 import EggWorkspaceNavigation from "./EggWorkspaceNavigation";
 import EggIterationBridge from "./EggIterationBridge";
 import EggFormStudyAccess from "./EggFormStudyAccess";
+import EggWorkspaceSync from "./EggWorkspaceSync";
 import EggIdeaProjectFork from "./EggIdeaProjectFork";
 import type {EggIdeaHandoff} from "../../lib/eggIdeaHandoff";
 import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
@@ -176,6 +177,19 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
       className="rounded-full border border-foreground/35 bg-background px-3 py-2 text-xs disabled:opacity-40">
       Желток · 3D-поле
      </button>
+     <EggWorkspaceSync projectId={projectId} scope="idea" ready={loaded}
+      value={{intent,constraints,savedDraft,spacePhoto,messages:messages.slice(-40)}}
+      isEmpty={v=>!v.intent.trim()&&!v.savedDraft.trim()&&!v.spacePhoto&&!v.constraints.trim()&&!v.messages.length}
+      onRestore={v=>{
+       if(!v||typeof v!=="object")return;
+       setIntent(typeof v.intent==="string"?v.intent.slice(0,3000):"");
+       setConstraints(typeof v.constraints==="string"?v.constraints.slice(0,2000):"");
+       setSavedDraft(typeof v.savedDraft==="string"?v.savedDraft.slice(0,4000):"");
+       setSpacePhoto(typeof v.spacePhoto==="string"&&
+        /^data:image\/jpeg;base64,/.test(v.spacePhoto)&&v.spacePhoto.length<210000?v.spacePhoto:"");
+       setMessages(Array.isArray(v.messages)?v.messages.filter(m=>m&&
+        (m.role==="assistant"||m.role==="user")&&typeof m.content==="string").slice(-40):[]);
+      }} className="w-full" />
     </div>
     <label className="block text-xs text-foreground/60">Рамки · необязательно
      <textarea aria-label="Рамки идеи" value={constraints} maxLength={2000} rows={2} onChange={e=>setConstraints(e.target.value)}
@@ -238,7 +252,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
       <p><strong>Проект EGG:</strong> <code className="break-all">{projectId}</code></p>
       <p><strong>Версия сайта:</strong> <code>{typeof __EGG_BUILD_SHA__==="string"?__EGG_BUILD_SHA__:"local"}</code> · GitHub → Vercel</p>
       <p><strong>Рабочая линия:</strong> integration/egg-unified-2026-11-12</p>
-      <p><strong>Этот холст:</strong> черновик в браузере данного устройства. Он не равен утверждённому серверному циклу и пока не синхронизируется между устройствами.</p>
+      <p><strong>Этот холст:</strong> локальный черновик с отдельной серверной синхронизацией. Статус сохранения отображается у поля намерения. Он не равен утверждённому циклу и не меняет ДНК.</p>
      </div>
     </details>
    </div>
