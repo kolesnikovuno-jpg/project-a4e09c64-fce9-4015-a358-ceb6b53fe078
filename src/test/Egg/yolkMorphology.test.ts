@@ -95,7 +95,7 @@ describe("EGG Yolk: grounded semantic morphology",()=>{
   if(step.kind!=="yolk")return;
   const prompt=buildEggAutomationPrompt(p,step);
   expect(prompt.instructions).toMatch(/MORPHOLOGY/);
-  expect(prompt.instructions).toContain("both");
+  expect(prompt.instructions).toContain("EACH of the two completed flows");
   expect(JSON.stringify(buildEggYolkGeminiResponseSchema(p))).toContain("morphology");
   expect(JSON.stringify(eggOpenAiYolkSchema(p))).toContain("morphology");
  });
