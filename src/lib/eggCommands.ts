@@ -119,6 +119,7 @@ export const eggMutationSchema = z.discriminatedUnion("command", [
     summary:eggYolkReviewDraftSchema.shape.summary,
     interpretations:eggYolkReviewDraftSchema.shape.interpretations,
     limitations:eggYolkReviewDraftSchema.shape.limitations,
+    morphology:eggYolkReviewDraftSchema.shape.morphology,
   }).strict(),
   shared.extend({
     command: z.literal("register_file"),
@@ -211,6 +212,7 @@ export const runEggMutation = (
         synthesisId:mutation.synthesisId,summary:mutation.summary,
         interpretations:mutation.interpretations,
         limitations:mutation.limitations,
+        morphology:mutation.morphology,
       } as EggYolkReviewDraft});
     case "propose_seed":
       return proposeEggSeed(state, mutation.seed, at);
