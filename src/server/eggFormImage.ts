@@ -11,6 +11,7 @@ import {createClient} from "@supabase/supabase-js";
 import {getEggStorageConfig} from "./eggStorageConfig.js";
 import type {EggProject} from "../lib/eggEngine.js";
 import type {EggFlowCycle} from "../lib/eggFlowCycle.js";
+import {eggIdeaFormSourceId,normalizeEggIdeaFormSource,type EggIdeaFormSource} from "../lib/eggIdeaFormSource.js";
 
 type Req=IncomingMessage&{body?:unknown};
 type Row={id:string;project_id:string;owner_id:string;cycle_id:string;
@@ -59,7 +60,7 @@ async function readBody(req:Req):Promise<unknown>{
   for await(const part of req){
     const chunk=Buffer.isBuffer(part)?part:Buffer.from(part as Uint8Array);
     size+=chunk.length;
-    if(size>4096)throw Error("too_large");
+    if(size>16000)throw Error("too_large");
     chunks.push(chunk);
   }
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
@@ -74,46 +75,44 @@ async function callOpenAI(key:string,endpoint:string,payload:unknown,timeoutMs:n
     });
   }finally{clearTimeout(timer);}
 }
-async function formPrompt(key:string,project:EggProject,cycle:EggFlowCycle):Promise<string>{
-  // Dedicated direct OpenAI model. EGG_AUTOMATION_MODEL may be a Gateway
-  // provider alias and must never select the model for api.openai.com.
-  const model="gpt-4.1-mini";
-  const response=await callOpenAI(key,"responses",{
-    model,store:false,max_output_tokens:1100,
-    instructions:[
-      "You are the EGG spatial interpretation specialist, not an image renderer.",
-      "Read the original idea and ALL eight sphere contributions as exploratory material.",
-      "Derive ONE coherent art-directed image prompt in English, not an arbitrary shape.",
-      "Capture the author's intention, spatial character, tensions, silhouette, density,",
-      "subtle hints of details, and a distinct relationship to surrounding negative space.",
-      "Early mental form: concentrated luminous particulate field, partial contour",
-      "attractors, emerging morphological accents, neither a random sphere nor a finished CAD object.",
-      "If evidence does not establish scale, materials, geometry or product type, DO NOT invent these as facts.",
-      "Treat any visual choices as exploratory hypotheses. Do not claim physical validation.",
-      "No labels, captions, lettering, people, logos, or diagram annotations.",
-      "Do not invent a product type, building, mechanics, or materials absent from the sources.",
-      "Return ONLY JSON with one property: image_prompt (string, 100-1800 chars)."
-    ].join(" "),
-    input:scope(project,cycle),text:{format:{type:"json_object"}},
-  },45000);
-  if(!response.ok){
-    console.warn("egg_form_provider_response",{stage:"prompt",status:response.status,model});
-    throw Error(response.status===429?"rate_limited":
-      response.status===401||response.status===403?"model_not_authorized":
-      response.status===400||response.status===404?"prompt_request_invalid":"prompt_failed");
-  }
-  const data=await response.json() as {
-    status?:string;output?:Array<{type?:string;content?:Array<{type?:string;text?:string}>}>;
-  };
-  if(data.status!=="completed")throw Error("prompt_incomplete");
-  const raw=data.output?.flatMap(x=>x.type==="message"?(x.content??[]):[])
-    .filter(x=>x.type==="output_text").map(x=>x.text??"").join("")??"";
-  let prompt="";
-  try{const parsed=JSON.parse(raw) as {image_prompt?:unknown};
-    if(typeof parsed.image_prompt==="string")prompt=parsed.image_prompt.trim();
-  }catch{/* fail closed */}
-  if(prompt.length<100||prompt.length>1800)throw Error("invalid_prompt");
-  return prompt;
+/** The image model interprets the real source directly, avoiding a second
+ * text-model call and preserving the explicit distinction between Idea and
+ * the old completed eight-sphere synthesis. This prompt is a working study,
+ * never an Author approval, established geometry, or AI-generated DNA.
+ */
+function ideaImagePrompt(source:EggIdeaFormSource):string{
+ const input=normalizeEggIdeaFormSource(source);
+ return [
+  "EGG / AUTHOR'S CURRENT IDEA — EXPLORATORY FORM IMAGE",
+  "Create ONE distinct exploratory visual manifestation of the author's idea below.",
+  "Interpret the meaning, not just a literal word or generic cloud. Spatial presence",
+  "should be dense enough to suggest a recognizable potential morphology, with",
+  "differential particulate density, voids, contour attraction and emerging details.",
+  "Do not predetermine an engineering solution, final material or product if not specified.",
+  "Favor spatial fidelity to the author's words over stock shapes and decorative effects.",
+  "A single coherent form in quiet warm neutral space; no captions, lettering or diagrams.",
+  "All visual design choices not explicitly stated are hypotheses, not approved facts.",
+  "DO NOT interpret any previous unrelated project cycles as part of this idea.",
+  "AUTHOR INTENT: "+input.intent,
+  "AUTHOR'S LIMITS (only what is stated): "+(input.constraints||"None specified"),
+  "CURRENT SAVED WORKING IDEA DRAFT (not approved): "+(input.draft||"None"),
+  "SELECTED MATERIAL FIELD INSIGHT: "+(input.materialInsight||"None"),
+  "SELECTED MATERIALS (metadata only; images are NOT transmitted):",
+  ...input.materials.map(m=>"- "+m.type+": "+m.text),
+ ].join("\n").slice(0,11800);
+}
+function cycleImagePrompt(project:EggProject,cycle:EggFlowCycle):string{
+ return [
+  "EGG / COMPLETED EIGHT-SPHERE CYCLE — EXPLORATORY FORM IMAGE",
+  "Interpret this cycle's real author idea and all eight sphere results into ONE",
+  "source-grounded spatial manifestation. Distinguish constraints from hypotheses.",
+  "Do not resolve unknown construction details as facts. The form is not a finalized product.",
+  "Dense particulate field with emerging contours and subtle localized detail nodes;",
+  "the intended product type, when explicitly stated, should remain recognizable.",
+  "A single coherent form in quiet warm neutral space; no captions or lettering.",
+  "SOURCE AND EIGHT SPHERES:",
+  scope(project,cycle),
+ ].join("\n").slice(0,11800);
 }
 async function generateImage(key:string,prompt:string):Promise<Buffer>{
   const image=await callOpenAI(key,"images/generations",{
@@ -154,18 +153,35 @@ export async function eggFormImageHandler(req:Req,res:ServerResponse){
   let projectId=url.searchParams.get("projectId")??"";
   let synthesisId=url.searchParams.get("synthesisId")??"";
   let revision:number|undefined;
+  let idea:EggIdeaFormSource|null=null;
   if(req.method==="POST"){
     let payload:unknown;
     try{payload=await readBody(req);}catch{return fail(res,400,"invalid_request");}
     if(!payload||typeof payload!=="object"||Array.isArray(payload))
       return fail(res,400,"invalid_request");
+    if(JSON.stringify(payload).length>14000)return fail(res,413,"invalid_request");
     const o=payload as Record<string,unknown>;
     projectId=typeof o.projectId==="string"?o.projectId:"";
     synthesisId=typeof o.synthesisId==="string"?o.synthesisId:"";
     revision=typeof o.expectedRevision==="number"?o.expectedRevision:undefined;
+    if(o.idea!==undefined){
+      if(!o.idea||typeof o.idea!=="object"||Array.isArray(o.idea))
+        return fail(res,400,"invalid_idea");
+      const v=o.idea as Record<string,unknown>;
+      if(typeof v.intent!=="string"||v.intent.trim().length<8||
+        v.intent.length>3000||typeof v.constraints!=="string"||v.constraints.length>2000||
+        typeof v.draft!=="string"||v.draft.length>3000||
+        typeof v.materialInsight!=="string"||v.materialInsight.length>1400||
+        !Array.isArray(v.materials)||v.materials.length>20||
+        v.materials.some(x=>!x||typeof x!=="object"||typeof x.type!=="string"||
+          typeof x.text!=="string"||x.text.length>250||x.type.length>40))
+        return fail(res,400,"invalid_idea");
+      idea=normalizeEggIdeaFormSource(v as EggIdeaFormSource);
+    }
   }
   if(!/^[a-f\d-]{36}$/i.test(projectId)||synthesisId.length>120||
-    (req.method==="POST"&&(revision===undefined||!Number.isInteger(revision)||revision<0||!synthesisId)))
+    (req.method==="POST"&&(revision===undefined||!Number.isInteger(revision)||revision<0||
+      (!synthesisId&&!idea))))
     return fail(res,400,"invalid_request");
   try{
     const auth=createClient(cfg.url,cfg.publishableKey,{auth:{
@@ -185,10 +201,13 @@ export async function eggFormImageHandler(req:Req,res:ServerResponse){
     if(project.id!==projectId||project.schema!=="egg.engine/0.1")
       return fail(res,409,"invalid_project");
     if(req.method==="POST"&&row.revision!==revision)return fail(res,409,"revision_conflict");
-    const cycle=synthesisId?(project.flowCycles??[]).find(c=>c.synthesis?.id===synthesisId):
+    const draftMode=Boolean(idea)||/^idea:[0-9a-f]{16}$/.test(synthesisId);
+    const cycle=draftMode?null:synthesisId?
+      (project.flowCycles??[]).find(c=>c.synthesis?.id===synthesisId):
       [...(project.flowCycles??[])].reverse().find(complete);
-    if(!cycle||!complete(cycle))return fail(res,409,"complete_synthesis_required");
-    const id=cycle.synthesis!.id;
+    if(!draftMode&&(!cycle||!complete(cycle)))
+      return fail(res,409,"complete_synthesis_required");
+    const id=idea?eggIdeaFormSourceId(idea):draftMode?synthesisId:cycle!.synthesis!.id;
     if(req.method==="GET"){
       const {data:latest,error:latestError}=await db.from("egg_form_studies")
         .select("*").eq("project_id",projectId).eq("owner_id",ownerId)
@@ -213,17 +232,19 @@ export async function eggFormImageHandler(req:Req,res:ServerResponse){
       .eq("owner_id",ownerId).eq("synthesis_id",id);
     if(countError)return fail(res,503,"database_unavailable");
     if((count??0)>=3)return fail(res,409,"study_limit_reached");
-    const prompt=await formPrompt(key,project,cycle);
+    // The image model itself performs semantic interpretation of this source.
+    // No unrelated sphere synthesis can influence a local Idea draft.
+    const prompt=idea?ideaImagePrompt(idea):cycleImagePrompt(project,cycle!);
     const bytes=await generateImage(key,prompt);
     const studyId=randomUUID();
     const path="generated-form/"+ownerId+"/"+projectId+"/"+studyId+".webp";
     const {error:uploadError}=await db.storage.from(BUCKET)
       .upload(path,bytes,{contentType:"image/webp",upsert:false,cacheControl:"60"});
     if(uploadError)return fail(res,503,"storage_unavailable");
-    const sourceKind=cycle.level===1?
+    const sourceKind=idea?"idea_draft_visual_hypothesis":cycle!.level===1?
       "unapproved_idea_with_completed_cycle":"completed_cycle_visual_hypothesis";
     const {data:saved,error:saveError}=await db.from("egg_form_studies").insert({
-      id:studyId,project_id:projectId,owner_id:ownerId,cycle_id:cycle.id,
+      id:studyId,project_id:projectId,owner_id:ownerId,cycle_id:cycle?.id??"idea-draft",
       synthesis_id:id,form_prompt:prompt,image_path:path,model:IMAGE_MODEL,
       source_kind:sourceKind,
     }).select("*").single();
@@ -232,7 +253,7 @@ export async function eggFormImageHandler(req:Req,res:ServerResponse){
       .createSignedUrl(path,3600);
     if(linkError||!link)return fail(res,503,"storage_unavailable");
     return send(res,{ok:true,study:{id:studyId,prompt,
-      imageUrl:link.signedUrl,model:IMAGE_MODEL,sourceKind,cycleId:cycle.id,
+      imageUrl:link.signedUrl,model:IMAGE_MODEL,sourceKind,cycleId:cycle?.id??"idea-draft",
       synthesisId:id,createdAt:(saved as Row).created_at,is3d:false,approved:false,
     }});
   }catch(error){
