@@ -149,7 +149,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
    </div>
    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pb-36 md:pb-5">
     <EggFormStudyAccess projectId={projectId} intent={intent} constraints={constraints}
-      savedDraft={savedDraft} materialInsight={materialInsight} materials={materials}/>
+      savedDraft={savedDraft} materialInsight={materialInsight} materials={materials} spacePhoto={spacePhoto}/>
     <label className="block text-xs text-foreground/60">Намерение Автора
      <textarea aria-label="Намерение Автора" value={intent} maxLength={3000} rows={4} onChange={e=>{setIntent(e.target.value);setDraftSavedNotice(false);}}
       placeholder="Что хочешь инициировать? Например: неутилитарный элемент пространства — отдельная нота…"
@@ -179,7 +179,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
       <img src={spacePhoto} alt="Загруженное фото пространства" className="max-h-36 min-w-0 flex-1 rounded-lg object-contain"/>
       <button type="button" onClick={()=>setSpacePhoto("")} aria-label="Удалить фото пространства" className="rounded-full border border-foreground/20 p-2"><X size={14}/></button>
      </div>}
-     <p className="text-[10px] opacity-55">Имеет значение видимая среда; точные размеры из фотографии не определяются. Фото сохраняется локально в уменьшенном виде.</p>
+     <p className="text-[10px] opacity-55">Фото используется в диалоге и при создании образа как среда, а не образец формы. Размеры из фотографии не определяются; оригинал сохраняется локально в уменьшенном виде.</p>
     </div>
     <div className="space-y-2">
      <div className="text-xs text-foreground/70">Поле из «Материального» · {materials.length} материалов</div>
