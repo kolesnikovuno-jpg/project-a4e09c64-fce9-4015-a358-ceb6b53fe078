@@ -17,6 +17,7 @@ const errorText:Record<string,string>={
   storage_unavailable:"Хранилище изображений временно недоступно.",
   database_unavailable:"База данных временно недоступна.",
   invalid_idea:"Заполните текущее намерение Автора.",
+  invalid_idea_photo:"Фото пространства некорректно. Загрузите его повторно.",
   study_limit_reached:"Для этой версии идеи доступны три исследования формы.",
   revision_conflict:"Проект изменился. Откройте страницу заново.",
   generation_failed:"Не удалось завершить генерацию. Причина записана в журнале EGG.",
@@ -26,9 +27,9 @@ const errorText:Record<string,string>={
  * the image or the eight-sphere synthesis of a historical project.
  */
 export default function EggFormStudyAccess({projectId,intent,constraints,
- savedDraft,materialInsight,materials}:{
+ savedDraft,materialInsight,materials,spacePhoto}:{
  projectId:string;intent:string;constraints:string;savedDraft:string;
- materialInsight:string;materials:{type:string;text:string}[];
+ materialInsight:string;materials:{type:string;text:string}[];spacePhoto:string;
 }){
  const [snapshot,setSnapshot]=useState<{revision:number;token:string}|null>(null);
  const [study,setStudy]=useState<FormStudy|null>(null);
@@ -37,8 +38,8 @@ export default function EggFormStudyAccess({projectId,intent,constraints,
  const [notice,setNotice]=useState("");
  const source=useMemo<Source>(()=>normalizeEggIdeaFormSource({
   intent,constraints,draft:savedDraft,materialInsight,
-  materials:materials.map(m=>({type:m.type,text:m.text})),
- }),[intent,constraints,savedDraft,materialInsight,materials]);
+  materials:materials.map(m=>({type:m.type,text:m.text})),spacePhoto,
+ }),[intent,constraints,savedDraft,materialInsight,materials,spacePhoto]);
  const sourceId=useMemo(()=>eggIdeaFormSourceId(source),[source]);
  const canGenerate=source.intent.length>=8;
  useEffect(()=>{
@@ -109,7 +110,7 @@ export default function EggFormStudyAccess({projectId,intent,constraints,
     <div>
      <h4 className="text-sm font-medium">Проявление формы · ИИ</h4>
      <p className="mt-1 text-[11px] leading-relaxed text-foreground/60">
-      По текущей идее · пробный пространственный образ, не 3D
+      По текущей идее · {source.spacePhoto?"с фото реального пространства":"без фото пространства"} · не 3D
      </p>
     </div>
     <button type="button" onClick={()=>void generate()}
@@ -119,6 +120,7 @@ export default function EggFormStudyAccess({projectId,intent,constraints,
      {busy?"Создаётся образ…":studies.length>=3?"3 варианта":study?"Новый вариант":"Создать образ"}
     </button>
    </div>
+   {source.spacePhoto&&<p className="text-[11px] text-foreground/65" data-testid="egg-idea-image-reference-enabled">Фото интерьера включено как контекст среды · форма не копируется с фото</p>}
    {study&&<div className="space-y-2" data-testid="egg-generated-form-image">
     <img src={study.imageUrl} alt="Пробный образ формы по текущему замыслу Автора"
      className="mx-auto max-h-[480px] w-full max-w-[600px] rounded-xl object-contain"
