@@ -23,11 +23,31 @@ const interpretation=z.object({
   verificationNeeded:z.string().trim().min(5).max(1000),
 }).strict();
 
+/** Subjective AI coordinates, never verified engineering or approved DNA. */
+const visualCoefficients=z.object({
+ density:z.number().min(0).max(1),
+ openness:z.number().min(0).max(1),
+ verticality:z.number().min(0).max(1),
+ tension:z.number().min(0).max(1),
+ asymmetry:z.number().min(0).max(1),
+ rotation:z.number().min(0).max(1),
+ pulse:z.number().min(0).max(1),
+ softness:z.number().min(0).max(1),
+}).strict();
+export const eggYolkMorphologySchema=z.object({
+ rationale:z.string().trim().min(20).max(1200),
+ sourceResultIds:z.array(z.string().trim().min(1).max(100)).min(2).max(8),
+ coefficients:visualCoefficients,
+}).strict();
+export type EggYolkMorphology=z.infer<typeof eggYolkMorphologySchema>;
+
 export const eggYolkReviewDraftSchema=z.object({
   synthesisId:z.string().min(1).max(100),
   summary:z.string().trim().min(15).max(3000),
   interpretations:z.array(interpretation).max(8),
   limitations:z.array(z.string().trim().min(8).max(1000)).min(1).max(8),
+  /** Null if evidence is insufficient; optional for older/connector submissions. */
+  morphology:eggYolkMorphologySchema.nullable().optional(),
 }).strict();
 
 export type EggYolkReviewDraft=z.infer<typeof eggYolkReviewDraftSchema>;
@@ -63,12 +83,34 @@ export function prepareGroundedEggYolkReview(
  if(discarded>0&&!safe.length)
    throw new EggEngineError("No grounded Yolk interpretations were provided");
  const limitations=[...parsed.limitations];
+ const validMorphology=parsed.morphology?
+   hasGroundedEggYolkMorphology(synthesis,parsed.morphology):false;
+ const morphology=validMorphology?parsed.morphology:null;
+ if(parsed.morphology&&!validMorphology){
+   discarded++;
+   if(limitations.length>=8)limitations.pop();
+   limitations.push("Морфология исключена: нет полного маршрута восьми сфер или ссылок на оба потока.");
+ }
  if(discarded){
   const notice="Отклонено интерпретаций без корректной связи с результатами сфер: "+discarded+". Их содержание не включено в выводы Желтка.";
   if(limitations.length>=8)limitations.pop();
   limitations.push(notice);
  }
- return {draft:{...parsed,interpretations:safe,limitations},discarded};
+ return {draft:{...parsed,interpretations:safe,limitations,morphology},discarded};
+}
+
+/** At least one real cited result from EACH of two COMPLETE branches. */
+export function hasGroundedEggYolkMorphology(
+ synthesis:EggYolkSynthesis,candidate:EggYolkMorphology,
+):boolean{
+ const items=[...synthesis.first,...synthesis.second];
+ if(items.length!==8||new Set(items.map(x=>x.sphere)).size!==8||
+  items.some(x=>x.status==="missing"||!x.resultId||!x.text?.trim()))return false;
+ const ids=candidate.sourceResultIds;
+ if(new Set(ids).size!==ids.length)return false;
+ const matches=new Map(items.map(x=>[x.resultId!,x.branch]));
+ return ids.every(id=>matches.has(id))&&
+  new Set(ids.map(id=>matches.get(id))).size===2;
 }
 
 export type EggYolkSemanticReview={
@@ -84,6 +126,7 @@ export type EggYolkSemanticReview={
     status:"unverified";
   }>;
   limitations:string[];
+  morphology?:EggYolkMorphology|null;
   dnaChanged:false;
   authorApproved:false;
 };
@@ -159,6 +202,8 @@ export function contributeEggYolkReview(project:EggProject,input:{
   const sourceMap=new Map(all(synthesis)
     .filter(item=>Boolean(item.resultId))
     .map(item=>[item.resultId!,item]));
+  if(data.morphology&&!hasGroundedEggYolkMorphology(synthesis,data.morphology))
+    throw new EggEngineError("Morphology must cite valid results from both complete sphere flows");
   const seen=new Set<string>();
   const interpretations=data.interpretations.map((item,i)=>{
     const key=item.title.toLocaleLowerCase();
@@ -188,6 +233,7 @@ export function contributeEggYolkReview(project:EggProject,input:{
     createdAt:input.at,createdBy:"ai",status:"ai_interpretation_unverified",
     summary:data.summary,
     interpretations,limitations:[...data.limitations],
+    ...(data.morphology?{morphology:data.morphology}:{}),
     dnaChanged:false,authorApproved:false,
   };
   const updated:EggFlowCycle={...cycle,semanticReview};
