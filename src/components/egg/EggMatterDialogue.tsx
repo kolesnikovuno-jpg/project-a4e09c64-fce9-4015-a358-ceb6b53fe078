@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, BrainCircuit, Mic, MicOff, Send, X } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
+import EggWorkspaceSync from "./EggWorkspaceSync";
 import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
 
 export type MatterCard={
@@ -187,6 +188,11 @@ export default function EggMatterDialogue({
   </div>
   <div className="shrink-0 px-3 py-2">
    <p className="text-[11px] text-[#57675b]">В контексте: {cards.length} материалов · визуально до 12 изображений и эскизов</p>
+   <EggWorkspaceSync projectId={projectId} scope="matter" ready={ready}
+    value={messages.slice(-40)} isEmpty={v=>v.length===0}
+    onRestore={v=>{if(Array.isArray(v))setMessages(v.filter(m=>m&&
+      (m.role==="user"||m.role==="assistant")&&typeof m.content==="string").slice(-40));}}
+    className="mt-1" />
    {focus?<div className="mt-1 flex items-center gap-2 rounded-lg bg-[#e7ede6] px-2 py-1.5 text-xs">
     <span className="min-w-0 flex-1 truncate" title={focus.text}>Фокус: {focus.text}</span>
     <button type="button" aria-label="Сбросить фокус" onClick={onClearFocus}><X size={14}/></button>
