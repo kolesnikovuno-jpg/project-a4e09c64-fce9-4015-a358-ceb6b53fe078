@@ -58,7 +58,12 @@ describe("EGG Spatial Form Engine — nonbinding 3D form from a completed Yolk",
  });
  it("exports a genuine triangulated glTF 2.0 GLB from the same geometry",()=>{
   const form=buildEggSpatialForm(base)!;
-  const bytes=createSpatialGlb(form.sketch);
+  const bytes=createSpatialGlb(form.sketch,{
+   projectId:"c68166a9-df94-4118-b2aa-b3d8d71dea18",
+   sourceSynthesisId:form.sourceSynthesisId,
+   sourceResultIds:form.sourceResultIds,
+   origin:"egg_morphology_parametric_prototype",
+  });
   const header=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
   expect(header.getUint32(0,true)).toBe(0x46546c67);
   expect(header.getUint32(4,true)).toBe(2);
@@ -72,5 +77,9 @@ describe("EGG Spatial Form Engine — nonbinding 3D form from a completed Yolk",
   expect(gltf.accessors.some((a:{type:string})=>a.type==="SCALAR")).toBe(true);
   expect(gltf.extras.approved).toBe(false);
   expect(gltf.extras.units).toContain("not manufacturing");
+  expect(gltf.extras.source.origin).toBe("egg_morphology_parametric_prototype");
+  expect(gltf.extras.source.sourceSynthesisId).toBe("synthesis-36");
+  expect(gltf.extras.source.sourceResultIds).toEqual(morphology.sourceResultIds);
+  expect(gltf.extras.source.projectId).toBe("c68166a9-df94-4118-b2aa-b3d8d71dea18");
  });
 });
