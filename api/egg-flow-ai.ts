@@ -189,8 +189,20 @@ export function buildEggYolkGeminiResponseSchema(project:EggProject){
     },
    },
    limitations:{type:"array",minItems:1,maxItems:8,items:string},
+   morphology:{anyOf:[
+    {type:"object",additionalProperties:false,properties:{
+      rationale:string,
+      sourceResultIds:{type:"array",minItems:2,maxItems:8,items:{type:"string",enum:ids}},
+      coefficients:{type:"object",additionalProperties:false,
+       properties:Object.fromEntries(["density","openness","verticality","tension",
+         "asymmetry","rotation","pulse","softness"].map(k=>[k,{type:"number"}])),
+       required:["density","openness","verticality","tension",
+         "asymmetry","rotation","pulse","softness"]},
+     },required:["rationale","sourceResultIds","coefficients"]},
+    {type:"null"},
+   ]},
   },
-  required:["synthesisId","summary","interpretations","limitations"],
+  required:["synthesisId","summary","interpretations","limitations","morphology"],
  };
 }
 export function eggOpenAiSphereSchema(){
