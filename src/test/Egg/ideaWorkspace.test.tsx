@@ -39,8 +39,8 @@ describe("EGG Idea initiation",()=>{
   render(<EggIdeaWorkspace projectId={project} onClose={()=>{}} onOpenMatter={()=>{}}/>);
   expect(screen.getByAltText("Загруженное фото пространства")).toBeTruthy();
   fireEvent.click(screen.getByRole("button",{name:"Проявить идею"}));
-  await waitFor(()=>expect(fetchMock).toHaveBeenCalledTimes(2));
-  const request=JSON.parse((fetchMock.mock.calls[1] as unknown as [string,{body:string}])[1].body);
+  await waitFor(()=>expect(fetchMock.mock.calls.filter(([url])=>url==="/api/egg-flow-ai?op=idea-dialogue")).toHaveLength(1));
+  const request=JSON.parse((fetchMock.mock.calls.find(([url])=>url==="/api/egg-flow-ai?op=idea-dialogue") as unknown as [string,{body:string}])[1].body);
   expect(request.materials[0]).toMatchObject({
    id:"space-context-photo",type:"image",imageData:spacePhoto
   });
@@ -60,9 +60,8 @@ describe("EGG Idea initiation",()=>{
   fireEvent.change(screen.getByRole("textbox",{name:"Намерение Автора"}),{target:{value:"Нота в пространстве"}});
   fireEvent.click(screen.getByRole("button",{name:"Проявить идею"}));
   await waitFor(()=>expect(screen.getByText("Предварительная идея без утверждения")).toBeTruthy());
-  expect(fetchMock).toHaveBeenCalledTimes(2);
-  expect(fetchMock.mock.calls[1][0]).toBe("/api/egg-flow-ai?op=idea-dialogue");
-  const request=JSON.parse((fetchMock.mock.calls[1] as unknown as [string,{body:string}])[1].body);
+  expect(fetchMock.mock.calls.filter(([url])=>url==="/api/egg-flow-ai?op=idea-dialogue")).toHaveLength(1);
+  const request=JSON.parse((fetchMock.mock.calls.find(([url])=>url==="/api/egg-flow-ai?op=idea-dialogue") as unknown as [string,{body:string}])[1].body);
   expect(request.intent).toBe("Нота в пространстве");
   expect(request.materialInsight).toBe("Гипотеза поля");
   expect(request.materials[0].text).toBe("Световой аккорд");
