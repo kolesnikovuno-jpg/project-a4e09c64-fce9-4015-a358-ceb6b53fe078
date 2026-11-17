@@ -80,6 +80,23 @@ describe("EGG Spatial Form Engine — nonbinding 3D form from a completed Yolk",
   // This stage generates geometry without making an API call, deleting a
   // previous image or approving the project's DNA.
  });
+ it("responds to every one of the eight Yolk morphology parameters without re-seeding geometry",()=>{
+  const original=buildEggSpatialForm(base)!.sketch;
+  const keys=Object.keys(morphology.coefficients) as Array<keyof typeof morphology.coefficients>;
+  expect(keys).toHaveLength(8);
+  for(const key of keys){
+   const changed=buildEggSpatialForm({...base,morphology:{
+    ...morphology,coefficients:{
+     ...morphology.coefficients,[key]:Math.min(.99,morphology.coefficients[key]+.12),
+    },
+   }})!.sketch;
+   expect(changed.quads.map(q=>q.id)).toEqual(original.quads.map(q=>q.id));
+   expect(changed.quads.some((q,i)=>q.corners.some((p,j)=>{
+    const prev=original.quads[i].corners[j];
+    return Math.abs(p.x-prev.x)+Math.abs(p.y-prev.y)+Math.abs(p.z-prev.z)>1e-6;
+   })),key).toBe(true);
+  }
+ });
  it("exports a genuine triangulated glTF 2.0 GLB from the same geometry",()=>{
   const form=buildEggSpatialForm(base)!;
   const bytes=createSpatialGlb(form.sketch,{
