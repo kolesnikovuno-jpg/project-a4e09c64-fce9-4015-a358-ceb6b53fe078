@@ -55,5 +55,41 @@ describe("Material research workspace",()=>{
   expect(await screen.findByText("Наблюдение: повторяется лёгкость. Вопрос: это цель формы?")).toBeTruthy();
   await waitFor(()=>expect(localStorage.getItem("egg:matter-dialogue:v1:1b3d29f0-fbc4-41ed-b31a-2e0db7fa2fe9"))
    .toContain("Наблюдение: повторяется лёгкость"));
+ }); it("produces a sourced editable map in the same research request and transfers only after Author acceptance",async()=>{
+  const pid="01b3d29f-fbc4-41ed-b31a-2e0db7fa2fe9";
+  const openIdea=vi.fn();
+  const map={
+   observations:[{text:"На карточке записана тема лёгкости и воздуха.",sourceIds:["ref-1"]}],
+   connections:[],tensions:[],
+   hypotheses:[{text:"Может возникнуть самостоятельный пространственный акцент.",sourceIds:["ref-1"]}],
+   questions:["Как сохранить выразительность без функционального назначения?"],
+  };
+  const fetchMock=vi.fn(async(url:string)=>url==="/api/egg-config"?
+   {ok:true,json:async()=>({supabaseUrl:"https://example.supabase.co",publishableKey:"public"})}:
+   {ok:true,json:async()=>({ok:true,reply:"Повторяется тема лёгкости.",materialMap:map})});
+  vi.stubGlobal("fetch",fetchMock);
+  const cards=[{id:"ref-1",type:"thought" as const,text:"Лёгкость и воздух"}];
+  render(<EggMatterDialogue projectId={pid} cards={cards} focusId={null}
+   onClearFocus={()=>{}} onClose={()=>{}} onBack={()=>{}} onOpenIdea={openIdea}/>);
+  fireEvent.click(screen.getByRole("button",{name:"Начать исследование"}));
+  await waitFor(()=>expect(screen.getByTestId("egg-material-research-map")).toBeTruthy());
+  const sent=fetchMock.mock.calls.find(([url])=>url==="/api/egg-flow-ai?op=matter-dialogue");
+  expect(sent).toBeDefined();
+  const payload=JSON.parse((sent as unknown as [string,{body:string}])[1].body);
+  expect(payload.mapRequested).toBe(true);
+  expect(screen.queryByTestId("egg-material-map-to-idea")).toBeNull();
+  fireEvent.click(screen.getByRole("button",{name:"Уточнить карту"}));
+  fireEvent.change(screen.getByRole("textbox",{name:"Наблюдения · что видно в материалах 1"}),{
+   target:{value:"На карточке явно присутствует слово воздух."},
+  });
+  fireEvent.click(screen.getByRole("button",{name:"Завершить уточнение"}));
+  fireEvent.click(screen.getByTestId("egg-accept-material-map"));
+  expect(screen.getByText("Принято Автором")).toBeTruthy();
+  await waitFor(()=>expect(JSON.parse(localStorage.getItem("egg:material-research:v1:"+pid)??"{}").status).toBe("accepted"));
+  expect(JSON.parse(localStorage.getItem("egg:material-research:v1:"+pid)??"{}").map.observations[0].text)
+   .toContain("явно присутствует");
+  fireEvent.click(screen.getByTestId("egg-material-map-to-idea"));
+  expect(openIdea).toHaveBeenCalledOnce();
  });
+
 });
