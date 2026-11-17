@@ -90,7 +90,13 @@ export function buildEggAutomationPrompt(project:EggProject,step:EggAutomationSt
         "Never claim contradictions are proven; only possible tensions with precise internal result IDs and verification plans.",
         "Prefer at most four HIGH-VALUE interpretations. A claim must cite existing sourceResultIds from input; alignments/tensions require one from EACH branch.",
         "If genuinely insufficient data, interpretations:[] with meaningful limitations is correct.",
-        "Use concise Russian. Return ONLY JSON matching: {\"synthesisId\":\"exact input synthesisId\",\"summary\":\"...\",\"interpretations\":[{\"kind\":\"alignment|tension|gap|opportunity\",\"title\":\"...\",\"explanation\":\"...\",\"sourceResultIds\":[\"actual ids\"],\"suggestedSphereTargets\":[],\"verificationNeeded\":\"...\"}],\"limitations\":[\"at least one honest limitation\"]}.",
+        "ALSO derive at most ONE tentative MORPHOLOGY of the central nonphysical Yolk field from the SAME full eight-sphere synthesis. This is an expressive hypothesis, never geometry, CAD, approval, measurements or material truth.",
+        "The morphology must NOT use room reference photographs to place a decorative object into an interior. Keep the Idea's distinct identity, negative spaces, partial contours and latent detail; be faithful to the Author intention in the DNA/ideaHandoff.",
+        "Morphology is ONE coherent set of eight numeric 0..1 coordinates: density, openness, verticality, tension, asymmetry, rotation, pulse, softness. These have qualitative meaning, not measured physical units.",
+        "Morphology rationale must explain the spatial relationship inferred from the inputs in Russian, citing at least one actual sourceResultId from EACH of the two completed flows. Do NOT fabricate citations. If eight real results are not present or their data is not enough, morphology MUST be null.",
+        "The morphology cannot be based on a single sphere, cannot change DNA, and cannot select a product/material/color as an established fact.",
+
+        "Use concise Russian. Return ONLY JSON matching: {\"synthesisId\":\"exact input synthesisId\",\"summary\":\"...\",\"interpretations\":[{\"kind\":\"alignment|tension|gap|opportunity\",\"title\":\"...\",\"explanation\":\"...\",\"sourceResultIds\":[\"actual ids\"],\"suggestedSphereTargets\":[],\"verificationNeeded\":\"...\"}],\"limitations\":[\"at least one honest limitation\"],\"morphology\":null OR {\"rationale\":\"meaningful, 20+ chars\",\"sourceResultIds\":[\"REAL first flow ID\",\"REAL second flow ID\"],\"coefficients\":{\"density\":0.5,\"openness\":0.5,\"verticality\":0.5,\"tension\":0.5,\"asymmetry\":0.5,\"rotation\":0.5,\"pulse\":0.5,\"softness\":0.5}}}.",
       ].join("\n"),
       input:JSON.stringify(compact),
     };
