@@ -30,7 +30,7 @@ describe("EGG current Idea form study",()=>{
   render(<EggFormStudyAccess projectId={projectId}
    intent="Неутилитарный элемент пространства — отдельная нота"
    constraints="" savedDraft="" materialInsight="Лёгкость и присутствие"
-   materials={[{type:"thought",text:"Обособленное присутствие"}]}/>);
+   materials={[{type:"thought",text:"Обособленное присутствие"}]} spacePhoto=""/>);
   const action=await screen.findByRole("button",{name:"Создать образ"});
   await waitFor(()=>expect(action.hasAttribute("disabled")).toBe(false));
   fireEvent.click(action);
@@ -42,6 +42,40 @@ describe("EGG current Idea form study",()=>{
   expect((post?.body?.idea as {intent:string}).intent).toContain("отдельная нота");
   expect((post?.body?.idea as {materials:{text:string}[]}).materials[0].text)
    .toBe("Обособленное присутствие");
+ });
+ it("includes the uploaded room photograph in the actual generation source",async()=>{
+  const photo="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ";
+  const calls:{url:string;body?:Record<string,unknown>}[]=[];
+  vi.stubGlobal("fetch",vi.fn(async(url:string,options?:{body?:string})=>{
+    calls.push({url,body:options?.body?JSON.parse(options.body):undefined});
+    if(url==="/api/egg-config")return {ok:true,json:async()=>({
+      supabaseUrl:"https://example.test",publishableKey:"public-key",
+    })};
+    if(url.startsWith("/api/egg-project-state"))return {ok:true,json:async()=>({
+      revision:12,project:{id:projectId},
+    })};
+    if(options?.body)return {ok:true,json:async()=>({ok:true,study:{
+      id:"room-study",prompt:"Room-based morphological study",
+      imageUrl:"https://example.test/room.webp",model:"gpt-image-1-mini",
+    }})};
+    return {ok:true,json:async()=>({ok:true,study:null})};
+  }));
+  render(<EggFormStudyAccess projectId={projectId}
+    intent="Неутилитарная нота пространства" constraints=""
+    savedDraft="" materialInsight="" materials={[]} spacePhoto={photo}/>);
+  expect(screen.getByText(/Фото интерьера включено как контекст среды/)).toBeTruthy();
+  const action=await screen.findByRole("button",{name:"Создать образ"});
+  await waitFor(()=>expect(action.hasAttribute("disabled")).toBe(false));
+  fireEvent.click(action);
+  await waitFor(()=>expect(calls.some(c=>c.body&&c.url==="/api/egg-flow-ai?op=form-study")).toBe(true));
+  const sent=calls.find(c=>c.body&&c.url==="/api/egg-flow-ai?op=form-study");
+  expect((sent?.body?.idea as {spacePhoto:string}).spacePhoto).toBe(photo);
+ });
+ it("distinguishes source identity before and after adding a room photograph",()=>{
+  const source={intent:"Неутилитарный элемент пространства — отдельная нота",
+    constraints:"",draft:"",materialInsight:"",materials:[]};
+  expect(eggIdeaFormSourceId(source)).not.toBe(
+    eggIdeaFormSourceId({...source,spacePhoto:"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ"}));
  });
  it("distinguishes two separate local Idea sources",()=>{
   const original={intent:"Неутилитарная пространственная нота",constraints:"",
