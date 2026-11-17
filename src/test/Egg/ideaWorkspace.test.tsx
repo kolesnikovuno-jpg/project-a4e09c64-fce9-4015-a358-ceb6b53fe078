@@ -5,6 +5,22 @@ vi.mock("@supabase/supabase-js",()=>({createClient:vi.fn(()=>({auth:{getSession:
 afterEach(()=>{cleanup();localStorage.clear();vi.unstubAllGlobals();});
 const project="01b3d29f-bfc4-41ed-b31a-2e0db7fa2fe9";
 describe("EGG Idea initiation",()=>{
+ it("routes the current Author Idea to Yolk, not to an image generator",()=>{
+  const openYolk=vi.fn();
+  render(<EggIdeaWorkspace projectId={project} onClose={()=>{}}
+    onOpenMatter={()=>{}} onOpenYolk={openYolk}/>);
+  expect(screen.queryByTestId("egg-idea-form-access")).toBeNull();
+  const go=screen.getByRole("button",{name:"Желток · 3D-поле"});
+  expect((go as HTMLButtonElement).disabled).toBe(true);
+  fireEvent.change(screen.getByRole("textbox",{name:"Намерение Автора"}),{
+    target:{value:"Неутилитарный элемент пространства — отдельная нота"},
+  });
+  expect((go as HTMLButtonElement).disabled).toBe(false);
+  fireEvent.click(go);
+  expect(openYolk).toHaveBeenCalledOnce();
+  const current=JSON.parse(localStorage.getItem("egg:idea-workspace:v1:"+project)??"{}");
+  expect(current.intent).toBe("Неутилитарный элемент пространства — отдельная нота");
+ });
  it("saves the Author intention directly before any AI response",()=>{
   render(<EggIdeaWorkspace projectId={project} onClose={()=>{}} onOpenMatter={()=>{}}/>);
   const save=screen.getByRole("button",{name:"Сохранить черновик идеи"});
