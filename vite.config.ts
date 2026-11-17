@@ -167,6 +167,10 @@ const sitemapEntries = [
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // Read-only build identity for EGG. No secrets or user data in this value.
+  define: {
+    __EGG_BUILD_SHA__: JSON.stringify(process.env.VERCEL_GIT_COMMIT_SHA?.slice(0,8) || "local"),
+  },
   server: {
     host: "::",
     port: 8080,
