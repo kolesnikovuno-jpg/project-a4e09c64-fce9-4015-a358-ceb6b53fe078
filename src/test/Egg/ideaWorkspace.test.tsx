@@ -11,7 +11,7 @@ describe("EGG Idea initiation",()=>{
   expect(passport).toBeTruthy();
   fireEvent.click(screen.getByText("Паспорт проекта · версия и сохранение"));
   expect(screen.getByText(project)).toBeTruthy();
-  expect(screen.getByText(/черновик в браузере данного устройства/)).toBeTruthy();
+  expect(screen.getByText(/локальный черновик с отдельной серверной синхронизацией/)).toBeTruthy();
   expect(screen.getByText("integration/egg-unified-2026-11-12")).toBeTruthy();
  });
  it("routes the current Author Idea to Yolk, not to an image generator",()=>{
