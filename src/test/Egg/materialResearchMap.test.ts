@@ -1,7 +1,8 @@
 import {describe,expect,it} from "vitest";
 import {
  createEggMaterialMapRecord,eggMaterialInsight,eggMaterialSourceKey,
- isEggMaterialMapCurrent,readEggMaterialMapRecord,validateMaterialMapSources,
+ isEggMaterialMapCurrent,readEggMaterialMapRecord,readLocalEggMaterialMap,
+ eggMaterialMapKey,validateMaterialMapSources,
 } from "../../lib/eggMaterialMap";
 import {parseEggMaterialModelResponse} from "../../../api/egg-flow-ai";
 
@@ -44,4 +45,16 @@ describe("EGG Material research map: explicit author gate",()=>{
   expect(isEggMaterialMapCurrent(current,cards)).toBe(true);
   expect(eggMaterialSourceKey([...cards].reverse())).toBe(eggMaterialSourceKey(cards));
  });
+ it("recovers the newest Author acceptance from a tab when Safari localStorage is full",()=>{
+  const pid="45c3e881-1bf7-4a04-99e8-0d4d7028a424";
+  const draftRecord=createEggMaterialMapRecord(draft,cards,"2026-11-17T19:00:00Z");
+  localStorage.setItem(eggMaterialMapKey(pid),JSON.stringify(draftRecord));
+  sessionStorage.setItem(eggMaterialMapKey(pid),JSON.stringify({
+   ...draftRecord,status:"accepted",acceptedAt:"2026-11-17T19:02:00Z",
+  }));
+  expect(readLocalEggMaterialMap(pid)?.status).toBe("accepted");
+  localStorage.removeItem(eggMaterialMapKey(pid));
+  sessionStorage.removeItem(eggMaterialMapKey(pid));
+ });
+
 });
