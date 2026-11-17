@@ -2,6 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, BrainCircuit, Mic, MicOff, Send, X } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import EggWorkspaceSync from "./EggWorkspaceSync";
+import {
+ eggMaterialMapDraftSchema,createEggMaterialMapRecord,eggMaterialMapKey,
+ isEggMaterialMapCurrent,readEggMaterialMapRecord,
+ readLocalEggMaterialMap,type EggMaterialMapRecord,type EggMaterialMapDraft,
+} from "../../lib/eggMaterialMap";
 import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
 
 export type MatterCard={
@@ -62,10 +67,14 @@ const errorMessage=(code:string)=>{
  return "Не удалось получить ответ ИИ. Материалы и история диалога сохранены.";
 };
 export default function EggMatterDialogue({
- projectId,cards,focusId,onClearFocus,onBack,onClose
-}:{projectId:string;cards:MatterCard[];focusId:string|null;onClearFocus:()=>void;onBack:()=>void;onClose:()=>void}){
+ projectId,cards,focusId,onClearFocus,onBack,onClose,onOpenIdea
+}:{projectId:string;cards:MatterCard[];focusId:string|null;onClearFocus:()=>void;onBack:()=>void;onClose:()=>void;onOpenIdea?:()=>void}){
  const storageKey="egg:matter-dialogue:v1:"+projectId;
  const [messages,setMessages]=useState<Message[]>([]);
+ const [research,setResearch]=useState<EggMaterialMapRecord|null>(null);
+ const [editingMap,setEditingMap]=useState(false);
+ const [mapStorageError,setMapStorageError]=useState("");
+ const mapKey=eggMaterialMapKey(projectId);
  const [draft,setDraft]=useState("");
  const [error,setError]=useState("");
  const [busy,setBusy]=useState(false);
@@ -126,11 +135,33 @@ export default function EggMatterDialogue({
    setMessages(Array.isArray(stored)?stored.filter(m=>m&&
     (m.role==="user"||m.role==="assistant")&&typeof m.content==="string").slice(-40):[]);
   }catch{setMessages([]);}
+  setResearch(readLocalEggMaterialMap(projectId));
   setDraft("");setError("");setReady(true);setOverviewed(false);
  },[storageKey]);
  useEffect(()=>{if(ready)try{localStorage.setItem(storageKey,JSON.stringify(messages.slice(-40)));}catch{/* local storage full */}},[storageKey,messages,ready]);
+ useEffect(()=>{
+  if(!ready||!research)return;
+  try{localStorage.setItem(mapKey,JSON.stringify(research));setMapStorageError("");}
+  catch{setMapStorageError("Локальная копия карты не сохранилась; проверьте облачную синхронизацию ниже.");}
+ },[mapKey,research,ready]);
+ const mapCurrent=isEggMaterialMapCurrent(research,cards);
+ const updateMapEntry=(key:"observations"|"connections"|"tensions"|"hypotheses",index:number,text:string)=>{
+  setResearch(old=>old?{...old,status:"draft",acceptedAt:undefined,updatedAt:new Date().toISOString(),
+   map:{...old.map,[key]:old.map[key].map((v,i)=>i===index?{...v,text}:v)}}:old);
+ };
+ const updateMapQuestion=(index:number,text:string)=>{
+  setResearch(old=>old?{...old,status:"draft",acceptedAt:undefined,updatedAt:new Date().toISOString(),
+   map:{...old.map,questions:old.map.questions.map((v,i)=>i===index?text:v)}}:old);
+ };
+ const acceptMap=()=>{
+  if(!research||!mapCurrent||!eggMaterialMapDraftSchema.safeParse(research.map).success)return;
+  const next:EggMaterialMapRecord={...research,status:"accepted",acceptedAt:new Date().toISOString()};
+  // Preserve Author's decision in memory even when Safari cannot store more
+  // images in localStorage; the separate EGG cloud record will still retry.
+  setResearch(next);setEditingMap(false);
+ };
  useEffect(()=>{bottom.current?.scrollIntoView?.({behavior:"smooth",block:"nearest"});},[messages,busy]);
- const submit=async(content:string)=>{
+ const submit=async(content:string,asMap=false)=>{
   if(busy||!content.trim())return;
   if(listening)recognition.current?.stop();
   const userMessage:Message={role:"user",content:content.trim().slice(0,3000)};
@@ -160,19 +191,33 @@ export default function EggMatterDialogue({
    setError("");
    const response=await fetch("/api/egg-flow-ai?op=matter-dialogue",{
     method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},
-    body:JSON.stringify({projectId,materials,messages:previous,focusId:focus?.id})
+    body:JSON.stringify({projectId,materials,messages:previous,focusId:focus?.id,
+      ...(asMap?{mapRequested:true}:{})})
    });
-   const output=await response.json() as {ok?:boolean;reply?:string;error?:string};
+   const output=await response.json() as {ok?:boolean;reply?:string;error?:string;materialMap?:EggMaterialMapDraft};
    if(response.status===429){
     postponeEggAiRequests(70_000);
     throw Error("Gemini ограничил запросы; материалы и сообщения сохранены. Повторите позднее.");
    }
    if(!response.ok||!output.ok||!output.reply)throw Error(output.error??"model_request_failed");
    setMessages(v=>[...v,{role:"assistant",content:output.reply!}]);
+   if(asMap){
+    const valid=eggMaterialMapDraftSchema.safeParse(output.materialMap);
+    if(valid.success){
+     setResearch(createEggMaterialMapRecord(valid.data,cards,new Date().toISOString()));
+     setEditingMap(false);
+    }else setError("ИИ не сформировал структурированную карту. Текст сохранён; повторите создание карты.");
+   }
   }catch(e){setError(errorMessage(e instanceof Error?e.message:"model_request_failed"));}
   finally{setBusy(false);}
  };
- const firstReview=()=>{setOverviewed(true);void submit("Изучи весь состав холста. Какие мотивы, противоречия и вопросы ты видишь? Отделяй наблюдения от гипотез.");};
+ const firstReview=()=>{setOverviewed(true);void submit("Изучи весь состав холста и сформируй карту: наблюдения, связи, напряжения, гипотезы и вопросы. Не утверждай идею за Автора.",true);};
+ const mapSections=[
+  {key:"observations" as const,label:"Наблюдения · что видно в материалах"},
+  {key:"connections" as const,label:"Связи · что сопоставляется"},
+  {key:"tensions" as const,label:"Напряжения · что противоречит"},
+  {key:"hypotheses" as const,label:"Гипотезы · что требует проверки"},
+ ];
  return <aside aria-label="Диалог Материальное" data-testid="egg-matter-dialogue"
   className="absolute inset-y-0 right-0 z-[60] flex w-full flex-col bg-background/95 text-foreground md:z-40 md:w-1/2 md:bg-background/85">
   <div className="flex shrink-0 items-center justify-between gap-2 px-3 pb-3 pt-[max(1rem,env(safe-area-inset-top))] md:py-3">
@@ -193,6 +238,13 @@ export default function EggMatterDialogue({
     onRestore={v=>{if(Array.isArray(v))setMessages(v.filter(m=>m&&
       (m.role==="user"||m.role==="assistant")&&typeof m.content==="string").slice(-40));}}
     className="mt-1" />
+   <EggWorkspaceSync projectId={projectId} scope="research" ready={ready}
+    value={research??{status:"empty" as const}} isEmpty={v=>v.status==="empty"}
+    onRestore={v=>{
+     const parsed=readEggMaterialMapRecord(v);
+     if(parsed)setResearch(parsed);
+    }}
+    className="mt-1" />
    {focus?<div className="mt-1 flex items-center gap-2 rounded-lg bg-[#e7ede6] px-2 py-1.5 text-xs">
     <span className="min-w-0 flex-1 truncate" title={focus.text}>Фокус: {focus.text}</span>
     <button type="button" aria-label="Сбросить фокус" onClick={onClearFocus}><X size={14}/></button>
@@ -212,6 +264,61 @@ export default function EggMatterDialogue({
     {message.role==="assistant"?<div className="mb-1 flex items-center gap-1 text-[10px] opacity-60"><BrainCircuit size={12}/> ИИ · гипотезы требуют проверки</div>:<div className="mb-1 text-right text-[10px] opacity-60">Автор</div>}
     {message.content}
    </div>)}
+   {research&&<section data-testid="egg-material-research-map"
+     className="space-y-3 rounded-xl border border-foreground/20 bg-background/80 p-3">
+    <div className="flex flex-wrap items-center justify-between gap-2">
+     <div><h3 className="text-sm font-medium">Карта исследования</h3>
+      <p className="text-[10px] text-foreground/60">
+       {research.status==="accepted"&&mapCurrent?"Принято Автором":"Гипотеза ИИ · не принята"}
+       {!mapCurrent?" · подборка изменена: нужно повторить анализ":""}
+      </p></div>
+     <button type="button" className="rounded-full border px-3 py-1.5 text-[11px]"
+      onClick={()=>setEditingMap(v=>!v)}>{editingMap?"Завершить уточнение":"Уточнить карту"}</button>
+    </div>
+    {mapSections.map(section=>research.map[section.key].length>0&&
+     <div key={section.key} className="space-y-1">
+      <h4 className="text-xs font-semibold">{section.label}</h4>
+      {research.map[section.key].map((entry,i)=><div key={section.key+"-"+i}
+       className="rounded-lg bg-foreground/[.035] px-2 py-1.5">
+       {editingMap?<textarea aria-label={section.label+" "+(i+1)}
+        rows={2} value={entry.text} maxLength={450}
+        className="w-full resize-y rounded border border-foreground/15 bg-background p-2 text-xs"
+        onChange={e=>updateMapEntry(section.key,i,e.target.value)}/>:
+        <p className="whitespace-pre-wrap text-xs">{entry.text}</p>}
+       <p className="mt-1 text-[10px] opacity-55">Основания: {entry.sourceIds
+        .map(id=>cards.find(c=>c.id===id)?.text||id).join(" · ")}</p>
+      </div>)}
+     </div>)}
+    {research.map.questions.length>0&&<div className="space-y-1">
+     <h4 className="text-xs font-semibold">Открытые вопросы Автору</h4>
+     {research.map.questions.map((q,i)=>editingMap?
+      <textarea key={i} aria-label={"Открытый вопрос "+(i+1)} rows={2}
+       value={q} maxLength={350}
+       onChange={e=>updateMapQuestion(i,e.target.value)}
+       className="w-full rounded border border-foreground/15 bg-background p-2 text-xs"/>:
+      <p key={i} className="text-xs">{q}</p>)}
+    </div>}
+    {mapStorageError&&<p role="status" className="text-[11px] text-amber-800">{mapStorageError}</p>}
+    <div className="flex flex-wrap gap-2">
+     {research.status!=="accepted"&&<button type="button" data-testid="egg-accept-material-map"
+      disabled={!mapCurrent||!eggMaterialMapDraftSchema.safeParse(research.map).success}
+      onClick={acceptMap}
+      className="rounded-full bg-[#607466] px-3 py-2 text-xs text-white disabled:opacity-40">
+      Принять карту исследования
+     </button>}
+     {research.status==="accepted"&&mapCurrent&&onOpenIdea&&<button type="button"
+      data-testid="egg-material-map-to-idea" onClick={onOpenIdea}
+      className="rounded-full border border-[#607466] px-3 py-2 text-xs text-[#607466]">
+      Перейти к Идее
+     </button>}
+     <button type="button" disabled={busy||!cards.length}
+      className="rounded-full border border-foreground/20 px-3 py-2 text-xs disabled:opacity-40"
+      onClick={()=>void submit("Пересмотри всё исследование и сформируй актуальную карту, учитывая наши уточнения и текущий набор карточек.",true)}>
+      Обновить карту с ИИ
+     </button>
+    </div>
+    <p className="text-[10px] opacity-55">Утверждение карты не создаёт идею, ДНК и не запускает восемь сфер.</p>
+   </section>}
    {busy&&<p role="status" className="text-xs opacity-65">ИИ исследует материалы…</p>}
    {error&&<p role="alert" className="rounded-lg border border-[#b6aa91]/40 bg-[#fff7e9] p-2 text-xs">{error}</p>}
    <div ref={bottom}/>
