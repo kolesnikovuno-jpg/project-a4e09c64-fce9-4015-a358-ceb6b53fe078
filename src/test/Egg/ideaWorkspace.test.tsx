@@ -5,6 +5,20 @@ vi.mock("@supabase/supabase-js",()=>({createClient:vi.fn(()=>({auth:{getSession:
 afterEach(()=>{cleanup();localStorage.clear();vi.unstubAllGlobals();});
 const project="01b3d29f-bfc4-41ed-b31a-2e0db7fa2fe9";
 describe("EGG Idea initiation",()=>{
+ it("saves the Author intention directly before any AI response",()=>{
+  render(<EggIdeaWorkspace projectId={project} onClose={()=>{}} onOpenMatter={()=>{}}/>);
+  const save=screen.getByRole("button",{name:"Сохранить черновик идеи"});
+  expect((save as HTMLButtonElement).disabled).toBe(true);
+  fireEvent.change(screen.getByRole("textbox",{name:"Намерение Автора"}),{
+   target:{value:"Неутилитарный элемент пространства — отдельная нота"},
+  });
+  expect((save as HTMLButtonElement).disabled).toBe(false);
+  fireEvent.click(save);
+  expect(screen.getByText("Сохранено в этом браузере · не утверждено")).toBeTruthy();
+  expect(screen.getByText("Сохранённый черновик · не утверждён")).toBeTruthy();
+  const stored=JSON.parse(localStorage.getItem("egg:idea-workspace:v1:"+project)??"{}");
+  expect(stored.savedDraft).toBe("Неутилитарный элемент пространства — отдельная нота");
+ });
  it("receives selected Material cards and keeps Author intention as an unapproved draft",()=>{
   localStorage.setItem("egg:project-field:v1:"+project,JSON.stringify([
    {id:"a",type:"thought",text:"Аккорд импульса",location:"matter"},
