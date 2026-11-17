@@ -31,16 +31,40 @@ describe("EGG Spatial Form Engine — nonbinding 3D form from a completed Yolk",
   expect(form?.status).toBe("unapproved_parametric_hypothesis");
   const sketch=form!.sketch;
   expect(sketch.stage).toBe("volume");
-  expect(sketch.quads.filter(q=>q.id.startsWith("seat-upper-"))).toHaveLength(144);
+  expect(sketch.quads.filter(q=>q.id.startsWith("seat-upper-"))).toHaveLength(324);
   expect(sketch.quads.filter(q=>q.id.startsWith("back-front-"))).toHaveLength(144);
   expect(sketch.quads.filter(q=>q.id.startsWith("back-rim-0-"))).toHaveLength(36);
   expect(sketch.paths.filter(p=>p.id.startsWith("front-support-"))).toHaveLength(2);
   expect(sketch.paths.filter(p=>p.id.startsWith("rear-support-"))).toHaveLength(2);
   const vertices=sketch.quads.flatMap(q=>q.corners);
-  expect(Math.min(...vertices.map(p=>p.y))).toBeGreaterThan(0.2);
+  // Leg shells are true surface geometry now; the lower extrema belong at the floor.
+  expect(Math.min(...vertices.map(p=>p.y))).toBeGreaterThanOrEqual(0.04);
   expect(Math.max(...vertices.map(p=>p.y))).toBeGreaterThan(1.5);
   expect(sketch.paths.some(p=>p.points.some(v=>v.y<.04))).toBe(true);
   expect(vertices.every(v=>Number.isFinite(v.x)&&Number.isFinite(v.y)&&Number.isFinite(v.z))).toBe(true);
+ });
+ it("joins seat rear to back shell with a continuous real fairing instead of floating back rails",()=>{
+  const sketch=buildEggSpatialForm(base)!.sketch;
+  const byId=new Map(sketch.quads.map(q=>[q.id,q]));
+  expect(sketch.quads.filter(q=>q.id.startsWith("continuous-shell-outside-"))).toHaveLength(144);
+  expect(sketch.quads.filter(q=>q.id.startsWith("continuous-shell-inside-"))).toHaveLength(144);
+  expect(sketch.quads.filter(q=>q.id.startsWith("sculptural-front-leg-"))).toHaveLength(480);
+  expect(sketch.quads.filter(q=>q.id.startsWith("sculptural-rear-leg-"))).toHaveLength(480);
+  expect(sketch.quads.filter(q=>q.id.startsWith("sculptural-")&&q.id.includes("-foot-"))).toHaveLength(80);
+  // Left seam of the saddle touches EXACTLY the rear seat surface;
+  // its top edge touches the same annular back surface at the same vertices.
+  for(let i=0;i<18;i++){
+   const fairingStart=byId.get("continuous-shell-outside-"+i+"-0")!;
+   const seat=byId.get("seat-upper-"+i+"-0")!;
+   expect(fairingStart.corners[0]).toEqual(seat.corners[0]);
+   const fairingEnd=byId.get("continuous-shell-outside-"+i+"-7")!;
+   const back=byId.get("back-front-"+(18+i)+"-3")!;
+   expect(fairingEnd.corners[3]).toEqual(back.corners[1]);
+  }
+  expect(byId.has("seat-edge-0-0")).toBe(false);
+  expect(byId.has("back-rim-1-18")).toBe(false);
+  expect(byId.has("back-rim-0-18")).toBe(true); // inner aperture remains a real hole
+  expect(sketch.paths.every(path=>path.material==="guide")).toBe(true);
  });
  it("evolves the SAME surface topology instead of randomizing a new model",()=>{
   const original=buildEggSpatialForm(base)!.sketch;
@@ -73,6 +97,15 @@ describe("EGG Spatial Form Engine — nonbinding 3D form from a completed Yolk",
   const gltf=JSON.parse(jsonText);
   expect(gltf.asset.version).toBe("2.0");
   expect(gltf.meshes[0].primitives.length).toBeGreaterThan(0);
+  // GLB now contains one smoothly shaded sculptural surface, no detached dark rods.
+  const primitive=gltf.meshes[0].primitives[0];
+  expect(gltf.meshes[0].primitives).toHaveLength(1);
+  expect(primitive.material).toBe(2);
+  expect(primitive.attributes.NORMAL).toBeTypeOf("number");
+  expect(gltf.accessors[primitive.attributes.POSITION].count)
+   .toBe(gltf.accessors[primitive.attributes.NORMAL].count);
+  expect(gltf.accessors[primitive.attributes.POSITION].count)
+   .toBeLessThan(form.sketch.quads.length*4);
   expect(gltf.accessors.some((a:{type:string})=>a.type==="VEC3")).toBe(true);
   expect(gltf.accessors.some((a:{type:string})=>a.type==="SCALAR")).toBe(true);
   expect(gltf.extras.approved).toBe(false);
