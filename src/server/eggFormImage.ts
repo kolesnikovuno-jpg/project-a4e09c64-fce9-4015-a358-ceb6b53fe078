@@ -60,7 +60,7 @@ async function readBody(req:Req):Promise<unknown>{
   for await(const part of req){
     const chunk=Buffer.isBuffer(part)?part:Buffer.from(part as Uint8Array);
     size+=chunk.length;
-    if(size>16000)throw Error("too_large");
+    if(size>250000)throw Error("too_large");
     chunks.push(chunk);
   }
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
@@ -111,6 +111,9 @@ function ideaImagePrompt(source:EggIdeaFormSource,variant:number):string{
   input.materialInsight?"MATERIAL FIELD INSIGHT: "+input.materialInsight:"",
   input.materials.length?"SELECTED RESEARCH NOTES: "+
    input.materials.map(m=>m.type+": "+m.text).join("; "):"",
+  input.spacePhoto?
+   "SPATIAL REFERENCE ATTACHED: The input photograph is the actual existing room. Preserve its recognizable architecture, surfaces, openings, camera viewpoint, lighting and spatial proportions. Introduce ONLY one coherent exploratory form into that room, with credible scale and depth. Do not redesign or replace the interior, do not import its furniture as the form, and do not infer exact dimensions. Use the photo for environment, NOT as the shape or material of the new form.":
+   "NO ROOM REFERENCE: Work as an independent form study, without inventing a specific real room.",
   "IMAGE OBJECTIVE: Conceptual spatial form study, not a finished product or architecture project.",
   "Translate the AUTHOR'S METAPHOR into formal relationships, never literalize a metaphor as a physical object.",
   "Interpret a 'separate note' as the distinct presence, rhythmic accent and tension of one form in surrounding space; not a music symbol and not a literal musical instrument.",
@@ -134,12 +137,41 @@ function cycleImagePrompt(project:EggProject,cycle:EggFlowCycle,variant:number):
   "Use meaningful negative space, partial contours, coherent volume and subtle details. No lettering, labels or diagrams.",
  ].join("\n").slice(0,11800);
 }
-async function generateImage(key:string,prompt:string):Promise<Buffer>{
-  const image=await callOpenAI(key,"images/generations",{
+export function decodeEggRoomPhoto(dataUrl:string):Buffer{
+ if(!/^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(dataUrl)||dataUrl.length>210000)
+  throw Error("invalid_idea_photo");
+ const content=dataUrl.slice("data:image/jpeg;base64,".length);
+ const bytes=Buffer.from(content,"base64");
+ if(bytes.length<250||bytes.length>165000||bytes[0]!==255||bytes[1]!==216||
+  bytes[bytes.length-2]!==255||bytes[bytes.length-1]!==217)
+  throw Error("invalid_idea_photo");
+ return bytes;
+}
+async function callImageEdit(key:string,prompt:string,room:Buffer):Promise<Response>{
+ const form=new FormData();
+ form.append("model",IMAGE_MODEL);
+ form.append("image",new Blob([new Uint8Array(room)],{type:"image/jpeg"}),"room-context.jpg");
+ form.append("prompt",prompt);
+ form.append("n","1");
+ form.append("size","1024x1024");
+ form.append("quality","low");
+ form.append("output_format","webp");
+ form.append("output_compression","72");
+ const controller=new AbortController();
+ const timeout=setTimeout(()=>controller.abort(),85000);
+ try{return await fetch("https://api.openai.com/v1/images/edits",{
+  method:"POST",headers:{Authorization:"Bearer "+key},
+  body:form,signal:controller.signal,redirect:"error",
+ });}finally{clearTimeout(timeout);}
+}
+async function generateImage(key:string,prompt:string,roomPhoto?:string):Promise<Buffer>{
+ const image=roomPhoto?
+   await callImageEdit(key,prompt,decodeEggRoomPhoto(roomPhoto)):
+   await callOpenAI(key,"images/generations",{
     model:IMAGE_MODEL,n:1,size:"1024x1024",quality:"low",
     output_format:"webp",output_compression:72,
     prompt,
-  },85000);
+   },85000);
   if(!image.ok){
     console.warn("egg_form_provider_response",{stage:"image",status:image.status,model:IMAGE_MODEL});
     throw Error(image.status===429?"rate_limited":
@@ -179,7 +211,7 @@ export async function eggFormImageHandler(req:Req,res:ServerResponse){
     try{payload=await readBody(req);}catch{return fail(res,400,"invalid_request");}
     if(!payload||typeof payload!=="object"||Array.isArray(payload))
       return fail(res,400,"invalid_request");
-    if(JSON.stringify(payload).length>14000)return fail(res,413,"invalid_request");
+    if(JSON.stringify(payload).length>235000)return fail(res,413,"invalid_request");
     const o=payload as Record<string,unknown>;
     projectId=typeof o.projectId==="string"?o.projectId:"";
     synthesisId=typeof o.synthesisId==="string"?o.synthesisId:"";
@@ -196,6 +228,11 @@ export async function eggFormImageHandler(req:Req,res:ServerResponse){
         v.materials.some(x=>!x||typeof x!=="object"||typeof x.type!=="string"||
           typeof x.text!=="string"||x.text.length>250||x.type.length>40))
         return fail(res,400,"invalid_idea");
+      if(v.spacePhoto!==undefined&&v.spacePhoto!==""){
+        if(typeof v.spacePhoto!=="string")return fail(res,400,"invalid_idea_photo");
+        try{decodeEggRoomPhoto(v.spacePhoto);}
+        catch{return fail(res,400,"invalid_idea_photo");}
+      }
       idea=normalizeEggIdeaFormSource(v as EggIdeaFormSource);
     }
   }
@@ -258,7 +295,7 @@ export async function eggFormImageHandler(req:Req,res:ServerResponse){
     // The image model itself performs semantic interpretation of this source.
     // No unrelated sphere synthesis can influence a local Idea draft.
     const prompt=idea?ideaImagePrompt(idea,count??0):cycleImagePrompt(project,cycle!,count??0);
-    const bytes=await generateImage(key,prompt);
+    const bytes=await generateImage(key,prompt,idea?.spacePhoto);
     const studyId=randomUUID();
     const path="generated-form/"+ownerId+"/"+projectId+"/"+studyId+".webp";
     const {error:uploadError}=await db.storage.from(BUCKET)
