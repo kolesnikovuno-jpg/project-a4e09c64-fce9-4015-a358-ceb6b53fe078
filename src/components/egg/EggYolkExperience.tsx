@@ -5,7 +5,8 @@ import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft, Dna, History, MessageCircle, FileText, Layers3, Info, X } from "lucide-react";
 import EggYolkViewer from "./EggYolkViewer";
 import {resolveEggYolkFormBasis,type YolkLocalIdea} from "../../lib/eggYolkFormBasis";
-import {visualSeedFromText,type EggYolkFieldState} from "../../lib/eggYolkField";
+import {visualSeedFromText,blendEggYolkVisualSeed,type EggYolkFieldState} from "../../lib/eggYolkField";
+import {hasGroundedEggYolkMorphology} from "../../lib/eggYolkSemantic";
 import EggWorkspaceNavigation from "./EggWorkspaceNavigation";
 import EggSpherePanel from "./EggSpherePanel";
 import EggDocumentationPanel from "./EggDocumentationPanel";
@@ -228,14 +229,33 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
   const formBasis=useMemo(()=>resolveEggYolkFormBasis(project,localIdea,demoSeed),
     [project,localIdea]);
   const completedSpatial=formBasis.synthesis;
-  const yolkField=useMemo<EggYolkFieldState>(()=>({
-    // This previews the CURRENT Idea, never a random or unrelated past shape.
-    // Until an Author-approved DNA record exists it is explicitly provisional.
-    seed:visualSeedFromText(formBasis.text),
-    manifestation:completedSpatial?.detail?Math.min(.78,.23+completedSpatial.detail*.11):0,
-    variation:completedSpatial?.detail?completedSpatial.detail*.17:0,
-    status:completedSpatial?"manifested_field":"provisional_seed",
-  }),[formBasis.text,completedSpatial?.synthesisId,completedSpatial?.detail]);
+  const aiMorphology=useMemo(()=>{
+    if(!completedSpatial)return null;
+    const cycle=project?.flowCycles?.find(c=>c.id===completedSpatial.cycleId&&
+      c.synthesis?.id===completedSpatial.synthesisId);
+    const review=cycle?.semanticReview;
+    if(!cycle?.synthesis||!review?.morphology||
+      review.sourceSynthesisId!==cycle.synthesis.id||
+      review.sourceCycleId!==cycle.id||
+      !hasGroundedEggYolkMorphology(cycle.synthesis,review.morphology))
+      return null;
+    return review.morphology;
+  },[project,completedSpatial?.synthesisId,completedSpatial?.cycleId]);
+  const yolkField=useMemo<EggYolkFieldState>(()=>{
+    // Preserve identity of this Author Idea across all iterations.
+    const original=visualSeedFromText(formBasis.identityText);
+    const localHypothesis=visualSeedFromText(formBasis.text);
+    return {
+      seed:aiMorphology?
+        blendEggYolkVisualSeed(localHypothesis,aiMorphology.coefficients,.62):
+        localHypothesis,
+      identitySeed:original,
+      manifestation:completedSpatial?.detail?Math.min(.78,.23+completedSpatial.detail*.11):0,
+      variation:completedSpatial?.detail?completedSpatial.detail*.17:0,
+      status:completedSpatial?"manifested_field":"provisional_seed",
+    };
+  },[formBasis.text,formBasis.identityText,aiMorphology,
+      completedSpatial?.synthesisId,completedSpatial?.detail]);
   const cycleOptions=useMemo(()=>project?eggYolkTimeOptions(project):[],[project]);
   const activeCycleKey=selectedCycleKey&&cycleOptions.some(c=>c.key===selectedCycleKey)
     ?selectedCycleKey:cycleOptions.at(-1)?.key??EGG_YOLK_BASELINE;
@@ -296,7 +316,9 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
   if (view === "yolk") return (
     <main className="relative flex h-[100dvh] w-full items-center justify-center overflow-hidden bg-background" data-testid="yolk-experience" aria-label="Желток — объект">
 
-      <section className="relative aspect-square w-[min(96vw,94dvh)] max-w-[1100px]" data-testid="yolk-central-object" aria-label="Пространственный объект">
+      <section className="relative aspect-square w-[min(96vw,94dvh)] max-w-[1100px]" data-testid="yolk-central-object"
+        data-morphology-source={aiMorphology?"cited_eight_spheres":completedSpatial?"structural_cycle":"provisional_idea"}
+        aria-label="Пространственный объект">
         {!loading&&<EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
           level={1} iteration={1}
           projectId={project?.id} visualVersion={null}
