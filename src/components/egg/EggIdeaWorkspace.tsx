@@ -8,6 +8,8 @@ import EggFormStudyAccess from "./EggFormStudyAccess";
 import EggWorkspaceSync from "./EggWorkspaceSync";
 import EggIdeaProjectFork from "./EggIdeaProjectFork";
 import type {EggIdeaHandoff} from "../../lib/eggIdeaHandoff";
+import {eggMaterialInsight,isEggMaterialMapCurrent,readEggMaterialMapRecord,
+ readLocalEggMaterialMap,eggMaterialMapKey,type EggMaterialMapRecord} from "../../lib/eggMaterialMap";
 import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
 
 declare const __EGG_BUILD_SHA__:string;
@@ -32,6 +34,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
  const [messages,setMessages]=useState<Message[]>([]);
  const [materials,setMaterials]=useState<FieldItem[]>([]);
  const [materialInsight,setMaterialInsight]=useState("");
+ const [materialMap,setMaterialMap]=useState<EggMaterialMapRecord|null>(null);
  const [loaded,setLoaded]=useState(false);
  const [cycleEntryOpen,setCycleEntryOpen]=useState(false);
  const [experimentsOpen,setExperimentsOpen]=useState(false);
@@ -49,14 +52,54 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
    setMessages(Array.isArray(state.messages)?state.messages.filter(m=>m&&(m.role==="user"||m.role==="assistant")&&typeof m.content==="string").slice(-40):[]);
   }
   const source=readJSON("egg:project-field:v1:"+projectId);
-  if(Array.isArray(source))setMaterials(source.filter((m:FieldItem)=>m&&m.location==="matter"&&typeof m.id==="string"&&typeof m.text==="string").slice(0,100));
-  const dialogue=readJSON("egg:matter-dialogue:v1:"+projectId);
-  if(Array.isArray(dialogue)){
-   const last=[...dialogue].reverse().find((m:Message)=>m?.role==="assistant"&&typeof m.content==="string");
-   if(last)setMaterialInsight(last.content.slice(0,4000));
-  }
+  const selected=Array.isArray(source)?source.filter((m:FieldItem)=>
+   m&&m.location==="matter"&&typeof m.id==="string"&&typeof m.text==="string").slice(0,100):[];
+  setMaterials(selected);
+  const localMap=readLocalEggMaterialMap(projectId);
+  setMaterialMap(localMap);
+  // The last assistant answer is NOT an approved Material research result.
+  setMaterialInsight(eggMaterialInsight(localMap,selected));
   setLoaded(true);
  },[key,projectId]);
+ useEffect(()=>{
+  // Read-only recovery for a new browser: Material's owner-scoped snapshot can
+  // be used only if its approved source cards still match this project.
+  let active=true;
+  void(async()=>{
+   try{
+    const cfgResponse=await fetch("/api/egg-config",{cache:"no-store"});
+    if(!cfgResponse.ok)return;
+    const cfg=await cfgResponse.json() as {supabaseUrl:string;publishableKey:string};
+    const client=createClient(cfg.supabaseUrl,cfg.publishableKey);
+    const {data:{session}}=await client.auth.getSession();
+    if(!session?.access_token||!active)return;
+    const [{data:researchRow},{data:fieldRow}]=await Promise.all([
+     client.from("egg_workspace_snapshots").select("payload")
+      .eq("project_id",projectId).eq("scope","research").maybeSingle(),
+     client.from("egg_workspace_snapshots").select("payload")
+      .eq("project_id",projectId).eq("scope","field").maybeSingle(),
+    ]);
+    if(!active)return;
+    const remoteMap=readEggMaterialMapRecord(researchRow?.payload);
+    // Never overwrite a local unreviewed map or a different accepted revision.
+    const localMap=readLocalEggMaterialMap(projectId);
+    if(!remoteMap||remoteMap.status!=="accepted"||
+      (localMap&&localMap.updatedAt!==remoteMap.updatedAt))return;
+    const source=readJSON("egg:project-field:v1:"+projectId);
+    const field=Array.isArray(source)&&source.length?source:fieldRow?.payload;
+    const chosen=Array.isArray(field)?field.filter((m:FieldItem)=>
+     m&&m.location==="matter"&&typeof m.id==="string"&&typeof m.text==="string").slice(0,100):[];
+    const insight=eggMaterialInsight(remoteMap,chosen);
+    if(!insight)return;
+    setMaterials(chosen);
+    setMaterialMap(remoteMap);
+    setMaterialInsight(insight);
+    try{localStorage.setItem(eggMaterialMapKey(projectId),JSON.stringify(remoteMap));}
+    catch{/* Snapshot remains accessible in server-side owner-scoped storage. */}
+   }catch{/* No session/network: use only locally approved map. */}
+  })();
+  return()=>{active=false;};
+ },[projectId]);
  useEffect(()=>{
   if(loaded)try{localStorage.setItem(key,JSON.stringify({intent,constraints,messages:messages.slice(-40),savedDraft,spacePhoto}));}catch{setError("Недостаточно места для сохранения черновика.");}
  },[key,intent,constraints,messages,savedDraft,spacePhoto,loaded]);
@@ -210,7 +253,13 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
     </div>
     <div className="space-y-2">
      <div className="text-xs text-foreground/70">Поле из «Материального» · {materials.length} материалов</div>
-     {materialInsight?<p className="max-h-32 overflow-y-auto whitespace-pre-wrap text-xs leading-relaxed text-foreground/65">{materialInsight}</p>:<p className="text-xs opacity-50">Карты исследования пока нет. Идею можно инициировать самостоятельно.</p>}
+     {materialInsight?<div data-testid="egg-accepted-material-map" className="space-y-1">
+       <p className="text-[11px] font-medium text-[#607466]">Карта «Материального» · принята Автором</p>
+       <p className="max-h-40 overflow-y-auto whitespace-pre-wrap text-xs leading-relaxed text-foreground/65">{materialInsight}</p>
+      </div>:
+      <p className="text-xs opacity-50">{materialMap&&!isEggMaterialMapCurrent(materialMap,materials)?
+       "Подборка изменилась после исследования. Вернитесь в Материальное и обновите карту.":
+       "Принятой карты исследования ещё нет. Вернитесь в Материальное, проверьте и примите её; идею можно инициировать самостоятельно."}</p>}
      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
       {materials.map(m=><div key={m.id} className="min-w-0 rounded-lg bg-background/50 p-2">
        {m.src?.startsWith("data:image/")?<img src={m.src} alt={m.text||"Материал"} className="h-24 w-full object-contain"/>:<div className="line-clamp-4 break-words text-xs">{m.text||m.type}</div>}
