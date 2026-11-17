@@ -1,3 +1,17 @@
-# Welcome to your Lovable project
+# Kolesnikov Studio / EGG
 
-TODO: Document your project here
+Это рабочий код сайта и приложения **EGG**. Не создавать новые репозитории, приложения Vercel или пользовательские EGG-проекты для продолжения уже начатой разработки без отдельного решения Автора.
+
+**Начните с:** [EGG_PROJECT_ANCHOR.md](EGG_PROJECT_ANCHOR.md) — проверенные подключения, активная ветка, один тестовый project ID, архитектура, границы реализации и обязательная последовательность проверки.
+
+**После каждого изменения:** [EGG_CHANGELOG.md](EGG_CHANGELOG.md) — что изменилось, какой тест пройден, на каком SHA опубликовано, что остаётся открытым.
+
+**Архитектура (смысл и решения):** [EGG-Architecture / EGG_MASTER_CONTEXT.md](https://github.com/kolesnikovuno-jpg/EGG-Architecture/blob/main/EGG_MASTER_CONTEXT.md) и [DECISIONS.md](https://github.com/kolesnikovuno-jpg/EGG-Architecture/blob/main/DECISIONS.md).
+
+**Активная рабочая ветка:** `integration/egg-unified-2026-11-12`. **Проверочный адрес:** https://egg.kolesnikov.studio. Истинный SHA публикации всегда сверять по Vercel: живой alias может менять назначение после новой сборки.
+
+**Проверка приложения:** `npm run egg:verify`. Статус READY — лишь успешная сборка, а не доказательство сквозного авторского сценария.
+
+**Хранение:** структурные циклы EGG — отдельный Supabase, часть Авторского поля и диалога — браузерный `localStorage`. Пока не реализована надёжная межустройственная синхронизация, не выдавать её за работающую.
+
+EGG — это система **Идея → Концепт/ДНК → две ветви восьми сфер → синтез Желтка → решение Автора**, а не обычный чат или генератор изображений.
