@@ -53,6 +53,9 @@ describe("Material research workspace",()=>{
   expect(body.materials[1].url).toBe("https://example.org/inspiration");
   expect(body.messages[0].content).toContain("Изучи весь состав");
   expect(await screen.findByText("Наблюдение: повторяется лёгкость. Вопрос: это цель формы?")).toBeTruthy();
+  expect(screen.getByRole("button",{name:"Сформировать карту исследования"})).toBeTruthy();
+  // A legacy free-text response alone must never count as Author-approved map.
+  expect(screen.queryByTestId("egg-accepted-material-map")).toBeNull();
   await waitFor(()=>expect(localStorage.getItem("egg:matter-dialogue:v1:1b3d29f0-fbc4-41ed-b31a-2e0db7fa2fe9"))
    .toContain("Наблюдение: повторяется лёгкость"));
  }); it("produces a sourced editable map in the same research request and transfers only after Author acceptance",async()=>{
