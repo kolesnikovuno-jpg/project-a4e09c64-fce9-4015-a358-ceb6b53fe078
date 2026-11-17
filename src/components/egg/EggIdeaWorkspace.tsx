@@ -9,6 +9,7 @@ import EggIdeaProjectFork from "./EggIdeaProjectFork";
 import type {EggIdeaHandoff} from "../../lib/eggIdeaHandoff";
 import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
 
+declare const __EGG_BUILD_SHA__:string;
 type Message={role:"user"|"assistant";content:string};
 type FieldItem=MatterCard&{location?:string;sourceUrl?:string};
 type IdeaRecord={intent:string;constraints:string;messages:Message[];savedDraft:string;spacePhoto:string};
@@ -227,6 +228,18 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
       <EggFormStudyAccess projectId={projectId} intent={intent} constraints={constraints}
        savedDraft={savedDraft} materialInsight={materialInsight} materials={materials} spacePhoto={spacePhoto}/>
      </div>}
+    </details>
+    <details className="rounded-xl border border-foreground/10 bg-background/30 p-3"
+      data-testid="egg-project-passport">
+     <summary className="cursor-pointer text-xs text-foreground/65">
+      Паспорт проекта · версия и сохранение
+     </summary>
+     <div className="mt-3 space-y-1.5 text-[11px] leading-relaxed text-foreground/65">
+      <p><strong>Проект EGG:</strong> <code className="break-all">{projectId}</code></p>
+      <p><strong>Версия сайта:</strong> <code>{__EGG_BUILD_SHA__}</code> · GitHub → Vercel</p>
+      <p><strong>Рабочая линия:</strong> integration/egg-unified-2026-11-12</p>
+      <p><strong>Этот холст:</strong> черновик в браузере данного устройства. Он не равен утверждённому серверному циклу и пока не синхронизируется между устройствами.</p>
+     </div>
     </details>
    </div>
   </div>
