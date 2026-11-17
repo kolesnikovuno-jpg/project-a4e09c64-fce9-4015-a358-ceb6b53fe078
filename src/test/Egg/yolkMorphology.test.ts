@@ -8,7 +8,7 @@ import {
 import {
  visualSeedFromText,blendEggYolkVisualSeed,buildEggYolkField,
 } from "../../lib/eggYolkField";
-import {buildEggAutomationPrompt,nextEggAutomationStep} from "../../lib/eggFlowAutomation";
+import {buildEggAutomationPrompt,nextEggAutomationStep,parseEggAutomationOutput} from "../../lib/eggFlowAutomation";
 import {buildEggYolkGeminiResponseSchema,eggOpenAiYolkSchema} from "../../../api/egg-flow-ai";
 
 const at="2026-11-17T16:00:00.000Z";
@@ -96,6 +96,15 @@ describe("EGG Yolk: grounded semantic morphology",()=>{
   const prompt=buildEggAutomationPrompt(p,step);
   expect(prompt.instructions).toMatch(/MORPHOLOGY/);
   expect(prompt.instructions).toContain("EACH of the two completed flows");
+  const malformed=draft(p);
+  const output=parseEggAutomationOutput(step,JSON.stringify({...malformed,
+    morphology:{...malformed.morphology,
+      coefficients:{...coefficients,openness:100}}}));
+  expect(output.kind).toBe("yolk");
+  if(output.kind==="yolk"){
+    expect(output.data.morphology).toBeNull();
+    expect(output.data.limitations.join(" ")).toMatch(/не прошла проверку формата/);
+  }
   expect(JSON.stringify(buildEggYolkGeminiResponseSchema(p))).toContain("morphology");
   expect(JSON.stringify(eggOpenAiYolkSchema(p))).toContain("morphology");
  });
