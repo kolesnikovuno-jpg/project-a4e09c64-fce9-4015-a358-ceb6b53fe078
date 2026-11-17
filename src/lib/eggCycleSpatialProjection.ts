@@ -19,7 +19,7 @@ function complete(c:EggFlowCycle):boolean{
   const items=[...c.synthesis.first,...c.synthesis.second];
   return items.length===8 &&
     new Set(items.map(item=>item.sphere)).size===8 &&
-    items.every(item=>item.status!=="missing"&&!!item.resultId);
+    items.every(item=>item.status!=="missing"&&!!item.resultId&&!!item.text?.trim());
 }
 function signature(c:EggFlowCycle):string{
   if(!c.synthesis)return "";
@@ -53,7 +53,7 @@ export function projectCompleteEggCycleToSpatial(
   return {
     cycleId:cycle.id,synthesisId:cycle.synthesis.id,
     level:cycle.level,iteration:cycle.iteration,
-    variant:variants[h%3],detail:1+((h>>>8)%4),
+    variant:variants[h%3],detail:Math.min(4,Math.max(1,cycle.iteration)),
     method:"deterministic_experimental_mapping",
   };
 }
