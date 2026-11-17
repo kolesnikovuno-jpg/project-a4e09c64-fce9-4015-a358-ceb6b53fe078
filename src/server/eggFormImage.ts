@@ -75,12 +75,11 @@ async function callOpenAI(key:string,endpoint:string,payload:unknown,timeoutMs:n
   }finally{clearTimeout(timer);}
 }
 async function formPrompt(key:string,project:EggProject,cycle:EggFlowCycle):Promise<string>{
-  const requested=process.env.EGG_AUTOMATION_MODEL?.trim();
-  const model=requested&&!/^(google\/|openai\/|gemini[-\/])/i.test(requested)?
-    requested:"gpt-6-luna";
+  // Dedicated direct OpenAI model. EGG_AUTOMATION_MODEL may be a Gateway
+  // provider alias and must never select the model for api.openai.com.
+  const model="gpt-4.1-mini";
   const response=await callOpenAI(key,"responses",{
     model,store:false,max_output_tokens:1100,
-    ...(model==="gpt-6-luna"?{reasoning:{effort:"none"}}:{}),
     instructions:[
       "You are the EGG spatial interpretation specialist, not an image renderer.",
       "Read the original idea and ALL eight sphere contributions as exploratory material.",
@@ -97,8 +96,12 @@ async function formPrompt(key:string,project:EggProject,cycle:EggFlowCycle):Prom
     ].join(" "),
     input:scope(project,cycle),text:{format:{type:"json_object"}},
   },45000);
-  if(!response.ok)throw Error(response.status===429?"rate_limited":
-    response.status===401||response.status===403?"model_not_authorized":"prompt_failed");
+  if(!response.ok){
+    console.warn("egg_form_provider_response",{stage:"prompt",status:response.status,model});
+    throw Error(response.status===429?"rate_limited":
+      response.status===401||response.status===403?"model_not_authorized":
+      response.status===400||response.status===404?"prompt_request_invalid":"prompt_failed");
+  }
   const data=await response.json() as {
     status?:string;output?:Array<{type?:string;content?:Array<{type?:string;text?:string}>}>;
   };
@@ -118,8 +121,12 @@ async function generateImage(key:string,prompt:string):Promise<Buffer>{
     output_format:"webp",output_compression:72,
     prompt:prompt+"\nVisual: a single source-faithful exploratory form study on a quiet warm ivory",
   },85000);
-  if(!image.ok)throw Error(image.status===429?"rate_limited":
-    image.status===401||image.status===403?"model_not_authorized":"image_failed");
+  if(!image.ok){
+    console.warn("egg_form_provider_response",{stage:"image",status:image.status,model:IMAGE_MODEL});
+    throw Error(image.status===429?"rate_limited":
+      image.status===401||image.status===403?"model_not_authorized":
+      image.status===400||image.status===404?"image_request_invalid":"image_failed");
+  }
   const result=await image.json() as {data?:Array<{b64_json?:string}>};
   const base64=result.data?.[0]?.b64_json;
   if(!base64||base64.length>4500000)throw Error("invalid_image");
@@ -233,13 +240,15 @@ export async function eggFormImageHandler(req:Req,res:ServerResponse){
     console.warn("egg_form_generation_failure",{
       class:code==="rate_limited"?"rate_limit":
         code==="model_not_authorized"?"access":
-        code==="prompt_incomplete"||code==="invalid_prompt"?"prompt":
-        code==="invalid_image"||code==="image_failed"?"image":"provider",
+        code.startsWith("prompt_")||code==="invalid_prompt"?"prompt":
+        code.startsWith("image_")||code==="invalid_image"?"image":"provider",
+      code,
     });
     const status=code==="rate_limited"?429:
       code==="model_not_authorized"?503:502;
     return fail(res,status,["rate_limited","model_not_authorized","image_failed",
-      "invalid_image","prompt_incomplete","invalid_prompt","prompt_failed"]
+      "invalid_image","prompt_incomplete","invalid_prompt","prompt_failed",
+      "prompt_request_invalid","image_request_invalid"]
       .includes(code)?code:"generation_failed");
   }
 }
