@@ -60,6 +60,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
  const [openId,setOpenId]=useState<string|null>(null);
  const [focusedPhotoNoteId,setFocusedPhotoNoteId]=useState<string|null>(null);
  const [notice,setNotice]=useState("");
+ const [recentMaterialTransfer,setRecentMaterialTransfer]=useState(false);
  const [listening,setListening]=useState(false);
  const [videoUrls,setVideoUrls]=useState<Record<string,string>>({});
  const [matterDialogueOpen,setMatterDialogueOpen]=useState(()=>typeof window==="undefined"||window.innerWidth>=768);
@@ -147,6 +148,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
    });
   });
   setOpenId(null);
+  setRecentMaterialTransfer(destination==="matter");
   setNotice(destination==="matter"?"Перенесено в Материальное":"Возвращено в общее поле");
  };
  const center=()=>({x:(field.current?.clientWidth||window.innerWidth)/2,y:(field.current?.clientHeight||window.innerHeight)/2});
@@ -408,12 +410,12 @@ export default function EggProjectField({projectId,children,workspace="field",on
   {notice&&<div role="status" data-testid="egg-field-transfer-feedback"
    className="absolute bottom-16 left-1/2 z-50 flex max-w-[94vw] -translate-x-1/2 items-center gap-3 rounded-2xl border border-foreground/10 bg-background/95 px-4 py-2.5 text-xs shadow-lg sm:bottom-5">
    <span>{notice}</span>
-   {notice==="Перенесено в Материальное"&&onWorkspaceChange&&
+   {recentMaterialTransfer&&workspace==="field"&&onWorkspaceChange&&
     <button type="button" data-testid="egg-open-matter-after-transfer"
      className="shrink-0 rounded-full border border-foreground/25 px-3 py-1.5 font-medium"
-     onClick={()=>{setNotice("");onWorkspaceChange("matter");}}>Открыть Материальное</button>}
+     onClick={()=>{setNotice("");setRecentMaterialTransfer(false);onWorkspaceChange("matter");}}>Открыть Материальное</button>}
    <button type="button" aria-label="Закрыть сообщение" className="opacity-65"
-    onClick={()=>setNotice("")}><X size={14}/></button>
+    onClick={()=>{setNotice("");setRecentMaterialTransfer(false);}}><X size={14}/></button>
   </div>}
   {active?.src&&<EggPhotoWorkspace key={active.id} src={active.src} title={active.text} initialMarkup={active.photoMarkup} initialFocusNoteId={focusedPhotoNoteId??undefined}
    onSave={markup=>change(previous=>previous.map(item=>item.id===active.id?{...item,photoMarkup:markup}:item))}
