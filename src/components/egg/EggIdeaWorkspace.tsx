@@ -84,7 +84,9 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
     // Never overwrite a local unreviewed map or a different accepted revision.
     const localMap=readLocalEggMaterialMap(projectId);
     if(!remoteMap||remoteMap.status!=="accepted"||
-      (localMap&&localMap.updatedAt!==remoteMap.updatedAt))return;
+      (localMap&&(localMap.status!=="accepted"||
+        localMap.sourceKey!==remoteMap.sourceKey||
+        localMap.acceptedAt!==remoteMap.acceptedAt)))return;
     const source=readJSON("egg:project-field:v1:"+projectId);
     const field=Array.isArray(source)&&source.length?source:fieldRow?.payload;
     const chosen=Array.isArray(field)?field.filter((m:FieldItem)=>
