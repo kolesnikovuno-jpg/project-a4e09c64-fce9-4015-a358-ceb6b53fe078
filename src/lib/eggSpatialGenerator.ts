@@ -153,7 +153,7 @@ export function buildAbstractSpatialSketch(stage:SpatialStage,variant:SpatialVar
 }
 
 type MaterialName = "guide" | "frame" | "fabric";
-type MeshAccum = {points:number[];triangles:number[]};
+type MeshAccum = {points:number[];triangles:number[];welded?:Map<string,number>};
 function addVertex(mesh:MeshAccum,p:Vec3):number{
   const index=mesh.points.length/3;
   mesh.points.push(p.x,p.y,p.z);
@@ -184,9 +184,42 @@ function addTube(mesh:MeshAccum,path:SpatialPath){
   }
 }
 function addQuad(mesh:MeshAccum,q:SpatialQuad){
-  const base=mesh.points.length/3;
-  q.corners.forEach(v=>addVertex(mesh,v));
-  mesh.triangles.push(base,base+1,base+2,base,base+2,base+3);
+  function vertex(p:Vec3):number{
+   if(!mesh.welded)return addVertex(mesh,p);
+   // Coincident boundaries of seat, saddle and back share a SINGLE normal,
+   // so the sculptural skin is shaded continuously instead of per-quad.
+   const key=[p.x,p.y,p.z].map(v=>v.toFixed(6)).join(",");
+   const existing=mesh.welded.get(key);
+   if(existing!==undefined)return existing;
+   const index=addVertex(mesh,p);
+   mesh.welded.set(key,index);
+   return index;
+  }
+  const [a,b,c,d]=q.corners.map(vertex);
+  mesh.triangles.push(a,b,c,a,c,d);
+}
+/** Area weighted, normalized glTF vertex normals. Zero-area triangles, such
+ * as center-fan foot caps, are explicitly ignored rather than producing NaN.
+ */
+function vertexNormals(mesh:MeshAccum):number[]{
+ const result=Array<number>(mesh.points.length).fill(0);
+ const p=(i:number):Vec3=>({
+  x:mesh.points[3*i],y:mesh.points[3*i+1],z:mesh.points[3*i+2],
+ });
+ for(let i=0;i<mesh.triangles.length;i+=3){
+  const a=mesh.triangles[i],b=mesh.triangles[i+1],c=mesh.triangles[i+2];
+  const normal=cross(sub(p(b),p(a)),sub(p(c),p(a)));
+  if(dot(normal,normal)<1e-18)continue;
+  for(const v of [a,b,c]){
+   result[v*3]+=normal.x;result[v*3+1]+=normal.y;result[v*3+2]+=normal.z;
+  }
+ }
+ for(let i=0;i<result.length;i+=3){
+  const magnitude=Math.hypot(result[i],result[i+1],result[i+2]);
+  if(magnitude<1e-12){result[i]=0;result[i+1]=1;result[i+2]=0;continue;}
+  result[i]/=magnitude;result[i+1]/=magnitude;result[i+2]/=magnitude;
+ }
+ return result;
 }
 function pad4(n:number){return (n+3)&~3;}
 function bytesFromFloat(values:number[]):Uint8Array{
@@ -216,14 +249,22 @@ export function createSpatialGlb(sketch:SpatialSketch,provenance?:SpatialGlbProv
   const meshByMaterial:Record<MaterialName,MeshAccum>={
     guide:{points:[],triangles:[]},
     frame:{points:[],triangles:[]},
-    fabric:{points:[],triangles:[]},
+    fabric:{points:[],triangles:[],...(provenance?{welded:new Map<string,number>()}:{})},
   };
-  for(const path of sketch.paths)addTube(meshByMaterial[path.material],path);
+  // A sourced continuous surface has no separate dark rod geometry. Axes are
+  // still present in sketch.paths for history and diagnostic comparisons.
+  for(const path of sketch.paths){
+   if(provenance&&path.material==="guide")continue;
+   addTube(meshByMaterial[path.material],path);
+  }
   for(const quad of sketch.quads)addQuad(meshByMaterial.fabric,quad);
   const chunks:Uint8Array[]=[];
   const bufferViews:Array<{buffer:number;byteOffset:number;byteLength:number;target:number}>=[];
   const accessors:Array<Record<string,unknown>>=[];
-  const primitives:Array<{attributes:{POSITION:number};indices:number;material:number;mode:number}>=[];
+  const primitives:Array<{
+   attributes:{POSITION:number;NORMAL?:number};
+   indices:number;material:number;mode:number
+  }>=[];
   let offset=0;
   function put(bytes:Uint8Array,target:number){
     const aligned=pad4(bytes.length);
@@ -234,7 +275,8 @@ export function createSpatialGlb(sketch:SpatialSketch,provenance?:SpatialGlbProv
     return result;
   }
   const palette:Record<MaterialName,[number,number,number,number]>={
-    guide:[.38,.34,.28,1],frame:[.29,.25,.20,1],fabric:[.78,.72,.62,1],
+    guide:[.38,.34,.28,1],frame:[.29,.25,.20,1],
+    fabric:provenance?[.86,.83,.77,1]:[.78,.72,.62,1],
   };
   const materials=(["guide","frame","fabric"] as const).map(name=>({
     name, doubleSided:true,
@@ -252,10 +294,23 @@ export function createSpatialGlb(sketch:SpatialSketch,provenance?:SpatialGlbProv
     }
     const positionAccessor=accessors.length;
     accessors.push({bufferView:positionView,byteOffset:0,componentType:5126,count:current.points.length/3,type:"VEC3",min,max});
+    let normalAccessor:number|undefined;
+    if(provenance){
+      const normalView=put(bytesFromFloat(vertexNormals(current)),34962);
+      normalAccessor=accessors.length;
+      accessors.push({
+       bufferView:normalView,byteOffset:0,componentType:5126,
+       count:current.points.length/3,type:"VEC3",
+      });
+    }
     const indexView=put(bytesFromUint(current.triangles),34963);
     const indexAccessor=accessors.length;
     accessors.push({bufferView:indexView,byteOffset:0,componentType:5125,count:current.triangles.length,type:"SCALAR"});
-    primitives.push({attributes:{POSITION:positionAccessor},indices:indexAccessor,material,mode:4});
+    primitives.push({
+     attributes:{POSITION:positionAccessor,
+      ...(normalAccessor!==undefined?{NORMAL:normalAccessor}:{})},
+     indices:indexAccessor,material,mode:4,
+    });
   });
   if(primitives.length===0)throw new Error("Пространственный эскиз не содержит экспортируемой геометрии.");
   const json={
@@ -264,7 +319,7 @@ export function createSpatialGlb(sketch:SpatialSketch,provenance?:SpatialGlbProv
     scene:0,
     scenes:[{nodes:[0]}],
     nodes:[{name:"EGG / author sketch",mesh:0}],
-    meshes:[{name:"Spatial study · unapproved",primitives}],
+    meshes:[{name:provenance?"EGG sculptural form · unapproved":"Spatial study · unapproved",primitives}],
     materials,
     accessors,bufferViews,buffers:[{byteLength:offset}],
     extras:{workflow:provenance?"egg-spatial-form":"author-sketch",
