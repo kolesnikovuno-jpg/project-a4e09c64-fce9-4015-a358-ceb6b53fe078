@@ -1,7 +1,8 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen, within, waitFor, cleanup } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import EggProjectField from "@/components/egg/EggProjectField";
 
+afterEach(()=>{cleanup();vi.restoreAllMocks();localStorage.clear();});
 describe("EGG field material appearance", () => {
   it("renders image, note and sketch without card frames and with overlay round controls", async () => {
     const projectId="field-cards-borderless-test";
@@ -27,5 +28,39 @@ describe("EGG field material appearance", () => {
     fireEvent.click(within(itemElements[0] as HTMLElement).getByRole("button",{name:"Развернуть элемент"}));
     expect(screen.getByTestId("egg-photo-workspace")).toBeTruthy();
     expect(container.querySelector(".bg-black\\/65")).toBeNull();
+  });
+  it("accepts a large image into Material even when Safari localStorage is full",async()=>{
+    const projectId="field-move-quota-test";
+    const onWorkspaceChange=vi.fn();
+    // Two images plus other workspace data may make a redundant full-board
+    // localStorage write fail. Accept must still transfer the state.
+    localStorage.setItem("egg:project-field:v1:"+projectId,JSON.stringify([
+      {id:"image1",type:"image",x:20,y:30,text:"Референс 1",
+       src:"data:image/jpeg;base64,"+"A".repeat(70000)},
+      {id:"image2",type:"image",x:80,y:60,text:"Референс 2",
+       src:"data:image/jpeg;base64,"+"B".repeat(70000)},
+    ]));
+    const {container,rerender}=render(<EggProjectField projectId={projectId}
+     workspace="field" onWorkspaceChange={onWorkspaceChange}><span>EGG</span></EggProjectField>);
+    expect(container.querySelectorAll("[data-field-item]")).toHaveLength(2);
+    const setItem=vi.spyOn(Storage.prototype,"setItem").mockImplementation(()=>{
+      throw new DOMException("Quota exceeded","QuotaExceededError");
+    });
+    const image1=container.querySelector('[data-field-item="image1"]') as HTMLElement;
+    fireEvent.click(within(image1).getByRole("button",{name:"В работу"}));
+    // Previously this would silently return before setItems and leave image1.
+    await waitFor(()=>expect(container.querySelector('[data-field-item="image1"]')).toBeNull());
+    expect(container.querySelector('[data-field-item="image2"]')).not.toBeNull();
+    expect(screen.getByTestId("egg-field-transfer-feedback").textContent)
+     .toContain("Память браузера заполнена");
+    const open=screen.getByRole("button",{name:"Открыть Материальное"});
+    fireEvent.click(open);
+    expect(onWorkspaceChange).toHaveBeenCalledWith("matter");
+    // Parent navigation switches the workspace while preserving the same items.
+    rerender(<EggProjectField projectId={projectId} workspace="matter"
+      onWorkspaceChange={onWorkspaceChange}><span>EGG</span></EggProjectField>);
+    expect(container.querySelector('[data-field-item="image1"]')).not.toBeNull();
+    expect(container.querySelector('[data-field-item="image2"]')).toBeNull();
+    setItem.mockRestore();
   });
 });
