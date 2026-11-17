@@ -57,4 +57,18 @@ describe("EGG Material research map: explicit author gate",()=>{
   sessionStorage.removeItem(eggMaterialMapKey(pid));
  });
 
+ it("retains downstream hypotheses and open questions even after long research observations",()=>{
+  const large={...draft,observations:Array.from({length:5},(_,i)=>({
+   text:"Подробное наблюдение "+(i+1)+": "+ "видимое свойство ".repeat(18),
+   sourceIds:["ref-1"],
+  }))};
+  const record=createEggMaterialMapRecord(large,cards,"2026-11-17T19:00:00Z");
+  const insight=eggMaterialInsight({...record,status:"accepted",acceptedAt:"2026-11-17T19:02:00Z"},cards);
+  expect(insight).toContain("НАБЛЮДЕНИЯ");
+  expect(insight).toContain("НАПРЯЖЕНИЯ");
+  expect(insight).toContain("ГИПОТЕЗЫ");
+  expect(insight).toContain("ВОПРОСЫ");
+  expect(insight.length).toBeLessThanOrEqual(1400);
+ });
+
 });
