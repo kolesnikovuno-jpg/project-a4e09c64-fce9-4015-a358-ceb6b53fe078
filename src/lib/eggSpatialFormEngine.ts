@@ -60,7 +60,7 @@ export function buildEggSpatialForm(input:EggSpatialFormInput):EggSpatialFormStu
  const shellThickness=.035+.025*m.density;
  const seatThickness=.05+.025*m.density;
  const asymShift=(m.asymmetry-.5)*.16;
- const seatBow=.025+.075*m.softness;
+ const seatBow=.025+.075*m.softness+.018*m.pulse;
  const backMid=(seatHeight+backHeight)*.5;
  const backHalf=(backHeight-seatHeight)*.5;
  // Aperture remains a real geometric hole: no polygons in its interior.
