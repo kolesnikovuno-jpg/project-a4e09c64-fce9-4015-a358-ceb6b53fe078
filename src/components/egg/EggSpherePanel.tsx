@@ -120,6 +120,19 @@ export default function EggSpherePanel({sphere,name,summary,status,projectId,gue
    setNotice(known[key]??key);
   }finally{setBusy(false);}
  };
+ const syncMemory=async()=>{
+  if(!projectId||!token||busy)return;
+  setBusy(true);setNotice("");
+  try{
+   const response=await fetch("/api/egg-memory-sync?project="+encodeURIComponent(projectId),{
+    method:"POST",headers:{Authorization:"Bearer "+token},
+   });
+   const data=await response.json() as {ok?:boolean;error?:string;name?:string};
+   if(!response.ok||!data.ok)throw Error(data.error??"drive_sync_failed");
+   setNotice("Архив памяти сохранён на Google Drive: "+(data.name??"EGG"));
+  }catch(error){setNotice(error instanceof Error?error.message:"Ошибка синхронизации");}
+  finally{setBusy(false);}
+ };
  const submitAuthor=async()=>{
   if(!isWorking||!projectId||!token||revision===null||busy||!draft.trim())return;
   setBusy(true);setNotice("");
@@ -155,6 +168,10 @@ export default function EggSpherePanel({sphere,name,summary,status,projectId,gue
    <p><strong>Выход:</strong> {role.expectedContribution}</p>
    <p><strong>Граница:</strong> {role.hardBoundary}</p>
   </div>}
+  {!guest&&projectId&&<button type="button" disabled={busy||!token} onClick={()=>void syncMemory()}
+   className="mt-3 rounded-lg border border-foreground/20 px-3 py-2 text-xs disabled:opacity-40">
+   Сохранить память EGG на Google Drive
+  </button>}
   {guest||!projectId?
    <div className="mt-5 text-sm">Ознакомительный режим. <Link to="/egg/connect" className="underline">Войти в EGG</Link></div>:
    <div className="mt-5 space-y-4">
