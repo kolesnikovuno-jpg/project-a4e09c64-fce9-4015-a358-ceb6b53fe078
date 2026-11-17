@@ -205,6 +205,15 @@ export default function EggConnect() {
         {inviteFeedback && <p role="status" className="mt-3 text-sm">{inviteFeedback}</p>}
         {!user && window.location.hash.startsWith("#egg-invite=") && <p className="mt-3 text-sm">Войдите с почтой, на которую вас пригласили. После входа приглашение будет принято автоматически.</p>}
       </section>
+      {user && client && <section className="mb-5 rounded-xl border border-border p-3 sm:p-6"
+       data-testid="egg-clean-project-entry">
+       <h2 className="mb-3 text-lg font-medium">Начать чистый проект EGG</h2>
+       <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+        Сначала Поле → Материальное → Инициация идеи → итерации восьми сфер → форма в Желтке.
+        Новый проект пустой: прежние материалы, циклы и ДНК не переносятся.
+       </p>
+       <EggNewProject client={client}/>
+      </section>}
       <section className="mb-5 rounded-xl border border-border p-6">
         <h2 className="mb-3 text-xl font-medium">Подключение личного ИИ</h2>
         <p className="mb-3 text-sm text-muted-foreground">Подключите EGG через MCP в своём ИИ-клиенте, если он поддерживает пользовательские MCP-подключения. Например, в настройках приложений ChatGPT. При запросе авторизации войдите в EGG и подтвердите доступ.</p>
@@ -276,7 +285,7 @@ export default function EggConnect() {
       <section className="rounded-xl border border-border p-6">
         <h2 className="mb-3 text-xl font-medium">Мои проекты</h2>
         <p className="mb-3 text-sm text-muted-foreground">Проекты ниже читаются из EGG Engine. Холсты синхронизируются с отдельными черновиками EGG при действующем входе и соединении. Перед сменой устройства проверьте отметку «В EGG · синхронизировано» на нужном холсте; при конфликте версия выбирается Автором.</p>
-        {user && client && <EggNewProject client={client} />}
+
         {user && projectError && <p role="status" className="mb-3 text-sm">{projectError}</p>}
         {user && projects === null && !projectError && <p className="mb-3 text-sm">Загружаем проекты…</p>}
         {user && projects?.length === 0 && <p className="mb-3 text-sm">В аккаунте пока нет серверных проектов EGG.</p>}
