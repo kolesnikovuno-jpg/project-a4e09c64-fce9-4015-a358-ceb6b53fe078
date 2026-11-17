@@ -115,7 +115,7 @@ export function buildEggSpatialForm(input:EggSpatialFormInput):EggSpatialFormStu
   rear-(y-seatHeight)*backLean-
   (.06+.05*m.softness)*(1-Math.pow(x/(width+.001),2))+
   .035*m.rotation*Math.sin(y*2.7)+
-  (behind?shellThickness:0);
+  (behind?-shellThickness:0);
 
  const loopPoint=(angle:number,radius:number,behind=false):Vec3=>{
   // Radius 0 = aperture edge, 1 = outside of perforated back shell.
@@ -127,7 +127,11 @@ export function buildEggSpatialForm(input:EggSpatialFormInput):EggSpatialFormStu
   const x=Math.cos(angle)*(xInner*(1-radius)+xOuter*radius)+
     asymShift*Math.sin(angle)*(.5+.5*radius);
   const y=holeY+Math.sin(angle)*(yInner*(1-radius)+yOuter*radius);
-  return point(x,y,backZ(x,y,behind));
+  // A shallow organic crown rounds the plate toward its center; the front
+  // and rear boundaries stay aligned at both the aperture and outer rim.
+  const crown=behind?0:(.018+.040*m.softness)*
+    Math.sin(Math.PI*radius)*(1+.14*Math.sin(angle)*Math.sin(angle));
+  return point(x,y,backZ(x,y,behind)+crown);
  };
  for(let i=0;i<ringSteps;i++){
   const a0=chairBackAngle(i);
