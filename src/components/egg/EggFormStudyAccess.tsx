@@ -104,7 +104,7 @@ export default function EggFormStudyAccess({projectId,intent,constraints,
     <div>
      <h4 className="text-sm font-medium">Проявление формы · ИИ</h4>
      <p className="mt-1 text-[11px] leading-relaxed text-foreground/60">
-      Из текущего намерения Автора · эскиз, без старого цикла сфер
+      По текущей идее · пробный пространственный образ, не 3D
      </p>
     </div>
     <button type="button" onClick={()=>void generate()}
@@ -119,8 +119,8 @@ export default function EggFormStudyAccess({projectId,intent,constraints,
      className="mx-auto max-h-[480px] w-full max-w-[600px] rounded-xl object-contain"
      referrerPolicy="no-referrer"/>
     <details className="text-xs text-foreground/65">
-     <summary className="cursor-pointer">Исходные данные интерпретации</summary>
-     <p className="mt-2 whitespace-pre-wrap leading-relaxed">{study.prompt}</p>
+     <summary className="cursor-pointer">Показать запрос к ИИ</summary>
+     <p className="mt-2 max-h-36 overflow-y-auto whitespace-pre-wrap break-words rounded-lg bg-foreground/[.035] p-3 font-mono text-[11px] leading-relaxed">{study.prompt}</p>
     </details>
    </div>}
    {notice&&<p role="status" className="text-xs text-foreground/70">{notice}</p>}
