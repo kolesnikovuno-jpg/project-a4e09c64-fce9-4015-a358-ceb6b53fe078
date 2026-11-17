@@ -4,6 +4,7 @@ import {createClient} from "@supabase/supabase-js";
 import type {EggProject,SphereId,EggEvidence} from "../../lib/eggEngine";
 import {EGG_FLOW_ROUTES,currentEggFlowCycle,type EggSphereVisit} from "../../lib/eggFlowCycle";
 import {EGG_SPHERE_MANIFESTS} from "../../lib/eggSphereProtocol";
+import {EGG_SPHERE_GENOMES} from "../../lib/eggSphereReplication";
 import {buildEggSphereBrief} from "../../lib/eggSphereIntelligence";
 import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
 import {nextEggAutomationStep} from "../../lib/eggFlowAutomation";
@@ -34,6 +35,7 @@ export default function EggSpherePanel({sphere,name,summary,status,projectId,gue
  const [evidence,setEvidence]=useState<EggEvidence>("hypothesis");
  const [notice,setNotice]=useState("");
  const role=EGG_SPHERE_MANIFESTS[sphere];
+ const genome=EGG_SPHERE_GENOMES[sphere];
  useEffect(()=>{
   if(!projectId||guest){setProject(null);setRevision(null);setLoading(false);return;}
   let alive=true;setLoading(true);setNotice("");
@@ -148,6 +150,7 @@ export default function EggSpherePanel({sphere,name,summary,status,projectId,gue
    {expanded?"Свернуть протокол":"Роль, границы и ожидаемый результат"}
   </button>
   {expanded&&<div className="mt-3 space-y-2 border border-foreground/10 p-3 text-xs">
+   <p><strong>Геном сферы:</strong> v{genome.version} · наследуемая роль и правила · изменения только после проверки и утверждения Автором.</p><p><strong>Потоки:</strong> {genome.sequentialTarget} + {genome.radialTarget} (один результат).</p>
    <p><strong>Роль:</strong> {role.role}</p><p><strong>Вопрос:</strong> {role.objective}</p>
    <p><strong>Выход:</strong> {role.expectedContribution}</p>
    <p><strong>Граница:</strong> {role.hardBoundary}</p>
