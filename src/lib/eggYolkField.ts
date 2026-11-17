@@ -13,12 +13,29 @@ export type EggVisualSeed={
 };
 export type EggYolkFieldState={
   seed:EggVisualSeed;
+  /** Stable identity of Author's original Idea, so iterative coordinates
+   * move the SAME particle IDs instead of reseeding unrelated forms.
+   */
+  identitySeed?:EggVisualSeed;
   /** zero before the first full synthesis, positive afterwards */
   manifestation:number;
   variation:number;
   status:"provisional_seed"|"dna_field"|"manifested_field";
 };
 const clamp=(n:number)=>Math.min(1,Math.max(0,n));
+/** Shape changes are bounded to preserve the seed's recognizable identity. */
+export function blendEggYolkVisualSeed(
+ base:EggVisualSeed,semantic:EggVisualSeed,weight=.62,
+):EggVisualSeed{
+ const keys:(keyof EggVisualSeed)[]=[
+  "density","openness","verticality","tension",
+  "asymmetry","rotation","pulse","softness",
+ ];
+ const w=Math.min(.72,Math.max(0,weight));
+ return Object.fromEntries(keys.map(k=>[
+  k,clamp(base[k]*(1-w)+semantic[k]*w),
+ ])) as EggVisualSeed;
+}
 function hash(text:string):number{
   let h=2166136261;
   for(let i=0;i<text.length;i++)h=Math.imul(h^text.charCodeAt(i),16777619);
@@ -57,7 +74,8 @@ function fieldSurface(seed:EggVisualSeed,u:number,v:number):Vec3{
   // Non-regular, open lobes rather than an ellipsoid or finished object.
   const phi=u*Math.PI*2,theta=v*Math.PI;
   const knot=.22*Math.sin(phi*3+theta*2.6+seed.asymmetry*3.5);
-  const waist=.78+.23*Math.cos((v-.41)*Math.PI*2);
+  const waist=.78+.23*Math.cos((v-.41)*Math.PI*2)+
+    .10*seed.pulse*Math.sin(v*5.5*Math.PI);
   const radius=(.57+.23*seed.openness)*Math.sin(theta)*waist*(1+knot);
   const spin=phi+seed.rotation*(v-.5)*2.2;
   return {
@@ -82,7 +100,7 @@ function seedSignature(seed:EggVisualSeed):number{
 export function buildEggYolkField(state:EggYolkFieldState):EggYolkFieldSketch{
   const m=clamp(state.manifestation);
   const seed=state.seed;
-  const random=rng(seedSignature(seed));
+  const random=rng(seedSignature(state.identitySeed??seed));
   const particles:EggYolkParticle[]=[];
   const paths:SpatialPath[]=[];
   const quads:SpatialQuad[]=[];
@@ -122,7 +140,7 @@ export function buildEggYolkField(state:EggYolkFieldState):EggYolkFieldSketch{
       // Strong points converge around potential material/detail nodes.
       const idx=Math.floor(a*anchors.length);
       const anchor=anchors[Math.min(idx,anchors.length-1)];
-      const scatter=.23-.11*m;
+      const scatter=.23-.11*m-.045*seed.pulse;
       position={
         x:anchor.x+(b-.5)*scatter*2,
         y:anchor.y+(c-.5)*scatter*2,
@@ -142,8 +160,8 @@ export function buildEggYolkField(state:EggYolkFieldState):EggYolkFieldSketch{
     }
     const brightness=.52+.48*random();
     const size=.65+random()*1.35+(tone==="core"?.28:0);
-    const opacity=clamp((.18+brightness*.43)*densityFactor+
-      (tone==="core"?.16:.05)*m);
+    const opacity=clamp((.18+brightness*.43)*densityFactor*
+      (.65+.65*seed.density)+(tone==="core"?.16:.05)*m);
     particles.push({id:i,position,size,opacity,tone});
   }
   // Only a few short traces suggest form; never recreate the old wire grid.
