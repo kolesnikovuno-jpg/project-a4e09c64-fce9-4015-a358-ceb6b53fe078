@@ -141,8 +141,10 @@ export default function EggMatterDialogue({
  useEffect(()=>{if(ready)try{localStorage.setItem(storageKey,JSON.stringify(messages.slice(-40)));}catch{/* local storage full */}},[storageKey,messages,ready]);
  useEffect(()=>{
   if(!ready||!research)return;
-  try{localStorage.setItem(mapKey,JSON.stringify(research));setMapStorageError("");}
-  catch{setMapStorageError("Локальная копия карты не сохранилась; проверьте облачную синхронизацию ниже.");}
+  const serialized=JSON.stringify(research);
+  try{sessionStorage.setItem(mapKey,serialized);}catch{/* Cloud still receives the structured map. */}
+  try{localStorage.setItem(mapKey,serialized);setMapStorageError("");}
+  catch{setMapStorageError("Память браузера заполнена. Карта временно хранится в этой вкладке; дождитесь отметки облачной синхронизации.");}
  },[mapKey,research,ready]);
  const mapCurrent=isEggMaterialMapCurrent(research,cards);
  const updateMapEntry=(key:"observations"|"connections"|"tensions"|"hypotheses",index:number,text:string)=>{
