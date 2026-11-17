@@ -388,7 +388,8 @@ export default function EggProjectField({projectId,children,workspace="field",on
   {workspace==="matter"&&<button type="button" aria-label="Вернуться к Яйцу" onClick={()=>onWorkspaceChange?.("field")} className="absolute left-5 top-[116px] z-30 rounded-full border border-foreground/20 bg-background/95 px-3 py-2 text-xs shadow-sm sm:left-8">← К Яйцу</button>}
   {workspace==="matter"&&matterDialogueOpen&&<EggMatterDialogue
     projectId={projectId} cards={matterCards} focusId={matterFocusId} onClearFocus={()=>setMatterFocusId(null)}
-    onBack={()=>onWorkspaceChange?.("field")} onClose={()=>setMatterDialogueOpen(false)}/>}
+    onBack={()=>onWorkspaceChange?.("field")} onClose={()=>setMatterDialogueOpen(false)}
+    onOpenIdea={onOpenAuthor}/>}
   {workspace==="matter"&&!matterDialogueOpen&&<button type="button" aria-label="Открыть диалог Материальное"
     className="absolute right-5 top-16 z-40 flex items-center gap-2 rounded-full bg-[#f9f7f2] px-4 py-2 text-xs text-[#45574b] shadow-md"
     onClick={()=>setMatterDialogueOpen(true)}><MessageCircle size={16}/> Диалог с ИИ</button>}
