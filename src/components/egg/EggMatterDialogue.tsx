@@ -259,6 +259,15 @@ export default function EggMatterDialogue({
      onClick={firstReview}>Исследовать весь холст</button>
     {!cards.length&&<p className="text-xs opacity-65">Перенесите материалы из общего поля — они появятся здесь.</p>}
    </div>}
+   {!research&&messages.some(m=>m.role==="assistant")&&<div className="rounded-xl border border-foreground/15 bg-background/75 p-3"
+      data-testid="egg-create-map-from-history">
+     <p className="mb-2 text-xs text-foreground/65">Исследование проведено, но карта ещё не создана. Вывод ИИ не передаётся автоматически в Идею.</p>
+     <button type="button" disabled={busy||!cards.length}
+      className="rounded-full bg-[#607466] px-3 py-2 text-xs text-white disabled:opacity-40"
+      onClick={()=>void submit("Сформируй структурированную карту всего выбранного холста, опираясь на предыдущее исследование и замечания Автора.",true)}>
+      Сформировать карту исследования
+     </button>
+    </div>}
    {messages.map((message,index)=><div key={index} className={"max-w-[94%] whitespace-pre-wrap break-words px-3 py-2.5 text-[13px] leading-relaxed "+
     (message.role==="assistant"?"mr-auto bg-transparent":"ml-auto rounded-xl bg-foreground/[.055] text-right")}>
     {message.role==="assistant"?<div className="mb-1 flex items-center gap-1 text-[10px] opacity-60"><BrainCircuit size={12}/> ИИ · гипотезы требуют проверки</div>:<div className="mb-1 text-right text-[10px] opacity-60">Автор</div>}
