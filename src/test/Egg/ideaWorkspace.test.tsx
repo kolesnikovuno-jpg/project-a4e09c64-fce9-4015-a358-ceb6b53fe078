@@ -5,6 +5,15 @@ vi.mock("@supabase/supabase-js",()=>({createClient:vi.fn(()=>({auth:{getSession:
 afterEach(()=>{cleanup();localStorage.clear();vi.unstubAllGlobals();});
 const project="01b3d29f-bfc4-41ed-b31a-2e0db7fa2fe9";
 describe("EGG Idea initiation",()=>{
+ it("shows correct project identity and distinguishes browser draft from server state",()=>{
+  render(<EggIdeaWorkspace projectId={project} onClose={()=>{}} onOpenMatter={()=>{}}/>);
+  const passport=screen.getByTestId("egg-project-passport");
+  expect(passport).toBeTruthy();
+  fireEvent.click(screen.getByText("Паспорт проекта · версия и сохранение"));
+  expect(screen.getByText(project)).toBeTruthy();
+  expect(screen.getByText(/черновик в браузере данного устройства/)).toBeTruthy();
+  expect(screen.getByText("integration/egg-unified-2026-11-12")).toBeTruthy();
+ });
  it("routes the current Author Idea to Yolk, not to an image generator",()=>{
   const openYolk=vi.fn();
   render(<EggIdeaWorkspace projectId={project} onClose={()=>{}}
