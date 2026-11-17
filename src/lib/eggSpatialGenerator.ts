@@ -205,7 +205,14 @@ function bytesFromUint(values:number[]):Uint8Array{
 /** Portable GLB with real triangle geometry (tube strokes and optional fabric).
  * No external dependency/network request needed to generate or download it.
  */
-export function createSpatialGlb(sketch:SpatialSketch):Uint8Array{
+export type SpatialGlbProvenance={
+ projectId?:string;
+ sourceSynthesisId:string;
+ sourceResultIds:string[];
+ /** This is a hypothesis, never an approved geometry or model from a picture. */
+ origin:"egg_morphology_parametric_prototype";
+};
+export function createSpatialGlb(sketch:SpatialSketch,provenance?:SpatialGlbProvenance):Uint8Array{
   const meshByMaterial:Record<MaterialName,MeshAccum>={
     guide:{points:[],triangles:[]},
     frame:{points:[],triangles:[]},
@@ -260,7 +267,15 @@ export function createSpatialGlb(sketch:SpatialSketch):Uint8Array{
     meshes:[{name:"Spatial study · unapproved",primitives}],
     materials,
     accessors,bufferViews,buffers:[{byteLength:offset}],
-    extras:{workflow:"author-sketch",approved:false,stage:sketch.stage,variant:sketch.variant,iteration:sketch.iteration,units:"normalized, not manufacturing dimensions"}
+    extras:{workflow:provenance?"egg-spatial-form":"author-sketch",
+      approved:false,stage:sketch.stage,variant:sketch.variant,
+      iteration:sketch.iteration,units:"normalized, not manufacturing dimensions",
+      ...(provenance?{source:{
+        origin:provenance.origin,
+        sourceSynthesisId:provenance.sourceSynthesisId,
+        sourceResultIds:[...provenance.sourceResultIds],
+        ...(provenance.projectId?{projectId:provenance.projectId}:{})
+      }}:{})}
   };
   const encoded=new TextEncoder().encode(JSON.stringify(json));
   const jsonLength=pad4(encoded.length);
