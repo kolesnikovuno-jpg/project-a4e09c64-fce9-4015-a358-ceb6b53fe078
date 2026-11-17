@@ -2,7 +2,8 @@
  * EGG Spatial Form Engine, prototype 0.1
  *
  * Maps a complete, sourced eight-sphere morphology to stable parametric
- * geometry. It does NOT reconstruct the generated 2D image, infer hidden
+ * geometry. Version 0.2 uses a continuous seat/back fairing and organic
+ * support shells. It does NOT reconstruct the generated 2D image, infer hidden
  * details from photographs, assert ergonomic safety, or approve Author DNA.
  * No paid AI request and no geometry state written to the project.
  *
@@ -11,6 +12,7 @@
  */
 import type {EggYolkMorphology} from "./eggYolkSemantic.js";
 import type {SpatialSketch,SpatialPath,SpatialQuad,Vec3} from "./eggSpatialGenerator.js";
+import {appendSculpturalChairJoinery,chairBackAngle,CHAIR_SHELL_DIVISIONS} from "./eggSpatialSkin.js";
 
 export type EggSpatialFormStudy={
   family:"chair";
@@ -31,7 +33,7 @@ export type EggSpatialFormInput={
 };
 const clamp=(n:number,min:number,max:number)=>Math.min(max,Math.max(min,n));
 const point=(x:number,y:number,z:number):Vec3=>({x,y,z});
-const ringSteps=36;
+const ringSteps=CHAIR_SHELL_DIVISIONS*2;
 const crossSections=4;
 const chairLanguage=/кресл|стул|сидень|chair|armchair|seating|seat\b/i;
 
@@ -77,21 +79,24 @@ export function buildEggSpatialForm(input:EggSpatialFormInput):EggSpatialFormStu
   const twist=asymShift*.15*u*v;
   return point(x,seatHeight+edgeRaise-hollow+rake+twist-(bottom?seatThickness:0),z);
  };
- const n=12;
+ const n=CHAIR_SHELL_DIVISIONS;
  for(let i=0;i<n;i++)for(let j=0;j<n;j++){
   const u0=-1+2*i/n,u1=-1+2*(i+1)/n;
   const v0=j/n,v1=(j+1)/n;
   // Both sides of an open, not yet engineered chair shell.
   for(const bottom of [false,true]){
-   quads.push({id:"seat-"+(bottom?"under":"upper")+"-"+i+"-"+j,corners:[
+   const corners:[Vec3,Vec3,Vec3,Vec3]=[
     seatSurface(u0,v0,bottom),seatSurface(u1,v0,bottom),
     seatSurface(u1,v1,bottom),seatSurface(u0,v1,bottom)
-   ]});
+   ];
+   quads.push({id:"seat-"+(bottom?"under":"upper")+"-"+i+"-"+j,
+    corners:bottom?corners:[corners[0],corners[3],corners[2],corners[1]]});
   }
  }
  for(let i=0;i<n;i++){
   const u0=-1+2*i/n,u1=-1+2*(i+1)/n;
-  for(const v of [0,1]){
+  // Rear rim joins the continuous shell and must not be capped internally.
+  for(const v of [1]){
    quads.push({id:"seat-edge-"+v+"-"+i,corners:[
     seatSurface(u0,v),seatSurface(u1,v),
     seatSurface(u1,v,true),seatSurface(u0,v,true),
@@ -125,18 +130,22 @@ export function buildEggSpatialForm(input:EggSpatialFormInput):EggSpatialFormStu
   return point(x,y,backZ(x,y,behind));
  };
  for(let i=0;i<ringSteps;i++){
-  const a0=i*2*Math.PI/ringSteps;
-  const a1=(i+1)*2*Math.PI/ringSteps;
+  const a0=chairBackAngle(i);
+  const a1=chairBackAngle(i+1);
   for(let j=0;j<crossSections;j++){
    const r0=j/crossSections,r1=(j+1)/crossSections;
    for(const behind of [false,true]){
-    quads.push({id:"back-"+(behind?"rear":"front")+"-"+i+"-"+j,corners:[
+    const corners:[Vec3,Vec3,Vec3,Vec3]=[
      loopPoint(a0,r0,behind),loopPoint(a1,r0,behind),
      loopPoint(a1,r1,behind),loopPoint(a0,r1,behind),
-    ]});
+    ];
+    quads.push({id:"back-"+(behind?"rear":"front")+"-"+i+"-"+j,
+     corners:behind?corners:[corners[0],corners[3],corners[2],corners[1]]});
    }
   }
   for(const edge of [0,1]){
+   // The lower half of the outer rim joins the sculptural saddle.
+   if(edge===1&&i>=ringSteps/2)continue;
    quads.push({id:"back-rim-"+edge+"-"+i,corners:[
     loopPoint(a0,edge),loopPoint(a1,edge),
     loopPoint(a1,edge,true),loopPoint(a0,edge,true),
@@ -144,13 +153,21 @@ export function buildEggSpatialForm(input:EggSpatialFormInput):EggSpatialFormStu
   }
  }
 
- // Four continuous stable support paths. They are design hypotheses, not
- // a structural or load-bearing check.
+ // Loft the chair's seat-to-back transition and flared integral supports.
+ // The same fixed face IDs evolve under every future morphology iteration.
+ appendSculpturalChairJoinery({
+  quads,seatSurface,backLoop:loopPoint,
+  width,front,rear,seatHeight,
+  softness:m.softness,tension:m.tension,openness:m.openness,
+  asymmetry:m.asymmetry,density:m.density,
+ });
+ // Keep old support-axis identities for provenance/comparison, but render
+ // the organically surfaced supports instead of detached dark frame rods.
  for(const side of [-1,1]){
   const x=side*width*.76;
   paths.push({
    id:"front-support-"+side,
-   material:"frame",radius:.026+.016*m.density,
+   material:"guide",radius:.004,
    points:[
     seatSurface(side*.76,.90,true),
     point(x*1.02,seatHeight*.70,front*.90),
@@ -160,7 +177,7 @@ export function buildEggSpatialForm(input:EggSpatialFormInput):EggSpatialFormStu
   });
   paths.push({
    id:"rear-support-"+side,
-   material:"frame",radius:.027+.014*m.density,
+   material:"guide",radius:.004,
    points:[
     seatSurface(side*.76,.12,true),
     point(x*1.03,seatHeight*.69,rear-.10),
@@ -171,7 +188,7 @@ export function buildEggSpatialForm(input:EggSpatialFormInput):EggSpatialFormStu
   // A legible uninterrupted plastic transition from seat to outer back.
   paths.push({
    id:"back-seat-junction-"+side,
-   material:"frame",radius:.016+.008*m.softness,
+   material:"guide",radius:.004,
    points:[
     seatSurface(side*.83,.02),
     loopPoint(side===1?.17:Math.PI-.17,.92),
