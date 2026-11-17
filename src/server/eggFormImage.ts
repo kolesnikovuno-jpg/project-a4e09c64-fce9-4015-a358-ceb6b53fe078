@@ -1,7 +1,7 @@
 /**
  * EGG Form Study: Author-triggered AI semantic interpretation + real image.
- * Requires a completed 8-sphere Yolk synthesis. Never updates the project's
- * DNA, approved concept, maturity level, or 3D geometry.
+ * Accepts current Author Idea drafts OR completed eight-sphere synthesis,
+ * without crossing or merging them. Never changes approved geometry or DNA.
  * All images are stored in a PRIVATE Supabase bucket, accessible only through
  * signed links returned after checking project ownership.
  */
@@ -80,45 +80,65 @@ async function callOpenAI(key:string,endpoint:string,payload:unknown,timeoutMs:n
  * the old completed eight-sphere synthesis. This prompt is a working study,
  * never an Author approval, established geometry, or AI-generated DNA.
  */
-function ideaImagePrompt(source:EggIdeaFormSource):string{
- const input=normalizeEggIdeaFormSource(source);
- return [
-  "EGG / AUTHOR'S CURRENT IDEA — EXPLORATORY FORM IMAGE",
-  "Create ONE distinct exploratory visual manifestation of the author's idea below.",
-  "Interpret the meaning, not just a literal word or generic cloud. Spatial presence",
-  "should be dense enough to suggest a recognizable potential morphology, with",
-  "differential particulate density, voids, contour attraction and emerging details.",
-  "Do not predetermine an engineering solution, final material or product if not specified.",
-  "Favor spatial fidelity to the author's words over stock shapes and decorative effects.",
-  "A single coherent form in quiet warm neutral space; no captions, lettering or diagrams.",
-  "All visual design choices not explicitly stated are hypotheses, not approved facts.",
-  "DO NOT interpret any previous unrelated project cycles as part of this idea.",
-  "AUTHOR INTENT: "+input.intent,
-  "AUTHOR'S LIMITS (only what is stated): "+(input.constraints||"None specified"),
-  "CURRENT SAVED WORKING IDEA DRAFT (not approved): "+(input.draft||"None"),
-  "SELECTED MATERIAL FIELD INSIGHT: "+(input.materialInsight||"None"),
-  "SELECTED MATERIALS (metadata only; images are NOT transmitted):",
-  ...input.materials.map(m=>"- "+m.type+": "+m.text),
- ].join("\n").slice(0,11800);
+/**
+ * The first successful image showed that model branding + a generic "single
+ * particle blob" can overpower a sparse Author idea. The *author's statement*
+ * therefore leads each prompt, then the full contextual information, then a
+ * modest, explicit morphology direction. Separate test variants explore form
+ * without claiming that a drawing has already been approved or synthesized.
+ */
+function formDirection(variant:number):string{
+ const directions=[
+  "Spatial hypothesis A — one distinctive asymmetrical gesture: a few coherent, slender curved spatial trajectories and concentrated nodes hold a clearly perceivable presence; generous openings and voids remain integral to the shape.",
+  "Spatial hypothesis B — a delicate but dense-enough spatial constellation: one strong focal point, secondary points and connecting rhythms, with a partially legible three-dimensional silhouette and deep open negative space.",
+  "Spatial hypothesis C — layered sculptural contours: a coherent sequence of offset flowing planes, slender contours and partially condensed accents, suggesting a form through voids rather than a closed shell.",
+ ];
+ return directions[variant%directions.length];
 }
-function cycleImagePrompt(project:EggProject,cycle:EggFlowCycle):string{
+function morphologySafeguard(idea:string):string{
+ const authorRequestedClosedShape=/(яйц|egg|овал|овои|сфер|шар|губк|порист|foam|sponge|sphere|ovoid)/i.test(idea);
+ return authorRequestedClosedShape?"Respect any author-defined geometry.":
+  "Avoid generic closed ovoid, egg, stone, potato, sphere or sponge-shaped lumps; no foamy, cratered, coral-like or porous surface that replaces the author's spatial concept.";
+}
+function ideaImagePrompt(source:EggIdeaFormSource,variant:number):string{
+ const input=normalizeEggIdeaFormSource(source);
+ const fullIdea=[input.intent,input.constraints,input.draft,input.materialInsight,
+  ...input.materials.map(m=>m.text)].join(" ");
  return [
-  "EGG / COMPLETED EIGHT-SPHERE CYCLE — EXPLORATORY FORM IMAGE",
-  "Interpret this cycle's real author idea and all eight sphere results into ONE",
-  "source-grounded spatial manifestation. Distinguish constraints from hypotheses.",
-  "Do not resolve unknown construction details as facts. The form is not a finalized product.",
-  "Dense particulate field with emerging contours and subtle localized detail nodes;",
-  "the intended product type, when explicitly stated, should remain recognizable.",
-  "A single coherent form in quiet warm neutral space; no captions or lettering.",
-  "SOURCE AND EIGHT SPHERES:",
-  scope(project,cycle),
+  "AUTHOR'S IDEA (PRIMARY CREATIVE DIRECTION): "+input.intent,
+  input.constraints?"AUTHOR'S CONSTRAINTS: "+input.constraints:"",
+  input.draft?"WORKING IDEA DRAFT (not approved): "+input.draft:"",
+  input.materialInsight?"MATERIAL FIELD INSIGHT: "+input.materialInsight:"",
+  input.materials.length?"SELECTED RESEARCH NOTES: "+
+   input.materials.map(m=>m.type+": "+m.text).join("; "):"",
+  "IMAGE OBJECTIVE: Conceptual spatial form study, not a finished product or architecture project.",
+  "Translate the AUTHOR'S METAPHOR into formal relationships, never literalize a metaphor as a physical object.",
+  "Interpret a 'separate note' as the distinct presence, rhythmic accent and tension of one form in surrounding space; not a music symbol and not a literal musical instrument.",
+  formDirection(variant),
+  "The form should feel mentally present and sufficiently manifested to suggest an identity, while retaining uncertainty and openness. If using point density, use it to reveal joints, directions and gaps — NOT to imitate porous physical material or a grainy blob.",
+  morphologySafeguard(fullIdea),
+  "One believable sculptural presence, no utility or function invented. Quiet warm-neutral architectural lighting, considered depth, no text, logos, captions or diagrams.",
+  "This is an exploratory visual hypothesis, not an approved design or CAD model.",
+ ].filter(Boolean).join("\n").slice(0,10000);
+}
+function cycleImagePrompt(project:EggProject,cycle:EggFlowCycle,variant:number):string{
+ const source=scope(project,cycle);
+ return [
+  "AUTHOR'S IDEA AND VERIFIED WORKING INPUTS:",
+  source,
+  "IMAGE OBJECTIVE: One exploratory spatial manifestation from the given cycle, not a finished product or established geometry.",
+  "Interpret all eight contributions as evidence or hypotheses according to their labels. Preserve any explicitly defined function and do not invent one.",
+  formDirection(variant),
+  "Point density may express tension and attractors but must not turn into a sponge or pitted rock surface.",
+  morphologySafeguard(source),
+  "Use meaningful negative space, partial contours, coherent volume and subtle details. No lettering, labels or diagrams.",
  ].join("\n").slice(0,11800);
 }
 async function generateImage(key:string,prompt:string):Promise<Buffer>{
   const image=await callOpenAI(key,"images/generations",{
     model:IMAGE_MODEL,n:1,size:"1024x1024",quality:"low",
     output_format:"webp",output_compression:72,
-    prompt:prompt+"\nVisual: a single source-faithful exploratory form study on a quiet warm ivory",
+    prompt,
   },85000);
   if(!image.ok){
     console.warn("egg_form_provider_response",{stage:"image",status:image.status,model:IMAGE_MODEL});
@@ -234,7 +254,7 @@ export async function eggFormImageHandler(req:Req,res:ServerResponse){
     if((count??0)>=3)return fail(res,409,"study_limit_reached");
     // The image model itself performs semantic interpretation of this source.
     // No unrelated sphere synthesis can influence a local Idea draft.
-    const prompt=idea?ideaImagePrompt(idea):cycleImagePrompt(project,cycle!);
+    const prompt=idea?ideaImagePrompt(idea,count??0):cycleImagePrompt(project,cycle!,count??0);
     const bytes=await generateImage(key,prompt);
     const studyId=randomUUID();
     const path="generated-form/"+ownerId+"/"+projectId+"/"+studyId+".webp";
