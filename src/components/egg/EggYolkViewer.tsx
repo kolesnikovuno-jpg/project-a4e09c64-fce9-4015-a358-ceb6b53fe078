@@ -363,7 +363,7 @@ export default function EggYolkViewer({
         </button>}
       </div>
       <span className="max-w-[85%] text-center text-[10px] leading-snug text-foreground/55">
-        {isForm?"3D-гипотеза · не утверждена":"Исходное поле · не утверждено"}
+        {isForm?"Пластика v0.2 · 3D-гипотеза, не утверждена":"Исходное поле · не утверждено"}
       </span>
     </div>}
     <div className={(minimalControls?"hidden":"flex")+" absolute inset-x-2 bottom-[2%] z-20 flex flex-wrap items-center justify-center gap-2 text-[11px]"}>
