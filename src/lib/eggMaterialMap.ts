@@ -87,6 +87,13 @@ export function eggMaterialInsight(
  return parts.join("\n").slice(0,1400);
 }
 export function readLocalEggMaterialMap(projectId:string):EggMaterialMapRecord|null{
- try{return readEggMaterialMapRecord(JSON.parse(localStorage.getItem(eggMaterialMapKey(projectId))||"null"));}
- catch{return null;}
+ // A compact session backup keeps explicit Author approval visible when
+ // Safari's localStorage is filled by image data URLs.
+ for(const storage of [localStorage,sessionStorage]){
+  try{
+   const record=readEggMaterialMapRecord(JSON.parse(storage.getItem(eggMaterialMapKey(projectId))||"null"));
+   if(record)return record;
+  }catch{/* Try the next local store, cloud remains separately authoritative. */}
+ }
+ return null;
 }
