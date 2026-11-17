@@ -9,6 +9,7 @@ import {projectCompleteEggCycleToSpatial,type EggCycleSpatialProjection} from ".
 export type YolkLocalIdea={intent:string;savedDraft:string};
 export type EggYolkFormBasis={
   text:string;
+  identityText:string;
   origin:"author_idea_preview"|"server_cycle"|"project_seed"|"demo";
   synthesis:EggCycleSpatialProjection|null;
 };
@@ -24,16 +25,17 @@ export function resolveEggYolkFormBasis(
    // The actual Author's intention remains first. A saved AI draft is only a
    // tentative direction, not approved DNA.
    text:draft?intent+"\nРабочая гипотеза (не утверждена): "+draft:intent,
+   identityText:intent,
    origin:"author_idea_preview",synthesis,
   };
  }
  const latest=(project?.flowCycles??[]).at(-1);
  const fromCycle=latest?.ideaHandoff?.intent?.trim()??"";
  if(fromCycle){
-  return {text:fromCycle,origin:"server_cycle",
+  return {text:fromCycle,identityText:fromCycle,origin:"server_cycle",
     synthesis:projectCompleteEggCycleToSpatial(project!,fromCycle)};
  }
- if(project?.seed.text.trim())return {text:project.seed.text,origin:"project_seed",
+ if(project?.seed.text.trim())return {text:project.seed.text,identityText:project.seed.text,origin:"project_seed",
   synthesis:projectCompleteEggCycleToSpatial(project)};
- return {text:fallbackText,origin:"demo",synthesis:null};
+ return {text:fallbackText,identityText:fallbackText,origin:"demo",synthesis:null};
 }
