@@ -11,7 +11,7 @@ const first=["marketing","design","testDrive","commerce"] as SphereId[];
 const second=["legal","production","procurement","retail"] as SphereId[];
 const item=(sphere:SphereId,branch:"first"|"second"):EggSynthesisItem=>({
  sphere,branch,sourceCycleId:"cycle-old",resultId:"result-"+sphere,
- evidence:"author_statement",text:"Сохранённый результат "+sphere,
+ evidence:"observation",text:"Сохранённый результат "+sphere,
  status:"new",requiresRecheck:false,
 });
 function projectWithCompletedIdea(intent:string):EggProject{
