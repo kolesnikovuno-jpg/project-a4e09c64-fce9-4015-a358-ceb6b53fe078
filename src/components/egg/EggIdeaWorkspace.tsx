@@ -25,6 +25,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
  const [constraints,setConstraints]=useState("");
  const [draft,setDraft]=useState("");
  const [savedDraft,setSavedDraft]=useState("");
+ const [draftSavedNotice,setDraftSavedNotice]=useState(false);
  const [spacePhoto,setSpacePhoto]=useState("");
  const [messages,setMessages]=useState<Message[]>([]);
  const [materials,setMaterials]=useState<FieldItem[]>([]);
@@ -150,10 +151,19 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
     <EggFormStudyAccess projectId={projectId} intent={intent} constraints={constraints}
       savedDraft={savedDraft} materialInsight={materialInsight} materials={materials}/>
     <label className="block text-xs text-foreground/60">Намерение Автора
-     <textarea aria-label="Намерение Автора" value={intent} maxLength={3000} rows={4} onChange={e=>setIntent(e.target.value)}
+     <textarea aria-label="Намерение Автора" value={intent} maxLength={3000} rows={4} onChange={e=>{setIntent(e.target.value);setDraftSavedNotice(false);}}
       placeholder="Что хочешь инициировать? Например: неутилитарный элемент пространства — отдельная нота…"
       className="mt-2 w-full resize-y rounded-xl border border-foreground/15 bg-background/80 p-3 text-base outline-none focus:border-foreground/40 md:text-sm"/>
     </label>
+    <div className="flex flex-wrap items-center gap-3">
+     <button type="button" data-testid="egg-save-author-draft"
+      disabled={!intent.trim()||!loaded}
+      onClick={()=>{setSavedDraft(intent.trim());setDraftSavedNotice(true);}}
+      className="rounded-full border border-foreground/30 bg-background/70 px-3 py-2 text-xs disabled:opacity-40">
+      <Check size={13} className="mr-1 inline"/> Сохранить черновик идеи
+     </button>
+     {draftSavedNotice&&<span role="status" className="text-[11px] text-foreground/60">Сохранено в этом браузере · не утверждено</span>}
+    </div>
     <label className="block text-xs text-foreground/60">Рамки · необязательно
      <textarea aria-label="Рамки идеи" value={constraints} maxLength={2000} rows={2} onChange={e=>setConstraints(e.target.value)}
       placeholder="Габариты, среда, характер, ограничения — только если определены"
