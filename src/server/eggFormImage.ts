@@ -229,21 +229,24 @@ export async function eggFormImageHandler(req:Req,res:ServerResponse){
       return fail(res,409,"complete_synthesis_required");
     const id=idea?eggIdeaFormSourceId(idea):draftMode?synthesisId:cycle!.synthesis!.id;
     if(req.method==="GET"){
-      const {data:latest,error:latestError}=await db.from("egg_form_studies")
+      const {data:records,error:latestError}=await db.from("egg_form_studies")
         .select("*").eq("project_id",projectId).eq("owner_id",ownerId)
-        .eq("synthesis_id",id).order("created_at",{ascending:false}).limit(1).maybeSingle();
+        .eq("synthesis_id",id).order("created_at",{ascending:false}).limit(3);
       if(latestError)return fail(res,503,"database_unavailable");
-      if(!latest)return send(res,{ok:true,study:null,synthesisId:id});
-      const study=latest as Row;
-      const {data:link,error:linkError}=await db.storage.from(BUCKET)
-        .createSignedUrl(study.image_path,3600);
-      if(linkError||!link)return fail(res,503,"storage_unavailable");
-      return send(res,{ok:true,study:{
-        id:study.id,prompt:study.form_prompt,imageUrl:link.signedUrl,
-        model:study.model,sourceKind:study.source_kind,cycleId:study.cycle_id,
-        synthesisId:study.synthesis_id,createdAt:study.created_at,
-        is3d:false,approved:false,
-      }});
+      if(!records?.length)return send(res,{ok:true,study:null,studies:[],synthesisId:id});
+      const studies=await Promise.all((records as Row[]).map(async saved=>{
+        const {data:link,error:linkError}=await db.storage.from(BUCKET)
+          .createSignedUrl(saved.image_path,3600);
+        if(linkError||!link)return null;
+        return {
+          id:saved.id,prompt:saved.form_prompt,imageUrl:link.signedUrl,
+          model:saved.model,sourceKind:saved.source_kind,cycleId:saved.cycle_id,
+          synthesisId:saved.synthesis_id,createdAt:saved.created_at,
+          is3d:false,approved:false,
+        };
+      }));
+      if(studies.some(v=>!v))return fail(res,503,"storage_unavailable");
+      return send(res,{ok:true,study:studies[0],studies,synthesisId:id});
     }
     const key=process.env.OPENAI_API_KEY?.trim();
     if(!key)return fail(res,503,"openai_image_key_not_configured");
