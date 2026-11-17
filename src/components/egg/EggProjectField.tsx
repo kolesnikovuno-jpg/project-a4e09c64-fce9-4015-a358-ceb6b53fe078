@@ -130,16 +130,24 @@ export default function EggProjectField({projectId,children,workspace="field",on
  },[workspace,ready]);
  const moveToWorkspace=(id:string)=>{
   const destination:Workspace=workspace==="field"?"matter":"field";
-  const count=items.filter(item=>(item.location??"field")===destination).length;
-  const next=items.map(item=>{
-   if(item.id!==id)return item;
-   const position=destination==="matter"?(item.matterPosition??{x:-110+(count%3)*250,y:-120+Math.floor(count/3)*340}):(item.fieldPosition??{x:310,y:-210});
-   return {...item,[workspace==="field"?"fieldPosition":"matterPosition"]:{x:item.x,y:item.y},location:destination,...position};
+  // Transfer must be an in-memory state change, not a full localStorage write:
+  // 10 JPEG data URLs can already exceed Safari's remaining quota.
+  // The existing persistence effect and owner-scoped EGG snapshot sync save
+  // the new state asynchronously, with explicit errors if storage is full.
+  setItems(previous=>{
+   const selected=previous.find(item=>item.id===id&&(item.location??"field")===workspace);
+   if(!selected)return previous;
+   const count=previous.filter(item=>(item.location??"field")===destination).length;
+   return previous.map(item=>{
+    if(item.id!==id)return item;
+    const position=destination==="matter"
+     ?(item.matterPosition??{x:-110+(count%3)*250,y:-120+Math.floor(count/3)*340})
+     :(item.fieldPosition??{x:310,y:-210});
+    return {...item,[workspace==="field"?"fieldPosition":"matterPosition"]:{x:item.x,y:item.y},location:destination,...position};
+   });
   });
-  try{localStorage.setItem(key,JSON.stringify(next));}
-  catch{setNotice("Не удалось сохранить перенос. Карточка осталась на месте.");return;}
-  setItems(next);setOpenId(null);
-  setNotice(destination==="matter"?"В работе · Материальное":"Возвращено в общее поле");
+  setOpenId(null);
+  setNotice(destination==="matter"?"Перенесено в Материальное":"Возвращено в общее поле");
  };
  const center=()=>({x:(field.current?.clientWidth||window.innerWidth)/2,y:(field.current?.clientHeight||window.innerHeight)/2});
  const world=(x:number,y:number)=>{const c=center();return{x:(x-c.x-pan.x)/zoom,y:(y-c.y-pan.y)/zoom};};
@@ -397,7 +405,16 @@ export default function EggProjectField({projectId,children,workspace="field",on
   <input ref={camera} type="file" accept="image/*" capture="environment" className="hidden" onChange={e=>{void images(e.target.files);e.target.value="";}}/>
   <input ref={imageInput} type="file" accept="image/*" multiple className="hidden" onChange={e=>{void images(e.target.files);e.target.value="";}}/>
   <input ref={videoInput} type="file" accept="video/*" multiple className="hidden" onChange={e=>{void videos(e.target.files);e.target.value="";}}/>
-  {notice&&<div role="status" className="absolute bottom-5 left-1/2 z-50 max-w-[90vw] -translate-x-1/2 rounded-full border border-foreground/10 bg-background px-4 py-2 text-xs shadow-md" onClick={()=>setNotice("")}>{notice}</div>}
+  {notice&&<div role="status" data-testid="egg-field-transfer-feedback"
+   className="absolute bottom-16 left-1/2 z-50 flex max-w-[94vw] -translate-x-1/2 items-center gap-3 rounded-2xl border border-foreground/10 bg-background/95 px-4 py-2.5 text-xs shadow-lg sm:bottom-5">
+   <span>{notice}</span>
+   {notice==="Перенесено в Материальное"&&onWorkspaceChange&&
+    <button type="button" data-testid="egg-open-matter-after-transfer"
+     className="shrink-0 rounded-full border border-foreground/25 px-3 py-1.5 font-medium"
+     onClick={()=>{setNotice("");onWorkspaceChange("matter");}}>Открыть Материальное</button>}
+   <button type="button" aria-label="Закрыть сообщение" className="opacity-65"
+    onClick={()=>setNotice("")}><X size={14}/></button>
+  </div>}
   {active?.src&&<EggPhotoWorkspace key={active.id} src={active.src} title={active.text} initialMarkup={active.photoMarkup} initialFocusNoteId={focusedPhotoNoteId??undefined}
    onSave={markup=>change(previous=>previous.map(item=>item.id===active.id?{...item,photoMarkup:markup}:item))}
    onCrop={cropped=>{
