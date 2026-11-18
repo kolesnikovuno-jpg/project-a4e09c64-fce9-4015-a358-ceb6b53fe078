@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import handler from "../../api/mcp-health";
+import handler from "../../api/oauth-resource";
 
 const keys = ["EGG_SUPABASE_URL","EGG_SUPABASE_PUBLISHABLE_KEY",
   "EGG_SUPABASE_SECRET_KEY","VITE_SUPABASE_URL"] as const;
@@ -13,7 +13,7 @@ async function check():Promise<{status:number;result:Record<string,unknown>}> {
     setHeader:()=>{},
     end:(body?:string)=>{data=body??"";},
   } as unknown as ServerResponse;
-  await handler({method:"GET"} as IncomingMessage,response);
+  await handler({method:"GET",url:"/api/mcp-health?mode=health"} as IncomingMessage,response);
   return {status:response.statusCode,result:JSON.parse(data)};
 }
 afterEach(()=>{
