@@ -13,7 +13,7 @@ export default function OperatorLogin() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate("/operator/cases", { replace: true });
+      if (data.session) navigate("/operator/lyra", { replace: true });
     });
   }, [navigate]);
 
@@ -26,7 +26,7 @@ export default function OperatorLogin() {
       toast({ title: "Ошибка входа", description: error.message, variant: "destructive" });
       return;
     }
-    navigate("/operator/cases", { replace: true });
+    navigate("/operator/lyra", { replace: true });
   };
 
   return (
