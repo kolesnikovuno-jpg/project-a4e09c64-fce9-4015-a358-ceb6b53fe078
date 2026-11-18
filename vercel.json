@@ -5,6 +5,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/egg-ai-balance",
+      "destination": "/api/egg-config"
+    },
+    {
       "source": "/api/mcp-health",
       "destination": "/api/oauth-resource?mode=health"
     },
