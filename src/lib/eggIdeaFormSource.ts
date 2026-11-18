@@ -4,6 +4,8 @@ export type EggIdeaFormSource={
   materials:{type:string;text:string}[];
   /** Reduced JPEG of the actual room. Context ONLY, never a form reference. */
   spacePhoto?:string;
+  /** Explicit image reference for the shape, never an interior photo. */
+  formReference?:string;
 };
 export function normalizeEggIdeaFormSource(source:EggIdeaFormSource):EggIdeaFormSource{
  return {
@@ -18,6 +20,9 @@ export function normalizeEggIdeaFormSource(source:EggIdeaFormSource):EggIdeaForm
   spacePhoto:typeof source.spacePhoto==="string"&&
    /^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(source.spacePhoto)&&
    source.spacePhoto.length<=210000?source.spacePhoto:"",
+  formReference:typeof source.formReference==="string"&&
+   /^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(source.formReference)&&
+   source.formReference.length<=210000?source.formReference:"",
  };
 }
 /** Opaque version key, NOT a semantic judgement, approval, or authorization. */
@@ -25,8 +30,10 @@ export function eggIdeaFormSourceId(source:EggIdeaFormSource):string{
  const normalized=normalizeEggIdeaFormSource(source);
  // Old text-only study IDs stay stable. A room image creates a distinct
  // visual study identity, so it never inherits a studio-only image variant.
- const {spacePhoto,...textOnly}=normalized;
- const value=JSON.stringify(spacePhoto?normalized:textOnly);
+ const {spacePhoto,formReference,...textOnly}=normalized;
+ // Preserve historical hashes if no form reference is supplied.
+ const value=JSON.stringify(formReference?{...textOnly,spacePhoto,formReference}:
+  spacePhoto?{...textOnly,spacePhoto}:textOnly);
  let a=2166136261,b=2246822519;
  for(let i=0;i<value.length;i++){
   const c=value.charCodeAt(i);

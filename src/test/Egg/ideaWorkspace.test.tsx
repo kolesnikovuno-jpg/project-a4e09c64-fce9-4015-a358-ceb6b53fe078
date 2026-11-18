@@ -26,6 +26,7 @@ describe("EGG Idea initiation",()=>{
     target:{value:"Неутилитарный элемент пространства — отдельная нота"},
   });
   expect((go as HTMLButtonElement).disabled).toBe(false);
+  expect(screen.getByTestId("egg-idea-form-access")).toBeTruthy();
   fireEvent.click(go);
   expect(openYolk).toHaveBeenCalledOnce();
   const current=JSON.parse(localStorage.getItem("egg:idea-workspace:v1:"+project)??"{}");

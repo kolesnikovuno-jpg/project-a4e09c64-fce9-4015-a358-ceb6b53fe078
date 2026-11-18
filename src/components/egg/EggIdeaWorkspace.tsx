@@ -37,7 +37,6 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
  const [materialMap,setMaterialMap]=useState<EggMaterialMapRecord|null>(null);
  const [loaded,setLoaded]=useState(false);
  const [cycleEntryOpen,setCycleEntryOpen]=useState(false);
- const [experimentsOpen,setExperimentsOpen]=useState(false);
  const [mobilePane,setMobilePane]=useState<"canvas"|"dialogue">("canvas");
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState("");
@@ -273,6 +272,12 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
      <div className="text-xs font-medium">Сохранённый черновик · не утверждён</div>
      <p className="whitespace-pre-wrap text-xs">{savedDraft}</p>
     </div>}
+    {intent.trim().length>=8&&<EggFormStudyAccess projectId={projectId} intent={intent}
+     constraints={constraints} savedDraft={savedDraft} materialInsight={materialInsight}
+     materials={materials} spacePhoto={spacePhoto}/>}
+    {intent.trim().length<8&&<p className="rounded-xl border border-foreground/10 bg-background/40 p-3 text-xs text-foreground/55">
+     Первичный дизайнерский скетч и выбор стиля появятся после формулировки идеи.
+    </p>}
     {onProjectCreated&&<EggIdeaProjectFork draft={{intent,constraints,savedDraft,spacePhoto,messages,materials,materialInsight}} onCreated={onProjectCreated}/>}
     <div className="min-w-0 rounded-[14px] border border-foreground/15 bg-background/90 p-2 sm:p-3">
      <button type="button" aria-expanded={cycleEntryOpen} onClick={()=>setCycleEntryOpen(v=>!v)}
@@ -283,17 +288,6 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
       savedDraft={savedDraft} spacePhoto={spacePhoto} materials={materials} materialInsight={materialInsight}
       onRestoreApproved={restoreApproved}/>}
     </div>
-    <details className="rounded-xl border border-foreground/10 bg-background/40 p-3"
-      open={experimentsOpen}
-      onToggle={e=>setExperimentsOpen(e.currentTarget.open)}>
-     <summary className="cursor-pointer text-xs text-foreground/60">
-      Архив визуальных экспериментов · вне основного цикла
-     </summary>
-     {experimentsOpen&&<div className="mt-3">
-      <EggFormStudyAccess projectId={projectId} intent={intent} constraints={constraints}
-       savedDraft={savedDraft} materialInsight={materialInsight} materials={materials} spacePhoto={spacePhoto}/>
-     </div>}
-    </details>
     <details className="rounded-xl border border-foreground/10 bg-background/30 p-3"
       data-testid="egg-project-passport">
      <summary className="cursor-pointer text-xs text-foreground/65">

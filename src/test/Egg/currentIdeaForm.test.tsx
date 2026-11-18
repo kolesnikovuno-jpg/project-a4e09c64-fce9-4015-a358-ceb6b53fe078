@@ -31,7 +31,7 @@ describe("EGG current Idea form study",()=>{
    intent="Неутилитарный элемент пространства — отдельная нота"
    constraints="" savedDraft="" materialInsight="Лёгкость и присутствие"
    materials={[{type:"thought",text:"Обособленное присутствие"}]} spacePhoto=""/>);
-  const action=await screen.findByRole("button",{name:"Создать образ"});
+  const action=await screen.findByRole("button",{name:"Создать скетч"});
   await waitFor(()=>expect(action.hasAttribute("disabled")).toBe(false));
   fireEvent.click(action);
   await waitFor(()=>expect(screen.getByAltText("Пробный образ формы по текущему замыслу Автора")).toBeTruthy());
@@ -64,7 +64,7 @@ describe("EGG current Idea form study",()=>{
     intent="Неутилитарная нота пространства" constraints=""
     savedDraft="" materialInsight="" materials={[]} spacePhoto={photo}/>);
   expect(screen.getByText(/Фото интерьера включено как контекст среды/)).toBeTruthy();
-  const action=await screen.findByRole("button",{name:"Создать образ"});
+  const action=await screen.findByRole("button",{name:"Создать скетч"});
   await waitFor(()=>expect(action.hasAttribute("disabled")).toBe(false));
   fireEvent.click(action);
   await waitFor(()=>expect(calls.some(c=>c.body&&c.url==="/api/egg-flow-ai?op=form-study")).toBe(true));
