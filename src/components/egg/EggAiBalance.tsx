@@ -1,4 +1,5 @@
 import {useEffect,useState} from "react";
+import EggInviteAuthor from "./EggInviteAuthor";
 
 export const EGG_AI_SPHERES=[
  ["matter","Материальное"],["idea","Идея"],["marketing","Маркетинг"],
@@ -53,6 +54,7 @@ export function EggAiSlider({projectId,sphere,disabled=false}:{projectId:string;
 }
 export function EggAiControlDesk({projectId}:{projectId:string}){
  const {balance,setSphere,reset}=useEggAiBalance(projectId);
+ const [inviteSphere,setInviteSphere]=useState<EggAiSphere|null>(null);
  const average=Math.round(EGG_AI_SPHERES.reduce((sum,[id])=>sum+balance[id],0)/EGG_AI_SPHERES.length);
  return <section className="rounded-xl border border-foreground/15 p-4" aria-label="Пульт участия ИИ" data-testid="egg-ai-control-desk">
   <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-medium">Пульт Автора · баланс сфер</h2><span className="text-sm">{average}% ИИ</span></div>
@@ -61,8 +63,10 @@ export function EggAiControlDesk({projectId}:{projectId:string}){
    {EGG_AI_SPHERES.map(([id,label])=><label key={id} className="block text-xs">
     <span className="flex justify-between"><span>{label}</span><span>{balance[id]}%</span></span>
     <input aria-label={"Участие ИИ: "+label} type="range" min={0} max={100} step={5} value={balance[id]} onChange={e=>setSphere(id,Number(e.target.value))} className="mt-1 w-full accent-foreground"/>
+    {id!=="matter"&&id!=="idea"&&<button type="button" onClick={()=>setInviteSphere(id)} className="mt-1 text-[11px] underline underline-offset-2">Участники · назначить</button>}
    </label>)}
   </div>
+  {inviteSphere&&<div className="mt-3 rounded-lg border border-foreground/15 p-2"><div className="flex justify-between text-xs"><span>Приглашение · {EGG_AI_SPHERES.find(([id])=>id===inviteSphere)?.[1]}</span><button type="button" onClick={()=>setInviteSphere(null)} aria-label="Закрыть приглашение">×</button></div><EggInviteAuthor key={inviteSphere} projectId={projectId} initialSphere={inviteSphere}/></div>}
   <button type="button" onClick={reset} className="mt-3 rounded-lg border border-foreground/20 px-3 py-2 text-xs">Все по 50%</button>
   <p className="mt-2 text-[11px] text-foreground/55">Локальное сохранение на устройстве. Утверждение ДНК и переход между уровнями остаются за Автором.</p>
  </section>;
