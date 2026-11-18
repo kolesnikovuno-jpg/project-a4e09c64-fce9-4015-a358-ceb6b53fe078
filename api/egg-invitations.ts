@@ -61,12 +61,9 @@ export default async function handler(req:Request,res:ServerResponse){
         if(targetError)return respond(res,503,{error:"member_lookup_unavailable"});
         const email=target.user?.email?.toLowerCase();
         if(!email)return respond(res,409,{error:"member_email_unavailable"});
-        const {error:revokeError}=await db.from("egg_project_invites").update({revoked_at:new Date().toISOString()})
-          .eq("project_id",projectId).eq("invited_email",email).is("revoked_at",null).is("accepted_at",null);
-        if(revokeError)return respond(res,503,{error:"invite_revoke_failed"});
-        const {data,error}=await db.from("egg_project_members").delete().eq("project_id",projectId).eq("user_id",memberId).select("user_id").maybeSingle();
-        if(error)return respond(res,503,{error:"membership_unavailable"});
-        return respond(res,data?200:404,{ok:!!data,error:data?undefined:"member_not_found"});
+        const {data:removed,error:revokeError}=await db.rpc("egg_revoke_member_atomic",{p_project:projectId,p_member:memberId,p_email:email});
+        if(revokeError)return respond(res,503,{error:"membership_unavailable"});
+        return respond(res,removed?200:404,{ok:!!removed,error:removed?undefined:"member_not_found"});
       }
       const role=input.role,assigned=input.spheres;
       if(!["observer","contributor"].includes(String(role))||!Array.isArray(assigned)||assigned.length>8||!assigned.every(s=>typeof s==="string"&&spheres.has(s))||new Set(assigned).size!==assigned.length||role==="contributor"&&assigned.length===0)
@@ -80,15 +77,11 @@ export default async function handler(req:Request,res:ServerResponse){
       if(typeof token!=="string"||!/^[a-zA-Z0-9_-]{43}$/.test(token))return respond(res,400,{error:"invalid_invite_token"});
       if(!user.email || !user.email_confirmed_at)return respond(res,403,{error:"verified_email_required"});
       const hash=createHash("sha256").update(token).digest("hex");
-      const {data:invite,error}=await db.from("egg_project_invites").select("id,project_id,invited_email,role,spheres,expires_at,accepted_at,revoked_at").eq("token_hash",hash).maybeSingle();
-      if(error)return respond(res,503,{error:"database_unavailable"});
-      if(!invite||invite.revoked_at||invite.accepted_at||new Date(invite.expires_at).getTime()<=Date.now())return respond(res,410,{error:"invite_expired_or_used"});
-      if(user.email.toLowerCase()!==invite.invited_email)return respond(res,403,{error:"invite_for_different_email"});
-      const {error:memberError}=await db.from("egg_project_members").upsert({project_id:invite.project_id,user_id:user.id,role:invite.role,spheres:invite.spheres},{onConflict:"project_id,user_id"});
-      if(memberError)return respond(res,503,{error:"membership_unavailable"});
-      const {data:accepted,error:markError}=await db.from("egg_project_invites").update({accepted_by:user.id,accepted_at:new Date().toISOString()}).eq("id",invite.id).is("accepted_at",null).is("revoked_at",null).select("project_id").maybeSingle();
-      if(markError||!accepted)return respond(res,409,{error:"invite_already_accepted"});
-      return respond(res,200,{projectId:invite.project_id,role:invite.role});
+      const {data:accepted,error}=await db.rpc("egg_accept_invite_atomic",{p_hash:hash,p_user:user.id,p_email:user.email.toLowerCase()});
+      if(error)return respond(res,503,{error:"invitation_accept_failed"});
+      const row=Array.isArray(accepted)?accepted[0]:null;
+      if(!row)return respond(res,410,{error:"invite_expired_revoked_or_used"});
+      return respond(res,200,{projectId:row.project_id,role:row.member_role});
     }
     return respond(res,400,{error:"invalid_action"});
   } catch{return respond(res,400,{error:"invalid_request"});}
