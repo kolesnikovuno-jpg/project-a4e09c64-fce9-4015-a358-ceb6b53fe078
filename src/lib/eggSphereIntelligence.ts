@@ -11,7 +11,7 @@
  */
 import type {EggProject,SphereId} from "./eggEngine.js";
 import {EGG_FLOW_ROUTES,type EggFlowBranch,type EggFlowResult} from "./eggFlowCycle.js";
-import {buildEggSphereRoleInstruction,buildEggSpherePerceptionInstruction,EGG_LEVEL_DEPTH,EGG_SPHERE_PROTOCOL_VERSION} from "./eggSphereProtocol.js";
+import {buildEggSphereRoleInstruction,buildEggSpherePerceptionInstruction,EGG_LEVEL_DEPTH,getEggLevelResearchPolicy,EGG_SPHERE_PROTOCOL_VERSION} from "./eggSphereProtocol.js";
 import {EGG_IP_SEARCH_CATALOG,getEggLegalSimilaritySubject} from "./eggLegalSimilarity.js";
 import {publicEggIdeaContext} from "./eggIdeaHandoff.js";
 
@@ -122,6 +122,7 @@ export function buildEggSphereBrief(project:EggProject,sphere:SphereId){
     diagnostics:{
       coreQuestion:lens.question,focus:lens.focus,boundary:lens.boundary,next:lens.handoff,
       depth:EGG_LEVEL_DEPTH[cycle.level as keyof typeof EGG_LEVEL_DEPTH]??null,
+      levelResearchPolicy:getEggLevelResearchPolicy(cycle.level),
       perception:{backward:"доступные версии и основания",present:"текущая задача",forward:"гипотезы последствий; не факты"},
     },
     intelligencePolicy:{
@@ -143,6 +144,8 @@ export function buildEggSphereIntelligencePrompt(project:EggProject,sphere:Spher
       "If approvedIdeaHandoff is present, its workingDna is the current approved WORKING version, while dna.originalSeed remains unchanged.",
       "Visual cards listed as metadata_only have NOT been visually inspected. A spatial_context image, if attached to this role, shows an EXISTING environment, not the proposed object.",
       "Independently detect relevant missing questions, constraints, opportunities and risks within YOUR competence even if the Author did not request them.",
+      "Use diagnostics.levelResearchPolicy for priority breadth, evidence standard and stopping condition. Wider signals may be recorded as hypotheses, not expanded into unrequested later-level work.",
+      "Marketing: distinguish underlying human need from expressed desire, observable demand and ability to pay; do not treat proposed features as verified market requirements.",
       "Do NOT force questions or produce three variants; return one evolving contribution, and up to six genuinely useful open questions.",
       "Keep observations, hypotheses and open questions separate. Never invent sources, data, tests, laws, prices or certifications.",
       "For legal content: ask for jurisdiction and effective date when missing. Refer to specific legal norms only with real source references.",
