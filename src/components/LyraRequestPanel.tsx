@@ -59,28 +59,36 @@ export default function LyraRequestPanel({ open, onClose }: Props) {
 
   return (
     <>
-      <div className={`fixed inset-0 z-[90] bg-black/25 transition-opacity duration-500 ${open ? "opacity-100" : "opacity-0 pointer-events-none"}`} onClick={onClose} aria-hidden="true" />
+      <style>{".lr-panel{width:38%;max-width:460px;min-width:360px;padding:42px 40px 56px 44px;border-left:1px solid rgba(0,0,0,.08);box-shadow:none;color:#3A3A3A;font-family:\"JetBrains Mono\",\"IBM Plex Mono\",Menlo,ui-monospace,monospace;font-size:12px;line-height:1.65;letter-spacing:.01em;transition-duration:.8s;transition-timing-function:cubic-bezier(.22,.61,.36,1)}\n.lr-close{border:0;background:transparent;cursor:pointer;line-height:1;color:#9A9A9A;opacity:.7}.lr-close:hover{color:#1A1A1A;opacity:1}\n.lr-meta{display:flex;justify-content:space-between;margin-bottom:26px;font-size:10px;letter-spacing:.08em;color:#9A9A9A;text-transform:lowercase}\n.lr-title{font-family:\"JetBrains Mono\",\"IBM Plex Mono\",Menlo,ui-monospace,monospace;font-size:34px;font-weight:400;letter-spacing:.04em;line-height:1;color:#1F1F1F;margin:0 0 22px}\n.lr-intro{font-size:12.5px;line-height:1.7;color:#3A3A3A;padding:0 0 18px;margin:0}\n.lr-rule{border:0;border-top:1px dashed rgba(0,0,0,.18);margin:0}\n.lr-heading{font-size:10px;color:#8A8A8A;letter-spacing:.18em;text-transform:uppercase;font-weight:400;margin-bottom:10px}.lr-heading::before{content:\"// \";color:#B8B8B8}.lr-space{margin-top:18px}\n.lr-options{border:0;margin:0;padding:18px 0;display:flex;flex-direction:column;gap:5px}.lr-option{cursor:pointer;display:flex;gap:12px;align-items:center;padding:3px 0}\n.lr-option input{appearance:none;width:12px;height:12px;flex-shrink:0;border:1px solid #A8A8A8;border-radius:50%;background:transparent;margin:0}.lr-option input:checked{background:#3A3A3A;border-color:#3A3A3A;box-shadow:inset 0 0 0 3px #F5EFEB}\n.lr-field{color:#8A8A8A;font-size:11px;display:flex;flex-direction:column;gap:4px;padding:6px 0}\n.lr-input{width:100%;background:transparent;border:0;border-bottom:1px dashed rgba(0,0,0,.25);border-radius:0;padding:7px 0 9px;outline:none;color:#2A2A2A;font:400 12px/1.6 \"JetBrains Mono\",\"IBM Plex Mono\",Menlo,ui-monospace,monospace}.lr-input:focus{border-bottom-color:#3A3A3A}textarea.lr-input{resize:vertical}\n.lr-send{display:flex;width:100%;justify-content:space-between;align-items:center;margin-top:16px;border:0;border-bottom:1px dashed rgba(0,0,0,.18);background:transparent;padding:10px 0;font:400 12px \"JetBrains Mono\",\"IBM Plex Mono\",Menlo,ui-monospace,monospace;color:#2A2A2A;cursor:pointer;text-align:left}.lr-send:hover{color:#C97A63}\n.lr-input:focus-visible,.lr-send:focus-visible,.lr-option input:focus-visible{outline:1px solid #777;outline-offset:3px}\n@media(max-width:768px){.lr-panel{width:100%;min-width:0;max-width:none;padding:34px 24px 48px 26px}}\n@media(prefers-reduced-motion:reduce){.lr-panel{transition:none}}"}</style>
+      <div className={`fixed inset-0 z-[90] bg-[rgba(20,20,20,0.22)] transition-opacity duration-700 ${open ? "opacity-100" : "opacity-0 pointer-events-none"}`} onClick={onClose} aria-hidden="true" />
       <aside role="dialog" aria-modal="true" aria-label={T.title} aria-hidden={!open}
-        className={`fixed right-0 top-0 z-[91] h-[100dvh] w-full max-w-[440px] overflow-y-auto bg-[#F5EFEB] px-7 py-12 text-[#333] shadow-xl transition-transform duration-500 md:px-11 ${open ? "translate-x-0" : "translate-x-full pointer-events-none"}`}>
-        <button type="button" className="absolute right-6 top-5 text-2xl font-light" onClick={onClose} aria-label={T.close}>×</button>
-        <h2 className="mb-7 text-xl font-light tracking-widest">{T.title}</h2>
-        {success ? <p className="text-sm leading-7">{T.success}</p> : (
-          <form onSubmit={submit} className="flex flex-col gap-6 text-sm">
-            <p className="max-w-sm text-xs leading-6 text-[#666]">{T.intro}</p>
-            <fieldset className="flex flex-col gap-3">
+        className={`lr-panel fixed right-0 top-0 z-[91] h-[100dvh] overflow-y-auto bg-[#F5EFEB] transition-transform ${open ? "translate-x-0" : "translate-x-full pointer-events-none"}`}>
+        <button type="button" className="lr-close absolute right-[18px] top-[14px] text-[22px] font-light" onClick={onClose} aria-label={T.close}>×</button>
+        <div className="lr-meta"><span>ref · lyra / request</span><span>{new Date().toISOString().slice(0,10)}</span></div>
+        <h2 className="lr-title">{T.title}</h2>
+        {success ? <p className="text-[12px] leading-[1.7]">{T.success}</p> : (
+          <form onSubmit={submit} className="flex flex-col text-[12px]">
+            <p className="lr-intro">{T.intro}</p>
+            <hr className="lr-rule" />
+            <fieldset className="lr-options"><legend className="lr-heading">{locale === "en" ? "Purpose" : locale === "uk" ? "Мета запиту" : "Цель запроса"}</legend>
               {(["purchase", "custom", "production"] as const).map((value) => (
-                <label key={value} className="flex cursor-pointer items-center gap-3">
+                <label key={value} className="lr-option">
                   <input type="radio" name="lyra-intent" value={value} checked={intent === value} onChange={() => setIntent(value)} />
                   <span>{T[value]}</span>
                 </label>
               ))}
             </fieldset>
-            <label className="flex flex-col gap-2">{T.name}<input className="border-b border-[#aaa] bg-transparent p-2 outline-none" autoComplete="name" maxLength={100} required value={name} onChange={(e) => setName(e.target.value)} /></label>
-            <label className="flex flex-col gap-2">{T.email}<input className="border-b border-[#aaa] bg-transparent p-2 outline-none" type="email" autoComplete="email" maxLength={255} required value={email} onChange={(e) => setEmail(e.target.value)} /></label>
-            <label className="flex flex-col gap-2">{T.location}<input className="border-b border-[#aaa] bg-transparent p-2 outline-none" maxLength={200} required value={location} onChange={(e) => setLocation(e.target.value)} /></label>
-            <label className="flex flex-col gap-2">{T.note}<textarea className="min-h-20 border-b border-[#aaa] bg-transparent p-2 outline-none" maxLength={1500} value={note} onChange={(e) => setNote(e.target.value)} /></label>
-            {error && <p role="alert" className="text-red-700">{T.error}</p>}
-            <button className="self-start border-b border-[#555] pb-1 tracking-wide disabled:opacity-50" type="submit" disabled={sending}>{sending ? T.sending : T.send} →</button>
+            <hr className="lr-rule" />
+            <div className="lr-heading lr-space">{locale === "en" ? "Contact" : "Контакт"}</div>
+            <label className="lr-field">{T.name}<input className="lr-input" autoComplete="name" maxLength={100} required value={name} onChange={(e) => setName(e.target.value)} /></label>
+            <label className="lr-field">{T.email}<input className="lr-input" type="email" autoComplete="email" maxLength={255} required value={email} onChange={(e) => setEmail(e.target.value)} /></label>
+            <label className="lr-field">{T.location}<input className="lr-input" maxLength={200} required value={location} onChange={(e) => setLocation(e.target.value)} /></label>
+            <hr className="lr-rule" />
+            <div className="lr-heading lr-space">{locale === "en" ? "Details" : locale === "uk" ? "Деталі" : "Детали"}</div>
+            <label className="lr-field">{T.note}<textarea className="min-h-20 lr-input" maxLength={1500} value={note} onChange={(e) => setNote(e.target.value)} /></label>
+            {error && <p role="alert" className="text-[#9B4747] text-[11px]">{T.error}</p>}
+            <hr className="lr-rule" />
+            <button className="lr-send disabled:opacity-50" type="submit" disabled={sending}>{sending ? T.sending : T.send} →</button>
           </form>
         )}
       </aside>
