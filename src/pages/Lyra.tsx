@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import lyraHero from "@/assets/lyra-hero.png";
 import LyraInfo from "@/components/LyraInfo";
+import LyraRequestPanel from "@/components/LyraRequestPanel";
 import Participation from "@/components/Participation";
 import ModelSEO from "@/components/ModelSEO";
 import { useLocale } from "@/i18n/useLocale";
@@ -43,7 +44,7 @@ declare global {
 const GLB_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/public/models/lyra.glb";
 const USDZ_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/public/models/lyra.usdz";
 
-const Lyra = () => {
+const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
   const navigate = useNavigate();
   const { t, locale, localePath } = useLocale();
   const modelRef = useRef<HTMLElement>(null);
@@ -63,6 +64,7 @@ const Lyra = () => {
   // Switcher visibility — hidden while the hero screen is the dominant layer.
   const [switcherVisible, setSwitcherVisible] = useState(false);
   const [participationOpen, setParticipationOpen] = useState(false);
+  const [requestOpen, setRequestOpen] = useState(false);
 
   // Smooth fade-in on mount.
   useEffect(() => {
@@ -767,7 +769,7 @@ const Lyra = () => {
               </p>
               <button
                 type="button"
-                onClick={() => setParticipationOpen(true)}
+                onClick={() => commercial ? setRequestOpen(true) : setParticipationOpen(true)}
                 style={{
                   background: "transparent",
                   border: "none",
@@ -784,7 +786,7 @@ const Lyra = () => {
                 onMouseEnter={(e) => (e.currentTarget.style.color = "#C97A63")}
                 onMouseLeave={(e) => (e.currentTarget.style.color = "hsl(0 0% 45%)")}
               >
-                {t.participation.link} <span style={{ marginLeft: 4, opacity: 0.7 }}>↗</span>
+                {commercial ? (locale === "ru" ? "Запросить Lyra" : locale === "uk" ? "Запит на Lyra" : "Request Lyra") : t.participation.link} <span style={{ marginLeft: 4, opacity: 0.7 }}>↗</span>
               </button>
             </div>
           </div>
@@ -808,6 +810,7 @@ const Lyra = () => {
         </span>
       </button>
       <div className="uno-actions">
+        {commercial && <button type="button" onClick={() => setRequestOpen(true)}>{locale === "ru" ? "запрос" : locale === "uk" ? "запит" : "request"}</button>}
         {modelFullyVisible && (
           <button
             type="button"
@@ -831,11 +834,12 @@ const Lyra = () => {
           </button>
       </div>
       <LyraInfo showTrigger={false} />
-      <Participation
+      {commercial && <LyraRequestPanel open={requestOpen} onClose={() => setRequestOpen(false)} />}
+      {!commercial && <Participation
         model="lyra"
         open={participationOpen}
         onClose={() => setParticipationOpen(false)}
-      />
+      />}
       {/* Vertical scroll indicator above the info button */}
       <div className="uno-scroll-indicator" aria-hidden>
         <div className="uno-scroll-fill" ref={scrollFillRef} />
