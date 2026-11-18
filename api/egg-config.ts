@@ -8,7 +8,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { getEggStorageConfig } from "../src/server/eggStorageConfig.js";
 
 export default function handler(req: IncomingMessage, res: ServerResponse) {
-  if((req.url??"").split("?")[0]==="/api/egg-ai-balance")return void aiBalanceHandler(req,res);
+  if((req.url??"").includes("mode=balance")||(req.url??"").split("?")[0]==="/api/egg-ai-balance")return void aiBalanceHandler(req,res);
   res.setHeader("Allow", "GET");
   res.setHeader("Cache-Control", "no-store, private");
   res.setHeader("X-Content-Type-Options", "nosniff");
