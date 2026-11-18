@@ -64,6 +64,12 @@ const Landing = () => {
     [setPointerPosition],
   );
 
+  const handleScreenClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const target = event.target;
+    if (target instanceof Element && target.closest("a, button, input, select, textarea, [role='button'], [role='link']")) return;
+    setMenuOpen((open) => !open);
+  };
+
   const alternates = LOCALES.reduce<Record<string, string>>((acc, item) => {
     acc[item] = `/${item}`;
     return acc;
@@ -73,6 +79,7 @@ const Landing = () => {
     <div
       ref={fieldRef}
       className="landing-field font-body antialiased"
+      onClick={handleScreenClick}
       onPointerMove={handlePointerMove}
       onPointerLeave={() => setPointerPosition(0, 0)}
     >
@@ -96,16 +103,7 @@ const Landing = () => {
         </div>
 
         <div className="landing-interaction">
-          <button
-            type="button"
-            className="landing-orb"
-            aria-label={menuOpen ? (locale === "en" ? "Close details" : locale === "uk" ? "Закрити" : "Закрыть") : (locale === "en" ? "Open details" : locale === "uk" ? "Відкрити" : "Открыть")}
-            aria-expanded={menuOpen}
-            aria-controls="landing-detail-panel"
-            onClick={() => setMenuOpen((open) => !open)}
-          />
-          {menuOpen && (
-            <div className="landing-popup" id="landing-detail-panel" role="region" aria-label={locale === "en" ? "Process and projects" : locale === "uk" ? "Процес і проєкти" : "Процесс и проекты"}>
+          <div className={`landing-popup ${menuOpen ? "landing-popup--open" : ""}`} id="landing-detail-panel" aria-hidden={!menuOpen} role="region" aria-label={locale === "en" ? "Process and projects" : locale === "uk" ? "Процес і проєкти" : "Процесс и проекты"}>
               <div className="landing-popup__stages">
                 {(locale === "en"
                   ? ["idea formation", "concept creation", "projection development", "rights transfer", "conformity control"]
@@ -126,11 +124,10 @@ const Landing = () => {
                 ))}
               </div>
               <nav className="landing-popup__projects" aria-label="Projects">
-                <a href={`/${locale}/egg`} style={{ animationDelay: "3.3s" }}>EGG ↗</a>
-                <a href={`/${locale}/lyra-request`} style={{ animationDelay: "3.55s" }}>LYRA ↗</a>
+                <a tabIndex={menuOpen ? 0 : -1} href={`/${locale}/egg`} style={{ animationDelay: "3.3s" }}>EGG ↗</a>
+                <a tabIndex={menuOpen ? 0 : -1} href={`/${locale}/lyra-request`} style={{ animationDelay: "3.55s" }}>LYRA ↗</a>
               </nav>
             </div>
-          )}
         </div>
       </main>
     </div>
