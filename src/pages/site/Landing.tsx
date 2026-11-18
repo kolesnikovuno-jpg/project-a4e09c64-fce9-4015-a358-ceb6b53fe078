@@ -133,8 +133,9 @@ const Landing = () => {
           <span aria-hidden="true">{Array.from(copy.method).slice(0, typedCount).join("")}</span>
           {typedCount < Array.from(copy.method).length && <span aria-hidden="true" className="landing-caret">|</span>}
         </p>
-        <nav className="landing-links" aria-label="EGG">
+        <nav className="landing-links" aria-label="Projects">
           <a className="landing-lab" href={`https://project-a4e09c64-fce9-4015-a358-ceb6b53fe078-ark9w6yoe.vercel.app/${locale}/unocalc`}>EGG ↗</a>
+          <a className="landing-lab" href={`/${locale}/lyra-request`}>LYRA ↗</a>
         </nav>
         </div>
       </main>
