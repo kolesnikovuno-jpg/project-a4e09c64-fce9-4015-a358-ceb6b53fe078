@@ -359,3 +359,47 @@
     transform: scaleX(1.12);
   }
 }
+
+
+/* Author signature: oversized, cropped by the left/bottom viewport edges.
+   Separate from the pale EGG background, so foreground hierarchy is intact. */
+.landing-wordmark {
+  position: fixed;
+  top: auto;
+  right: auto;
+  bottom: -0.22em;
+  left: -0.065em;
+  inset-inline: auto;
+  width: max-content;
+  max-width: none;
+  transform: none;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: clamp(3.75rem, 8.6vw, 11rem);
+  font-weight: 400;
+  letter-spacing: -0.052em;
+  line-height: 1;
+  color: hsl(var(--foreground) / 0.58);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@media (max-width: 640px) {
+  .landing-wordmark {
+    top: auto;
+    right: auto;
+    bottom: -0.2em;
+    left: -0.075em;
+    inset-inline: auto;
+    font-size: 13.4vw;
+    letter-spacing: -0.052em;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-wordmark {
+    transform: none;
+  }
+}
