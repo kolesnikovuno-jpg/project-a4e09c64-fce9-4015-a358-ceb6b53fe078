@@ -632,6 +632,12 @@ export default async function handler(req:Request,res:ServerResponse){
       ok:true,revision:row.revision,done:true,completed:{kind:"done"},next:step,
     });
     if(input.mode==="draft"&&step.kind!=="sphere")return fail(res,409,"invalid_state_transition");
+    if(step.kind==="sphere"){
+      const {data:setting,error:settingError}=await db.from("egg_sphere_settings")
+        .select("ai_share").eq("project_id",input.projectId).eq("sphere",step.sphere).maybeSingle();
+      if(settingError)return fail(res,503,"database_unavailable");
+      if(setting?.ai_share===0)return send(res,403,{ok:false,error:"ai_disabled_for_sphere",sphere:step.sphere});
+    }
     const prompt=buildEggAutomationPrompt(project,step);
     let raw:string;
     try{raw=await generate(provider,
