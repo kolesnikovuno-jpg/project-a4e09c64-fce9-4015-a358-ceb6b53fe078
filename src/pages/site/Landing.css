@@ -323,3 +323,39 @@
     --axis-track: clamp(2px, 0.45vw, 8px);
   }
 }
+
+
+/* Full-viewport, ultra-quiet EGG background wordmark.
+   Pure CSS type scales with the viewport rather than stretching a raster image. */
+.landing-field::after {
+  content: "EGG";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+  white-space: nowrap;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 900;
+  font-size: max(54vw, 88vh);
+  letter-spacing: -0.105em;
+  line-height: 0.8;
+  color: rgba(119, 116, 102, 0.055);
+  transform: scaleX(1.23);
+  transform-origin: center;
+  user-select: none;
+}
+
+.landing-composition {
+  z-index: 1;
+}
+
+@media (max-width: 640px) {
+  .landing-field::after {
+    font-size: max(85vw, 62vh);
+    transform: scaleX(1.12);
+  }
+}
