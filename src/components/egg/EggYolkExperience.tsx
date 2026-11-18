@@ -4,6 +4,7 @@ import { initialLocale } from "@/i18n/storage";
 import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft, Dna, History, MessageCircle, FileText, Layers3, Info, X } from "lucide-react";
 import EggYolkViewer from "./EggYolkViewer";
+import EggYolkIdeaVisual from "./EggYolkIdeaVisual";
 import {resolveEggYolkFormBasis,type YolkLocalIdea} from "../../lib/eggYolkFormBasis";
 import {visualSeedFromText,blendEggYolkVisualSeed,type EggYolkFieldState} from "../../lib/eggYolkField";
 import {hasGroundedEggYolkMorphology} from "../../lib/eggYolkSemantic";
@@ -330,12 +331,14 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
         data-morphology-source={aiMorphology?"cited_eight_spheres":completedSpatial?"structural_cycle":"provisional_idea"}
         data-spatial-form={spatialForm?.status??"none"}
         aria-label="Пространственный объект">
-        {!loading&&<EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
-          level={1} iteration={1}
-          projectId={project?.id} visualVersion={null}
-          studyKind="field" fieldState={yolkField}
-          formStudy={spatialForm}
-          minimalControls/>}
+        {!loading&&<EggYolkIdeaVisual projectId={id}>
+          <EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
+           level={1} iteration={1}
+           projectId={project?.id} visualVersion={null}
+           studyKind="field" fieldState={yolkField}
+           formStudy={spatialForm}
+           minimalControls/>
+         </EggYolkIdeaVisual>}
       </section>
       {id&&!project&&!loading&&<p role="alert" className="pointer-events-none absolute inset-x-5 top-5 text-center text-xs text-foreground/65">{notice||"Проект не загружен; отображается демонстрационный эскиз."}</p>}
       <EggWorkspaceNavigation active="yolk"
@@ -389,14 +392,16 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
           <section className="relative mx-auto w-full max-w-[min(88vw,78vh,900px)] min-w-0" aria-label="Крупная пространственная модель и восемь сфер">
             <div className="relative mx-auto aspect-square w-full" data-testid="yolk-orbit-stage">
               <div className="absolute inset-[1%] z-0" data-testid="yolk-central-object">
-                <EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
-                  level={timeline?.level??project?.level??1}
-                  iteration={timeline?.iteration??project?.iteration??1}
-                  projectId={project?.id} visualVersion={timeline?.visual??null}
-                  studyKind={spatialForm?"field":exploratoryStudyKind}
-                  fieldState={yolkField}
-                  formStudy={activeCycleKey===cycleOptions.at(-1)?.key?spatialForm:null}
-                  minimalControls/>
+                <EggYolkIdeaVisual projectId={id}>
+                 <EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
+                   level={timeline?.level??project?.level??1}
+                   iteration={timeline?.iteration??project?.iteration??1}
+                   projectId={project?.id} visualVersion={timeline?.visual??null}
+                   studyKind={spatialForm?"field":exploratoryStudyKind}
+                   fieldState={yolkField}
+                   formStudy={activeCycleKey===cycleOptions.at(-1)?.key?spatialForm:null}
+                   minimalControls/>
+                </EggYolkIdeaVisual>
               </div>
               <div className={(view==="egg"?"":"hidden")+" pointer-events-none absolute inset-[7%] rounded-[50%] border border-foreground/10"} aria-hidden="true"/>
               <div className={(view==="egg"?"":"hidden")+" pointer-events-none absolute inset-[18%] rounded-[50%] border border-foreground/[.06]"} aria-hidden="true"/>
