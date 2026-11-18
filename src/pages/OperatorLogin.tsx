@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { lyraSupabase as supabase } from "@/integrations/supabase/lyraClient";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { PageTitle, ToolButton } from "@/components/operator/ui";
