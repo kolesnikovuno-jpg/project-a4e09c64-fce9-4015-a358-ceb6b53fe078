@@ -434,3 +434,19 @@
     transform: scaleX(1.12);
   }
 }
+
+
+/* EGG backdrop v3: taller glyphs, optically seated at the bottom edge. */
+.landing-field::after {
+  font-size: max(61vw, 112vh);
+  align-items: center;
+  transform: translateY(10vh) scaleX(1.13);
+  transform-origin: center;
+}
+
+@media (max-width: 640px) {
+  .landing-field::after {
+    font-size: max(95vw, 108vh);
+    transform: translateY(9vh) scaleX(1.08);
+  }
+}
