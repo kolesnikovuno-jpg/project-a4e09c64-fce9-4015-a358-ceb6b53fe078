@@ -742,3 +742,30 @@
     opacity: 1;
   }
 }
+
+
+/* Refined studio signature: denser strokes, quieter tone, lower letter proportions. */
+.landing-wordmark {
+  font-weight: 400;
+  color: hsl(var(--foreground) / 0.39);
+  transform: scaleX(1.32) scaleY(0.84);
+  transform-origin: left bottom;
+}
+
+@media (max-width: 640px) {
+  .landing-wordmark {
+    transform: scaleX(1.12) scaleY(0.84);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-wordmark {
+    transform: scaleX(1.32) scaleY(0.84);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (max-width: 640px) {
+  .landing-wordmark {
+    transform: scaleX(1.12) scaleY(0.84);
+  }
+}
