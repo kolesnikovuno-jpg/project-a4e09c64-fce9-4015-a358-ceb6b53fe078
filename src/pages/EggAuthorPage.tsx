@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
 import EggAuthorCanvas from "../components/egg/EggAuthorCanvas";
 import {EggAiControlDesk} from "../components/egg/EggAiBalance";
+import EggMemberManager from "../components/egg/EggMemberManager";
 
 export default function EggAuthorPage(){
  const [params]=useSearchParams();const projectId=params.get("project")??"";
@@ -24,6 +25,6 @@ export default function EggAuthorPage(){
   </header>
   {error&&<div role="alert" className="rounded-lg border p-4 text-sm">{error} <Link to="/egg/connect" className="ml-2 underline">Войти</Link></div>}
   {!error&&!state&&<p className="p-4 text-sm">Загружаем проект…</p>}
-  {state&&<div className="space-y-4"><EggAiControlDesk projectId={projectId}/><EggAuthorCanvas projectId={projectId} seed={state.seed} revision={state.revision} onSaved={()=>setRefresh(v=>v+1)}/></div>}
+  {state&&<div className="space-y-4"><EggAiControlDesk projectId={projectId}/><EggMemberManager projectId={projectId}/><EggAuthorCanvas projectId={projectId} seed={state.seed} revision={state.revision} onSaved={()=>setRefresh(v=>v+1)}/></div>}
  </main>;
 }
