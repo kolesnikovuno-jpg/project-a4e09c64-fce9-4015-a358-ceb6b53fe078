@@ -6,6 +6,7 @@ import {EGG_FLOW_ROUTES,currentEggFlowCycle,type EggSphereVisit} from "../../lib
 import {EGG_SPHERE_MANIFESTS} from "../../lib/eggSphereProtocol";
 import {buildEggSphereBrief} from "../../lib/eggSphereIntelligence";
 import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
+import {EggAiSlider,useEggAiBalance} from "./EggAiBalance";
 import {nextEggAutomationStep} from "../../lib/eggFlowAutomation";
 
 type Mode="auto"|"symbiosis"|"manual";
@@ -22,6 +23,8 @@ export default function EggSpherePanel({sphere,name,summary,status,projectId,gue
  sphere:SphereId;name:string;summary:string;status:string;
  projectId:string|null;guest?:boolean;onClose:()=>void;
 }){
+ const {balance}=useEggAiBalance(projectId??"");
+ const aiShare=balance[sphere];
  const [project,setProject]=useState<EggProject|null>(null);
  const [revision,setRevision]=useState<number|null>(null);
  const [token,setToken]=useState("");
@@ -69,14 +72,14 @@ export default function EggSpherePanel({sphere,name,summary,status,projectId,gue
   try{const step=nextEggAutomationStep(project);return step.kind==="sphere"?step.sphere:null;}
   catch{return null;}
  },[project]);
- const mayRunAuto=Boolean(isWorking&&nextAuto===sphere&&token&&revision!==null);
+ const mayRunAuto=Boolean(isWorking&&nextAuto===sphere&&token&&revision!==null&&aiShare>0);
  const brief=useMemo(()=>{
   if(!project||!isWorking)return null;
   try{return buildEggSphereBrief(project,sphere);}catch{return null;}
  },[project,isWorking,sphere]);
  const previous=brief?.sameBranchContext??[];
  const runAI=async(draftOnly:boolean)=>{
-  if(!mayRunAuto||!projectId||busy||revision===null)return;
+  if(!mayRunAuto||!projectId||busy||revision===null||aiShare===0)return;
   setBusy(true);setNotice("");
   try{
    await waitForEggAiRequest({onWaiting:seconds=>setNotice("Ограничение Gemini: запрос через "+seconds+" с…")});
@@ -143,6 +146,7 @@ export default function EggSpherePanel({sphere,name,summary,status,projectId,gue
     className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-foreground/20">×</button>
   </div>
   <p className="mt-3 text-sm leading-relaxed text-foreground/75">{role.mission}</p>
+  {projectId&&!guest&&<div className="mt-3"><EggAiSlider projectId={projectId} sphere={sphere}/></div>}
   <button type="button" onClick={()=>setExpanded(v=>!v)} aria-expanded={expanded}
    className="mt-3 border-b border-foreground/30 pb-1 text-xs text-foreground/65">
    {expanded?"Свернуть протокол":"Роль, границы и ожидаемый результат"}
