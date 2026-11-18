@@ -450,3 +450,54 @@
     transform: translateY(6vh) scaleX(1.10);
   }
 }
+
+
+/* Unified upper typographic line — six words spanning the viewport. */
+.landing-toprail {
+  position: fixed;
+  z-index: 3;
+  top: clamp(2.5rem, 7vh, 5.5rem);
+  left: 4vw;
+  right: 4vw;
+  width: 92vw;
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.7rem;
+  font-family: var(--font-body);
+  font-size: clamp(0.7rem, 1.05vw, 1rem);
+  font-weight: 300;
+  letter-spacing: 0.23em;
+  line-height: 1.35;
+  text-transform: lowercase;
+  white-space: nowrap;
+  color: hsl(var(--foreground) / 0.76);
+}
+
+.landing-toprail__item {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 900px) {
+  .landing-toprail {
+    left: 3vw;
+    right: 3vw;
+    width: 94vw;
+    font-size: clamp(0.45rem, 1.2vw, 0.7rem);
+    letter-spacing: 0.13em;
+    gap: 0.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .landing-toprail {
+    top: 4rem;
+    left: 2vw;
+    right: 2vw;
+    width: 96vw;
+    font-size: clamp(0.36rem, 1.45vw, 0.55rem);
+    letter-spacing: 0.025em;
+    gap: 0.12rem;
+  }
+}
