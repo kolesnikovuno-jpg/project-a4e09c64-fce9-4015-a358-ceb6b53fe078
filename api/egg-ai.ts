@@ -74,6 +74,13 @@ export default async function handler(req: Request, res: ServerResponse) {
     if (!task || task.status !== "question" || task.iteration !== project.iteration)
       return send(res, 409, { ok: false, error: "task_not_ready" });
 
+    const sphere=task.sphere;
+    if(sphere){
+      const {data:setting,error:settingError}=await db.from("egg_sphere_settings")
+        .select("ai_share").eq("project_id",input.projectId).eq("sphere",sphere).maybeSingle();
+      if(settingError)return send(res,503,{ok:false,error:"database_unavailable"});
+      if(setting?.ai_share===0)return send(res,403,{ok:false,error:"ai_disabled_for_sphere",sphere});
+    }
     const prompt = buildSpherePrompt(project, task);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 25000);
