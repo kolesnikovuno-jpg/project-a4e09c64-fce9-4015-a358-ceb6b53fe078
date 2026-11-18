@@ -710,7 +710,7 @@
   opacity: 0;
   visibility: hidden;
   transform: translateY(5px);
-  transition: opacity 950ms ease, transform 950ms ease, visibility 0s linear 950ms;
+  transition: opacity 1400ms cubic-bezier(0.25, 0.1, 0.25, 1), transform 1400ms ease, visibility 0s linear 1400ms;
 }
 .landing-popup--open {
   opacity: 1;
@@ -721,13 +721,13 @@
 .landing-popup__glyph,
 .landing-popup__projects a {
   animation: none;
-  opacity: 0;
+  opacity: 1;
 }
 .landing-popup--open .landing-popup__glyph {
-  animation: landing-soft-type 0.48s ease-out forwards;
+  animation: landing-soft-type 0.48s ease-out both;
 }
 .landing-popup--open .landing-popup__projects a {
-  animation: landing-soft-type 0.65s ease-out forwards;
+  animation: landing-soft-type 0.65s ease-out both;
 }
 .landing-popup__projects a {
   pointer-events: auto;
