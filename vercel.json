@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/egg-ai-balance",
-      "destination": "/api/egg-config"
+      "destination": "/api/egg-config?mode=balance"
     },
     {
       "source": "/api/mcp-health",
