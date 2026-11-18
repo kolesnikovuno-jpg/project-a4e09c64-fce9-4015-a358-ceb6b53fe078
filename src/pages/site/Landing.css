@@ -748,24 +748,24 @@
 .landing-wordmark {
   font-weight: 400;
   color: hsl(var(--foreground) / 0.39);
-  transform: scaleX(1.32) scaleY(0.84);
+  transform: scaleX(1.32) scaleY(0.92);
   transform-origin: left bottom;
 }
 
 @media (max-width: 640px) {
   .landing-wordmark {
-    transform: scaleX(1.12) scaleY(0.84);
+    transform: scaleX(1.12) scaleY(0.92);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .landing-wordmark {
-    transform: scaleX(1.32) scaleY(0.84);
+    transform: scaleX(1.32) scaleY(0.92);
   }
 }
 
 @media (prefers-reduced-motion: reduce) and (max-width: 640px) {
   .landing-wordmark {
-    transform: scaleX(1.12) scaleY(0.84);
+    transform: scaleX(1.12) scaleY(0.92);
   }
 }
