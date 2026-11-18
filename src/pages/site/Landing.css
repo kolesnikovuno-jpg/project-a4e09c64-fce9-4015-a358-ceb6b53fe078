@@ -403,3 +403,34 @@
     transform: none;
   }
 }
+
+
+/* Extended architectural signature: more horizontal presence and breathing room. */
+.landing-wordmark {
+  font-size: clamp(4.25rem, 9.25vw, 12rem);
+  letter-spacing: 0.035em;
+  font-weight: 300;
+  transform: scaleX(1.32);
+  transform-origin: left bottom;
+}
+
+@media (max-width: 640px) {
+  .landing-wordmark {
+    font-size: 14vw;
+    letter-spacing: 0.018em;
+    transform: scaleX(1.12);
+    transform-origin: left bottom;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-wordmark {
+    transform: scaleX(1.32);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (max-width: 640px) {
+  .landing-wordmark {
+    transform: scaleX(1.12);
+  }
+}
