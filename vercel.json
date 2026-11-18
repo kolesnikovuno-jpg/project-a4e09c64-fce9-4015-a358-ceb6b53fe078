@@ -5,6 +5,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/mcp-health",
+      "destination": "/api/oauth-resource?mode=health"
+    },
+    {
       "source": "/.well-known/oauth-protected-resource",
       "destination": "/api/oauth-resource"
     },
