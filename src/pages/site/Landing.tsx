@@ -99,7 +99,7 @@ const Landing = () => {
           ))}
         </p>
 
-        <h1 className="landing-wordmark">kolesnikov.design</h1>
+        <h1 className="landing-wordmark">kolesnikov.studio</h1>
         </div>
 
         <div className="landing-interaction">
