@@ -105,18 +105,29 @@ const Landing = () => {
             onClick={() => setMenuOpen((open) => !open)}
           />
           {menuOpen && (
-            <div className="landing-popup" id="landing-detail-panel">
+            <div className="landing-popup" id="landing-detail-panel" role="region" aria-label={locale === "en" ? "Process and projects" : locale === "uk" ? "Процес і проєкти" : "Процесс и проекты"}>
               <div className="landing-popup__stages">
                 {(locale === "en"
                   ? ["idea formation", "concept creation", "projection development", "rights transfer", "conformity control"]
                   : locale === "uk"
                     ? ["формування ідеї", "створення концепції", "розробка проєкції", "передача прав", "контроль відповідності"]
                     : ["формирование идеи", "создание концепции", "разработка проекции", "передача прав", "контроль соответствия"]
-                ).map((step) => <p key={step}>{step}</p>)}
+                ).map((step, lineIndex) => (
+                  <p key={step} aria-label={step}>
+                    {Array.from(step).map((letter, index) => (
+                      <span
+                        key={index}
+                        className="landing-popup__glyph"
+                        aria-hidden="true"
+                        style={{ animationDelay: `${lineIndex * 0.64 + index * 0.028}s` }}
+                      >{letter === " " ? "\u00a0" : letter}</span>
+                    ))}
+                  </p>
+                ))}
               </div>
               <nav className="landing-popup__projects" aria-label="Projects">
-                <a href={`/${locale}/egg`}>EGG ↗</a>
-                <a href={`/${locale}/lyra-request`}>LYRA ↗</a>
+                <a href={`/${locale}/egg`} style={{ animationDelay: "3.3s" }}>EGG ↗</a>
+                <a href={`/${locale}/lyra-request`} style={{ animationDelay: "3.55s" }}>LYRA ↗</a>
               </nav>
             </div>
           )}
