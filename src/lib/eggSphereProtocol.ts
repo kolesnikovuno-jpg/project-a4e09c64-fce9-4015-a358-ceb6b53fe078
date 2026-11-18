@@ -130,7 +130,7 @@ export const EGG_MATERIAL_RESONANCE_INSTRUCTIONS=[
  "Выход Материального — черновая карта поля с источниками, образными маркерами, напряжениями и потенциалами. Не утверждай, что идея уже инициирована; не меняй ДНК и не переноси результат в Идею без авторского решения."
 ] as const;
 
-/** Maturity controls WORK DEPTH, not the sphere's breadth of perception.
+/** Maturity controls work depth and prioritized research scope, not the sphere's ability to notice wider signals.
  * A sphere may see origins and foreseeable consequences at any level, but
  * must not fabricate future results, tools, measurements, or absent context.
  */
@@ -143,15 +143,36 @@ export const EGG_LEVEL_DEPTH={
 } as const;
 export type EggSphereDepthLevel=keyof typeof EGG_LEVEL_DEPTH;
 
+/** Level-scoped research breadth is a priority, never a ban on noticing cross-level risks. */
+export const EGG_LEVEL_BREADTH={
+  1:{scope:"Широкое поле потребностей, смыслов и возможностей; без преждевременного выбора предметной типологии.",evidence:"Наблюдения и явно обозначенные гипотезы.",stop:"Выделены существенные направления, вопросы и кандидат ядра."},
+  2:{scope:"Сопоставление приоритетных сценариев и принципов воплощения; альтернативы сохраняются как варианты.",evidence:"Обоснованные сравнения с источниками и открытыми допущениями.",stop:"Есть связная концептуальная гипотеза и критерии выбора."},
+  3:{scope:"Конкретные сценарии прототипирования и ключевые проверяемые зависимости.",evidence:"План тестов либо документированные результаты; не смешивать их.",stop:"Критические гипотезы проверены или явно помечены непроверенными."},
+  4:{scope:"Выбранный образец, его конструкция, условия изготовления и использования.",evidence:"Наблюдаемые свойства образца или указание на отсутствие образца.",stop:"Определены расхождения и требования к следующей версии."},
+  5:{scope:"Реальный контекст применения, передачи и обратной связи; только применимые рынки и каналы.",evidence:"Фактическая обратная связь отдельно от прогнозов.",stop:"Ясна готовность текущей формы и условия её дальнейшего развития."}
+} as const;
+
+export function getEggLevelResearchPolicy(level:number){
+ if(!Object.prototype.hasOwnProperty.call(EGG_LEVEL_DEPTH,level))throw Error("Unsupported EGG level");
+ const key=level as EggSphereDepthLevel;
+ return {level,name:EGG_LEVEL_DEPTH[key].name,depth:EGG_LEVEL_DEPTH[key].focus,
+   threshold:EGG_LEVEL_DEPTH[key].threshold,...EGG_LEVEL_BREADTH[key]};
+}
+
+
 export function buildEggSpherePerceptionInstruction(level:number):string{
  if(!Object.prototype.hasOwnProperty.call(EGG_LEVEL_DEPTH,level))
   throw Error("Unsupported EGG depth level");
  const d=EGG_LEVEL_DEPTH[level as EggSphereDepthLevel];
+ const breadth=EGG_LEVEL_BREADTH[level as EggSphereDepthLevel];
  return [
   "EGG уровень "+level+" / 5 — "+d.name+".",
   "Рабочая глубина этого прохода: "+d.focus,
+  "Приоритетная ширина исследования: "+breadth.scope,
+  "Доказательность: "+breadth.evidence,
+  "Условие достаточности: "+breadth.stop,
   "Порог достаточности уровня (предложение для решения Автора, не автоматическое утверждение): "+d.threshold,
-  "ОХВАТ ВОСПРИЯТИЯ НЕ ОГРАНИЧЕН ТЕКУЩИМ УРОВНЕМ: смотри назад — на происхождение и предыдущие версии из реально переданной истории; в настоящий момент — на непосредственную задачу; вперёд — на возможные последствия для последующих уровней как гипотезы.",
+  "ПРИОРИТЕТНЫЙ ОХВАТ ЗАДАЁТСЯ УРОВНЕМ; но замечать существенные внешние связи разрешено. ОХВАТ ВОСПРИЯТИЯ НЕ ОГРАНИЧЕН ТЕКУЩИМ УРОВНЕМ: смотри назад — на происхождение и предыдущие версии из реально переданной истории; в настоящий момент — на непосредственную задачу; вперёд — на возможные последствия для последующих уровней как гипотезы.",
   "Глубина и охват независимы: широкий взгляд не обязывает сейчас выполнять техническую работу более позднего уровня; важный ранний риск может потребовать отдельной углублённой проверки.",
   "Отмечай происхождение и статус каждого значимого сигнала: наблюдение/подтверждённый факт, вывод, гипотеза будущего, пробел; не выдавай ещё не наступившие события за результат.",
   "Прежние итерации и последующие уровни не становятся доступными автоматически: опирайся только на фактически переданные, разрешённые сведения. Если их нет — так и скажи.",
