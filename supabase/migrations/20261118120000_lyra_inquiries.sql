@@ -1,3 +1,13 @@
+-- Independent Kolesnikov.studio database; EGG remains in its own Supabase project.
+create table if not exists public.user_roles (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  role text not null check (role in ('admin')),
+  primary key (user_id, role)
+);
+alter table public.user_roles enable row level security;
+revoke all on public.user_roles from anon, authenticated;
+grant select on public.user_roles to authenticated;
+create policy "read_own_roles" on public.user_roles for select to authenticated using (user_id = (select auth.uid()));
 -- Commercial Lyra requests. Apply to the Supabase project used by Kolesnikov.studio.
 create table if not exists public.lyra_inquiries (
   id uuid primary key default gen_random_uuid(),
