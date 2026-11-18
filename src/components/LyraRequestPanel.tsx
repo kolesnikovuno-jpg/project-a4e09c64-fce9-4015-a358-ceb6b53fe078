@@ -41,12 +41,14 @@ export default function LyraRequestPanel({ open, onClose }: Props) {
     const cleanEmail = email.trim().slice(0, 255);
     const details = `Commercial Lyra inquiry\nIntent: ${intent}\nLocation: ${location.trim().slice(0, 200)}\nMessage: ${note.trim().slice(0, 1500)}`;
     try {
-      // Reuse the existing, permissioned intake table; keep commercial requests
-      // distinguishable by a structured message prefix, without a DB migration.
-      const { error: dbError } = await supabase.from("participation_requests").insert({
-        model: "lyra", name: cleanName, email: cleanEmail, locale,
-        sentiment: null, message: details.slice(0, 2000),
-      });
+      const { error: dbError } = await supabase.from("lyra_inquiries" as never).insert({
+        name: cleanName,
+        email: cleanEmail,
+        location: location.trim().slice(0, 200),
+        intent,
+        message: note.trim().slice(0, 1500) || null,
+        locale,
+      } as never);
       if (dbError) throw dbError;
       setSuccess(true);
       // Best-effort notification; the saved record is the source of truth.
