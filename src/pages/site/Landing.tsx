@@ -31,28 +31,16 @@ const Landing = () => {
   const { locale } = useLocale();
   const page = getSiteContent(locale);
   const copy = landingCopy[locale];
-  const [typedCount, setTypedCount] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
   useEffect(() => {
-    const chars = Array.from(copy.method);
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setTypedCount(chars.length);
-      return;
-    }
-    setTypedCount(0);
-    let interval: number | undefined;
-    const timeout = window.setTimeout(() => {
-      let count = 0;
-      interval = window.setInterval(() => {
-        count++;
-        setTypedCount(count);
-        if (count >= chars.length) window.clearInterval(interval);
-      }, 60);
-    }, 700);
-    return () => {
-      window.clearTimeout(timeout);
-      if (interval !== undefined) window.clearInterval(interval);
+    if (!menuOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
     };
-  }, [copy.method]);
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen]);
+
   const fieldRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number>();
 
@@ -104,22 +92,34 @@ const Landing = () => {
           ))}
         </p>
 
-        <h1 className="landing-wordmark">
-          kolesnikov.studio
-        </h1>
-
+        <h1 className="landing-wordmark">kolesnikov.design</h1>
         </div>
 
-        <div className="landing-introduction">
-          <p className="landing-positioning">{copy.positioning}</p>
-        <p className="landing-method" aria-label={copy.method}>
-          <span aria-hidden="true">{Array.from(copy.method).slice(0, typedCount).join("")}</span>
-          {typedCount < Array.from(copy.method).length && <span aria-hidden="true" className="landing-caret">|</span>}
-        </p>
-        <nav className="landing-links" aria-label="Projects">
-          <a className="landing-lab" href={`https://project-a4e09c64-fce9-4015-a358-ceb6b53fe078-ark9w6yoe.vercel.app/${locale}/unocalc`}>EGG ↗</a>
-          <a className="landing-lab" href={`/${locale}/lyra-request`}>LYRA ↗</a>
-        </nav>
+        <div className="landing-interaction">
+          <button
+            type="button"
+            className="landing-orb"
+            aria-label={menuOpen ? (locale === "en" ? "Close details" : locale === "uk" ? "Закрити" : "Закрыть") : (locale === "en" ? "Open details" : locale === "uk" ? "Відкрити" : "Открыть")}
+            aria-expanded={menuOpen}
+            aria-controls="landing-detail-panel"
+            onClick={() => setMenuOpen((open) => !open)}
+          />
+          {menuOpen && (
+            <div className="landing-popup" id="landing-detail-panel">
+              <div className="landing-popup__stages">
+                {(locale === "en"
+                  ? ["idea formation", "concept creation", "projection development", "rights transfer", "conformity control"]
+                  : locale === "uk"
+                    ? ["формування ідеї", "створення концепції", "розробка проєкції", "передача прав", "контроль відповідності"]
+                    : ["формирование идеи", "создание концепции", "разработка проекции", "передача прав", "контроль соответствия"]
+                ).map((step) => <p key={step}>{step}</p>)}
+              </div>
+              <nav className="landing-popup__projects" aria-label="Projects">
+                <a href={`/${locale}/egg`}>EGG ↗</a>
+                <a href={`/${locale}/lyra-request`}>LYRA ↗</a>
+              </nav>
+            </div>
+          )}
         </div>
       </main>
     </div>
