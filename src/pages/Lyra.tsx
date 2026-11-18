@@ -793,7 +793,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
         </div>
       </div>
       <button
-        onClick={() => navigate("/garden")}
+        onClick={() => navigate(commercial ? `/${locale}` : "/garden")}
         className="fixed top-4 left-4 md:top-5 md:left-5 px-2 py-1 text-[hsl(203_24%_40%)] hover:text-[#C97A63] transition-colors duration-300 z-[60]"
         aria-label={t.nav.back}
       >
