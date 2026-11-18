@@ -83,4 +83,47 @@ describe("EGG current Idea form study",()=>{
   expect(eggIdeaFormSourceId(original)).not.toBe(
    eggIdeaFormSourceId({...original,intent:"Лёгкое кресло для отдыха"}));
  });
+ it("passes selected sketch as geometry reference when changing rendering style",async()=>{
+  const calls:Array<{url:string;body?:Record<string,unknown>}>=[];
+  let generated=0;
+  vi.stubGlobal("fetch",vi.fn(async(url:string,options?:{body?:string})=>{
+   const body=options?.body?JSON.parse(options.body) as Record<string,unknown>:undefined;
+   calls.push({url,body});
+   if(url==="/api/egg-config")return {ok:true,json:async()=>({
+    supabaseUrl:"https://example.test",publishableKey:"public-key",
+   })};
+   if(url.startsWith("/api/egg-project-state"))return {ok:true,json:async()=>({
+    revision:12,project:{id:projectId},
+   })};
+   if(body){
+    generated++;
+    return {ok:true,json:async()=>({ok:true,study:{
+     id:"00000000-0000-4000-8000-"+String(generated).padStart(12,"0"),
+     imageUrl:"https://example.test/sketch-"+generated+".webp",
+     prompt:"Industrial designer sketch",model:"gpt-image-1-mini",
+    }})};
+   }
+   return {ok:true,json:async()=>({ok:true,study:null,studies:[]})};
+  }));
+  render(<EggFormStudyAccess projectId={projectId}
+   intent="Пластичное кресло с овальным проёмом в спинке"
+   constraints="Сохранить характерный силуэт" savedDraft="" materialInsight=""
+   materials={[]} spacePhoto=""/>);
+  const first=await screen.findByRole("button",{name:"Создать скетч"});
+  await waitFor(()=>expect(first.hasAttribute("disabled")).toBe(false));
+  fireEvent.click(first);
+  await waitFor(()=>expect(screen.getByAltText("Пробный образ формы по текущему замыслу Автора")).toBeTruthy());
+  fireEvent.change(screen.getByRole("combobox",{name:"Стиль скетча"}),{target:{value:"marker"}});
+  fireEvent.change(screen.getByRole("textbox",{name:"Уточнение формы"}),{
+   target:{value:"Упростить только линию передних опор"},
+  });
+  fireEvent.click(screen.getByRole("button",{name:"Новый скетч"}));
+  await waitFor(()=>expect(calls.filter(c=>c.body).length).toBe(2));
+  const request=calls.filter(c=>c.body)[1].body!;
+  expect(request.stylePreset).toBe("marker");
+  expect(request.editInstruction).toContain("передних опор");
+  expect(request.referenceStudyId).toBe("00000000-0000-4000-8000-000000000001");
+  expect(calls.some(c=>/api\/egg\?/.test(c.url))).toBe(false);
+ });
+
 });
