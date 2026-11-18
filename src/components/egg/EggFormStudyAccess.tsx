@@ -3,6 +3,7 @@ import {createClient} from "@supabase/supabase-js";
 import {makePreview,type MatterCard} from "./EggMatterDialogue";
 import {eggIdeaFormSourceId,normalizeEggIdeaFormSource,type EggIdeaFormSource} from "../../lib/eggIdeaFormSource";
 import {EGG_SKETCH_IMAGE_LIMIT,EGG_SKETCH_STYLES,type EggSketchStyleId} from "../../lib/eggSketchStyles";
+import {pinEggIdeaVisual,readEggIdeaVisualPin,unpinEggIdeaVisual} from "../../lib/eggIdeaVisualPin";
 
 type FormStudy={id:string;prompt:string;imageUrl:string;model:string;
  sourceKind:string;cycleId:string;synthesisId:string;createdAt:string;
@@ -45,6 +46,7 @@ export default function EggFormStudyAccess({projectId,intent,constraints,
  const [busy,setBusy]=useState(false);
  const [referenceBusy,setReferenceBusy]=useState(false);
  const [notice,setNotice]=useState("");
+ const [visualPin,setVisualPin]=useState(()=>readEggIdeaVisualPin(projectId));
  useEffect(()=>{try{
   const current=localStorage.getItem(referenceKey);
   setReferenceSketch(current&&/^data:image\/jpeg;base64,/.test(current)&&current.length<210000?current:"");
@@ -225,6 +227,18 @@ export default function EggFormStudyAccess({projectId,intent,constraints,
       loading="lazy" referrerPolicy="no-referrer"/>
     </button>)}
    </div>}
+   <div className="flex flex-wrap items-center gap-2">
+    {visualPin?.studyId===study.id?<button type="button" data-testid="egg-unpin-yolk-visual"
+      onClick={()=>{try{unpinEggIdeaVisual(projectId);setVisualPin(null);setNotice("Визуальная опора Желтка снята. ДНК не изменена.");}catch{setNotice("Не удалось обновить выбор в этом браузере.");}}}
+      className="rounded-full border border-foreground/30 px-3 py-2 text-xs">
+      Закреплён в Желтке · убрать
+     </button>:<button type="button" data-testid="egg-pin-yolk-visual"
+      onClick={()=>{try{setVisualPin(pinEggIdeaVisual(projectId,sourceId,study.id));setNotice("Скетч выбран как визуальная опора Желтка. ДНК и уровни не изменены.");}catch{setNotice("Не удалось сохранить выбор в этом браузере.");}}}
+      className="rounded-full border border-foreground/40 px-3 py-2 text-xs">
+      Закрепить в Желтке
+     </button>}
+    <span className="text-[10px] text-foreground/50">Выбор Автора · не принятие уровня</span>
+   </div>
    <p className="text-[10px] text-foreground/55">
     {study.stylePreset?EGG_SKETCH_STYLES.find(s=>s.id===study.stylePreset)?.label:"Предыдущий образ"}
     {study.referenceStudyId?" · стилизация выбранной версии":""} · черновик
