@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { lyraSupabase as supabase } from "@/integrations/supabase/lyraClient";
 import { OperatorShell, UtilityRow, ActionBar, BarGroup, PageTitle, ToolLink, StateLabel, ListRow, CompactSelect } from "@/components/operator/ui";
 
 type Inquiry = {
@@ -24,12 +24,12 @@ export default function OperatorLyra() {
     (async () => {
       const { data: sess } = await supabase.auth.getSession();
       if (!sess.session) { navigate("/operator/login", { replace: true }); return; }
-      const { data: roles } = await supabase.from("user_roles" as never).select("role").eq("user_id", sess.session.user.id);
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", sess.session.user.id);
       const admin = Array.isArray(roles) && roles.some((r: { role: string }) => r.role === "admin");
       if (!active) return;
       setAuthorized(admin);
       if (!admin) return;
-      const { data, error: fetchError } = await supabase.from("lyra_inquiries" as never).select("*").order("created_at", { ascending: false });
+      const { data, error: fetchError } = await supabase.from("lyra_inquiries").select("*").order("created_at", { ascending: false });
       if (!active) return;
       if (fetchError) setError(fetchError.message);
       else setItems((data ?? []) as unknown as Inquiry[]);
@@ -38,7 +38,7 @@ export default function OperatorLyra() {
   }, [navigate]);
   const changeStatus = async (id: string, status: string) => {
     setSaving(id); setError("");
-    const { error: updateError } = await supabase.from("lyra_inquiries" as never).update({ status } as never).eq("id", id);
+    const { error: updateError } = await supabase.from("lyra_inquiries").update({ status } as never).eq("id", id);
     setSaving(null);
     if (updateError) setError(updateError.message);
     else setItems(prev => prev.map(item => item.id === id ? { ...item, status } : item));
