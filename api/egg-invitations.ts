@@ -56,6 +56,14 @@ export default async function handler(req:Request,res:ServerResponse){
       const memberId=input.memberId;
       if(!validUuid(memberId)||memberId===user.id)return respond(res,400,{error:"invalid_member"});
       if(input.action==="remove_member"){
+        // Revoke outstanding invitations first so an old token cannot restore membership.
+        const {data:target,error:targetError}=await db.auth.admin.getUserById(memberId);
+        if(targetError)return respond(res,503,{error:"member_lookup_unavailable"});
+        const email=target.user?.email?.toLowerCase();
+        if(!email)return respond(res,409,{error:"member_email_unavailable"});
+        const {error:revokeError}=await db.from("egg_project_invites").update({revoked_at:new Date().toISOString()})
+          .eq("project_id",projectId).eq("invited_email",email).is("revoked_at",null).is("accepted_at",null);
+        if(revokeError)return respond(res,503,{error:"invite_revoke_failed"});
         const {data,error}=await db.from("egg_project_members").delete().eq("project_id",projectId).eq("user_id",memberId).select("user_id").maybeSingle();
         if(error)return respond(res,503,{error:"membership_unavailable"});
         return respond(res,data?200:404,{ok:!!data,error:data?undefined:"member_not_found"});
