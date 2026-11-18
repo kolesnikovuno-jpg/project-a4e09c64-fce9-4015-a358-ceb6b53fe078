@@ -191,17 +191,24 @@ export default function EggFormStudyAccess({projectId,intent,constraints,
     {referenceSketch&&<button type="button" onClick={()=>{setReferenceSketch("");setReuseSelected(false);}} className="rounded-full border border-foreground/15 px-3 py-2 text-xs">Убрать референс</button>}
     {referenceSketch&&<img src={referenceSketch} alt="Референс формы" className="h-16 w-16 rounded border object-contain"/>}
    </div>
-   {visualMaterials.length>0&&<div className="flex flex-wrap gap-2">
+   {visualMaterials.length>0&&<div className="grid grid-cols-2 gap-2 sm:grid-cols-3" aria-label="Изображения для референса формы">
     {visualMaterials.map((card,i)=><button key={card.id||i} type="button" disabled={referenceBusy}
-     onClick={()=>void useReference(card)} className="min-h-9 rounded-full border border-foreground/20 px-3 py-1 text-xs disabled:opacity-50">
-     Взять с холста · {card.text.slice(0,20)||"образ "+(i+1)}
+     onClick={()=>void useReference(card)}
+     className="flex min-w-0 items-center gap-2 rounded-lg border border-foreground/20 p-2 text-left text-xs hover:border-foreground/50 disabled:opacity-50"
+     aria-label={"Взять референс с холста: "+(card.text||"образ "+(i+1))}>
+     {card.type==="image"&&card.src?
+       <img src={card.src} alt="" loading="lazy" className="h-12 w-12 shrink-0 rounded-md bg-background object-contain"/>:
+       <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-background text-lg">✎</span>}
+     <span className="min-w-0 line-clamp-2 break-words">{card.text||"Эскиз "+(i+1)}</span>
     </button>)}
    </div>}
-   <p className="text-[10px] text-foreground/55">Референс отправляется модели только по действию Автора. Исходная геометрия — ориентир; точное совпадение не гарантировано.</p>
+   <p className="text-[10px] text-foreground/55">{referenceSketch?
+    "Выбранный образ задаёт форму. Стиль управляет только способом изображения; точное совпадение геометрии ИИ не гарантирует.":
+    "Для сходства с конкретным эскизом выберите образ с холста или загрузите его. Без референса форма остаётся свободной гипотезой."}</p>
   </div>
   {study&&<label className="flex items-center gap-2 text-xs text-foreground/70">
    <input type="checkbox" checked={reuseSelected} onChange={e=>setReuseSelected(e.target.checked)} aria-label="Продолжить выбранный скетч"/>
-   Продолжить выбранный скетч, сохраняя его форму
+   Продолжить выбранный скетч, сохраняя его форму и меняя только выбранные детали или стиль
   </label>}
   {source.spacePhoto&&<p className="text-[11px] text-foreground/65" data-testid="egg-idea-image-reference-enabled">
    Фото интерьера включено как контекст среды · форма не копируется с фото
