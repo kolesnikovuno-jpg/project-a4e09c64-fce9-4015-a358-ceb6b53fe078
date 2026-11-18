@@ -58,7 +58,7 @@ export function useEggAiBalance(projectId:string){
   writeEggAiBalance(projectId,next);setSyncStatus("loading");
   void aiRequest(projectId,"POST",sphere,next[sphere]).then(()=>setSyncStatus("saved")).catch(()=>{writeEggAiBalance(projectId,old);setSyncStatus("error")});
  };
- const reset=()=>{for(const [sphere] of EGG_AI_SPHERES)setSphere(sphere,50)};
+ const reset=()=>{if(syncStatus!=="saved")return;setSyncStatus("loading");void (async()=>{try{for(const [sphere] of EGG_AI_SPHERES)await aiRequest(projectId,"POST",sphere,50);writeEggAiBalance(projectId,defaults());setSyncStatus("saved")}catch{setSyncStatus("error")}})()};
  return {balance,setSphere,reset,syncStatus};
 }
 export function EggAiSlider({projectId,sphere,disabled=false}:{projectId:string;sphere:EggAiSphere;disabled?:boolean}){
