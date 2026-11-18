@@ -699,3 +699,46 @@
     filter: none;
   }
 }
+
+
+/* Whole-screen interaction; panel stays mounted to fade away smoothly. */
+.landing-field {
+  cursor: pointer;
+}
+.landing-popup {
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(5px);
+  transition: opacity 950ms ease, transform 950ms ease, visibility 0s linear 950ms;
+}
+.landing-popup--open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition: opacity 700ms ease, transform 700ms ease, visibility 0s;
+}
+.landing-popup__glyph,
+.landing-popup__projects a {
+  animation: none;
+  opacity: 0;
+}
+.landing-popup--open .landing-popup__glyph {
+  animation: landing-soft-type 0.48s ease-out forwards;
+}
+.landing-popup--open .landing-popup__projects a {
+  animation: landing-soft-type 0.65s ease-out forwards;
+}
+.landing-popup__projects a {
+  pointer-events: auto;
+  cursor: pointer;
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-popup,
+  .landing-popup--open { transition: none; transform: none; }
+  .landing-popup--open .landing-popup__glyph,
+  .landing-popup--open .landing-popup__projects a {
+    animation: none;
+    opacity: 1;
+  }
+}
