@@ -42,6 +42,31 @@ export default async function handler(req:Request,res:ServerResponse){
       if(error)return respond(res,503,{error:"database_unavailable"});
       return respond(res,201,{token,expiresInDays:7});
     }
+    if(["list","update_member","remove_member"].includes(String(input.action))){
+      const projectId=input.projectId;
+      if(!validUuid(projectId))return respond(res,400,{error:"invalid_project"});
+      const {data:project,error:projectError}=await db.from("egg_engine_projects").select("id").eq("id",projectId).eq("owner_id",user.id).maybeSingle();
+      if(projectError)return respond(res,503,{error:"database_unavailable"});
+      if(!project)return respond(res,403,{error:"not_project_author"});
+      if(input.action==="list"){
+        const {data,error}=await db.from("egg_project_members").select("user_id,role,spheres").eq("project_id",projectId).order("user_id");
+        if(error)return respond(res,503,{error:"membership_unavailable"});
+        return respond(res,200,{members:(data??[]).filter(m=>m.user_id!==user.id)});
+      }
+      const memberId=input.memberId;
+      if(!validUuid(memberId)||memberId===user.id)return respond(res,400,{error:"invalid_member"});
+      if(input.action==="remove_member"){
+        const {data,error}=await db.from("egg_project_members").delete().eq("project_id",projectId).eq("user_id",memberId).select("user_id").maybeSingle();
+        if(error)return respond(res,503,{error:"membership_unavailable"});
+        return respond(res,data?200:404,{ok:!!data,error:data?undefined:"member_not_found"});
+      }
+      const role=input.role,assigned=input.spheres;
+      if(!["observer","contributor"].includes(String(role))||!Array.isArray(assigned)||assigned.length>8||!assigned.every(s=>typeof s==="string"&&spheres.has(s))||new Set(assigned).size!==assigned.length||role==="contributor"&&assigned.length===0)
+        return respond(res,400,{error:"invalid_permissions"});
+      const {data,error}=await db.from("egg_project_members").update({role,spheres:role==="observer"?[]:assigned}).eq("project_id",projectId).eq("user_id",memberId).select("user_id,role,spheres").maybeSingle();
+      if(error)return respond(res,503,{error:"membership_unavailable"});
+      return respond(res,data?200:404,data?{member:data}:{error:"member_not_found"});
+    }
     if(input.action==="accept"){
       const token=input.token;
       if(typeof token!=="string"||!/^[a-zA-Z0-9_-]{43}$/.test(token))return respond(res,400,{error:"invalid_invite_token"});
