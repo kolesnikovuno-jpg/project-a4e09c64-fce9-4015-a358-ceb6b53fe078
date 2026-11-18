@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { EGG_SPHERES } from "@/lib/eggEngine";
@@ -48,6 +48,11 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
     window.addEventListener("keydown", onKey);
     return () => { document.body.style.overflow = previous; window.removeEventListener("keydown", onKey); };
   }, [panelOpen]);
+  // On the canonical EGG domain, a missing project must open the real project
+  // selector, never the legacy UNOcalc demonstration. Project URLs stay intact.
+  if (eggBrand && !hasProject && window.location.hostname === "egg.kolesnikov.studio") {
+    return <Navigate to="/egg/connect" replace />;
+  }
   return (
     <div
       className={fieldMode ? "h-[100dvh] w-full overflow-hidden bg-background font-body text-foreground" : "min-h-screen bg-background font-body text-foreground"}
