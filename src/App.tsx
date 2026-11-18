@@ -29,6 +29,7 @@ import OperatorLogin from "./pages/OperatorLogin";
 import OperatorCases from "./pages/OperatorCases";
 import OperatorCaseDetail from "./pages/OperatorCaseDetail";
 import OperatorSubmissions from "./pages/OperatorSubmissions";
+import OperatorLyra from "./pages/OperatorLyra";
 import OperatorSubmissionDetail from "./pages/OperatorSubmissionDetail";
 
 import StudioMethod from "./pages/studio/Method";
@@ -144,6 +145,7 @@ const App = () => (
           <Route path="/operator/cases" element={<OperatorCases />} />
           <Route path="/operator/cases/:id" element={<OperatorCaseDetail />} />
           <Route path="/operator/submissions" element={<OperatorSubmissions />} />
+          <Route path="/operator/lyra" element={<OperatorLyra />} />
           <Route path="/operator/submissions/:id" element={<OperatorSubmissionDetail />} />
 
           <Route path="*" element={<NotFound />} />
