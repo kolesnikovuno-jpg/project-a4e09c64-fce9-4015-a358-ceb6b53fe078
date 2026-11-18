@@ -1,6 +1,6 @@
 import type {IncomingMessage,ServerResponse} from "node:http";
 import {createClient} from "@supabase/supabase-js";
-import {getEggStorageConfig} from "../src/server/eggStorageConfig.js";
+import {getEggStorageConfig} from "./eggStorageConfig.js";
 const ids=new Set(["matter","idea","marketing","design","testDrive","commerce","legal","production","procurement","retail"]);
 const uuid=(v:unknown)=>typeof v==="string"&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 const reply=(res:ServerResponse,status:number,data:unknown)=>{res.statusCode=status;res.end(JSON.stringify(data));};
