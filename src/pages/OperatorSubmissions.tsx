@@ -188,6 +188,7 @@ export default function OperatorSubmissions() {
         </BarGroup>
         <BarGroup label="Switch">
           <ToolLink to="/operator/cases">Cases</ToolLink>
+          <ToolLink to="/operator/lyra">Lyra</ToolLink>
         </BarGroup>
       </ActionBar>
 
