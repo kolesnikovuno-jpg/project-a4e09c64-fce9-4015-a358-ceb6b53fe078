@@ -769,3 +769,14 @@
     transform: scaleX(1.12) scaleY(0.92);
   }
 }
+
+
+/* Optical correction: raise only the bottom signature by 8px. */
+.landing-wordmark {
+  bottom: calc(-0.22em + 8px);
+}
+@media (max-width: 640px) {
+  .landing-wordmark {
+    bottom: calc(-0.2em + 8px);
+  }
+}
