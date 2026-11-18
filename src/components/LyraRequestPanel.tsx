@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocale } from "@/i18n/useLocale";
-import { supabase } from "@/integrations/supabase/client";
+import { lyraSupabase } from "@/integrations/supabase/lyraClient";
 
 type Intent = "purchase" | "custom" | "production";
 type Props = { open: boolean; onClose: () => void };
@@ -41,7 +41,7 @@ export default function LyraRequestPanel({ open, onClose }: Props) {
     const cleanEmail = email.trim().slice(0, 255);
     const details = `Commercial Lyra inquiry\nIntent: ${intent}\nLocation: ${location.trim().slice(0, 200)}\nMessage: ${note.trim().slice(0, 1500)}`;
     try {
-      const { error: dbError } = await supabase.from("lyra_inquiries" as never).insert({
+      const { error: dbError } = await lyraSupabase.from("lyra_inquiries").insert({
         name: cleanName,
         email: cleanEmail,
         location: location.trim().slice(0, 200),
@@ -51,16 +51,6 @@ export default function LyraRequestPanel({ open, onClose }: Props) {
       } as never);
       if (dbError) throw dbError;
       setSuccess(true);
-      // Best-effort notification; the saved record is the source of truth.
-      try {
-        await supabase.functions.invoke("send-transactional-email", {
-          body: {
-            templateName: "participation-request",
-            idempotencyKey: `lyra-commercial-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-            templateData: { name: cleanName, email: cleanEmail, message: details, model: "lyra", locale, sentiment: "commercial_request" },
-          },
-        });
-      } catch (notificationError) { console.warn("Lyra request notification failed", notificationError); }
     } catch (submissionError) {
       console.error("Lyra request failed", submissionError);
       setError(true);
