@@ -204,7 +204,7 @@ export default function EggFormStudyAccess({projectId,intent,constraints,
    Продолжить выбранный скетч, сохраняя его форму
   </label>}
   {source.spacePhoto&&<p className="text-[11px] text-foreground/65" data-testid="egg-idea-image-reference-enabled">
-   Фото интерьера передаётся отдельно как средовой контекст, не референс формы
+   Фото интерьера включено как контекст среды · форма не копируется с фото
   </p>}
   {study&&<div className="space-y-2" data-testid="egg-generated-form-image">
    <img src={study.imageUrl} alt="Пробный образ формы по текущему замыслу Автора"
