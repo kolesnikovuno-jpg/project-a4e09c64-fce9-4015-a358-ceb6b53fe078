@@ -98,15 +98,9 @@ const Landing = () => {
 
       <main className="landing-composition">
         <div className="landing-identity">
-        <p className="landing-axis landing-axis--upper">
-          {splitAxis(copy.sequence).map((part, index) => (
-            <span
-              key={index}
-              className={part === ":" ? "landing-axis__sep" : "landing-axis__word"}
-              aria-hidden={part === ":" ? true : undefined}
-            >
-              {part}
-            </span>
+        <p className="landing-toprail" aria-label={[...copy.sequence, ...copy.disciplines].filter(word => word !== ":").join(" · ")}>
+          {[...copy.sequence, ...copy.disciplines].filter(word => word !== ":").map((word, index) => (
+            <span key={index} className="landing-toprail__item">{word}</span>
           ))}
         </p>
 
@@ -114,17 +108,6 @@ const Landing = () => {
           kolesnikov.studio
         </h1>
 
-        <p className="landing-axis landing-axis--lower">
-          {splitAxis(copy.disciplines).map((part, index) => (
-            <span
-              key={index}
-              className={part === ":" ? "landing-axis__sep" : "landing-axis__word"}
-              aria-hidden={part === ":" ? true : undefined}
-            >
-              {part}
-            </span>
-          ))}
-        </p>
         </div>
 
         <div className="landing-introduction">
