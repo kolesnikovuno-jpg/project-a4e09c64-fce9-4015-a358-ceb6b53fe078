@@ -1,3 +1,4 @@
+import {aiBalanceHandler} from "../src/server/eggAiBalanceHandler.js";
 /**
  * Public configuration for browser authentication in the independent Egg test.
  * Supabase publishable keys are public by design; the server's sb_secret key
@@ -7,6 +8,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { getEggStorageConfig } from "../src/server/eggStorageConfig.js";
 
 export default function handler(req: IncomingMessage, res: ServerResponse) {
+  if((req.url??"").split("?")[0]==="/api/egg-ai-balance")return void aiBalanceHandler(req,res);
   res.setHeader("Allow", "GET");
   res.setHeader("Cache-Control", "no-store, private");
   res.setHeader("X-Content-Type-Options", "nosniff");
