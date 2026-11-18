@@ -495,3 +495,88 @@
     font-size: clamp(0.3rem, 1.1vw, 0.4rem);
   }
 }
+
+
+/* Minimal entry point. Only the circle remains visible before interaction. */
+.landing-wordmark {
+  left: -0.15em;
+}
+.landing-interaction {
+  position: fixed;
+  z-index: 5;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.landing-orb {
+  pointer-events: auto;
+  width: clamp(28px, 3.4vw, 46px);
+  height: clamp(28px, 3.4vw, 46px);
+  flex-shrink: 0;
+  border: 1px solid hsl(var(--foreground) / 0.42);
+  border-radius: 50%;
+  background: hsl(var(--background) / 0.14);
+  cursor: pointer;
+  transition: background 250ms ease, border-color 250ms ease, transform 250ms ease;
+}
+.landing-orb:hover,
+.landing-orb[aria-expanded="true"] {
+  background: hsl(var(--foreground) / 0.09);
+  border-color: hsl(var(--foreground) / 0.65);
+}
+.landing-orb:focus-visible {
+  outline: 2px solid hsl(var(--foreground) / 0.75);
+  outline-offset: 5px;
+}
+.landing-popup {
+  pointer-events: auto;
+  margin-top: clamp(1rem, 3vh, 2rem);
+  width: min(90vw, 34rem);
+  padding: 0.6rem 0.75rem;
+  text-align: center;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: hsl(var(--foreground) / 0.88);
+}
+.landing-popup__stages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.landing-popup__stages p {
+  margin: 0;
+  font-size: clamp(0.85rem, 1.2vw, 1.1rem);
+  font-weight: 300;
+  line-height: 1.5;
+  letter-spacing: 0.055em;
+}
+.landing-popup__projects {
+  display: flex;
+  justify-content: center;
+  gap: clamp(2rem, 5vw, 4rem);
+  margin-top: 2rem;
+}
+.landing-popup__projects a {
+  color: hsl(var(--foreground) / 0.78);
+  font-size: 0.82rem;
+  font-weight: 300;
+  letter-spacing: 0.13em;
+  text-decoration: none;
+  text-underline-offset: 0.4em;
+}
+.landing-popup__projects a:hover,
+.landing-popup__projects a:focus-visible {
+  text-decoration: underline;
+}
+@media (max-width: 640px) {
+  .landing-wordmark { left: -0.16em; }
+  .landing-popup__stages { gap: 0.5rem; }
+  .landing-popup__stages p { font-size: 0.82rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-orb { transition: none; }
+}
