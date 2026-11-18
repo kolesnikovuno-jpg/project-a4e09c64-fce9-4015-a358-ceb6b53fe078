@@ -78,6 +78,7 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   { path: "unocalc/about", element: <UnoCalcAbout /> },
   { path: "unocalc/lab", element: <UnoLab /> },
   { path: "lyra", element: <Lyra /> },
+  { path: "lyra-request", element: <Lyra commercial /> },
   { path: "nava", element: <Nava /> },
   { path: "about", element: <About /> },
   { path: "pricing", element: <Pricing /> },
