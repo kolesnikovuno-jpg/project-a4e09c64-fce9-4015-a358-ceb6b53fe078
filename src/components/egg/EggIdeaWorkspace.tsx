@@ -11,6 +11,7 @@ import EggDnaFormation from "./EggDnaFormation";
 import EggAuthorProcessMonitor from "./EggAuthorProcessMonitor";
 import EggSketchEditor, {type SketchStroke} from "./EggSketchEditor";
 import type {EggIdeaHandoff} from "../../lib/eggIdeaHandoff";
+import {eggIdeaFormSourceId} from "../../lib/eggIdeaFormSource";
 import {eggMaterialInsight,isEggMaterialMapCurrent,readEggMaterialMapRecord,
  readLocalEggMaterialMap,eggMaterialMapKey,type EggMaterialMapRecord} from "../../lib/eggMaterialMap";
 import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
@@ -40,12 +41,16 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
  const [materialMap,setMaterialMap]=useState<EggMaterialMapRecord|null>(null);
  const [loaded,setLoaded]=useState(false);
  const [cycleEntryOpen,setCycleEntryOpen]=useState(false);
- const [reviewedDna,setReviewedDna]=useState<string|null>(null);
- const onDnaReview=useCallback((next:string|null)=>setReviewedDna(old=>old===next?old:next),[]);
+ const [reviewedDna,setReviewedDna]=useState<{dna:string;idea:string}|null>(null);
+ const onDnaReview=useCallback((next:{dna:string;idea:string}|null)=>setReviewedDna(old=>
+  old?.dna===next?.dna&&old?.idea===next?.idea?old:next),[]);
  const [sketchOpen,setSketchOpen]=useState(false);
  const [sketchStrokes,setSketchStrokes]=useState<SketchStroke[]>([]);
  const [sketchImage,setSketchImage]=useState("");
  const [sketchEpoch,setSketchEpoch]=useState(0);
+ const visualSourceKey=useMemo(()=>eggIdeaFormSourceId({
+  intent:"",constraints:"",draft:"",materialInsight:"",materials:[],spacePhoto,formReference:sketchImage,
+ }),[spacePhoto,sketchImage]);
  const [mobilePane,setMobilePane]=useState<"canvas"|"dialogue">("canvas");
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState("");
@@ -322,7 +327,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
     </p>}
     {onProjectCreated&&<EggIdeaProjectFork draft={{intent,constraints,savedDraft,spacePhoto,messages,materials,materialInsight}} onCreated={onProjectCreated}/>}
     <EggDnaFormation projectId={projectId} intent={intent} constraints={constraints}
-     materials={materials} materialInsight={materialInsight} latestAnswer={latestAnswer}
+     materials={materials} materialInsight={materialInsight} visualSourceKey={visualSourceKey} latestAnswer={latestAnswer}
      onRequestAi={prompt=>{void submit(prompt);setMobilePane("dialogue");}}
      onReviewChange={onDnaReview}/>
     <div className="min-w-0 rounded-[14px] border border-foreground/15 bg-background/90 p-2 sm:p-3">
@@ -332,7 +337,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
      </button>
      {cycleEntryOpen&&<EggIterationBridge projectId={projectId} intent={intent} constraints={constraints}
       savedDraft={savedDraft} spacePhoto={spacePhoto} materials={materials} materialInsight={materialInsight}
-      dnaCandidate={reviewedDna||""} dnaReviewed={!!reviewedDna}
+      dnaCandidate={reviewedDna?.dna||""} approvedIdea={reviewedDna?.idea||""} dnaReviewed={!!reviewedDna}
       onRestoreApproved={restoreApproved}/>}
     </div>
     <details className="rounded-xl border border-foreground/10 bg-background/30 p-3"
