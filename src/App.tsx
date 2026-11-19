@@ -108,7 +108,10 @@ const EggHostEntry = () => {
     window.location.replace(EGG_AUTH_CALLBACK + search + hash);
     return null;
   }
-  return <Navigate to={"/egg" + search + hash} replace />;
+  // With no project id, open the real EGG account rather than the old egg demo.
+  // Auth callbacks are handled above; existing project links keep their query.
+  const target = new URLSearchParams(search).has("project") ? "/egg" : "/egg/connect";
+  return <Navigate to={target + search + hash} replace />;
 };
 
 const App = () => (
