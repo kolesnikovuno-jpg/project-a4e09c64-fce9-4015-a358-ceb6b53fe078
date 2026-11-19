@@ -49,7 +49,8 @@ export default function EggYolkIdeaVisual({projectId,synthesisId=null,children}:
    const found=selectedPin?studies.find(item=>item.id===selectedPin.studyId):studies[0];
    if(!found){
     if(selectedPin)throw Error("Выбранный скетч не найден в текущем источнике.");
-    return; // No sketch created for this synthesis: retain the spatial field.
+    if(active)setMessage("Для текущего синтеза ещё нет сохранённого скетча. Показано исследовательское поле.");
+    return;
    }
    if(active){setSketch(found);setMode("image");}
   }catch(e){if(active)setMessage(e instanceof Error?e.message:"Скетч недоступен.");}})();
@@ -64,9 +65,10 @@ export default function EggYolkIdeaVisual({projectId,synthesisId=null,children}:
     "absolute inset-[9%] z-20 flex items-center justify-center overflow-hidden rounded-2xl bg-background/95"}
    data-testid="egg-yolk-original-sketch">
     <img src={sketch!.imageUrl} alt="Авторский скетч — визуальная опора Желтка"
-     className="h-full w-full object-contain" referrerPolicy="no-referrer"/>
+     className="h-full w-full object-contain" referrerPolicy="no-referrer"
+     onError={()=>{setSketch(null);setMessage("Изображение сейчас недоступно; сохранённый скетч в проекте не удалён.");}}/>
    </div>}
-  {(pin||sketch)&&<div className="absolute bottom-[5%] left-1/2 z-30 flex max-w-[95%] -translate-x-1/2 flex-col items-center gap-1">
+  {(pin||sketch||message)&&<div className="absolute bottom-[5%] left-1/2 z-30 flex max-w-[95%] -translate-x-1/2 flex-col items-center gap-1">
    {sketch&&<div className="flex rounded-full border border-foreground/15 bg-background/95 p-1 shadow-sm"
     role="group" aria-label="Режим изображения Желтка">
     {([["image","Образ"],["form","Форма"],["compare","Сравнить"]] as const).map(([value,label])=>
