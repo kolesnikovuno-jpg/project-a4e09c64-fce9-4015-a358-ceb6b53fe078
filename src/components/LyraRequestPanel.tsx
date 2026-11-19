@@ -7,9 +7,9 @@ type Intent = "purchase" | "custom" | "production";
 type Props = { open: boolean; onClose: () => void };
 
 const labels = {
-  en: { title: "LYRA / Request", intro: "Tell us how you would like to approach Lyra. Availability, production terms and pricing are confirmed individually.", purchase: "Acquire Lyra", custom: "Custom execution", production: "Production / collaboration", name: "Name", email: "Email", location: "Country / city", note: "Message (optional)", send: "Send request", sending: "Sending…", success: "Your request has been received. We will contact you by email.", error: "The request could not be sent. Please try again.", close: "Close" },
-  ru: { title: "LYRA / Запрос", intro: "Расскажите, что вас интересует. Возможность изготовления, сроки и стоимость согласовываются индивидуально.", purchase: "Приобретение Lyra", custom: "Индивидуальное исполнение", production: "Производство / сотрудничество", name: "Имя", email: "Email", location: "Страна / город", note: "Сообщение (необязательно)", send: "Отправить запрос", sending: "Отправка…", success: "Запрос получен. Мы свяжемся с вами по электронной почте.", error: "Не удалось отправить запрос. Попробуйте ещё раз.", close: "Закрыть" },
-  uk: { title: "LYRA / Запит", intro: "Розкажіть, що вас цікавить. Можливість виготовлення, терміни та вартість узгоджуються індивідуально.", purchase: "Придбання Lyra", custom: "Індивідуальне виконання", production: "Виробництво / співпраця", name: "Ім’я", email: "Email", location: "Країна / місто", note: "Повідомлення (необов’язково)", send: "Надіслати запит", sending: "Надсилання…", success: "Запит отримано. Ми зв’яжемося з вами електронною поштою.", error: "Не вдалося надіслати запит. Спробуйте ще раз.", close: "Закрити" },
+  en: { title: "LYRA / Request", intro: "Tell us how you would like to approach Lyra. Lyra is an original chair made to order. Pricing and production timing are confirmed individually after reviewing your request.", purchase: "Acquire Lyra", custom: "Custom execution", production: "Production / collaboration", name: "Name", email: "Email", location: "Country / city", note: "Message (optional)", send: "Send request", sending: "Sending…", success: "Your request has been received. We will contact you by email.", error: "The request could not be sent. Please try again.", close: "Close" },
+  ru: { title: "LYRA / Запрос", intro: "Расскажите, что вас интересует. Авторское кресло Lyra изготавливается под заказ. Стоимость и сроки согласовываются индивидуально после рассмотрения запроса.", purchase: "Приобретение Lyra", custom: "Индивидуальное исполнение", production: "Производство / сотрудничество", name: "Имя", email: "Email", location: "Страна / город", note: "Сообщение (необязательно)", send: "Отправить запрос", sending: "Отправка…", success: "Запрос получен. Мы свяжемся с вами по электронной почте.", error: "Не удалось отправить запрос. Попробуйте ещё раз.", close: "Закрыть" },
+  uk: { title: "LYRA / Запит", intro: "Розкажіть, що вас цікавить. Авторське крісло Lyra виготовляється на замовлення. Вартість і терміни узгоджуються індивідуально після розгляду запиту.", purchase: "Придбання Lyra", custom: "Індивідуальне виконання", production: "Виробництво / співпраця", name: "Ім’я", email: "Email", location: "Країна / місто", note: "Повідомлення (необов’язково)", send: "Надіслати запит", sending: "Надсилання…", success: "Запит отримано. Ми зв’яжемося з вами електронною поштою.", error: "Не вдалося надіслати запит. Спробуйте ще раз.", close: "Закрити" },
 };
 
 export default function LyraRequestPanel({ open, onClose }: Props) {
@@ -40,7 +40,6 @@ export default function LyraRequestPanel({ open, onClose }: Props) {
     setError(false);
     const cleanName = name.trim().slice(0, 100);
     const cleanEmail = email.trim().slice(0, 255);
-    const details = `Commercial Lyra inquiry\nIntent: ${intent}\nLocation: ${location.trim().slice(0, 200)}\nMessage: ${note.trim().slice(0, 1500)}`;
     try {
       const { error: dbError } = await lyraSupabase.from("lyra_inquiries").insert({
         name: cleanName,
@@ -52,6 +51,7 @@ export default function LyraRequestPanel({ open, onClose }: Props) {
       } as never);
       if (dbError) throw dbError;
       setSuccess(true);
+      void lyraSupabase.from("lyra_demand_events").insert({ event_type: "request_success", locale });
     } catch (submissionError) {
       console.error("Lyra request failed", submissionError);
       setError(true);
