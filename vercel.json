@@ -4,6 +4,42 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [
-    { "source": "/((?!og/|assets/|.*\\..*).*)", "destination": "/index.html" }
+    {
+      "source": "/uk/lyra-request",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i:facebookexternalhit|Facebot|Twitterbot|TelegramBot|WhatsApp|LinkedInBot|Slackbot|Discordbot|Pinterest|Googlebot|bingbot)"
+        }
+      ],
+      "destination": "/og/lyra-uk.html"
+    },
+    {
+      "source": "/ru/lyra-request",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i:facebookexternalhit|Facebot|Twitterbot|TelegramBot|WhatsApp|LinkedInBot|Slackbot|Discordbot|Pinterest|Googlebot|bingbot)"
+        }
+      ],
+      "destination": "/og/lyra-ru.html"
+    },
+    {
+      "source": "/en/lyra-request",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i:facebookexternalhit|Facebot|Twitterbot|TelegramBot|WhatsApp|LinkedInBot|Slackbot|Discordbot|Pinterest|Googlebot|bingbot)"
+        }
+      ],
+      "destination": "/og/lyra-en.html"
+    },
+    {
+      "source": "/((?!og/|assets/|.*\\..*).*)",
+      "destination": "/index.html"
+    }
   ]
 }
