@@ -44,5 +44,6 @@ describe("Yolk uses actual synthesis-linked 2D visual",()=>{
   </EggYolkIdeaVisual>);
   await waitFor(()=>expect(screen.getByTestId("yolk-spatial-field")).toBeTruthy());
   expect(screen.queryByTestId("egg-yolk-original-sketch")).toBeNull();
+  await waitFor(()=>expect(screen.getByText(/Для текущего синтеза ещё нет сохранённого скетча/)).toBeTruthy());
  });
 });
