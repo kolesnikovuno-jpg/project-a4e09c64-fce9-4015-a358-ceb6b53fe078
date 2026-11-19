@@ -23,7 +23,8 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
   const [pageUrl, setPageUrl] = useState("");
 
   useEffect(() => {
-    setPageUrl(window.location.href);
+    const path = window.location.pathname;
+    setPageUrl(`${window.location.origin}${path}`);
   }, [open]);
 
   // Reset transient labels whenever the active locale changes so we don't
@@ -35,7 +36,7 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(pageUrl || `${window.location.origin}${window.location.pathname}`);
       setCopyLabel(T.copy_done);
       setTimeout(() => setCopyLabel(T.copy_link), 1400);
     } catch {
@@ -45,7 +46,7 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
   };
 
   const handleShare = async () => {
-    const url = window.location.href;
+    const url = pageUrl || `${window.location.origin}${window.location.pathname}`;
     const text = T.overview.join(" · ");
     if (navigator.share) {
       try {
@@ -90,7 +91,7 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
     : "";
 
   const today = new Date().toISOString().slice(0, 10);
-  const ref = T.ref;
+
 
   return (
     <>
@@ -116,7 +117,7 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
 
         {/* document meta */}
         <div className="li-doc-meta">
-          <span>ref · {ref}</span>
+          <span>LYRA / 001</span>
           <span>{today}</span>
         </div>
 
