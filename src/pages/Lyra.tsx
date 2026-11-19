@@ -7,6 +7,7 @@ import LyraRequestPanel from "@/components/LyraRequestPanel";
 import { lyraSupabase } from "@/integrations/supabase/lyraClient";
 import Participation from "@/components/Participation";
 import ModelSEO from "@/components/ModelSEO";
+import SEO from "@/components/SEO";
 import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 
@@ -856,7 +857,15 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
       <div className="uno-scroll-indicator" aria-hidden>
         <div className="uno-scroll-fill" ref={scrollFillRef} />
       </div>
-      <ModelSEO slug="lyra" />
+      {commercial ? (
+        <SEO
+          title={locale === "uk" ? "LYRA — дизайнерське крісло | Kolesnikov" : locale === "ru" ? "LYRA — дизайнерское кресло | Kolesnikov" : "LYRA — Designer Chair | Kolesnikov"}
+          description={locale === "uk" ? "LYRA — авторське крісло як виразний акцент інтер’єру. Розгляньте форму в 3D та залиште запит на виготовлення в Україні." : locale === "ru" ? "LYRA — авторское кресло как выразительный акцент интерьера. Рассмотрите форму в 3D и оставьте запрос на изготовление в Украине." : "LYRA is a sculptural designer chair and a distinctive interior accent. Explore it in 3D and inquire about production in Ukraine."}
+          image="/og/lyra-preview.png"
+          type="product"
+          alternates={{ en: "/en/lyra-request", ru: "/ru/lyra-request", uk: "/uk/lyra-request" }}
+        />
+      ) : <ModelSEO slug="lyra" />}
       {/* Language switcher — hidden on hero, fades in once user scrolls past it. */}
       <LanguageSwitcher
         background="hsl(24 26% 94%)"
