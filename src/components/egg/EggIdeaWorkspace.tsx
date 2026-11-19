@@ -282,6 +282,11 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
       <img src={sketchImage} alt="Авторский скетч идеи" className="h-24 w-32 rounded bg-white object-contain"/>
       <p className="text-[11px] text-foreground/60">Авторский рисунок участвует в исследовании Идеи и может использоваться как референс формы. Сохраняется в этом браузере, не является ДНК или CAD.</p>
     </div>}
+    <details className="rounded-xl border border-foreground/10 bg-background/50 p-3" data-testid="egg-idea-supplementary">
+     <summary className="cursor-pointer text-xs font-medium text-foreground/70">
+      Материалы и инструменты · {materials.length} выбрано
+     </summary>
+     <div className="mt-3 space-y-4">
     <label className="block text-xs text-foreground/60">Рамки · необязательно
      <textarea aria-label="Рамки идеи" value={constraints} maxLength={2000} rows={2} onChange={e=>setConstraints(e.target.value)}
       placeholder="Габариты, среда, характер, ограничения — только если определены"
@@ -326,14 +331,23 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
      Первичный дизайнерский скетч и выбор стиля появятся после формулировки идеи.
     </p>}
     {onProjectCreated&&<EggIdeaProjectFork draft={{intent,constraints,savedDraft,spacePhoto,messages,materials,materialInsight}} onCreated={onProjectCreated}/>}
+     </div>
+    </details>
+    <details className="rounded-xl border border-foreground/15 bg-background/75 p-3" data-testid="egg-author-dna-step">
+     <summary className="cursor-pointer text-sm font-medium">
+      {reviewedDna?"Идея и ДНК · проверены Автором":latestAnswer?"Следующий шаг · сформировать Идею и ДНК":"Формирование ДНК · после исследования"}
+     </summary>
+     <div className="mt-3">
     <EggDnaFormation projectId={projectId} intent={intent} constraints={constraints}
      materials={materials} materialInsight={materialInsight} visualSourceKey={visualSourceKey} latestAnswer={latestAnswer}
      onRequestAi={prompt=>{void submit(prompt);setMobilePane("dialogue");}}
      onReviewChange={onDnaReview}/>
+     </div>
+    </details>
     <div className="min-w-0 rounded-[14px] border border-foreground/15 bg-background/90 p-2 sm:p-3">
      <button type="button" aria-expanded={cycleEntryOpen} onClick={()=>setCycleEntryOpen(v=>!v)}
       className="w-full py-1 text-left text-sm font-medium" data-testid="egg-open-iteration">
-      {cycleEntryOpen?"Свернуть · ДНК и итерация":"Утверждение ДНК → запуск восьми сфер"}
+      {cycleEntryOpen?"Свернуть работу сфер":"Результат сфер · действие Автора"}
      </button>
      {cycleEntryOpen&&<EggIterationBridge projectId={projectId} intent={intent} constraints={constraints}
       savedDraft={savedDraft} spacePhoto={spacePhoto} materials={materials} materialInsight={materialInsight}
