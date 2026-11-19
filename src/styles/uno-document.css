@@ -150,7 +150,7 @@
       
 
 /* LYRA request: same document language, form-specific controls. */
-.lr-panel{width:38%;max-width:460px;min-width:360px;padding:42px 40px 56px 44px;border-left:1px solid rgba(0,0,0,.08);box-shadow:none;color:var(--uno-document-ink);font-family:var(--uno-font-document);font-size:12px;line-height:1.65;letter-spacing:.01em;transition-duration:.8s;transition-timing-function:cubic-bezier(.22,.61,.36,1)}
+.lr-panel{width:38%;max-width:460px;min-width:360px;padding:42px 40px 56px 44px;border-left:1px solid rgba(0,0,0,.08);box-shadow:none;color:var(--uno-document-ink);font-family:var(--uno-font-document);font-size:12px;line-height:1.65;letter-spacing:.01em;transform:translateX(100%);transition:transform .8s cubic-bezier(.22,.61,.36,1)}\n.lr-panel.open{transform:translateX(0)}
 .lr-close{border:0;background:transparent;cursor:pointer;line-height:1;color:var(--uno-document-muted);opacity:.7}.lr-close:hover{color:#1A1A1A;opacity:1}
 .lr-meta{display:flex;justify-content:space-between;margin-bottom:26px;font-size:10px;letter-spacing:.08em;color:var(--uno-document-muted);text-transform:lowercase}
 .lr-title{font-family:var(--uno-font-document);font-size:34px;font-weight:400;letter-spacing:.04em;line-height:1;color:var(--uno-document-ink-strong);margin:0 0 22px}
