@@ -802,7 +802,13 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
                   whiteSpace: "pre-line",
                 }}
               >
-                {t.lyra.description}
+                {commercial
+                  ? (locale === "ru"
+                    ? "Не просто кресло. Присутствие в пространстве.\n\nLyra не растворяется в интерьере. Её силуэт создаёт собственный ритм и становится выразительным акцентом пространства.\n\nАвторская форма остаётся неизменной. Цвет можно выбрать при заказе. Каждое кресло изготавливается индивидуально."
+                    : locale === "uk"
+                      ? "Не просто крісло. Присутність у просторі.\n\nLyra не розчиняється в інтер’єрі. Її силует створює власний ритм і стає виразним акцентом простору.\n\nАвторська форма залишається незмінною. Колір можна обрати під час замовлення. Кожне крісло виготовляється індивідуально."
+                      : "More than a chair. A presence in space.\n\nLyra does not disappear into an interior. Its silhouette creates its own rhythm and becomes a distinctive accent in the space.\n\nThe original form stays the same. You can choose the color when ordering. Each chair is made to order.")
+                  : t.lyra.description}
               </p>
               <button
                 type="button"
