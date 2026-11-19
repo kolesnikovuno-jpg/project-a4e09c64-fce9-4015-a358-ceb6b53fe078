@@ -4,6 +4,7 @@ import PageTransition from "@/components/PageTransition";
 import lyraHero from "@/assets/lyra-hero.png";
 import LyraInfo from "@/components/LyraInfo";
 import LyraRequestPanel from "@/components/LyraRequestPanel";
+import { lyraSupabase } from "@/integrations/supabase/lyraClient";
 import Participation from "@/components/Participation";
 import ModelSEO from "@/components/ModelSEO";
 import { useLocale } from "@/i18n/useLocale";
@@ -65,6 +66,17 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
   const [switcherVisible, setSwitcherVisible] = useState(false);
   const [participationOpen, setParticipationOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
+
+  // Anonymous demand funnel: no cookies, IPs or personal data stored in event rows.
+  useEffect(() => {
+    if (!commercial) return;
+    void lyraSupabase.from("lyra_demand_events").insert({ event_type: "page_view", locale });
+  }, [commercial, locale]);
+
+  useEffect(() => {
+    if (!commercial || !requestOpen) return;
+    void lyraSupabase.from("lyra_demand_events").insert({ event_type: "request_open", locale });
+  }, [commercial, requestOpen, locale]);
 
   // Smooth fade-in on mount.
   useEffect(() => {
