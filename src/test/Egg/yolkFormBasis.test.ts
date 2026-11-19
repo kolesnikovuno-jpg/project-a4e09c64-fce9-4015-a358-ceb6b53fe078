@@ -35,14 +35,26 @@ function projectWithCompletedIdea(intent:string):EggProject{
  return {...project,flowCycles:[cycle]};
 }
 describe("Yolk is bound to the actual Author idea, not historical cycles",()=>{
- it("starts a provisional spatial field from current Author's local draft",()=>{
-  const result=resolveEggYolkFormBasis(projectWithCompletedIdea(oldIdea),
+ it("starts a provisional spatial field from Author draft only before a server synthesis",()=>{
+  const project=createEggProject({id:"01b3d29f-bfc4-41ed-b31a-2e0db7fa2fe9",
+   title:"Новая идея",seed:oldIdea,at:"2026-11-17T10:00:00Z"});
+  const result=resolveEggYolkFormBasis(project,
    {intent:currentIdea,savedDraft:"Рабочая гипотеза о скрытом присутствии"},
    "demo");
   expect(result.origin).toBe("author_idea_preview");
   expect(result.text).toContain(currentIdea);
   expect(result.text).toContain("скрытом присутствии");
   expect(result.synthesis).toBeNull();
+ });
+ it("prefers completed server DNA/Idea over a stale browser-local preview",()=>{
+  const project=projectWithCompletedIdea(currentIdea);
+  const result=resolveEggYolkFormBasis(project,
+   {intent:"Прежняя локальная формулировка идеи",
+    savedDraft:"Устаревшие заметки после исследования"}, "demo");
+  expect(result.origin).toBe("server_cycle");
+  expect(result.identityText).toBe(currentIdea);
+  expect(result.text).not.toContain("Устаревшие заметки");
+  expect(result.synthesis?.synthesisId).toBe("syn-old");
  });
  it("reveals further geometry only after the SAME idea completes eight spheres",()=>{
   const project=projectWithCompletedIdea(currentIdea);
