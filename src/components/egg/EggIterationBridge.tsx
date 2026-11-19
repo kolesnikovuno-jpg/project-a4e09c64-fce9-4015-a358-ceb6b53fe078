@@ -30,10 +30,10 @@ export async function prepareEggSpatialPhoto(src:string):Promise<string>{
 }
 
 export default function EggIterationBridge({projectId,intent,constraints,savedDraft,
- spacePhoto,materials,materialInsight,dnaCandidate="",dnaReviewed=false,onRestoreApproved}:{
+ spacePhoto,materials,materialInsight,dnaCandidate="",approvedIdea="",dnaReviewed=false,onRestoreApproved}:{
  projectId:string;intent:string;constraints:string;savedDraft:string;
  spacePhoto:string;materials:MatterCard[];materialInsight:string;
- dnaCandidate?:string;dnaReviewed?:boolean;
+ dnaCandidate?:string;approvedIdea?:string;dnaReviewed?:boolean;
  /** Restore the immutable server snapshot into the editable local workshop only on Author action. */
  onRestoreApproved?:(handoff:EggIdeaHandoff)=>void;
 }){
@@ -100,7 +100,7 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
  // The editor's local draft is not automatically the same snapshot that
  // started an older server cycle. Do not render old results as a new analysis.
  const isCurrentIdeaCycle=Boolean(cycle?.ideaHandoff &&
-  cycle.ideaHandoff.intent===intent.trim() &&
+  cycle.ideaHandoff.intent===(dnaReviewed&&approvedIdea?approvedIdea:intent).trim() &&
   cycle.ideaHandoff.constraints===constraints.trim().slice(0,1600) &&
   cycle.ideaHandoff.materialInsight===materialInsight.trim().slice(0,1400) &&
   cycle.ideaHandoff.materials.length===materials.length &&
@@ -116,7 +116,7 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
     materials.length>20||photoPending||photoError||(spacePhoto&&!packedPhoto))
    return null;
   const draft={
-   intent:intent.trim().slice(0,3000),
+   intent:(dnaReviewed&&approvedIdea?approvedIdea:intent).trim().slice(0,3000),
    workingDna:dnaDraft.trim().slice(0,3000),
    constraints:constraints.trim().slice(0,1600),
    materialInsight:materialInsight.trim().slice(0,1400),
@@ -135,7 +135,7 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
   if(JSON.stringify({command:"start_flow_cycle",projectId,expectedRevision:1,
    brief:"Итерация от сферы Идея",ideaHandoff:valid.data}).length>60000)return null;
   return valid.data;
- },[intent,dnaDraft,dnaReviewed,project,constraints,materialInsight,materials,photoPending,photoError,spacePhoto,packedPhoto,projectId]);
+ },[intent,approvedIdea,dnaDraft,dnaReviewed,project,constraints,materialInsight,materials,photoPending,photoError,spacePhoto,packedPhoto,projectId]);
  const fixOriginalSeed=async()=>{
   if(!project||revision===null||!authorToken||!dnaReviewed||
     dnaDraft!==dnaCandidate||!dnaDraft.trim()||seeding||project.seed.text.trim())return;
