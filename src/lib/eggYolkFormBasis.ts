@@ -17,10 +17,22 @@ export function resolveEggYolkFormBasis(
   project:EggProject|null,localIdea:YolkLocalIdea|null,
   fallbackText:string,
 ):EggYolkFormBasis{
+ // The displayed Yolk is the current SERVER result. A saved local Idea
+ // draft can differ from the Author-reviewed handoff by a single word and
+ // must never hide an actually completed eight-sphere synthesis.
+ // Unapproved local previews are only used before a completed server cycle.
+ const serverSynthesis=project?projectCompleteEggCycleToSpatial(project):null;
+ if(project&&serverSynthesis){
+  const cycle=project.flowCycles?.find(c=>c.id===serverSynthesis.cycleId);
+  const serverIdea=(cycle?.ideaHandoff?.intent??cycle?.synthesis?.dna.authorIntent??"").trim();
+  const basis=serverIdea||project.seed.text.trim();
+  return {text:basis,identityText:basis,origin:"server_cycle",
+   synthesis:serverSynthesis};
+ }
  const intent=localIdea?.intent?.trim()??"";
  const draft=localIdea?.savedDraft?.trim()??"";
  if(intent){
-  const synthesis=project?projectCompleteEggCycleToSpatial(project,intent):null;
+  const synthesis=null;
   return {
    // The actual Author's intention remains first. A saved AI draft is only a
    // tentative direction, not approved DNA.
