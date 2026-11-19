@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, BrainCircuit, Check, Send, X } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import { makePreview, type MatterCard } from "./EggMatterDialogue";
@@ -7,6 +7,9 @@ import EggIterationBridge from "./EggIterationBridge";
 import EggFormStudyAccess from "./EggFormStudyAccess";
 import EggWorkspaceSync from "./EggWorkspaceSync";
 import EggIdeaProjectFork from "./EggIdeaProjectFork";
+import EggDnaFormation from "./EggDnaFormation";
+import EggAuthorProcessMonitor from "./EggAuthorProcessMonitor";
+import EggSketchEditor, {type SketchStroke} from "./EggSketchEditor";
 import type {EggIdeaHandoff} from "../../lib/eggIdeaHandoff";
 import {eggMaterialInsight,isEggMaterialMapCurrent,readEggMaterialMapRecord,
  readLocalEggMaterialMap,eggMaterialMapKey,type EggMaterialMapRecord} from "../../lib/eggMaterialMap";
@@ -37,10 +40,36 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
  const [materialMap,setMaterialMap]=useState<EggMaterialMapRecord|null>(null);
  const [loaded,setLoaded]=useState(false);
  const [cycleEntryOpen,setCycleEntryOpen]=useState(false);
+ const [reviewedDna,setReviewedDna]=useState<string|null>(null);
+ const onDnaReview=useCallback((next:string|null)=>setReviewedDna(old=>old===next?old:next),[]);
+ const [sketchOpen,setSketchOpen]=useState(false);
+ const [sketchStrokes,setSketchStrokes]=useState<SketchStroke[]>([]);
+ const [sketchImage,setSketchImage]=useState("");
+ const [sketchEpoch,setSketchEpoch]=useState(0);
  const [mobilePane,setMobilePane]=useState<"canvas"|"dialogue">("canvas");
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState("");
  const bottom=useRef<HTMLDivElement>(null);
+ useEffect(()=>{
+  try{
+   const value=JSON.parse(localStorage.getItem("egg:idea-sketch:v1:"+projectId)||"[]");
+   setSketchStrokes(Array.isArray(value)?value.slice(0,1000):[]);
+   const reference=localStorage.getItem("egg:form-reference:v1:"+projectId)||"";
+   setSketchImage(/^data:image\/jpeg;base64,/.test(reference)&&reference.length<210000?reference:"");
+  }catch{setSketchStrokes([]);setSketchImage("");}
+ },[projectId]);
+ const saveSketch=async(strokes:SketchStroke[])=>{
+  setSketchStrokes(strokes);setSketchOpen(false);
+  try{
+   localStorage.setItem("egg:idea-sketch:v1:"+projectId,JSON.stringify(strokes));
+   const preview=strokes.length?await makePreview({id:"author-idea-sketch",type:"sketch",text:"Авторский рисунок замысла",strokes}):undefined;
+   if(strokes.length&&!preview)throw Error("sketch_preview_unavailable");
+   if(preview&&preview.length>=210000)throw Error("sketch_preview_too_large");
+   const referenceKey="egg:form-reference:v1:"+projectId;
+   if(preview)localStorage.setItem(referenceKey,preview); else localStorage.removeItem(referenceKey);
+   setSketchImage(preview||"");setSketchEpoch(v=>v+1);
+  }catch{setError("Рисунок не удалось сохранить полностью. Сохраните более простой скетч.");}
+ };
  useEffect(()=>{
   const state=readJSON(key) as Partial<IdeaRecord>|null;
   if(state){
@@ -157,12 +186,16 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
    const auth=createClient(cfg.supabaseUrl,cfg.publishableKey);
    const {data:{session}}=await auth.auth.getSession();
    if(!session?.access_token)throw Error("Войдите в аккаунт EGG.");
-   const payloadMaterials=await Promise.all(materials.slice(0,spacePhoto?99:100).map(async(m,i)=>({
+   const payloadMaterials=await Promise.all(materials.slice(0,100-(spacePhoto?1:0)-(sketchImage?1:0)).map(async(m,i)=>({
     id:m.id,type:m.type,text:m.text.slice(0,2000),
     ...(m.type==="link"&&/^https?:\/\//.test(m.text)?{url:m.text.slice(0,2048)}:{}),
     ...(i<12&&(m.type==="image"||m.type==="sketch")?{imageData:await makePreview(m)}:{})
    })));
-   const ideaMaterials=spacePhoto?[{id:"space-context-photo",type:"image" as const,text:"Фотография существующего пространства — контекст размещения, НЕ референс формы проектируемого объекта",imageData:spacePhoto},...payloadMaterials]:payloadMaterials;
+   const ideaMaterials=[
+    ...(spacePhoto?[{id:"space-context-photo",type:"image" as const,text:"Фотография существующего пространства — контекст размещения, НЕ референс формы проектируемого объекта",imageData:spacePhoto}]:[]),
+    ...(sketchImage?[{id:"author-idea-sketch",type:"sketch" as const,text:"Авторский рисунок замысла — референс формы, не утверждённая модель",imageData:sketchImage}]:[]),
+    ...payloadMaterials,
+   ];
    await waitForEggAiRequest({onWaiting:seconds=>setError("Лимит Gemini: запрос начнётся через "+seconds+" с…")});
    setError("");
    const response=await fetch("/api/egg-flow-ai?op=idea-dialogue",{
@@ -195,12 +228,17 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
     <button type="button" onClick={onOpenMatter} className="flex items-center gap-1 rounded-full bg-background/80 px-3 py-2 text-xs shadow-sm"><ArrowLeft size={14}/> Материальное</button>
    </div>
    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pb-36 md:pb-5">
+    <EggAuthorProcessMonitor projectId={projectId} onOpenConcept={onOpenConcept} onOpenYolk={onOpenYolk}/>
     <label className="block text-xs text-foreground/60">Намерение Автора
      <textarea aria-label="Намерение Автора" value={intent} maxLength={3000} rows={4} onChange={e=>{setIntent(e.target.value);setDraftSavedNotice(false);}}
       placeholder="Что хочешь инициировать? Например: неутилитарный элемент пространства — отдельная нота…"
       className="mt-2 w-full resize-y rounded-xl border border-foreground/15 bg-background/80 p-3 text-base outline-none focus:border-foreground/40 md:text-sm"/>
     </label>
     <div className="flex flex-wrap items-center gap-3">
+     <button type="button" disabled={!intent.trim()||busy} onClick={()=>void submit("Исследуй исходное намерение с учётом принятых материалов и моего рисунка. Раздели наблюдения, гипотезы, противоречия и предложи одну рабочую формулировку Идеи. В конце задай один существенный вопрос.")}
+      data-testid="egg-idea-start-research" className="rounded-full bg-[#607466] px-4 py-2 text-xs text-white disabled:opacity-40">Пуск · исследовать Идею</button>
+     <button type="button" onClick={()=>setSketchOpen(true)} className="rounded-full border border-foreground/30 px-3 py-2 text-xs" data-testid="egg-author-draw-sketch">
+      {sketchStrokes.length?"Изменить рисунок":"Нарисовать скетч"}</button>
      <button type="button" data-testid="egg-save-author-draft"
       disabled={!intent.trim()||!loaded}
       onClick={()=>{setSavedDraft(intent.trim());setDraftSavedNotice(true);}}
@@ -235,6 +273,10 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
         (m.role==="assistant"||m.role==="user")&&typeof m.content==="string").slice(-40):[]);
       }} className="w-full" />
     </div>
+    {sketchImage&&<div className="flex items-center gap-3 rounded-lg border border-foreground/10 p-2">
+      <img src={sketchImage} alt="Авторский скетч идеи" className="h-24 w-32 rounded bg-white object-contain"/>
+      <p className="text-[11px] text-foreground/60">Авторский рисунок участвует в исследовании Идеи и может использоваться как референс формы. Сохраняется в этом браузере, не является ДНК или CAD.</p>
+    </div>}
     <label className="block text-xs text-foreground/60">Рамки · необязательно
      <textarea aria-label="Рамки идеи" value={constraints} maxLength={2000} rows={2} onChange={e=>setConstraints(e.target.value)}
       placeholder="Габариты, среда, характер, ограничения — только если определены"
@@ -272,20 +314,25 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
      <div className="text-xs font-medium">Сохранённый черновик · не утверждён</div>
      <p className="whitespace-pre-wrap text-xs">{savedDraft}</p>
     </div>}
-    {intent.trim().length>=8&&<EggFormStudyAccess projectId={projectId} intent={intent}
+    {intent.trim().length>=8&&<EggFormStudyAccess key={projectId+":"+sketchEpoch} projectId={projectId} intent={intent}
      constraints={constraints} savedDraft={savedDraft} materialInsight={materialInsight}
      materials={materials} spacePhoto={spacePhoto}/>}
     {intent.trim().length<8&&<p className="rounded-xl border border-foreground/10 bg-background/40 p-3 text-xs text-foreground/55">
      Первичный дизайнерский скетч и выбор стиля появятся после формулировки идеи.
     </p>}
     {onProjectCreated&&<EggIdeaProjectFork draft={{intent,constraints,savedDraft,spacePhoto,messages,materials,materialInsight}} onCreated={onProjectCreated}/>}
+    <EggDnaFormation projectId={projectId} intent={intent} constraints={constraints}
+     materials={materials} materialInsight={materialInsight} latestAnswer={latestAnswer}
+     onRequestAi={prompt=>{void submit(prompt);setMobilePane("dialogue");}}
+     onReviewChange={onDnaReview}/>
     <div className="min-w-0 rounded-[14px] border border-foreground/15 bg-background/90 p-2 sm:p-3">
      <button type="button" aria-expanded={cycleEntryOpen} onClick={()=>setCycleEntryOpen(v=>!v)}
       className="w-full py-1 text-left text-sm font-medium" data-testid="egg-open-iteration">
-      {cycleEntryOpen?"Свернуть · ДНК и итерация":"ДНК → первый круг восьми сфер"}
+      {cycleEntryOpen?"Свернуть · ДНК и итерация":"Утверждение ДНК → запуск восьми сфер"}
      </button>
      {cycleEntryOpen&&<EggIterationBridge projectId={projectId} intent={intent} constraints={constraints}
       savedDraft={savedDraft} spacePhoto={spacePhoto} materials={materials} materialInsight={materialInsight}
+      dnaCandidate={reviewedDna||""} dnaReviewed={!!reviewedDna}
       onRestoreApproved={restoreApproved}/>}
     </div>
     <details className="rounded-xl border border-foreground/10 bg-background/30 p-3"
@@ -331,6 +378,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
    </form>
    <p className="text-[10px] opacity-55">Локальный черновик · не меняет ДНК, уровень или решения Автора</p>
   </div>
+  {sketchOpen&&<EggSketchEditor initialStrokes={sketchStrokes} onSave={strokes=>{void saveSketch(strokes);}} onClose={()=>setSketchOpen(false)}/>}
   <EggWorkspaceNavigation active="idea" onOpenField={onOpenField} onOpenMatter={onOpenMatter}
    onOpenIdea={()=>{}} onOpenConcept={onOpenConcept} onOpenYolk={onOpenYolk}/>
  </section>;
