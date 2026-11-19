@@ -14,3 +14,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://www.kolesnikov.studio/sitemap.xml
+Sitemap: https://www.kolesnikov.studio/lyra-sitemap.xml
