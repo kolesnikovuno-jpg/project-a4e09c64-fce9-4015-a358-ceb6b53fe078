@@ -222,15 +222,16 @@ export default function EggFlowCyclePanel({
     </div>
     {cycle&&<EggCycleSummary project={project} cycle={cycle}/>}
     {cycle?.synthesis&&<EggFormStudyPanel project={project} cycle={cycle} revision={revision} authorControls={authorControls}/>}
-    {!cycle&&<p className="mt-3 text-xs text-foreground/65">
-      Новый цикл ещё не запускался. Начните в сфере «Идея»: проверьте рабочую ДНК, материалы, фото и утвердите пакет Автором.
+    {!cycle&&<p className="mt-3 text-xs text-foreground/65" data-testid="egg-cycle-entry-status">
+      {aiBusy?(aiProgress>0?"Цикл выполняется; на сервере сохранено шагов: "+aiProgress+". Обновлённое состояние появится после завершения обработки.":"Проверяем доступ и запускаем цикл. Серверное состояние обновится после выполнения шага."):
+      "Новый цикл ещё не запускался. Начните в сфере «Идея»: проверьте рабочую ДНК, материалы, фото и утвердите пакет Автором."}
     </p>}
     {authorControls&&(canStart||canRunAI||aiBusy)&&<div className="mt-4 space-y-3 rounded-lg border border-foreground/25 p-3 sm:p-4"
       data-testid="egg-ai-flow-controls">
-      <h4 className="text-sm font-medium">{canStart?"Запуск первого круга":
+      <h4 className="text-sm font-medium">{aiBusy?"Выполняется цикл ИИ":canStart?"Запуск первого круга":
         cycle?.status==="awaiting_author"?"Желток · смысловой разбор":
         "Продолжить обработку сфер"}</h4>
-      <p className="text-xs text-foreground/70">{canStart?
+      <p className="text-xs text-foreground/70">{aiBusy?"Уже сохранённые шаги не повторяются. После завершения получим актуальный статус проекта и решение Автора.":canStart?
         "Доступ к модели проверяется перед запуском. Авторская рабочая ДНК фиксируется на весь круг.":
         cycle?.status==="awaiting_author"?
         "Восемь сфер уже завершены. Этот запрос создаст только черновой смысловой анализ Желтка, без повторного запуска сфер и без решения за Автора.":
