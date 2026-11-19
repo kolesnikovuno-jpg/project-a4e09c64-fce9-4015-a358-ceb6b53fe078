@@ -71,12 +71,12 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
   // Anonymous demand funnel: no cookies, IPs or personal data stored in event rows.
   useEffect(() => {
     if (!commercial) return;
-    void lyraSupabase.from("lyra_demand_events").insert({ event_type: "page_view", locale });
+    void lyraSupabase.from("lyra_demand_events").insert({ event_type: "page_view", locale }).then(({ error }) => { if (error) console.warn("Lyra analytics: page_view failed", error.message); });
   }, [commercial, locale]);
 
   useEffect(() => {
     if (!commercial || !requestOpen) return;
-    void lyraSupabase.from("lyra_demand_events").insert({ event_type: "request_open", locale });
+    void lyraSupabase.from("lyra_demand_events").insert({ event_type: "request_open", locale }).then(({ error }) => { if (error) console.warn("Lyra analytics: request_open failed", error.message); });
   }, [commercial, requestOpen, locale]);
 
   // Smooth fade-in on mount.
