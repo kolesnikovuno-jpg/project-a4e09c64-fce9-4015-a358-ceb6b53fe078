@@ -19,7 +19,6 @@ export default function EggAuthorProcessMonitor({projectId,onOpenConcept,onOpenY
   const [refresh,setRefresh]=useState(0);
   const [error,setError]=useState("");
   const [hint,setHint]=useState("");
-  const [expanded,setExpanded]=useState(false);
 
   useEffect(()=>{
     let active=true;
@@ -60,7 +59,10 @@ export default function EggAuthorProcessMonitor({projectId,onOpenConcept,onOpenY
         <h3 className="text-sm font-medium">Пульт Автора</h3>
         <p className="text-[11px] text-foreground/60">
           {project?"Уровень "+project.level+"/5 · итерация "+project.iteration+
-            (cycle?" · цикл "+cycle.status:" · без цикла"):"Загружаем уровень и восемь сфер"}
+            (cycle?.status==="awaiting_author"?" · результат готов":
+              cycle?.status==="running"?" · сферы работают":
+              cycle?.status==="accepted"?" · уровень принят":""):
+            "Загружаем состояние проекта"}
         </p>
       </div>
       <div className="flex gap-2">
@@ -81,12 +83,11 @@ export default function EggAuthorProcessMonitor({projectId,onOpenConcept,onOpenY
         <span className="break-words">{title}</span>
       </button>)}
     </div>
-    <div>
-      <button type="button" className="w-full text-left text-xs font-medium"
-        aria-expanded={expanded} onClick={()=>setExpanded(v=>!v)}
+    <details className="rounded-lg border border-foreground/10 p-2">
+      <summary className="cursor-pointer text-xs text-foreground/60"
         data-testid="egg-author-sphere-monitor">
-        Восемь сфер · {cycle?"состояние текущего цикла":"исследовательский контур"} {expanded?"−":"+"}
-      </button>
+        Монитор восьми сфер · подробнее
+      </summary>
       <div className="mt-2 grid grid-cols-8 gap-1">
         {EGG_FIXED_ROUTE.map(id=>{
           const visit=cycle?[...cycle.first,...cycle.second].find(v=>v.sphere===id):null;
@@ -95,7 +96,7 @@ export default function EggAuthorProcessMonitor({projectId,onOpenConcept,onOpenY
               "bg-[#607466]":visit?.status==="awaiting_result"?"bg-[#ba9c62]":"bg-foreground/15")}/>;
         })}
       </div>
-      {expanded&&<div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
         {EGG_FIXED_ROUTE.map(id=>{
           const visit=cycle?[...cycle.first,...cycle.second].find(v=>v.sphere===id):null;
           return <div key={id} className="rounded-lg border border-foreground/10 p-2">
@@ -105,12 +106,12 @@ export default function EggAuthorProcessMonitor({projectId,onOpenConcept,onOpenY
             </p>
           </div>;
         })}
-      </div>}
+      </div>
       {!cycle&&<p className="mt-2 text-[11px] leading-relaxed text-foreground/55">
         До утверждения ДНК — внешнее исследование намерения и Материального.
         Автоматический восьмисферный цикл ещё не запускался.
       </p>}
-    </div>
+    </details>
     {project?.seed.text&&<p className="text-[11px] text-foreground/65">
       Исходная ДНК сохранена на сервере · версия проекта {revision}.
     </p>}
