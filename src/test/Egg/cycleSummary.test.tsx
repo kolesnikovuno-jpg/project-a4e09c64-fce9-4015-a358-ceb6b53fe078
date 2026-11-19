@@ -71,3 +71,37 @@ describe("Readable EGG cycle summary",()=>{
   expect(screen.getByTestId("egg-cycle-open-questions").textContent).toContain("0 открытых вопросов");
  });
 });
+
+
+describe("First level Author DNA status is grounded in the server seed",()=>{
+ const acceptedDna="СУЩНОСТЬ: Поддержка тела\\nИНВАРИАНТЫ: Контакт и пространственное присутствие";
+ const form=(seed:string)=>{
+  const project=createEggProject({
+   id:"868a4395-9268-4f49-8323-4f708397d844",
+   title:"Исследование формы",seed,at,
+  });
+  const result=startEggFlowCycle(project,{actor:"author",at,ideaHandoff:{
+   intent:"Опора тела как пространственный акцент",
+   workingDna:acceptedDna,constraints:"",materialInsight:"",materials:[],
+  }});
+  return {project:result,cycle:currentEggFlowCycle(result)!};
+ };
+ it("shows that an aligned Author-approved seed is already persisted before acceptance",()=>{
+  const {project,cycle}=form(acceptedDna);
+  expect(readEggCycleSummary(project,cycle).dnaState).toBe("aligned");
+  render(<EggCycleSummary project={project} cycle={cycle}/>);
+  expect(screen.getByTestId("egg-level-one-dna-status").textContent)
+   .toContain("Совпадает с утверждённым серверным зерном");
+  expect(screen.getByTestId("egg-level-one-dna-decision-note").textContent)
+   .toContain("не изменяя ДНК");
+ });
+ it("warns of a real divergence rather than wrongly saying that no DNA was approved",()=>{
+  const {project,cycle}=form("Старое авторское зерно другого замысла");
+  expect(readEggCycleSummary(project,cycle).dnaState).toBe("divergent");
+  render(<EggCycleSummary project={project} cycle={cycle}/>);
+  expect(screen.getByTestId("egg-level-one-dna-status").textContent)
+    .toContain("отличается от серверного зерна");
+  expect(screen.getByTestId("egg-level-one-dna-decision-note").textContent)
+    .toContain("не принимайте уровень");
+ });
+});
