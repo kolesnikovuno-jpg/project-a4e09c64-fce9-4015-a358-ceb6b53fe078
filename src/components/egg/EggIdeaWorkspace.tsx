@@ -240,7 +240,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
       className="mt-2 w-full resize-y rounded-xl border border-foreground/15 bg-background/80 p-3 text-base outline-none focus:border-foreground/40 md:text-sm"/>
     </label>
     <div className="flex flex-wrap items-center gap-3">
-     <button type="button" disabled={!intent.trim()||busy} onClick={()=>void submit("Исследуй исходное намерение с учётом принятых материалов и моего рисунка. Раздели наблюдения, гипотезы, противоречия и предложи одну рабочую формулировку Идеи. В конце задай один существенный вопрос.")}
+     <button type="button" disabled={!intent.trim()||busy} onClick={()=>void submit("Исследуй исходное намерение с учётом принятых материалов и моего рисунка. Кратко сопоставь исследовательские перспективы восьми сфер, без заявления о фактическом запуске внутреннего цикла и без вымышленных внешних источников. Раздели наблюдения, гипотезы и противоречия; предложи одну рабочую формулировку Идеи и один существенный вопрос.")}
       data-testid="egg-idea-start-research" className="rounded-full bg-[#607466] px-4 py-2 text-xs text-white disabled:opacity-40">Пуск · исследовать Идею</button>
      <button type="button" onClick={()=>setSketchOpen(true)} className="rounded-full border border-foreground/30 px-3 py-2 text-xs" data-testid="egg-author-draw-sketch">
       {sketchStrokes.length?"Изменить рисунок":"Нарисовать скетч"}</button>
