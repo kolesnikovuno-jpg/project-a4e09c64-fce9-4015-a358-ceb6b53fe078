@@ -62,6 +62,8 @@ const RedirectToDefaultLocale = () => {
   return <Navigate to={target + search + hash} replace />;
 };
 
+const RedirectToLyra = () => <Navigate to={`/${initialLocale()}/lyra`} replace />;
+
 // Pages that exist under each locale prefix.
 const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   // Kolesnikov.studio — new information architecture
@@ -102,7 +104,7 @@ const App = () => (
         <LocalePersistenceGuard />
         <Routes>
           {/* Root → default locale */}
-          <Route path="/" element={<RedirectToDefaultLocale />} />
+          <Route path="/" element={window.location.hostname === "lyra.kolesnikov.studio" ? <RedirectToLyra /> : <RedirectToDefaultLocale />} />
 
           {/* Localized routes — generated for each supported locale. */}
           {LOCALES.map((loc) =>
