@@ -4,7 +4,7 @@ import PageTransition from "@/components/PageTransition";
 import lyraHero from "@/assets/lyra-hero.png";
 import LyraInfo from "@/components/LyraInfo";
 import LyraRequestPanel from "@/components/LyraRequestPanel";
-import { lyraSupabase } from "@/integrations/supabase/lyraClient";
+import { trackLyra } from "@/lib/lyraAnalytics";
 import Participation from "@/components/Participation";
 import ModelSEO from "@/components/ModelSEO";
 import SEO from "@/components/SEO";
@@ -71,13 +71,37 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
   // Anonymous demand funnel: no cookies, IPs or personal data stored in event rows.
   useEffect(() => {
     if (!commercial) return;
-    void lyraSupabase.from("lyra_demand_events").insert({ event_type: "page_view", locale }).then(({ error }) => { if (error) console.warn("Lyra analytics: page_view failed", error.message); });
+    trackLyra("page_view", locale);
   }, [commercial, locale]);
 
   useEffect(() => {
     if (!commercial || !requestOpen) return;
-    void lyraSupabase.from("lyra_demand_events").insert({ event_type: "request_open", locale }).then(({ error }) => { if (error) console.warn("Lyra analytics: request_open failed", error.message); });
+    trackLyra("request_open", locale);
   }, [commercial, requestOpen, locale]);
+
+  // Track meaningful steps once per page visit; no continuous cursor/scroll recording.
+  useEffect(() => {
+    if (!commercial) return;
+    const seen = new Set<string>();
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const zone = crossfadeRef.current;
+      if (!zone) return;
+      const total = zone.offsetHeight - window.innerHeight;
+      const progress = total > 0 ? Math.max(0, Math.min(1, -zone.getBoundingClientRect().top / total)) : 0;
+      if (progress >= 0.3 && !seen.has("scroll_3d")) { seen.add("scroll_3d"); trackLyra("scroll_3d", locale); }
+      if (progress >= 0.8 && !seen.has("scroll_details")) { seen.add("scroll_details"); trackLyra("scroll_details", locale); }
+    };
+    const onScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    const model = modelRef.current;
+    const onInteract = () => { if (!seen.has("model_interact")) { seen.add("model_interact"); trackLyra("model_interact", locale); } };
+    model?.addEventListener("pointerdown", onInteract);
+    model?.addEventListener("touchstart", onInteract, { passive: true });
+    return () => { window.removeEventListener("scroll", onScroll); model?.removeEventListener("pointerdown", onInteract); model?.removeEventListener("touchstart", onInteract); if (frame) cancelAnimationFrame(frame); };
+  }, [commercial, locale]);
 
   // Smooth fade-in on mount.
   useEffect(() => {
@@ -831,7 +855,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
             onClick={() => {
               const mv: any = modelRef.current;
               if (mv && typeof mv.activateAR === "function") {
-                try { mv.activateAR(); } catch (e) { /* no-op */ }
+                try { if (commercial) trackLyra("ar_click", locale); mv.activateAR(); } catch (e) { /* no-op */ }
               }
             }}
           >
@@ -841,7 +865,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
         <button
             type="button"
             aria-label={t.nav.info}
-            onClick={() => window.dispatchEvent(new CustomEvent("lyra:info-open"))}
+            onClick={() => { if (commercial) trackLyra("info_open", locale); window.dispatchEvent(new CustomEvent("lyra:info-open")); }}
           >
             {t.nav.info}
           </button>
