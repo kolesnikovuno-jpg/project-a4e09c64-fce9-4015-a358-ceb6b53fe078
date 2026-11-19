@@ -331,9 +331,9 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
         data-morphology-source={aiMorphology?"cited_eight_spheres":completedSpatial?"structural_cycle":"provisional_idea"}
         data-spatial-form={spatialForm?.status??"none"}
         aria-label="Пространственный объект">
-        {!loading&&<EggYolkIdeaVisual projectId={id}>
+        {!loading&&<EggYolkIdeaVisual projectId={id} synthesisId={completedSpatial?.synthesisId??null}>
           <EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
-           level={1} iteration={1}
+           level={project?.level??1} iteration={project?.iteration??1}
            projectId={project?.id} visualVersion={null}
            studyKind="field" fieldState={yolkField}
            formStudy={spatialForm}
@@ -392,7 +392,8 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
           <section className="relative mx-auto w-full max-w-[min(88vw,78vh,900px)] min-w-0" aria-label="Крупная пространственная модель и восемь сфер">
             <div className="relative mx-auto aspect-square w-full" data-testid="yolk-orbit-stage">
               <div className="absolute inset-[1%] z-0" data-testid="yolk-central-object">
-                <EggYolkIdeaVisual projectId={id}>
+                <EggYolkIdeaVisual projectId={id}
+                  synthesisId={activeCycleKey===cycleOptions.at(-1)?.key?completedSpatial?.synthesisId??null:null}>
                  <EggYolkViewer onFileChange={setLocal3d} onSketchChange={onSpatialChange}
                    level={timeline?.level??project?.level??1}
                    iteration={timeline?.iteration??project?.iteration??1}
