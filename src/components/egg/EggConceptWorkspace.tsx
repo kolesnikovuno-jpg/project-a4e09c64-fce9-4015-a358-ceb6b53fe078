@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, ImagePlus, X } from "lucide-react";
+import {createClient} from "@supabase/supabase-js";
+import {currentEggFlowCycle} from "../../lib/eggFlowCycle";
+import type {EggProject} from "../../lib/eggEngine";
 import EggWorkspaceNavigation from "./EggWorkspaceNavigation";
 import { makePreview } from "./EggMatterDialogue";
 
@@ -10,6 +13,7 @@ const readJSON=(key:string):unknown=>{
  try{return JSON.parse(localStorage.getItem(key)??"null");}catch{return null;}
 };
 
+/** Concept is a visual workbench; server-approved source is read-only. */
 /** Concept is NOT the Author's Idea editor or the level-02 approval gate.
  * It is a separate visual/projection workspace using an unapproved idea
  * snapshot until EGG's authoritative versioned handoff is implemented.
@@ -20,11 +24,34 @@ export default function EggConceptWorkspace({projectId,onClose,onOpenIdea,onOpen
 }){
  const key="egg:concept-workspace:v1:"+projectId;
  const [idea,setIdea]=useState<IdeaRecord>({});
+ const [serverBasis,setServerBasis]=useState<{idea:string;dna:string;level:number}|null>(null);
  const [description,setDescription]=useState("");
  const [images,setImages]=useState<ConceptImage[]>([]);
  const [loaded,setLoaded]=useState(false);
  const [mobilePane,setMobilePane]=useState<"canvas"|"description">("canvas");
  const [notice,setNotice]=useState("");
+ useEffect(()=>{
+  let active=true;setServerBasis(null);
+  void(async()=>{try{
+   const cfg=await fetch("/api/egg-config",{cache:"no-store"});
+   if(!cfg.ok)return;
+   const options=await cfg.json() as {supabaseUrl:string;publishableKey:string};
+   const client=createClient(options.supabaseUrl,options.publishableKey);
+   const {data:{session}}=await client.auth.getSession();
+   if(!session?.access_token)return;
+   const response=await fetch("/api/egg-project-state?project="+encodeURIComponent(projectId),{
+    cache:"no-store",headers:{Authorization:"Bearer "+session.access_token},
+   });
+   if(!response.ok)return;
+   const state=await response.json() as {project:EggProject};
+   const project=state.project;
+   const cycle=project?currentEggFlowCycle(project):null;
+   if(active&&project?.level>=2&&project.seed.text&&cycle?.ideaHandoff){
+    setServerBasis({idea:cycle.ideaHandoff.intent,dna:project.seed.text,level:project.level});
+   }
+  }catch{/* Local concept work remains usable but unapproved. */}})();
+  return()=>{active=false};
+ },[projectId]);
  useEffect(()=>{
   const rawIdea=readJSON("egg:idea-workspace:v1:"+projectId) as IdeaRecord|null;
   setIdea({
@@ -83,10 +110,11 @@ export default function EggConceptWorkspace({projectId,onClose,onOpenIdea,onOpen
    </div>
    <div className="mt-4 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain pb-36 md:pb-28">
     <div className="rounded-xl border border-foreground/15 bg-background/65 p-4">
-     <p className="text-xs text-foreground/55">Опора · черновик из сферы «Идея»</p>
-     <p className="mt-2 whitespace-pre-wrap text-sm">{idea.savedDraft||idea.intent||"В сфере «Идея» пока нет сохранённого замысла."}</p>
-     {idea.savedDraft&&idea.intent&&<p className="mt-3 border-t border-foreground/10 pt-3 text-xs text-foreground/55">Намерение Автора: {idea.intent}</p>}
-     <p className="mt-2 text-[10px] text-foreground/45">Опора не утверждена как ДНК. Возврат к Идее не изменяет историю проекта.</p>
+     <p className="text-xs text-foreground/55">{serverBasis?"Опора · утверждённая Идея из серверного цикла":"Опора · черновик из сферы «Идея»"}</p>
+     <p className="mt-2 whitespace-pre-wrap text-sm">{serverBasis?.idea||idea.savedDraft||idea.intent||"В сфере «Идея» пока нет сохранённого замысла."}</p>
+     {idea.savedDraft&&idea.intent&&!serverBasis&&<p className="mt-3 border-t border-foreground/10 pt-3 text-xs text-foreground/55">Намерение Автора: {idea.intent}</p>}
+     {serverBasis&&<details className="mt-3 border-t border-foreground/10 pt-3 text-xs text-foreground/65"><summary className="cursor-pointer">ДНК · утверждённый инвариант</summary><p className="mt-2 whitespace-pre-wrap">{serverBasis.dna}</p></details>}
+     <p className="mt-2 text-[10px] text-foreground/45">{serverBasis?"Исходное зерно утверждено Автором и не изменяется из мастерской Концепта.":"Локальный черновик не утверждён как ДНК. Возврат к Идее не изменяет историю проекта."}</p>
     </div>
     <div className="flex flex-wrap items-center justify-between gap-3">
      <span className="text-xs text-foreground/70">Визуальное исследование · {images.length} / 8</span>
