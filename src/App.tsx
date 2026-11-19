@@ -62,7 +62,7 @@ const RedirectToDefaultLocale = () => {
   return <Navigate to={target + search + hash} replace />;
 };
 
-const RedirectToLyra = () => <Navigate to={`/${initialLocale()}/lyra`} replace />;
+const RedirectToLyra = () => <Navigate to={`/${initialLocale()}/lyra-request`} replace />;
 
 // Pages that exist under each locale prefix.
 const localizedPages: Array<{ path: string; element: JSX.Element }> = [
