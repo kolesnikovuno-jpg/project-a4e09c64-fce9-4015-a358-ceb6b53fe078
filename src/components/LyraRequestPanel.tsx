@@ -64,7 +64,7 @@ export default function LyraRequestPanel({ open, onClose }: Props) {
       
       <div className={`fixed inset-0 z-[90] bg-[rgba(20,20,20,0.22)] transition-opacity duration-700 ${open ? "opacity-100" : "opacity-0 pointer-events-none"}`} onClick={onClose} aria-hidden="true" />
       <aside role="dialog" aria-modal="true" aria-label={T.title} aria-hidden={!open}
-        className={`lr-panel fixed right-0 top-0 z-[91] h-[100dvh] overflow-y-auto bg-[#F5EFEB] transition-transform ${open ? "translate-x-0" : "translate-x-full pointer-events-none"}`}>
+        className={`lr-panel fixed right-0 top-0 z-[91] h-[100dvh] overflow-y-auto bg-[#F5EFEB] ${open ? "open" : "pointer-events-none"}`}>
         <button type="button" className="lr-close absolute right-[18px] top-[14px] text-[22px] font-light" onClick={onClose} aria-label={T.close}>×</button>
         <div className="lr-meta"><span>ref · lyra / request</span><span>{new Date().toISOString().slice(0,10)}</span></div>
         <h2 className="lr-title">{T.title}</h2>
