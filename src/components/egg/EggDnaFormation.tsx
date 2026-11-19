@@ -26,17 +26,17 @@ function readReview(projectId:string):EggDnaReview {
   return emptyEggDnaReview();
 }
 export default function EggDnaFormation({
-  projectId,intent,constraints,materials,materialInsight,latestAnswer,
+  projectId,intent,constraints,materials,materialInsight,visualSourceKey="",latestAnswer,
   onRequestAi,onReviewChange,
 }:{
   projectId:string;intent:string;constraints:string;
-  materials:Source[];materialInsight:string;latestAnswer:string;
+  materials:Source[];materialInsight:string;visualSourceKey?:string;latestAnswer:string;
   onRequestAi:(prompt:string)=>void;
-  onReviewChange:(reviewedCandidate:string|null)=>void;
+  onReviewChange:(reviewedCandidate:{dna:string;idea:string}|null)=>void;
 }){
   const [fields,setFields]=useState<EggDnaReview>(()=>readReview(projectId));
   const [notice,setNotice]=useState("");
-  const sourceKey=eggDnaSourceKey(intent,constraints,materials,materialInsight);
+  const sourceKey=eggDnaSourceKey(intent,constraints,materials,materialInsight,visualSourceKey);
   const candidate=useMemo(()=>buildEggDnaCandidate(fields),[fields]);
   const ready=!!candidate&&isEggDnaReviewComplete(fields,sourceKey);
 
@@ -44,7 +44,7 @@ export default function EggDnaFormation({
   useEffect(()=>{try{localStorage.setItem(keyFor(projectId),JSON.stringify(fields));}
    catch{setNotice("Недостаточно места для сохранения черновика ДНК в браузере.");}
   },[projectId,fields]);
-  useEffect(()=>{onReviewChange(ready?candidate:null);},[ready,candidate,onReviewChange]);
+  useEffect(()=>{onReviewChange(ready&&candidate?{dna:candidate,idea:fields.formedIdea.trim()}:null);},[ready,candidate,fields.formedIdea,onReviewChange]);
 
   function edit(field:keyof EggDnaFields,value:string){
     setFields(previous=>({...previous,[field]:value,reviewedAt:null}));
