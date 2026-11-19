@@ -92,7 +92,7 @@
     --uno-reading-h1-leading: 1.15;
     --uno-reading-h2-leading: 1.3;
     --uno-reading-body-leading: 1.85;
-    --uno-reading-body-tracking: 0em;
+    --uno-reading-body-tracking: 0.04em;
     --uno-reading-rule-color: hsl(var(--foreground) / 0.1);
     --uno-reading-h1-min: 28px;
     --uno-reading-h1-max: 44px;
