@@ -18,6 +18,16 @@ import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
 
 declare const __EGG_BUILD_SHA__:string;
 type Message={role:"user"|"assistant";content:string};
+const ideaMessageLabel=(message:Message):string=>{
+ if(message.role!=="user")return message.content;
+ if(message.content.startsWith("Предложи КАНДИДАТ ДНК"))return "Сформировать предложение ДНК";
+ if(message.content.startsWith("Исследуй исходное намерение"))return "Исследовать идею";
+ if(message.content.startsWith("Исследуй моё намерение"))return "Проявить идею";
+ return message.content;
+};
+const readableIdeaText=(value:string)=>value
+ .replace(/^\\s*#{1,4}\\s+/gm,"")
+ .replace(/\\*\\*/g,"");
 type FieldItem=MatterCard&{location?:string;sourceUrl?:string};
 type IdeaRecord={intent:string;constraints:string;messages:Message[];savedDraft:string;spacePhoto:string};
 const readJSON=(key:string):unknown=>{
@@ -379,7 +389,8 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
      <button type="button" disabled={!intent.trim()||busy} onClick={()=>void submit("Исследуй моё намерение в контексте поля. Предложи первую образно-смысловую версию идеи, её инварианты и один вопрос мне.")} className="rounded-full bg-[#607466] px-4 py-2 text-xs text-white disabled:opacity-35">Проявить идею</button>
     </div>}
     {messages.map((m,i)=><div key={i} className={"max-w-[96%] whitespace-pre-wrap break-words p-3 text-sm leading-relaxed "+(m.role==="user"?"ml-auto rounded-xl bg-foreground/[.06] text-right":"mr-auto")}>
-     <div className="mb-1 text-[10px] opacity-50">{m.role==="user"?"Автор":"ИИ · гипотеза, не утверждена"}</div>{m.content}
+     <div className="mb-1 text-[10px] opacity-50">{m.role==="user"?"Автор":"ИИ · гипотеза, не утверждена"}</div>
+     {m.role==="assistant"?readableIdeaText(m.content):ideaMessageLabel(m)}
     </div>)}
     {busy&&<p role="status" className="text-xs opacity-60">ИИ исследует намерение и поле…</p>}
     {error&&<p role="alert" className="text-xs text-red-800">{error}</p>}
