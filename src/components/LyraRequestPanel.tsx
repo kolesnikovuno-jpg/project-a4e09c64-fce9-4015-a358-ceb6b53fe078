@@ -51,7 +51,7 @@ export default function LyraRequestPanel({ open, onClose }: Props) {
       } as never);
       if (dbError) throw dbError;
       setSuccess(true);
-      void lyraSupabase.from("lyra_demand_events").insert({ event_type: "request_success", locale });
+      void lyraSupabase.from("lyra_demand_events").insert({ event_type: "request_success", locale }).then(({ error }) => { if (error) console.warn("Lyra analytics: request_success failed", error.message); });
     } catch (submissionError) {
       console.error("Lyra request failed", submissionError);
       setError(true);
