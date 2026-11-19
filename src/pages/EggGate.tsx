@@ -10,14 +10,27 @@ import { useEffect, useState, type FormEvent } from "react";
 const EGG_ENTRY_URL = "https://egg.kolesnikov.studio/egg/connect";
 const SESSION_KEY = "egg.preview.access";
 
+/** A studio deep link returns to the user's existing EGG project after login. */
+export function eggStudioEntryUrl(search: string): string {
+  const params = new URLSearchParams(search);
+  const project = params.get("project");
+  if (!project || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(project))
+    return EGG_ENTRY_URL;
+  const entry = new URL(EGG_ENTRY_URL);
+  entry.searchParams.set("returnProject", project);
+  entry.searchParams.set("start", params.get("start") === "idea" ? "idea" : "author");
+  return entry.toString();
+}
+
 export default function EggGate() {
   const [unlocked, setUnlocked] = useState(() => window.sessionStorage.getItem(SESSION_KEY) === "yes");
   const [password, setPassword] = useState("");
   const [invalid, setInvalid] = useState(false);
 
+  const destination = eggStudioEntryUrl(window.location.search);
   useEffect(() => {
-    if (unlocked) window.location.replace(EGG_ENTRY_URL);
-  }, [unlocked]);
+    if (unlocked) window.location.replace(destination);
+  }, [unlocked, destination]);
 
   const enter = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -33,7 +46,7 @@ export default function EggGate() {
   if (unlocked) return <main className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground">
     <div className="space-y-4 text-center">
       <p className="text-sm text-foreground/60" role="status">Открываем рабочий EGG…</p>
-      <a className="underline underline-offset-4" href={EGG_ENTRY_URL}>Перейти в EGG</a>
+      <a className="underline underline-offset-4" href={destination}>Перейти в EGG</a>
     </div>
   </main>;
 
