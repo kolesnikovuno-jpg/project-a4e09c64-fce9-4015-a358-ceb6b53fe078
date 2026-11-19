@@ -1,0 +1,39 @@
+/* UNO Design System v1 — reading typography.
+ * Initial Studio adoption retains the exact dimensions and weights of its
+ * previous Tailwind helpers. Only the source of the values is centralized.
+ */
+.uno-reading-label {
+  font-family: var(--uno-font-reading);
+  font-size: var(--uno-reading-label-size);
+  font-weight: 300;
+  letter-spacing: var(--uno-reading-label-tracking);
+  text-transform: uppercase;
+}
+.uno-reading-h1 {
+  font-family: var(--uno-font-reading);
+  font-size: var(--uno-reading-h1-min);
+  font-weight: 300;
+  line-height: var(--uno-reading-h1-leading);
+  letter-spacing: 0.005em;
+}
+.uno-reading-h2 {
+  font-family: var(--uno-font-reading);
+  font-size: var(--uno-reading-h2-min);
+  font-weight: 300;
+  line-height: var(--uno-reading-h2-leading);
+}
+.uno-reading-body {
+  font-family: var(--uno-font-reading);
+  font-size: var(--uno-reading-body-min);
+  font-weight: 300;
+  line-height: var(--uno-reading-body-leading);
+  letter-spacing: var(--uno-reading-body-tracking);
+}
+.uno-reading-rule {
+  border-top: 1px solid var(--uno-reading-rule-color);
+}
+@media (min-width: 768px) {
+  .uno-reading-h1 { font-size: var(--uno-reading-h1-max); }
+  .uno-reading-h2 { font-size: var(--uno-reading-h2-max); }
+  .uno-reading-body { font-size: var(--uno-reading-body-max); }
+}

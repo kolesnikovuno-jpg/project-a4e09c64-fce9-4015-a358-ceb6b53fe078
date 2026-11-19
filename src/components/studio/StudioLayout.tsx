@@ -5,6 +5,7 @@ import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import SEO from "@/components/SEO";
 import { LOCALES } from "@/i18n/config";
 import { contact, getStudioContent } from "@/content/studio";
+import "@/styles/uno-reading.css";
 
 type NavItem = { n: string; label: string; path: string };
 
@@ -22,11 +23,11 @@ export const useStudio = () => {
 };
 
 /** Shared micro-typography helpers */
-export const label = "text-[11px] tracking-[0.22em] uppercase text-foreground/45 font-light";
-export const h1 = "text-[28px] md:text-[44px] leading-[1.15] font-light tracking-[0.005em] text-foreground";
-export const h2 = "text-[20px] md:text-[28px] leading-[1.3] font-light text-foreground";
-export const body = "text-[15px] md:text-[16px] leading-[1.85] font-light text-foreground/75";
-export const rule = "border-t border-foreground/10";
+export const label = "uno-reading-label text-foreground/45";
+export const h1 = "uno-reading-h1 text-foreground";
+export const h2 = "uno-reading-h2 text-foreground";
+export const body = "uno-reading-body text-foreground/75";
+export const rule = "uno-reading-rule";
 
 const StudioLayout = ({ children, page, title, description }: Props) => {
   const { c, localePath } = useStudio();
