@@ -30,11 +30,19 @@ export function readEggCycleSummary(project:EggProject,cycle:EggFlowCycle){
  const reference=cycle.ideaHandoff?.workingDna||cycle.synthesis?.dna.workingDna
   ||project.seed.text;
  const source=cycle.ideaHandoff?"author_handoff" as const:"legacy_cycle" as const;
+ // A first level cycle can run only after the server seed was recorded.
+ // Never label it "unapproved" merely because the handoff also includes
+ // an editable working DNA. Detect a genuine mismatch rather than guessing.
+ const serverSeed=project.seed.text.trim();
+ const workingDna=cycle.ideaHandoff?.workingDna?.trim()||"";
+ const dnaState=!serverSeed?"missing" as const:
+  !workingDna?"legacy" as const:
+  serverSeed===workingDna?"aligned" as const:"divergent" as const;
  const endState=cycle.status==="awaiting_author"?"Нужен выбор Автора":
   cycle.status==="running"?"Проходит две ветви":
   cycle.status==="accepted"?"Принято Автором":"Направлено на доработку";
  return {completed,total:8,questionsCount:questions.length,examples,
-  review,tensions,gaps,reference,source,endState,
+  review,tensions,gaps,reference,source,endState,dnaState,
   started:cycle.startedAt.slice(0,10),hasSynthesis:Boolean(cycle.synthesis)};
 }
 
@@ -61,8 +69,9 @@ export default function EggCycleSummary({project,cycle}:{
   {cycle.level===1&&<div className="rounded-[10px] border border-foreground/20 bg-foreground/[.025] p-3" data-testid="egg-level-one-output">
     <h5 className="text-xs font-medium">Выход первого уровня · Идея + ДНК</h5>
     <p className="mt-1 text-[11px] leading-relaxed text-foreground/60">
-      Это рабочие входные формулировки цикла, а не автоматически созданная или утверждённая ДНК.
-      Итоговая Идея и постоянное зерно ещё должны быть отдельно сформулированы и приняты Автором.
+      Сформированная Идея и рабочая ДНК переданы Автором в этот круг.
+      Исходное зерно хранится отдельно в серверном проекте, а принятие круга
+      подтверждает результат уровня — не создаёт и не перезаписывает зерно.
     </p>
     <div className="mt-3 grid gap-2 sm:grid-cols-2">
       <div className="min-w-0 rounded-[9px] border border-foreground/10 bg-background p-3">
@@ -73,15 +82,27 @@ export default function EggCycleSummary({project,cycle}:{
         <p className="mt-2 text-[11px] text-foreground/50">Исходный материал · не итог уровня</p>
       </div>
       <div className="min-w-0 rounded-[9px] border border-foreground/10 bg-background p-3">
-        <p className="text-xs font-medium">Кандидат ДНК · рабочая опора</p>
+        <p className="text-xs font-medium">ДНК · рабочая опора этого круга</p>
         <p className="mt-2 whitespace-pre-wrap break-words text-xs leading-relaxed text-foreground/75">
           {cycle.ideaHandoff?.workingDna?.trim()||"Отдельный кандидат ДНК пока не сформирован; исходное зерно не заменяет его."}
         </p>
-        <p className="mt-2 text-[11px] text-foreground/50">Не утверждён · не закреплён в Желтке</p>
+        <p className="mt-2 text-[11px] text-foreground/60" data-testid="egg-level-one-dna-status">
+          {info.dnaState==="aligned"
+            ?"Совпадает с утверждённым серверным зерном · Желток использует эту ДНК."
+            :info.dnaState==="divergent"
+              ?"Рабочая версия отличается от серверного зерна. Желток использует исходное зерно; проверьте, сознательное ли это развитие идеи."
+              :info.dnaState==="legacy"
+                ?"Исходное зерно сохранено на сервере, но для старого цикла нет отдельного авторского пакета."
+                :"Серверное зерно не найдено. Перед принятием требуется проверить состояние проекта."}
+        </p>
       </div>
     </div>
-    <p className="mt-3 text-[11px] leading-relaxed text-foreground/60">
-      Текущее действие «Принять цикл» ещё не реализует отдельное утверждение постоянной ДНК. До обновления контракта уровня 1 не считать его фиксацией зерна.
+    <p className="mt-3 text-[11px] leading-relaxed text-foreground/60" data-testid="egg-level-one-dna-decision-note">
+      {info.dnaState==="aligned"
+        ?"Серверное зерно было утверждено отдельно до запуска цикла. «Принять цикл» закрепит решение Автора по этому уровню и откроет следующий, не изменяя ДНК."
+        :info.dnaState==="divergent"
+          ?"Внимание: серверная ДНК не совпадает с рабочей опорой. Если это другая идея, не принимайте уровень — создайте отдельный проект. Если развитие прежней идеи, сверьте синтез с исходным зерном."
+          :"«Принять цикл» не утверждает ДНК. Проверьте исходное зерно проекта и происхождение этой итерации до решения."}
     </p>
   </div>}
   {info.source==="legacy_cycle"&&<div role="note" data-testid="egg-cycle-legacy-warning"
