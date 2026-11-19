@@ -22,12 +22,12 @@ const clean = (s: string, max: number) => (s || "").trim().slice(0, max);
 export function eggDnaSourceKey(
   intent: string, constraints: string,
   materials: {id: string; type: string; text: string}[],
-  acceptedMap: string,
+  acceptedMap: string, visualSourceKey = "",
 ): string {
   const input = JSON.stringify({
     intent: clean(intent, 3000), constraints: clean(constraints, 2000),
     materials: materials.map(x => [x.id, x.type, clean(x.text, 500)]),
-    acceptedMap: clean(acceptedMap, 1400),
+    acceptedMap: clean(acceptedMap, 1400), visualSourceKey,
   });
   let hash = 2166136261;
   for (let i = 0; i < input.length; i++) hash = Math.imul(hash ^ input.charCodeAt(i), 16777619);
