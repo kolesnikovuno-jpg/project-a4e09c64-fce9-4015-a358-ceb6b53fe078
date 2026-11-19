@@ -30,9 +30,10 @@ export async function prepareEggSpatialPhoto(src:string):Promise<string>{
 }
 
 export default function EggIterationBridge({projectId,intent,constraints,savedDraft,
- spacePhoto,materials,materialInsight,onRestoreApproved}:{
+ spacePhoto,materials,materialInsight,dnaCandidate="",dnaReviewed=false,onRestoreApproved}:{
  projectId:string;intent:string;constraints:string;savedDraft:string;
  spacePhoto:string;materials:MatterCard[];materialInsight:string;
+ dnaCandidate?:string;dnaReviewed?:boolean;
  /** Restore the immutable server snapshot into the editable local workshop only on Author action. */
  onRestoreApproved?:(handoff:EggIdeaHandoff)=>void;
 }){
@@ -49,8 +50,18 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
  const [photoError,setPhotoError]=useState("");
  const [photoPending,setPhotoPending]=useState(false);
  useEffect(()=>{
-  if(!dnaEdited)setDnaDraft((savedDraft||intent).slice(0,3000));
- },[savedDraft,intent,dnaEdited]);
+  // No implicit DNA approval from the last AI response or the intention.
+  setDnaDraft(dnaReviewed?dnaCandidate.slice(0,3000):"");
+  setDnaEdited(false);
+ },[projectId,dnaCandidate,dnaReviewed]);
+ useEffect(()=>{
+  // Resume previously server-approved projects without requiring a new
+  // local review merely to read/continue their existing cycles.
+  if(!dnaReviewed&&project?.seed.text.trim()){
+   const previous=currentEggFlowCycle(project)?.ideaHandoff?.workingDna;
+   setDnaDraft((previous||project.seed.text).slice(0,3000));
+  }
+ },[project,dnaReviewed]);
  useEffect(()=>{
   let active=true;setLoading(true);setNotice("");
   void (async()=>{
@@ -101,7 +112,8 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
  const historicalCycle=Boolean(cycle&&!cycle.ideaHandoff);
  const needsLocalRecovery=Boolean(cycle?.ideaHandoff&&!isCurrentIdeaCycle);
  const handoff=useMemo(():EggIdeaHandoff|null=>{
-  if(!intent.trim()||!dnaDraft.trim()||materials.length>20||photoPending||photoError||(spacePhoto&&!packedPhoto))
+  if(!intent.trim()||!dnaDraft.trim()||(!dnaReviewed&&!project?.seed.text.trim())||
+    materials.length>20||photoPending||photoError||(spacePhoto&&!packedPhoto))
    return null;
   const draft={
    intent:intent.trim().slice(0,3000),
@@ -123,9 +135,10 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
   if(JSON.stringify({command:"start_flow_cycle",projectId,expectedRevision:1,
    brief:"Итерация от сферы Идея",ideaHandoff:valid.data}).length>60000)return null;
   return valid.data;
- },[intent,dnaDraft,constraints,materialInsight,materials,photoPending,photoError,spacePhoto,packedPhoto,projectId]);
+ },[intent,dnaDraft,dnaReviewed,project,constraints,materialInsight,materials,photoPending,photoError,spacePhoto,packedPhoto,projectId]);
  const fixOriginalSeed=async()=>{
-  if(!project||revision===null||!authorToken||!dnaDraft.trim()||seeding||project.seed.text.trim())return;
+  if(!project||revision===null||!authorToken||!dnaReviewed||
+    dnaDraft!==dnaCandidate||!dnaDraft.trim()||seeding||project.seed.text.trim())return;
   setSeeding(true);setNotice("");
   try{
    const response=await fetch("/api/egg",{method:"POST",headers:{"Content-Type":"application/json",
@@ -133,13 +146,17 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
     body:JSON.stringify({command:"set_seed",projectId,expectedRevision:revision,seed:dnaDraft.trim()})});
    if(!response.ok)throw Error(response.status===409?"Проект изменился; обновите состояние.":"Не удалось утвердить исходную ДНК.");
    setRefresh(v=>v+1);
+   window.dispatchEvent(new Event("egg:author-state-updated"));
   }catch(e){setNotice(e instanceof Error?e.message:"Ошибка сохранения ДНК.");}
   finally{setSeeding(false);}
  };
  return <section className="egg-iteration-layout min-w-0 rounded-[12px] border-0 bg-background/85 p-0 sm:border sm:border-foreground/10 sm:p-2" data-testid="egg-idea-cycle-entry">
-  <h3 className="text-sm font-medium">Рабочая ДНК · круг восьми сфер</h3>
+  <h3 className="text-sm font-medium">Утверждение ДНК → круг восьми сфер</h3>
   <div className="mt-3 space-y-3 text-xs leading-relaxed">
-   <p className="text-foreground/65">Одна авторская опора → два потока → Желток → одно решение Автора. Черновик ИИ не утверждается автоматически.</p>
+   <p className="text-foreground/65">Исследование внешнего поля → сформированная Идея → проверенный Автором кандидат ДНК → серверное утверждение → два потока → Желток. Черновик ИИ ничего не утверждает автоматически.</p>
+   {project&&!project.seed.text.trim()&&!dnaReviewed&&<p role="status" className="rounded-lg border border-foreground/20 p-3">
+    Сначала заполните и подтвердите блок «Идея → ДНК» выше. Черновик намерения или ответ ИИ не является исходным зерном проекта.
+   </p>}
    {loading?<p role="status">Читаем состояние EGG…</p>:notice?<p role="alert">{notice} <button type="button" className="underline" onClick={()=>setRefresh(v=>v+1)}>Повторить</button></p>:null}
    {project&&needsLocalRecovery&&cycle?.ideaHandoff&&<div className="rounded-xl border border-foreground/20 bg-background p-3" data-testid="egg-current-cycle-recovery">
     <p className="text-xs font-medium">Текущий цикл сохранён на сервере</p>
@@ -173,14 +190,14 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
      <summary className="cursor-pointer text-xs font-medium">Исходная ДНК проекта · подробности</summary>
      <p className="mt-2 text-foreground/50">Исходное зерно не изменяется при новых итерациях.</p>
      <p className="mt-1 whitespace-pre-wrap">{project.seed.text||"Не задана — сначала требуется утвердить исходное зерно проекта."}</p>
-     {!project.seed.text.trim()&&<button type="button" disabled={!dnaDraft.trim()||seeding}
+     {!project.seed.text.trim()&&<button type="button" disabled={!dnaReviewed||!dnaDraft.trim()||seeding}
       onClick={()=>void fixOriginalSeed()} data-testid="egg-approve-original-seed"
       className="mt-3 rounded-full border border-foreground/35 px-3 py-2 text-xs disabled:opacity-40">
       {seeding?"Сохраняем…":"Утвердить исходную ДНК (один раз)"}</button>}
     </details>
     {(!cycle||cycle.status==="accepted")&&<>
      <label className="block text-xs font-medium">Рабочая версия ДНК для текущего круга
-      <textarea aria-label="Рабочая ДНК первого круга" value={dnaDraft} onChange={e=>{setDnaDraft(e.target.value);setDnaEdited(true);}}
+      <textarea aria-label="Рабочая ДНК первого круга" value={dnaDraft} readOnly={Boolean(dnaReviewed&&project.level===1)} onChange={e=>{setDnaDraft(e.target.value);setDnaEdited(true);}}
        maxLength={3000} rows={4} className="mt-2 w-full resize-y rounded-xl border border-foreground/20 bg-background p-3 text-base font-normal outline-none md:text-sm"
        placeholder="Сформулируйте инвариант идеи: что должно сохраняться при работе сфер"/>
      </label>
@@ -193,7 +210,7 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
      <p className="font-medium">При нажатии «Утвердить пакет и запустить цикл» рабочая ДНК, отобранные тексты и фото будут записаны в серверный проект EGG, затем проверится доступ к ИИ. Запуск возможен только после явного действия Автора.</p>
     </>}
     <EggFlowCyclePanel project={project} revision={revision} authorControls
-     initialHandoff={handoff??undefined} onSaved={()=>setRefresh(v=>v+1)}/>
+     initialHandoff={handoff??undefined} onSaved={()=>{setRefresh(v=>v+1);window.dispatchEvent(new Event("egg:author-state-updated"));}}/>
    </>}
   </div>
  </section>;
