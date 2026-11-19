@@ -9,8 +9,8 @@ type ViewMode="image"|"form"|"compare";
  * project document, level, DNA, or sphere results. Signed links are refreshed
  * from EGG storage after authorization and never persisted in the browser.
  */
-export default function EggYolkIdeaVisual({projectId,children}:{
- projectId:string|null;children:ReactNode;
+export default function EggYolkIdeaVisual({projectId,synthesisId=null,children}:{
+ projectId:string|null;synthesisId?:string|null;children:ReactNode;
 }){
  const [pin,setPin]=useState<EggIdeaVisualPin|null>(null);
  const [sketch,setSketch]=useState<Sketch|null>(null);
@@ -25,7 +25,12 @@ export default function EggYolkIdeaVisual({projectId,children}:{
  },[projectId]);
  useEffect(()=>{
   setSketch(null);setMessage("");
-  if(!projectId||!pin||pin.projectId!==projectId)return;
+  // A deliberate Author pin takes precedence. Otherwise show the newest
+  // exploratory sketch actually associated with this completed synthesis.
+  // Neither path approves the image or changes the authoritative project.
+  const selectedPin=pin?.projectId===projectId?pin:null;
+  const sourceId=selectedPin?.sourceId||synthesisId;
+  if(!projectId||!sourceId)return;
   let active=true;
   void(async()=>{try{
    const config=await fetch("/api/egg-config",{cache:"no-store"});
@@ -34,18 +39,22 @@ export default function EggYolkIdeaVisual({projectId,children}:{
    const client=createClient(cfg.supabaseUrl,cfg.publishableKey);
    const {data}=await client.auth.getSession();
    if(!data.session?.access_token)throw Error("Войдите в EGG для просмотра скетча.");
-   const params=new URLSearchParams({op:"form-study",projectId,synthesisId:pin.sourceId});
+   const params=new URLSearchParams({op:"form-study",projectId,synthesisId:sourceId});
    const response=await fetch("/api/egg-flow-ai?"+params.toString(),{
     cache:"no-store",headers:{Authorization:"Bearer "+data.session.access_token},
    });
    if(!response.ok)throw Error("Не удалось загрузить сохранённый образ.");
-   const result=await response.json() as {ok?:boolean;studies?:Sketch[]};
-   const found=result.ok?result.studies?.find(item=>item.id===pin.studyId):null;
-   if(!found)throw Error("Выбранный скетч не найден в текущем источнике.");
+   const result=await response.json() as {ok?:boolean;studies?:Sketch[];study?:Sketch|null};
+   const studies=result.ok?(result.studies??(result.study?[result.study]:[])):[];
+   const found=selectedPin?studies.find(item=>item.id===selectedPin.studyId):studies[0];
+   if(!found){
+    if(selectedPin)throw Error("Выбранный скетч не найден в текущем источнике.");
+    return; // No sketch created for this synthesis: retain the spatial field.
+   }
    if(active){setSketch(found);setMode("image");}
   }catch(e){if(active)setMessage(e instanceof Error?e.message:"Скетч недоступен.");}})();
   return()=>{active=false;};
- },[projectId,pin?.sourceId,pin?.studyId]);
+ },[projectId,synthesisId,pin?.sourceId,pin?.studyId]);
  const showImage=Boolean(sketch&&mode!=="form");
  return <div className="relative h-full min-h-0 w-full" data-testid="egg-yolk-visual-stage">
   <div className="absolute inset-0">{children}</div>
@@ -57,7 +66,7 @@ export default function EggYolkIdeaVisual({projectId,children}:{
     <img src={sketch!.imageUrl} alt="Авторский скетч — визуальная опора Желтка"
      className="h-full w-full object-contain" referrerPolicy="no-referrer"/>
    </div>}
-  {pin&&<div className="absolute bottom-[5%] left-1/2 z-30 flex max-w-[95%] -translate-x-1/2 flex-col items-center gap-1">
+  {(pin||sketch)&&<div className="absolute bottom-[5%] left-1/2 z-30 flex max-w-[95%] -translate-x-1/2 flex-col items-center gap-1">
    {sketch&&<div className="flex rounded-full border border-foreground/15 bg-background/95 p-1 shadow-sm"
     role="group" aria-label="Режим изображения Желтка">
     {([["image","Образ"],["form","Форма"],["compare","Сравнить"]] as const).map(([value,label])=>
@@ -68,7 +77,7 @@ export default function EggYolkIdeaVisual({projectId,children}:{
      </button>)}
    </div>}
    <span className="max-w-[280px] rounded-md bg-background/90 px-2 py-1 text-center text-[9px] text-foreground/55">
-    {message||"Авторский скетч · визуальная опора, не утверждённая геометрия"}
+    {message||(pin?"Выбранный скетч · визуальная опора, не утверждённая геометрия":"Скетч по синтезу восьми сфер · гипотеза, не утверждённая форма")}
    </span>
   </div>}
  </div>;
