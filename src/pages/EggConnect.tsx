@@ -174,7 +174,7 @@ export default function EggConnect() {
           href={EGG_CANONICAL_ACCOUNT}>Открыть основной аккаунт EGG</a>
       </section>}
       <p className="mb-8 text-muted-foreground">Войдите один раз, выберите свой проект и откройте Яйцо. Подключение ChatGPT настраивается отдельно и не блокирует просмотр проектов.</p>
-      <Link to="/egg/demo" className="mb-5 inline-flex rounded-full border border-border px-4 py-2 text-sm">Посмотреть демонстрацию EGG без входа</Link>
+      <a href="https://www.kolesnikov.studio/" className="mb-5 inline-flex rounded-full border border-border px-4 py-2 text-sm">На сайт студии</a>
       <section className="mb-5 rounded-xl border border-border p-6">
         <h2 className="mb-3 text-xl font-medium">Вход и профиль</h2>
         {checkingSession ? (
