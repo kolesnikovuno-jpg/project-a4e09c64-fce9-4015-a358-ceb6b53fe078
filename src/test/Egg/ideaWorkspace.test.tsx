@@ -88,6 +88,7 @@ describe("EGG Idea initiation",()=>{
   });
   expect(request.materials[0].text).toContain("НЕ референс формы");
   expect(request.materials[1].id).toBe("ref");
+  fireEvent.click(screen.getByText(/Материалы и инструменты/));
   fireEvent.click(screen.getByRole("button",{name:"Удалить фото пространства"}));
   await waitFor(()=>expect(screen.queryByAltText("Загруженное фото пространства")).toBeNull());
  });
