@@ -220,8 +220,57 @@ export default function EggFlowCyclePanel({
         {cycle?"Уровень "+cycle.level+"/5 · итерация "+cycle.iteration:"5 уровней · Идея / Материя"}
       </span>
     </div>
-    {cycle&&<EggCycleSummary project={project} cycle={cycle}/>}
-    {cycle?.synthesis&&<EggFormStudyPanel project={project} cycle={cycle} revision={revision} authorControls={authorControls}/>}
+    {cycle&&<div className="mt-3 space-y-2 rounded-xl border border-foreground/15 bg-background/75 p-3" data-testid="egg-author-cycle-result">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm font-medium">{cycle.status==="awaiting_author"?"Результат готов · решение за Автором":
+          cycle.status==="running"?"Формируется результат":
+          cycle.status==="accepted"?"Уровень принят":"Следующая итерация"}</p>
+        <span className="text-xs text-foreground/55">
+          {[...cycle.first,...cycle.second].filter(v=>v.status==="completed"||v.status==="transited").length}/8 сфер
+        </span>
+      </div>
+      <p className="text-xs text-foreground/65">
+        {cycle.semanticReview?.summary?.slice(0,340)||
+         (cycle.synthesis?"Оба потока собраны. Можно сопоставить выводы в Желтке и принять решение.":"ИИ обрабатывает сферы. Уже записанные результаты сохранены.")}
+      </p>
+    </div>}
+    {canDecide&&<details className="mt-4 space-y-3 rounded-lg border border-foreground/20 p-3" data-testid="egg-author-decision-panel">
+      <summary className="cursor-pointer text-sm font-medium">Решение Автора · принять уровень или уточнить сферы</summary>
+      <p className="mt-3 text-xs text-foreground/60">Сначала ознакомьтесь с итогом, при необходимости раскройте журнал. Решение сохраняется только после вашего подтверждения.</p>
+      <label className="block text-xs">Результат цикла
+        <select className="mt-1 block w-full rounded border border-foreground/20 bg-background p-2"
+          value={outcome} onChange={e=>setOutcome(e.target.value as "accept"|"revise")}>
+          <option value="revise">Новая итерация текущего уровня</option>
+          <option value="accept">Принять цикл и перейти к следующему уровню</option>
+        </select>
+      </label>
+      {outcome==="revise"&&<fieldset className="rounded border border-foreground/10 p-3">
+        <legend className="px-1 text-xs">Адресаты замечаний · другие сферы пройдут транзитом</legend>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          {([...EGG_FLOW_ROUTES.first,...EGG_FLOW_ROUTES.second] as SphereId[]).map(s=><label key={s}
+            className="flex items-center gap-2 text-xs">
+            <input type="checkbox" checked={targets.includes(s)}
+              onChange={e=>setTargets(v=>e.target.checked?[...v,s]:v.filter(item=>item!==s))}/>
+            {names[s]}
+          </label>)}
+        </div>
+      </fieldset>}
+      <textarea value={remark} onChange={e=>setRemark(e.target.value)} rows={3} maxLength={10000}
+        className="block w-full rounded border border-foreground/20 bg-background p-3 text-xs"
+        aria-label="Итоговые замечания Автора"
+        placeholder="Замечание к итоговому синтезу или основание принятия"/>
+      <button type="button" disabled={busy||aiBusy||!remark.trim()||(outcome==="revise"&&!targets.length)}
+        onClick={()=>void send("decide_flow_cycle")}
+        className="rounded-full border border-foreground/45 px-4 py-2 text-xs disabled:opacity-40"
+        data-testid="decide-flow-cycle">
+        {busy?"Сохраняем…":outcome==="accept"?"Принять полный цикл":"Запустить адресную итерацию"}
+      </button>
+    </details>}
+    {cycle&&<details className="mt-3 rounded-xl border border-foreground/10 p-3" data-testid="egg-cycle-expanded-analysis">
+      <summary className="cursor-pointer text-xs text-foreground/70">Подробный разбор · источники, ДНК и выводы</summary>
+      <EggCycleSummary project={project} cycle={cycle}/>
+      {cycle.synthesis&&<EggFormStudyPanel project={project} cycle={cycle} revision={revision} authorControls={authorControls}/>}
+    </details>}
     {!cycle&&<p className="mt-3 text-xs text-foreground/65" data-testid="egg-cycle-entry-status">
       {aiBusy?(aiProgress>0?"Цикл выполняется; на сервере сохранено шагов: "+aiProgress+". Обновлённое состояние появится после завершения обработки.":"Проверяем доступ и запускаем цикл. Серверное состояние обновится после выполнения шага."):
       "Новый цикл ещё не запускался. Начните в сфере «Идея»: проверьте рабочую ДНК, материалы, фото и утвердите пакет Автором."}
@@ -377,38 +426,6 @@ export default function EggFlowCyclePanel({
         {cycle?"Запустить полный цикл следующего уровня":"Начать первый полный цикл"}
       </button>
       <p className="mt-2 text-[11px] text-foreground/55">В ручном режиме цикл только создаётся; результаты восьми сфер потребуется внести отдельно.</p>
-    </details>}
-    {canDecide&&<details className="mt-4 space-y-3 rounded-lg border border-foreground/20 p-3" data-testid="egg-author-decision-panel">
-      <summary className="cursor-pointer text-sm font-medium">Решение Автора · принять уровень или уточнить сферы</summary>
-      <p className="mt-3 text-xs text-foreground/60">Сначала ознакомьтесь с итогом, при необходимости раскройте журнал. Решение сохраняется только после вашего подтверждения.</p>
-      <label className="block text-xs">Результат цикла
-        <select className="mt-1 block w-full rounded border border-foreground/20 bg-background p-2"
-          value={outcome} onChange={e=>setOutcome(e.target.value as "accept"|"revise")}>
-          <option value="revise">Новая итерация текущего уровня</option>
-          <option value="accept">Принять цикл и перейти к следующему уровню</option>
-        </select>
-      </label>
-      {outcome==="revise"&&<fieldset className="rounded border border-foreground/10 p-3">
-        <legend className="px-1 text-xs">Адресаты замечаний · другие сферы пройдут транзитом</legend>
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          {([...EGG_FLOW_ROUTES.first,...EGG_FLOW_ROUTES.second] as SphereId[]).map(s=><label key={s}
-            className="flex items-center gap-2 text-xs">
-            <input type="checkbox" checked={targets.includes(s)}
-              onChange={e=>setTargets(v=>e.target.checked?[...v,s]:v.filter(item=>item!==s))}/>
-            {names[s]}
-          </label>)}
-        </div>
-      </fieldset>}
-      <textarea value={remark} onChange={e=>setRemark(e.target.value)} rows={3} maxLength={10000}
-        className="block w-full rounded border border-foreground/20 bg-background p-3 text-xs"
-        aria-label="Итоговые замечания Автора"
-        placeholder="Замечание к итоговому синтезу или основание принятия"/>
-      <button type="button" disabled={busy||aiBusy||!remark.trim()||(outcome==="revise"&&!targets.length)}
-        onClick={()=>void send("decide_flow_cycle")}
-        className="rounded-full border border-foreground/45 px-4 py-2 text-xs disabled:opacity-40"
-        data-testid="decide-flow-cycle">
-        {busy?"Сохраняем…":outcome==="accept"?"Принять полный цикл":"Запустить адресную итерацию"}
-      </button>
     </details>}
     {cycles.length>1&&<div className="mt-4 border-t border-foreground/10 pt-3">
       <button type="button" className="text-xs underline underline-offset-4"
