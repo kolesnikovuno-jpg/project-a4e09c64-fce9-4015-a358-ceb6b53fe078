@@ -10,7 +10,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": "(?i:facebookexternalhit|Facebot|Twitterbot|TelegramBot|WhatsApp|LinkedInBot|Slackbot|Discordbot|Pinterest|Googlebot|bingbot)"
+          "value": ".*(facebookexternalhit|Facebot|Twitterbot|TelegramBot|WhatsApp|LinkedInBot|Slackbot|Discordbot|Pinterest|Googlebot|bingbot).*"
         }
       ],
       "destination": "/og/lyra-uk.html"
@@ -21,7 +21,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": "(?i:facebookexternalhit|Facebot|Twitterbot|TelegramBot|WhatsApp|LinkedInBot|Slackbot|Discordbot|Pinterest|Googlebot|bingbot)"
+          "value": ".*(facebookexternalhit|Facebot|Twitterbot|TelegramBot|WhatsApp|LinkedInBot|Slackbot|Discordbot|Pinterest|Googlebot|bingbot).*"
         }
       ],
       "destination": "/og/lyra-ru.html"
@@ -32,7 +32,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": "(?i:facebookexternalhit|Facebot|Twitterbot|TelegramBot|WhatsApp|LinkedInBot|Slackbot|Discordbot|Pinterest|Googlebot|bingbot)"
+          "value": ".*(facebookexternalhit|Facebot|Twitterbot|TelegramBot|WhatsApp|LinkedInBot|Slackbot|Discordbot|Pinterest|Googlebot|bingbot).*"
         }
       ],
       "destination": "/og/lyra-en.html"
