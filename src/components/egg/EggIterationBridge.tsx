@@ -112,7 +112,7 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
  const historicalCycle=Boolean(cycle&&!cycle.ideaHandoff);
  const needsLocalRecovery=Boolean(cycle?.ideaHandoff&&!isCurrentIdeaCycle);
  const handoff=useMemo(():EggIdeaHandoff|null=>{
-  if(!intent.trim()||!dnaDraft.trim()||(!dnaReviewed&&!project?.seed.text.trim())||
+  if(!intent.trim()||!dnaDraft.trim()||(!dnaReviewed&&!(project?.flowCycles?.length))||
     materials.length>20||photoPending||photoError||(spacePhoto&&!packedPhoto))
    return null;
   const draft={
