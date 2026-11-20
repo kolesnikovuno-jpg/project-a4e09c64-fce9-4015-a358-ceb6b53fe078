@@ -80,7 +80,7 @@ describe("EGG Idea initiation",()=>{
   vi.stubGlobal("fetch",fetchMock);
   render(<EggIdeaWorkspace projectId={project} onClose={()=>{}} onOpenMatter={()=>{}}/>);
   expect(screen.getByAltText("Загруженное фото пространства")).toBeTruthy();
-  fireEvent.click(screen.getByRole("button",{name:"Проявить идею"}));
+  fireEvent.click(screen.getByRole("button",{name:"Обсудить с ИИ"}));
   await waitFor(()=>expect(fetchMock.mock.calls.filter(([url])=>url==="/api/egg-flow-ai?op=idea-dialogue")).toHaveLength(1));
   const request=JSON.parse((fetchMock.mock.calls.find(([url])=>url==="/api/egg-flow-ai?op=idea-dialogue") as unknown as [string,{body:string}])[1].body);
   expect(request.materials[0]).toMatchObject({
@@ -109,7 +109,7 @@ describe("EGG Idea initiation",()=>{
   vi.stubGlobal("fetch",fetchMock);
   render(<EggIdeaWorkspace projectId={project} onClose={()=>{}} onOpenMatter={()=>{}}/>);
   fireEvent.change(screen.getByRole("textbox",{name:"Намерение Автора"}),{target:{value:"Нота в пространстве"}});
-  fireEvent.click(screen.getByRole("button",{name:"Проявить идею"}));
+  fireEvent.click(screen.getByRole("button",{name:"Обсудить с ИИ"}));
   await waitFor(()=>expect(screen.getByText("Предварительная идея без утверждения")).toBeTruthy());
   expect(fetchMock.mock.calls.filter(([url])=>url==="/api/egg-flow-ai?op=idea-dialogue")).toHaveLength(1);
   const request=JSON.parse((fetchMock.mock.calls.find(([url])=>url==="/api/egg-flow-ai?op=idea-dialogue") as unknown as [string,{body:string}])[1].body);
