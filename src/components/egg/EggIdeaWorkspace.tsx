@@ -12,6 +12,7 @@ import EggAuthorProcessMonitor from "./EggAuthorProcessMonitor";
 import EggSketchEditor, {type SketchStroke} from "./EggSketchEditor";
 import type {EggIdeaHandoff} from "../../lib/eggIdeaHandoff";
 import {eggIdeaFormSourceId} from "../../lib/eggIdeaFormSource";
+import {buildEggIdeaExternalField} from "../../lib/eggIdeaExternalField";
 import {eggMaterialInsight,isEggMaterialMapCurrent,readEggMaterialMapRecord,
  readLocalEggMaterialMap,eggMaterialMapKey,type EggMaterialMapRecord} from "../../lib/eggMaterialMap";
 import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
@@ -47,10 +48,12 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
  const [spacePhoto,setSpacePhoto]=useState("");
  const [messages,setMessages]=useState<Message[]>([]);
  const [materials,setMaterials]=useState<FieldItem[]>([]);
+ const [fieldCards,setFieldCards]=useState<FieldItem[]>([]);
  const [materialInsight,setMaterialInsight]=useState("");
  const [materialMap,setMaterialMap]=useState<EggMaterialMapRecord|null>(null);
  const [loaded,setLoaded]=useState(false);
  const [cycleEntryOpen,setCycleEntryOpen]=useState(false);
+ const dnaStepRef=useRef<HTMLDetailsElement>(null);
  const [reviewedDna,setReviewedDna]=useState<{dna:string;idea:string}|null>(null);
  const onDnaReview=useCallback((next:{dna:string;idea:string}|null)=>setReviewedDna(old=>
   old?.dna===next?.dna&&old?.idea===next?.idea?old:next),[]);
@@ -95,6 +98,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
    setMessages(Array.isArray(state.messages)?state.messages.filter(m=>m&&(m.role==="user"||m.role==="assistant")&&typeof m.content==="string").slice(-40):[]);
   }
   const source=readJSON("egg:project-field:v1:"+projectId);
+  setFieldCards(Array.isArray(source)?source:[]);
   const selected=Array.isArray(source)?source.filter((m:FieldItem)=>
    m&&m.location==="matter"&&typeof m.id==="string"&&typeof m.text==="string").slice(0,100):[];
   setMaterials(selected);
@@ -124,6 +128,11 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
     ]);
     if(!active)return;
     const remoteMap=readEggMaterialMapRecord(researchRow?.payload);
+    // Field is available to Idea research even when no Material map has been
+    // accepted. The raw Field stays contextual, not an Author-approved source.
+    const localField=readJSON("egg:project-field:v1:"+projectId);
+    const recoveredField=Array.isArray(localField)&&localField.length?localField:fieldRow?.payload;
+    if(Array.isArray(recoveredField))setFieldCards(recoveredField);
     // Never overwrite a local unreviewed map or a different accepted revision.
     const localMap=readLocalEggMaterialMap(projectId);
     if(!remoteMap||remoteMap.status!=="accepted"||
@@ -206,21 +215,22 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
     ...(m.type==="link"&&/^https?:\/\//.test(m.text)?{url:m.text.slice(0,2048)}:{}),
     ...(i<12&&(m.type==="image"||m.type==="sketch")?{imageData:await makePreview(m)}:{})
    })));
+   const externalField=buildEggIdeaExternalField(fieldCards);
    const ideaMaterials=[
     ...(spacePhoto?[{id:"space-context-photo",type:"image" as const,text:"Фотография существующего пространства — контекст размещения, НЕ референс формы проектируемого объекта",imageData:spacePhoto}]:[]),
     ...(sketchImage?[{id:"author-idea-sketch",type:"sketch" as const,text:"Авторский рисунок замысла — референс формы, не утверждённая модель",imageData:sketchImage}]:[]),
     ...payloadMaterials,
    ];
-   await waitForEggAiRequest({onWaiting:seconds=>setError("Лимит Gemini: запрос начнётся через "+seconds+" с…")});
+   await waitForEggAiRequest({onWaiting:seconds=>setError("Ограничение запросов ИИ: повтор через "+seconds+" с…")});
    setError("");
    const response=await fetch("/api/egg-flow-ai?op=idea-dialogue",{
     method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},
-    body:JSON.stringify({projectId,materials:ideaMaterials,messages:history,intent:intent.slice(0,3000),constraints:constraints.slice(0,2000),materialInsight})
+    body:JSON.stringify({projectId,materials:ideaMaterials,externalField,messages:history,intent:intent.slice(0,3000),constraints:constraints.slice(0,2000),materialInsight})
    });
    const data=await response.json() as {ok?:boolean;reply?:string;error?:string};
    if(response.status===429){
     postponeEggAiRequests(70_000);
-    throw Error("Gemini ограничил запросы; черновик сохранён, повторите позже.");
+    throw Error("Провайдер ИИ ограничил запросы; черновик сохранён, повторите позже.");
    }
    if(!response.ok||!data.ok||!data.reply)throw Error(data.error==="model_incomplete"?"ИИ не завершил мысль. Попробуйте уточнить запрос.":data.error??"Ошибка ИИ.");
    setMessages(previous=>[...previous,{role:"assistant",content:data.reply!}]);
