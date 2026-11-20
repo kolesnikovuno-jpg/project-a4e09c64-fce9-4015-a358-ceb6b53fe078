@@ -106,6 +106,8 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
  const [notice,setNotice]=useState("");
  const [conflict,setConflict]=useState<Remote|null>(null);
  const [recovery,setRecovery]=useState<RecoveryCandidate|null>(null);
+ const [pendingImport,setPendingImport]=useState<{cards:unknown[];name:string}|null>(null);
+ const importInputRef=useRef<HTMLInputElement|null>(null);
  const [serverRevision,setServerRevision]=useState(0);
  const clientRef=useRef<{client:SupabaseClient;ownerId:string}|null>(null);
  const revisionRef=useRef(0);
@@ -191,7 +193,7 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
   initializedRef.current=false;
   clientRef.current=null;
   revisionRef.current=0;savedHashRef.current="";
-  setConflict(null);setRecovery(null);setNotice("");setStatus("connecting");
+  setConflict(null);setRecovery(null);setPendingImport(null);setNotice("");setStatus("connecting");
   void(async()=>{
    try{
     const config=await fetch("/api/egg-config",{cache:"no-store"});
@@ -281,6 +283,61 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
    setStatus("error");setNotice(e instanceof Error?e.message:"Не удалось восстановить копию.");
   }
  }
+ async function downloadVerifiedField(){
+  if(scope!=="field")return;
+  try{
+   const remote=await readRemote();
+   const cards=remote?.payload;
+   if(!Array.isArray(cards))throw Error("Серверная копия недоступна. Сначала проверьте синхронизацию.");
+   const data={format:"EGG_FIELD_BACKUP_V1",projectId,
+    exportedAt:new Date().toISOString(),revision:remote!.revision,cards};
+   // Preserve image data URLs inside JSON, unlike a list of file names.
+   exportLocal(projectId,"field",data);
+   setNotice("Архив карточек и изображений выгружен из EGG. Сохраните файл на Google Диске.");
+  }catch(e){setNotice(e instanceof Error?e.message:"Не удалось выгрузить архив.");}
+ }
+ async function inspectBackup(file:File|undefined){
+  if(!file)return;
+  if(file.size>MAX_BYTES||file.size<30){
+   setNotice("Неподдерживаемый размер архива (не более 2,7 МБ).");return;
+  }
+  try{
+   const content=JSON.parse(await file.text()) as {format?:string;projectId?:string;cards?:unknown[]};
+   if(content.format!=="EGG_FIELD_BACKUP_V1"||content.projectId!==projectId||
+      !Array.isArray(content.cards)||content.cards.length>500)
+    throw Error("Архив не относится к этому проекту или имеет неверный формат.");
+   const ids=new Set<string>();
+   for(const item of content.cards){
+    if(!item||typeof item!=="object")throw Error("В архиве найдена повреждённая карточка.");
+    const c=item as {id?:unknown;type?:unknown;src?:unknown};
+    if(typeof c.id!=="string"||c.id.length>80||ids.has(c.id)||
+       !["image","thought","link","sketch","video"].includes(String(c.type)))
+     throw Error("В архиве найдена неподдерживаемая карточка.");
+    if(c.src!==undefined&&(typeof c.src!=="string"||
+       !/^data:image\\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(c.src)))
+     throw Error("В архиве найдены неверные данные изображения.");
+    ids.add(c.id);
+   }
+   setPendingImport({cards:content.cards,name:file.name});setNotice("");
+  }catch(e){setPendingImport(null);setNotice(e instanceof Error?e.message:"Архив не прочитан.");}
+ }
+ async function restoreImportedField(){
+  if(scope!=="field"||!pendingImport||busyRef.current)return;
+  try{
+   const existing=await readRemote();
+   const snapshot=pendingImport.cards as T;
+   if(existing&&Array.isArray(existing.payload)&&existing.payload.length>0&&
+      !backupLocal(projectId,scope,existing.payload)){
+     setNotice("Сначала освободите место для резервной копии текущего Поля.");return;
+   }
+   await save(snapshot,existing?.revision??0,true);
+   if(savedHashRef.current!==eggSnapshotHash(snapshot)){
+    setNotice("Сервер не подтвердил восстановление. Текущее Поле сохранено.");return;
+   }
+   restoreRef.current(snapshot);setPendingImport(null);
+   setNotice("Карточки восстановлены в серверном EGG.");
+  }catch(e){setNotice(e instanceof Error?e.message:"Не удалось восстановить архив.");}
+ }
  async function useServer(){
   if(!conflict)return;
   const current=valueRef.current;
@@ -309,6 +366,16 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
   data-testid={"egg-workspace-sync-"+scope}>
   {status==="synced"?<div className="flex flex-wrap items-center gap-2">
    <span title={"Серверная версия "+serverRevision}>В EGG · синхронизировано</span>
+   {scope==="field"&&<button type="button"
+    data-testid="egg-download-field-archive" onClick={()=>void downloadVerifiedField()}
+    className="border-b border-foreground/25 text-[11px] text-foreground/70">
+    Скачать карточки и изображения
+   </button>}
+   {scope==="field"&&<button type="button"
+    data-testid="egg-open-field-import" onClick={()=>importInputRef.current?.click()}
+    className="border-b border-foreground/25 text-[11px] text-foreground/70">
+    Восстановить из файла
+   </button>}
    {scope==="field"&&recovery&&<button type="button"
     data-testid="egg-restore-field-recovery"
     className="border border-foreground/30 px-3 py-1 text-[11px] text-foreground"
@@ -340,5 +407,20 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
     </div>
     {notice&&<p role="status">{notice}</p>}
    </div>}
+  {scope==="field"&&<input ref={importInputRef} type="file" accept=".json,application/json"
+   aria-label="Загрузить резервную копию EGG" className="hidden"
+   onChange={e=>{const file=e.currentTarget.files?.[0];e.currentTarget.value="";void inspectBackup(file);}}/>}
+  {scope==="field"&&pendingImport&&<div className="mt-2 space-y-2 border border-foreground/20 bg-background/95 p-3 text-xs"
+   data-testid="egg-field-import-confirm">
+    <p>Файл «{pendingImport.name}» · {pendingImport.cards.length} карточек. При восстановлении
+      они заменят текущее Поле. Предыдущая серверная версия сохранится в истории.</p>
+    <div className="flex gap-2">
+     <button type="button" className="border border-foreground/40 px-3 py-2"
+      onClick={()=>void restoreImportedField()} data-testid="egg-confirm-field-restore">Восстановить в EGG</button>
+     <button type="button" className="border px-3 py-2"
+      onClick={()=>setPendingImport(null)}>Отмена</button>
+    </div>
+  </div>}
+  {scope==="field"&&notice&&status==="synced"&&<span role="status" className="block text-foreground/60">{notice}</span>}
  </div>;
 }
