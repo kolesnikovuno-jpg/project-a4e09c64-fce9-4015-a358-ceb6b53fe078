@@ -174,4 +174,30 @@ describe("External research in the Author Idea workspace",()=>{
   expect(saved.history).toContain("ИДЕЯ: Прежняя версия");
   expect(saved.previousFindings).toHaveLength(1);
  });
+
+ it("keeps the old eight-sphere research visible as history when Author replaces Matter images",async()=>{
+  const id="01b3d29f-bfc4-41ed-b31a-2e0db7fa2fe9";
+  const intent="Столик-подставка и самостоятельный художественный акцент";
+  const originalKey=eggIdeaExteriorSourceKey({intent,constraints:"",materialInsight:"",
+   selected:[],field:[],visualKey:"v"});
+  localStorage.setItem("egg:idea-exterior:v1:"+id,JSON.stringify({
+   sourceKey:originalKey,updatedAt:"2026-11-20T15:10:00Z",
+   idea:"ИДЕЯ: Сохранённое исследование старого набора изображений.",
+   findings:EGG_IDEA_EXTERIOR_ORDER.map(sphere=>({sphere,text:"ВКЛАД: прежняя версия "+sphere}))
+  }));
+  const fetchMock=vi.fn();vi.stubGlobal("fetch",fetchMock);
+  const onReady=vi.fn();
+  const props={projectId:id,intent,constraints:"",fieldCards:[],materialInsight:"",
+   sketchImage:"",spacePhoto:"",visualKey:"v",onIdeaReady:onReady};
+  const screenView=render(<EggIdeaExteriorRound {...props} materials={[]}/>);
+  expect(screen.getByTestId("egg-formed-idea-core").textContent).toContain("Сохранённое");
+  screenView.rerender(<EggIdeaExteriorRound {...props}
+   materials={[{id:"new-image",type:"image",location:"matter",text:"Новое фото"}]}/>);
+  await waitFor(()=>expect(screen.getByTestId("egg-exterior-prior-source")).toBeTruthy());
+  expect(screen.queryByTestId("egg-formed-idea-core")).toBeNull();
+  expect(screen.getByTestId("egg-exterior-prior-source").textContent).toContain("8/8");
+  expect(screen.getByTestId("egg-idea-start-research").textContent).toContain("Пуск · 8 сфер");
+  expect(JSON.parse(localStorage.getItem("egg:idea-exterior:v1:"+id)||"{}").findings).toHaveLength(8);
+  expect(fetchMock).not.toHaveBeenCalled();
+ });
 });
