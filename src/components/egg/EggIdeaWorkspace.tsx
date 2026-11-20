@@ -61,6 +61,9 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
  const [reviewedDna,setReviewedDna]=useState<{dna:string;idea:string}|null>(null);
  const onDnaReview=useCallback((next:{dna:string;idea:string}|null)=>setReviewedDna(old=>
   old?.dna===next?.dna&&old?.idea===next?.idea?old:next),[]);
+ // A confirmed DNA draft should reveal the actual server approval control.
+ // Never approve automatically; only expose the next Author action.
+ useEffect(()=>{if(reviewedDna?.dna)setCycleEntryOpen(true);},[reviewedDna?.dna]);
  const [sketchOpen,setSketchOpen]=useState(false);
  const [sketchStrokes,setSketchStrokes]=useState<SketchStroke[]>([]);
  const [sketchImage,setSketchImage]=useState("");
@@ -382,7 +385,8 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
     <div className="min-w-0 rounded-[14px] border border-foreground/15 bg-background/90 p-2 sm:p-3">
      <button type="button" aria-expanded={cycleEntryOpen} onClick={()=>setCycleEntryOpen(v=>!v)}
       className="w-full py-1 text-left text-sm font-medium" data-testid="egg-open-iteration">
-      {cycleEntryOpen?"Свернуть работу сфер":"Результат сфер · действие Автора"}
+      {reviewedDna?"Шаг 2 · Утвердить ДНК → Желток":
+        cycleEntryOpen?"Свернуть утверждение ДНК":"Шаг 2 · Утверждение ДНК (после проверки)"}
      </button>
      {cycleEntryOpen&&<EggIterationBridge projectId={projectId} intent={intent} constraints={constraints}
       savedDraft={savedDraft} spacePhoto={spacePhoto} materials={materials} materialInsight={materialInsight}
