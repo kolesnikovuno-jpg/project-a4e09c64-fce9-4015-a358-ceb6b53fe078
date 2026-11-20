@@ -1,6 +1,7 @@
 import {useCallback,useEffect,useMemo,useRef,useState} from "react";
 import {createClient} from "@supabase/supabase-js";
 import {makePreview,type MatterCard} from "./EggMatterDialogue";
+import EggWorkspaceSync from "./EggWorkspaceSync";
 import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
 import {buildEggIdeaExternalField,type EggOuterFieldCard} from "../../lib/eggIdeaExternalField";
 import {parseEggFormedIdea} from "../../lib/eggFormedIdeaView";
@@ -24,6 +25,15 @@ function restore(projectId:string,key:string):Snapshot{
     updatedAt:typeof data.updatedAt==="string"?data.updatedAt:"",
     history:Array.isArray(data.history)?data.history.filter(x=>typeof x==="string").slice(-4):[]};
  }catch{return empty(key);}
+}
+function restoreFromServer(value:Partial<Snapshot>,sourceKey:string):Snapshot{
+ if(value.sourceKey!==sourceKey||!Array.isArray(value.findings))return empty(sourceKey);
+ const findings=value.findings.filter(f=>f&&EGG_IDEA_EXTERIOR_ORDER.some(id=>id===f.sphere)&&
+   typeof f.text==="string"&&f.text.trim().length>=8)
+  .map(f=>({sphere:f.sphere,text:f.text.slice(0,1200)}));
+ return {sourceKey,findings,idea:typeof value.idea==="string"?value.idea.slice(0,2500):"",
+  history:Array.isArray(value.history)?value.history.filter(x=>typeof x==="string").slice(-4):[],
+  updatedAt:typeof value.updatedAt==="string"?value.updatedAt:""};
 }
 const asMessage=(sphere:string)=>"Исследуй инициацию Автора через профессиональную позицию "+sphere+
  ". Внешний круг, до формирования ДНК. Дай краткий независимый диагностический результат.";
@@ -223,6 +233,18 @@ export default function EggIdeaExteriorRound({
     })}
    </div>
   </details>}
+  <EggWorkspaceSync projectId={projectId} scope="exterior"
+   ready={!!validSnapshot.idea||validSnapshot.findings.length>0}
+   value={validSnapshot}
+   onRestore={remote=>{
+    if(!remote||typeof remote!=="object"||remote.sourceKey!==sourceKey)return;
+    const clean=restoreFromServer(remote,sourceKey);
+    setSnapshot(clean);
+    try{localStorage.setItem(storageKey(projectId),JSON.stringify(clean));}
+    catch{setMessage("Результаты прочитаны с сервера, но браузер не сохранил локальную копию.");}
+   }}
+   isEmpty={v=>!v.idea&&!v.findings.length}
+   className="text-[11px]"/>
   <p className="text-[10px] text-foreground/50">
     Восемь отдельных запросов ИИ и итоговый синтез расходуют токены. Интернет и содержимое ссылок
     пока не проверяются автоматически; используется текст, выбранное Материальное и доступные изображения.
