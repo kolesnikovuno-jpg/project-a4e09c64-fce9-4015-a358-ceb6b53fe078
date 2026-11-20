@@ -53,6 +53,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
  const [materialInsight,setMaterialInsight]=useState("");
  const [materialMap,setMaterialMap]=useState<EggMaterialMapRecord|null>(null);
  const [exteriorIdea,setExteriorIdea]=useState("");
+ const [dnaContinueToken,setDnaContinueToken]=useState(0);
  const onExteriorIdea=useCallback((value:string)=>setExteriorIdea(previous=>previous===value?previous:value),[]);
  const [loaded,setLoaded]=useState(false);
  const [cycleEntryOpen,setCycleEntryOpen]=useState(false);
@@ -306,7 +307,15 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
     <EggIdeaExteriorRound projectId={projectId} intent={intent} constraints={constraints}
      materials={materials} fieldCards={fieldCards} materialInsight={materialInsight}
      sketchImage={sketchImage} spacePhoto={spacePhoto} visualKey={visualSourceKey}
-     onIdeaReady={onExteriorIdea}/>
+     onIdeaReady={onExteriorIdea}
+     onProceed={idea=>{
+      if(!idea.trim())return;
+      setDnaContinueToken(v=>v+1);
+      if(dnaStepRef.current){
+       dnaStepRef.current.open=true;
+       dnaStepRef.current.scrollIntoView?.({behavior:"smooth",block:"start"});
+      }
+     }}/>
     <details className="rounded-xl border border-foreground/10 bg-background/50 p-3" data-testid="egg-idea-supplementary">
      <summary className="cursor-pointer text-xs font-medium text-foreground/70">
       Материалы и инструменты · {materials.length} выбрано
@@ -358,14 +367,14 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
     {onProjectCreated&&<EggIdeaProjectFork draft={{intent,constraints,savedDraft,spacePhoto,messages,materials,materialInsight}} onCreated={onProjectCreated}/>}
      </div>
     </details>
-    <details className="rounded-xl border border-foreground/15 bg-background/75 p-3" data-testid="egg-author-dna-step">
+    <details ref={dnaStepRef} className="rounded-xl border border-foreground/15 bg-background/75 p-3" data-testid="egg-author-dna-step">
      <summary className="cursor-pointer text-sm font-medium">
       {reviewedDna?"ДНК · проверена Автором":exteriorIdea?"Следующий шаг · выделить ДНК из Идеи":"ДНК · после внешнего круга сфер"}
      </summary>
      <div className="mt-3">
     <EggDnaFormation projectId={projectId} intent={intent} constraints={constraints}
      materials={materials} materialInsight={materialInsight} visualSourceKey={visualSourceKey+":"+exteriorIdea} latestAnswer={latestAnswer}
-     suggestedIdea={exteriorIdea}
+     suggestedIdea={exteriorIdea} continueToken={dnaContinueToken}
      onRequestAi={prompt=>{void submit(prompt);setMobilePane("dialogue");}}
      onReviewChange={onDnaReview}/>
      </div>
