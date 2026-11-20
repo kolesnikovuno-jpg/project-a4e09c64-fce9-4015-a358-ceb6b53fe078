@@ -357,7 +357,7 @@ const isMatterPayload=(value:unknown):value is MatterPayload=>{
     v.externalFindings.length===8&&new Set(v.externalFindings.map(f=>f?.sphere)).size===8&&
     v.externalFindings.every(f=>f&&typeof f.sphere==="string"&&
       EGG_IDEA_EXTERIOR_ORDER.some(s=>s===f.sphere)&&
-      typeof f.text==="string"&&f.text.trim().length>=8&&f.text.length<=1200)))&&
+      typeof f.text==="string"&&f.text.trim().length>=8&&f.text.length<=2400)))&&
   !(v.externalSphere!==undefined&&v.externalFindings!==undefined)&&
   Array.isArray(v.messages)&&v.messages.length>=1&&v.messages.length<=16&&
   v.messages.every(m=>m&&(m.role==="user"||m.role==="assistant")&&typeof m.content==="string"&&m.content.length<=3000)&&
