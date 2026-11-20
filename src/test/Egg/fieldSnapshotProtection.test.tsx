@@ -104,4 +104,28 @@ describe("Lost browser cache must not empty EGG Material",()=>{
   expect(screen.queryByTestId("egg-field-import-confirm")).toBeNull();
   expect(mock.writes).toBe(0);
  });
+ it("recovers a reviewed DNA draft from the owner server if Safari has no local copy",async()=>{
+  const dna={formedIdea:"Столик соединяет опору и художественный образ",
+   essence:"Существовать как компактная опора и самостоятельный художественный акцент",
+   invariants:"Поддержка предмета и художественное присутствие — единый принцип",
+   openParameters:"Геометрия, материал и конструкция открыты",
+   sourceKey:"dna-tested-source-v1",reviewedAt:"2026-11-20T16:30:00Z"};
+  mock.remote={payload:dna,revision:4};
+  vi.stubGlobal("fetch",vi.fn(async()=>({ok:true,json:async()=>({
+   supabaseUrl:"https://example.test",publishableKey:"anon",
+  })})));
+  function Dna(){
+   const [value,setValue]=useState({...dna,formedIdea:"",essence:"",
+    invariants:"",openParameters:"",sourceKey:"",reviewedAt:null as string|null});
+   return <div>
+    <span data-testid="dna-restored-essence">{value.essence}</span>
+    <EggWorkspaceSync projectId={id} scope="dna" ready value={value} onRestore={setValue}
+     isEmpty={x=>!x.formedIdea.trim()&&!x.essence.trim()&&!x.invariants.trim()}/>
+   </div>;
+  }
+  render(<Dna/>);
+  await waitFor(()=>expect(screen.getByTestId("dna-restored-essence").textContent).toContain("компактная опора"));
+  expect(mock.writes).toBe(0);
+  expect(screen.getByTestId("egg-workspace-sync-dna").textContent).toContain("синхронизировано");
+ });
 });
