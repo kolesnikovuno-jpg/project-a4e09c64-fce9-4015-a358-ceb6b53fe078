@@ -73,4 +73,35 @@ describe("Lost browser cache must not empty EGG Material",()=>{
   await waitFor(()=>expect(mock.writes).toBe(1));
   expect(mock.remote?.payload).toEqual(five);
  });
+
+ it("imports an explicit image-card archive after preview, preserving bytes and server revision",async()=>{
+  mock.remote={payload:[],revision:5};
+  mount();
+  await waitFor(()=>expect(screen.getByTestId("egg-open-field-import")).toBeTruthy());
+  const archive={format:"EGG_FIELD_BACKUP_V1",projectId:id,cards:five};
+  const content=JSON.stringify(archive);
+  const file=new File([content],"egg-field-"+id+".json",{type:"application/json"});
+  Object.defineProperty(file,"text",{value:async()=>content});
+  fireEvent.change(screen.getByLabelText("Загрузить резервную копию EGG"),{
+   target:{files:[file]},
+  });
+  await waitFor(()=>expect(screen.getByTestId("egg-field-import-confirm").textContent).toContain("5 карточек"));
+  expect(mock.writes).toBe(0);
+  fireEvent.click(screen.getByTestId("egg-confirm-field-restore"));
+  await waitFor(()=>expect(screen.getByTestId("field-card-count").textContent).toBe("5"));
+  await waitFor(()=>expect(mock.writes).toBe(1));
+  expect(mock.remote?.payload).toEqual(five);
+ });
+ it("rejects a backup with another project id without modifying the server",async()=>{
+  mock.remote={payload:[],revision:5};
+  mount();
+  await waitFor(()=>expect(screen.getByTestId("egg-open-field-import")).toBeTruthy());
+  const content=JSON.stringify({format:"EGG_FIELD_BACKUP_V1",projectId:"another-project",cards:five});
+  const file=new File([content],"wrong.json",{type:"application/json"});
+  Object.defineProperty(file,"text",{value:async()=>content});
+  fireEvent.change(screen.getByLabelText("Загрузить резервную копию EGG"),{target:{files:[file]}});
+  await waitFor(()=>expect(screen.getByText(/Архив не относится к этому проекту/)).toBeTruthy());
+  expect(screen.queryByTestId("egg-field-import-confirm")).toBeNull();
+  expect(mock.writes).toBe(0);
+ });
 });
