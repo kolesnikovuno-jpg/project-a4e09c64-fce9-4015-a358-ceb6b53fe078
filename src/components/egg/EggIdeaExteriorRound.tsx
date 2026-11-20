@@ -4,13 +4,14 @@ import {makePreview,type MatterCard} from "./EggMatterDialogue";
 import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
 import {buildEggIdeaExternalField,type EggOuterFieldCard} from "../../lib/eggIdeaExternalField";
 import {parseEggFormedIdea} from "../../lib/eggFormedIdeaView";
+import {readExteriorContribution,exteriorResearchAudit,exteriorAuditForExport} from "../../lib/eggIdeaResearchAudit";
 import {
  EGG_IDEA_EXTERIOR_ORDER,EGG_IDEA_EXTERIOR_LENSES,eggIdeaExteriorProgress,
  eggIdeaExteriorSourceKey,type EggIdeaExteriorFinding,
 } from "../../lib/eggIdeaExterior";
 
 type Selected=MatterCard&{location?:string};
-type Snapshot={sourceKey:string;findings:EggIdeaExteriorFinding[];idea:string;updatedAt:string};
+type Snapshot={sourceKey:string;findings:EggIdeaExteriorFinding[];idea:string;updatedAt:string;history?:string[]};
 const empty=(sourceKey:string):Snapshot=>({sourceKey,findings:[],idea:"",updatedAt:""});
 const storageKey=(id:string)=>"egg:idea-exterior:v1:"+id;
 function restore(projectId:string,key:string):Snapshot{
@@ -20,7 +21,8 @@ function restore(projectId:string,key:string):Snapshot{
   const findings=data.findings.filter(f=>f&&EGG_IDEA_EXTERIOR_ORDER.some(id=>id===f.sphere)&&
     typeof f.text==="string"&&f.text.trim().length>=8).map(f=>({sphere:f.sphere,text:f.text.slice(0,1200)}));
   return {sourceKey:key,findings,idea:typeof data.idea==="string"?data.idea.slice(0,2500):"",
-    updatedAt:typeof data.updatedAt==="string"?data.updatedAt:""};
+    updatedAt:typeof data.updatedAt==="string"?data.updatedAt:"",
+    history:Array.isArray(data.history)?data.history.filter(x=>typeof x==="string").slice(-4):[]};
  }catch{return empty(key);}
 }
 const asMessage=(sphere:string)=>"Исследуй инициацию Автора через профессиональную позицию "+sphere+
@@ -43,6 +45,7 @@ export default function EggIdeaExteriorRound({
  const validSnapshot=snapshot.sourceKey===sourceKey?snapshot:empty(sourceKey);
  const count=eggIdeaExteriorProgress(validSnapshot.findings);
  const formed=useMemo(()=>parseEggFormedIdea(validSnapshot.idea),[validSnapshot.idea]);
+ const audit=useMemo(()=>exteriorResearchAudit(validSnapshot.findings),[validSnapshot.findings]);
  const store=useCallback((next:Snapshot)=>{
   setSnapshot(next);
   try{localStorage.setItem(storageKey(projectId),JSON.stringify(next));}
@@ -58,8 +61,8 @@ export default function EggIdeaExteriorRound({
  },[formed.idea,onIdeaReady]);
  useEffect(()=>()=>{runId.current++;requestController.current?.abort();},[]);
 
- async function run(){
-  if(running||!intent.trim())return;
+ async function run(refreshSynthesis=false){
+  if(running||!intent.trim()||(refreshSynthesis&&(count!==8||!validSnapshot.idea)))return;
   const current=++runId.current;
   setRunning(true);setMessage("");
   let next=validSnapshot;
@@ -96,7 +99,7 @@ export default function EggIdeaExteriorRound({
     if(!response.ok||!result.ok||!result.reply)
       throw Error(response.status===429?"Провайдер ограничил запросы. Результаты сохранены; позже можно продолжить.":
         "ИИ не завершил исследование: "+(result.error||response.status));
-    return result.reply.slice(0,1200);
+    return result.reply.slice(0,extra.externalFindings?2400:1200);
    };
    for(const sphere of EGG_IDEA_EXTERIOR_ORDER){
     if(runId.current!==current)throw Error("Исследование остановлено");
@@ -107,7 +110,7 @@ export default function EggIdeaExteriorRound({
       updatedAt:new Date().toISOString()};
     store(next);
    }
-   if(!next.idea){
+   if(!next.idea||refreshSynthesis){
     setMessage("Синтезируем сформированную Идею");
     const summary=await post({externalFindings:next.findings},
      "Синтезируй результаты восьми независимых исследовательских сфер. "+
@@ -115,7 +118,9 @@ export default function EggIdeaExteriorRound({
      "Идея — ОДНО ёмкое предложение, не пересказ инициации и не список референсов. "+
      "Не вынуждай Автора выбирать между двумя качествами, если замысел именно в их сочетании. "+
      "Раздели идею и доказательные основания. ДНК пока не создавай и ничего не утверждай.");
-    next={...next,idea:summary,updatedAt:new Date().toISOString()};
+    next={...next,idea:summary,
+     history:refreshSynthesis&&next.idea?[...(next.history||[]),next.idea].slice(-4):next.history,
+     updatedAt:new Date().toISOString()};
     store(next);
    }
    setMessage("Внешний круг завершён · Идея предложена Автору");
@@ -161,6 +166,12 @@ export default function EggIdeaExteriorRound({
     </button>}
     <details className="mt-3 border-t border-foreground/10 pt-3 text-xs text-foreground/65" data-testid="egg-idea-research-details">
       <summary className="cursor-pointer">Анализ · напряжение, вопрос, основания</summary>
+      {formed.growth&&<p className="mt-3 whitespace-pre-wrap leading-relaxed">
+        <strong>Что нового:</strong> {formed.growth}
+      </p>}
+      {formed.basis&&<p className="mt-3 whitespace-pre-wrap leading-relaxed">
+        <strong>Основания:</strong> {formed.basis}
+      </p>}
       {formed.tension&&<p className="mt-3 whitespace-pre-wrap leading-relaxed">
         <strong>Возможное напряжение:</strong> {formed.tension}
       </p>}
@@ -171,16 +182,43 @@ export default function EggIdeaExteriorRound({
         <summary className="cursor-pointer">Полный исследовательский вывод</summary>
         <p className="mt-2 whitespace-pre-wrap break-words leading-relaxed">{formed.fullText}</p>
       </details>
+      {(validSnapshot.history?.length??0)>0&&<details className="mt-3 border-t border-foreground/10 pt-2">
+        <summary className="cursor-pointer">Предыдущие версии синтеза · {validSnapshot.history?.length}</summary>
+        {validSnapshot.history?.map((item,i)=><p key={i} className="mt-2 whitespace-pre-wrap break-words">{item}</p>)}
+      </details>}
+      {count===8&&<button type="button" disabled={running} onClick={()=>void run(true)}
+        data-testid="egg-rethink-existing-eight" className="mt-3 border border-foreground/20 px-3 py-2 text-xs disabled:opacity-40">
+        Пересобрать вывод из 8 сфер · 1 запрос ИИ
+      </button>}
     </details>
    </div>}
   {count>0&&<details className="text-xs text-foreground/65">
    <summary className="cursor-pointer" data-testid="egg-exterior-detail-toggle">Вклады сфер · {count}/8</summary>
+   <p className="mt-2 text-[11px] leading-relaxed">
+     {audit.structured} ответов в новом проверяемом формате; {audit.legacy} в предыдущем; {audit.unstructured} без меток.
+     Это проверка структуры, не доказательство новизны или правильности.
+   </p>
+   <button type="button" className="mt-2 border border-foreground/20 px-3 py-2 text-xs"
+    data-testid="egg-copy-exterior-audit"
+    onClick={()=>{void navigator.clipboard.writeText(exteriorAuditForExport(intent,validSnapshot.findings,validSnapshot.idea))
+     .then(()=>setMessage("Восемь вкладов и синтез скопированы для экспертного разбора."))
+     .catch(()=>setMessage("Не удалось скопировать. Проверьте разрешение браузера."));}}>
+    Скопировать протокол восьми сфер
+   </button>
    <div className="mt-3 space-y-2">
     {EGG_IDEA_EXTERIOR_ORDER.map(sphere=>{
      const f=validSnapshot.findings.find(v=>v.sphere===sphere);
+     const r=f?readExteriorContribution(f.text):null;
      return <div key={sphere} className="rounded-lg border border-foreground/10 p-2">
       <p className="font-medium">{EGG_IDEA_EXTERIOR_LENSES[sphere].name} · {f?"исследовано":"ожидает"}</p>
-      {f&&<p className="mt-1 whitespace-pre-wrap">{f.text}</p>}
+      {r&&<>
+       <p className="mt-1 whitespace-pre-wrap">{r.contribution||"Вклад не выделен"}</p>
+       {r.check&&<p className="mt-1 text-foreground/55">Проверить: {r.check}</p>}
+       <details className="mt-2">
+        <summary className="cursor-pointer">Полный ответ и основания</summary>
+        <p className="mt-1 whitespace-pre-wrap break-words">{r.raw}</p>
+       </details>
+      </>}
      </div>;
     })}
    </div>
