@@ -262,10 +262,6 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
       placeholder="Что хочешь инициировать? Например: неутилитарный элемент пространства — отдельная нота…"
       className="mt-2 w-full resize-y rounded-xl border border-foreground/15 bg-background/80 p-3 text-base outline-none focus:border-foreground/40 md:text-sm"/>
     </label>
-    <EggIdeaExteriorRound projectId={projectId} intent={intent} constraints={constraints}
-     materials={materials} fieldCards={fieldCards} materialInsight={materialInsight}
-     sketchImage={sketchImage} spacePhoto={spacePhoto} visualKey={visualSourceKey}
-     onIdeaReady={onExteriorIdea}/>
     <div className="flex flex-wrap items-center gap-3">
      <button type="button" onClick={()=>setSketchOpen(true)} className="rounded-full border border-foreground/30 px-3 py-2 text-xs" data-testid="egg-author-draw-sketch">
       {sketchStrokes.length?"Изменить рисунок":"Нарисовать скетч"}</button>
@@ -307,6 +303,10 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
       <img src={sketchImage} alt="Авторский скетч идеи" className="h-24 w-32 rounded bg-white object-contain"/>
       <p className="text-[11px] text-foreground/60">Авторский рисунок участвует в исследовании Идеи и может использоваться как референс формы. Сохраняется в этом браузере, не является ДНК или CAD.</p>
     </div>}
+    <EggIdeaExteriorRound projectId={projectId} intent={intent} constraints={constraints}
+     materials={materials} fieldCards={fieldCards} materialInsight={materialInsight}
+     sketchImage={sketchImage} spacePhoto={spacePhoto} visualKey={visualSourceKey}
+     onIdeaReady={onExteriorIdea}/>
     <details className="rounded-xl border border-foreground/10 bg-background/50 p-3" data-testid="egg-idea-supplementary">
      <summary className="cursor-pointer text-xs font-medium text-foreground/70">
       Материалы и инструменты · {materials.length} выбрано
@@ -402,7 +402,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
    <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pb-24 pt-3 md:pb-3" aria-live="polite">
     {!messages.length&&<div className="space-y-3 text-sm text-foreground/65">
      <p>Задай намерение слева. ИИ подтянет материалы и последний анализ из «Материального», затем поможет проявить первую версию идеи.</p>
-     <button type="button" disabled={!intent.trim()||busy} onClick={()=>void submit("Исследуй моё намерение в контексте поля. Предложи первую образно-смысловую версию идеи, её инварианты и один вопрос мне.")} className="rounded-full bg-[#607466] px-4 py-2 text-xs text-white disabled:opacity-35">Проявить идею</button>
+     <button type="button" disabled={!intent.trim()||busy} onClick={()=>void submit("Исследуй моё намерение в контексте поля. Предложи первую образно-смысловую версию идеи, её инварианты и один вопрос мне.")} className="rounded-full bg-[#607466] px-4 py-2 text-xs text-white disabled:opacity-35">Обсудить с ИИ</button>
     </div>}
     {messages.map((m,i)=><div key={i} className={"max-w-[96%] whitespace-pre-wrap break-words p-3 text-sm leading-relaxed "+(m.role==="user"?"ml-auto rounded-xl bg-foreground/[.06] text-right":"mr-auto")}>
      <div className="mb-1 text-[10px] opacity-50">{m.role==="user"?"Автор":"ИИ · гипотеза, не утверждена"}</div>
