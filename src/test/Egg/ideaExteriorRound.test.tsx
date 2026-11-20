@@ -2,6 +2,7 @@ import {afterEach,describe,expect,it,vi} from "vitest";
 import {cleanup,fireEvent,render,screen,waitFor} from "@testing-library/react";
 import EggIdeaExteriorRound from "../../components/egg/EggIdeaExteriorRound";
 import {EGG_IDEA_EXTERIOR_ORDER,eggIdeaExteriorSourceKey} from "../../lib/eggIdeaExterior";
+vi.mock("../../components/egg/EggWorkspaceSync",()=>({default:()=>null}));
 vi.mock("@supabase/supabase-js",()=>({
  createClient:vi.fn(()=>({auth:{getSession:async()=>({data:{session:{access_token:"test-auth"}}})}})),
 }));
@@ -73,5 +74,36 @@ describe("External research in the Author Idea workspace",()=>{
   expect(onProceed).toHaveBeenCalledWith(expect.stringContaining("самостоятельный арт-акцент"));
   expect(onProceed.mock.calls[0][0]).not.toContain("ID m1");
   expect(fetchMock).not.toHaveBeenCalled();
+ });
+ it("re-synthesizes saved eight findings with one request and retains old Idea",async()=>{
+  const id="01b3d29f-bfc4-41ed-b31a-2e0db7fa2fe9",intent="Столик как цельная арт-функция";
+  const sourceKey=eggIdeaExteriorSourceKey({intent,constraints:"",materialInsight:"",
+    selected:[],field:[],visualKey:"v"});
+  localStorage.setItem("egg:idea-exterior:v1:"+id,JSON.stringify({
+   sourceKey,updatedAt:"2026-11-20T10:00:00Z",
+   idea:"ИДЕЯ: Старый сформированный столик.",
+   findings:EGG_IDEA_EXTERIOR_ORDER.map(sphere=>({sphere,
+    text:"ВКЛАД: уточнить "+sphere+". ОПОРА: намерение Автора. ГИПОТЕЗА: проверить. ПРОВЕРКА: наблюдать."}))
+  }));
+  let researchCalls=0;
+  vi.stubGlobal("fetch",vi.fn(async(url:string,init?:{body?:string})=>{
+   if(url==="/api/egg-config")return {ok:true,json:async()=>({supabaseUrl:"https://example.test",publishableKey:"anon"})};
+   researchCalls++;
+   const input=JSON.parse(init?.body||"{}");
+   expect(input.externalFindings).toHaveLength(8);
+   expect(input.externalSphere).toBeUndefined();
+   return {ok:true,json:async()=>({ok:true,reply:
+    "ИДЕЯ: Новая версия с объединением опоры и образа.\\nПРИРОСТ: Уточнена пространственная связь.\\nОСНОВАНИЯ: только инициация Автора.\\nНАПРЯЖЕНИЕ: требуется проверка.\\nВОПРОС: что проверить?"})};
+  }));
+  render(<EggIdeaExteriorRound projectId={id} intent={intent} constraints="" materials={[]}
+    fieldCards={[]} materialInsight="" sketchImage="" spacePhoto="" visualKey="v"
+    onIdeaReady={vi.fn()}/>);
+  fireEvent.click(screen.getByText(/Анализ · напряжение, вопрос, основания/));
+  fireEvent.click(screen.getByTestId("egg-rethink-existing-eight"));
+  await waitFor(()=>expect(screen.getByTestId("egg-formed-idea-core").textContent).toContain("Новая версия"));
+  expect(researchCalls).toBe(1);
+  const stored=JSON.parse(localStorage.getItem("egg:idea-exterior:v1:"+id)||"{}");
+  expect(stored.findings).toHaveLength(8);
+  expect(stored.history).toEqual(["ИДЕЯ: Старый сформированный столик."]);
  });
 });
