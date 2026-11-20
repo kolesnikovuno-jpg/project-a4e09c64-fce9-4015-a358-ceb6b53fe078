@@ -238,7 +238,12 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
     const safeDecision=scope==="field"&&remote&&Array.isArray(remote.payload)&&Array.isArray(current)&&
       current.length>0&&current.length<remote.payload.length&&decision==="upload_local"?"conflict":decision;
     initializedRef.current=true;
-    if(safeDecision==="empty"){setStatus("synced");setServerRevision(0);return;}
+    if(safeDecision==="empty"){
+     // An untouched project has no server row yet. Do not create one with an
+     // empty payload just because its checksum differs from initial "".
+     savedHashRef.current=eggSnapshotHash(current);
+     setStatus("synced");setServerRevision(0);return;
+    }
     if(safeDecision==="in_sync"&&remote){mark(remote.revision,remote.payload);return;}
     if(safeDecision==="load_remote"&&remote){
      if(!emptyRef.current(current)&&eggSnapshotHash(current)!==eggSnapshotHash(remote.payload)&&
