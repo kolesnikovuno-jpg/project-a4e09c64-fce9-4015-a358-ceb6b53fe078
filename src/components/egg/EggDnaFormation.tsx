@@ -26,11 +26,11 @@ function readReview(projectId:string):EggDnaReview {
   return emptyEggDnaReview();
 }
 export default function EggDnaFormation({
-  projectId,intent,constraints,materials,materialInsight,visualSourceKey="",latestAnswer,
+  projectId,intent,constraints,materials,materialInsight,visualSourceKey="",suggestedIdea="",latestAnswer,
   onRequestAi,onReviewChange,
 }:{
   projectId:string;intent:string;constraints:string;
-  materials:Source[];materialInsight:string;visualSourceKey?:string;latestAnswer:string;
+  materials:Source[];materialInsight:string;visualSourceKey?:string;suggestedIdea?:string;latestAnswer:string;
   onRequestAi:(prompt:string)=>void;
   onReviewChange:(reviewedCandidate:{dna:string;idea:string}|null)=>void;
 }){
@@ -38,7 +38,7 @@ export default function EggDnaFormation({
   const [notice,setNotice]=useState("");
   const sourceKey=eggDnaSourceKey(intent,constraints,materials,materialInsight,visualSourceKey);
   const candidate=useMemo(()=>buildEggDnaCandidate(fields),[fields]);
-  const ready=!!candidate&&isEggDnaReviewComplete(fields,sourceKey);
+  const ready=!!suggestedIdea.trim()&&!!candidate&&isEggDnaReviewComplete(fields,sourceKey);
 
   useEffect(()=>{setFields(readReview(projectId));setNotice("");},[projectId]);
   useEffect(()=>{try{localStorage.setItem(keyFor(projectId),JSON.stringify(fields));}
@@ -51,7 +51,7 @@ export default function EggDnaFormation({
     setNotice("");
   }
   function request(){
-    if(!intent.trim())return;
+    if(!suggestedIdea.trim()){setNotice("Сначала завершите внешний круг восьми сфер и проверьте сформированную Идею.");return;}
     onRequestAi(
       "Предложи КАНДИДАТ ДНК на основании намерения Автора, принятого Материального и нашего исследования. "+
       "Сначала установи сущность, затем отдели инварианты от переменных свойств. "+
@@ -61,7 +61,7 @@ export default function EggDnaFormation({
       "ОТКРЫТЫЕ ПАРАМЕТРЫ: (что неизвестно или требует проверки). "+
       "Не придумывай внешние источники. Все положения пока гипотезы. "+
       "Не утверждай ДНК за Автора. "+
-      "Рабочая формулировка Автора: "+(fields.formedIdea.trim()||intent.trim()).slice(0,1100)
+      "Рабочая формулировка Автора: "+(fields.formedIdea.trim()||suggestedIdea.trim()).slice(0,1100)
     );
     setNotice("Запрос направлен в диалог справа. После ответа нажмите «Перенести предложение ИИ».");
   }
@@ -75,6 +75,7 @@ export default function EggDnaFormation({
     setNotice("Черновик ИИ перенесён в редактор. Проверьте каждый пункт перед авторским подтверждением.");
   }
   function review(){
+    if(!suggestedIdea.trim()){setNotice("Перед ДНК требуется результат внешнего круга сфер.");return;}
     if(!candidate){setNotice("Укажите сформированную идею, сущность и хотя бы один инвариант (не короче 8 символов).");return;}
     setFields(previous=>({...previous,sourceKey,reviewedAt:new Date().toISOString()}));
     setNotice("Кандидат ДНК проверен Автором для текущих материалов. Серверная ДНК ещё не утверждена.");
@@ -87,7 +88,7 @@ export default function EggDnaFormation({
       <span className="text-[11px] text-foreground/60">{ready?"Проверено Автором":"Рабочий кандидат"}</span>
     </div>
     <p className="text-xs leading-relaxed text-foreground/65">
-      Исследование обнаруживает сущность; ДНК фиксирует её устойчивое ядро.
+      Внешний круг сфер формирует Идею. ДНК — короткая выжимка её устойчивых принципов.
       ИИ предлагает, Автор проверяет. До серверного утверждения этот текст не влияет на Желток и сферы.
     </p>
     <label className="block text-xs text-foreground/70">Сформированная Идея
@@ -96,10 +97,11 @@ export default function EggDnaFormation({
         placeholder="Что именно должно существовать? Не обязательно называть традиционный предмет."
         className="mt-1 w-full resize-y rounded-lg border border-foreground/20 bg-background p-3 text-sm"/>
     </label>
-    {!fields.formedIdea&&<button type="button" disabled={!intent.trim()}
-      onClick={()=>edit("formedIdea",intent.trim())}
-      className="rounded-full border border-foreground/25 px-3 py-2 text-xs disabled:opacity-40">
-      Взять исходное намерение как черновик
+    {!fields.formedIdea&&<button type="button" disabled={!suggestedIdea.trim()}
+      onClick={()=>edit("formedIdea",suggestedIdea.trim())}
+      className="rounded-full border border-foreground/25 px-3 py-2 text-xs disabled:opacity-40"
+      data-testid="egg-use-formed-idea">
+      Взять сформированную Идею
     </button>}
     <div className="grid gap-3 sm:grid-cols-2">
       <label className="block text-xs text-foreground/70">Сущность · зачем это существует?
@@ -122,13 +124,13 @@ export default function EggDnaFormation({
         className="mt-1 w-full resize-y rounded-lg border border-foreground/20 bg-background p-3 text-sm"/>
     </label>
     <div className="flex flex-wrap gap-2">
-      <button type="button" onClick={request} disabled={!intent.trim()}
+      <button type="button" onClick={request} disabled={!suggestedIdea.trim()}
         className="rounded-full border border-foreground/30 px-3 py-2 text-xs disabled:opacity-40"
         data-testid="egg-request-dna">Предложить ДНК с ИИ</button>
       <button type="button" onClick={importReply} disabled={!latestAnswer}
         className="rounded-full border border-foreground/30 px-3 py-2 text-xs disabled:opacity-40"
         data-testid="egg-import-dna">Перенести предложение ИИ</button>
-      <button type="button" onClick={review} disabled={!candidate||ready}
+      <button type="button" onClick={review} disabled={!candidate||ready||!suggestedIdea.trim()}
         className="rounded-full bg-[#607466] px-3 py-2 text-xs text-white disabled:opacity-40"
         data-testid="egg-review-dna">Проверено Автором · подготовить к утверждению</button>
     </div>
