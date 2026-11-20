@@ -8,7 +8,6 @@ export type EggFormedIdeaView={
  question:string;
  fullText:string;
 };
-const labels=/^(?:рабочая\s+)?идея|^главное\s+напряжение|^напряжение|^вопрос/i;
 export function parseEggFormedIdea(raw:string):EggFormedIdeaView{
  const fullText=(raw||"").replace(/\*\*/g,"").replace(/^\s*#{1,4}\s+/gm,"").trim();
  const marker=/^\s*((?:Рабочая\s+)?Идея|Главное\s+напряжение|Напряжение|Вопрос)\s*:\s*/gim;
