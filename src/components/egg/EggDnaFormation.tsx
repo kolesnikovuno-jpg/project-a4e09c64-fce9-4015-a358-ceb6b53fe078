@@ -4,26 +4,27 @@ import {
   isEggDnaReviewComplete, parseEggDnaSuggestion,
   type EggDnaReview, type EggDnaFields,
 } from "../../lib/eggDnaFormation";
+import EggWorkspaceSync from "./EggWorkspaceSync";
 
 type Source = {id:string;type:string;text:string};
 const keyFor=(id:string)=>"egg:dna-review:v1:"+id;
+function parseReview(value:unknown):EggDnaReview|null{
+ if(!value||typeof value!=="object")return null;
+ const v=value as Record<string,unknown>;
+ if(!["formedIdea","essence","invariants","openParameters","sourceKey"].every(k=>typeof v[k]==="string")||
+  !(v.reviewedAt===null||typeof v.reviewedAt==="string"))return null;
+ return {
+  formedIdea:(v.formedIdea as string).slice(0,3000),
+  essence:(v.essence as string).slice(0,1200),
+  invariants:(v.invariants as string).slice(0,1200),
+  openParameters:(v.openParameters as string).slice(0,700),
+  sourceKey:(v.sourceKey as string).slice(0,350),
+  reviewedAt:(v.reviewedAt as string|null),
+ };
+}
 function readReview(projectId:string):EggDnaReview {
-  try {
-    const value=JSON.parse(localStorage.getItem(keyFor(projectId))||"null");
-    if(value&&typeof value==="object"&&
-      ["formedIdea","essence","invariants","openParameters","sourceKey"].every(k=>typeof value[k]==="string")&&
-      (value.reviewedAt===null||typeof value.reviewedAt==="string")) {
-      return {
-        formedIdea:value.formedIdea.slice(0,3000),
-        essence:value.essence.slice(0,1200),
-        invariants:value.invariants.slice(0,1200),
-        openParameters:value.openParameters.slice(0,700),
-        sourceKey:value.sourceKey,
-        reviewedAt:value.reviewedAt,
-      };
-    }
-  }catch{/* Local source remains author-editable. */}
-  return emptyEggDnaReview();
+ try{return parseReview(JSON.parse(localStorage.getItem(keyFor(projectId))||"null"))??emptyEggDnaReview();}
+ catch{return emptyEggDnaReview();}
 }
 export default function EggDnaFormation({
   projectId,intent,constraints,materials,materialInsight,visualSourceKey="",suggestedIdea="",continueToken=0,latestAnswer,
@@ -53,7 +54,7 @@ export default function EggDnaFormation({
     setNotice("Идея передана в редактор как черновик. Автор может изменить её перед утверждением.");
   },[continueToken,suggestedIdea]);
   useEffect(()=>{try{localStorage.setItem(keyFor(projectId),JSON.stringify(fields));}
-   catch{setNotice("Недостаточно места для сохранения черновика ДНК в браузере.");}
+   catch{setNotice("Локальная память заполнена. Контролируйте статус серверного сохранения ДНК ниже.");}
   },[projectId,fields]);
   useEffect(()=>{onReviewChange(ready&&candidate?{dna:candidate,idea:fields.formedIdea.trim()}:null);},[ready,candidate,fields.formedIdea,onReviewChange]);
 
@@ -149,10 +150,18 @@ export default function EggDnaFormation({
       Исходное намерение, рамки, материалы или кандидат ДНК изменились. Проверьте и подтвердите снова.
     </p>}
     {ready&&<p role="status" className="rounded-lg border border-[#607466]/40 p-3 text-xs">
-      ДНК подготовлена к серверному утверждению. Далее откройте «ДНК и цикл»;
-      только отдельное действие Автора закрепит зерно в проекте.
+      ДНК проверена. Ниже доступен следующий шаг: «Утвердить ДНК → Желток».
+      Только это действие Автора закрепит зерно в проекте.
     </p>}
     {notice&&<p role="status" className="text-xs text-foreground/65">{notice}</p>}
+    <EggWorkspaceSync projectId={projectId} scope="dna" ready value={fields}
+      isEmpty={value=>!value.formedIdea.trim()&&!value.essence.trim()&&
+        !value.invariants.trim()&&!value.openParameters.trim()}
+      onRestore={value=>{
+       const clean=parseReview(value);
+       if(clean)setFields(clean);
+      }}
+      className="text-[11px]"/>
     <details className="text-xs text-foreground/60">
       <summary className="cursor-pointer">Источники и границы исследования</summary>
       <p className="mt-2">{materials.length} отобранных материалов; карта Материального: {materialInsight?"принята":"отсутствует"}.
