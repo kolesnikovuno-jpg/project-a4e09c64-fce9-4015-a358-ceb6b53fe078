@@ -151,9 +151,12 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
   finally{setSeeding(false);}
  };
  return <section className="egg-iteration-layout min-w-0 rounded-[12px] border-0 bg-background/85 p-0 sm:border sm:border-foreground/10 sm:p-2" data-testid="egg-idea-cycle-entry">
-  <h3 className="text-sm font-medium">Утверждение ДНК → круг восьми сфер</h3>
+  <h3 className="text-sm font-medium">Утверждение ДНК → Желток</h3>
   <div className="mt-3 space-y-3 text-xs leading-relaxed">
-   <p className="text-foreground/65">Исследование внешнего поля → сформированная Идея → проверенный Автором кандидат ДНК → серверное утверждение → два потока → Желток. Черновик ИИ ничего не утверждает автоматически.</p>
+   <p className="text-foreground/65">Внешний круг → сформированная Идея → проверенный Автором кандидат ДНК → отдельное серверное утверждение → Желток получает зерно. Последующая работа сфер развивает концепт и будущую форму. Черновик ИИ ничего не утверждает автоматически.</p>
+   {project?.seed.text.trim()&&<p role="status" data-testid="egg-dna-in-yolk" className="text-[#607466]">
+    ДНК получена Желтком · на уровне Идеи она отображается маленьким яйцом, пока пространственная форма не сформирована.
+   </p>}
    {project&&!project.seed.text.trim()&&!dnaReviewed&&<p role="status" className="rounded-lg border border-foreground/20 p-3">
     Сначала заполните и подтвердите блок «Идея → ДНК» выше. Черновик намерения или ответ ИИ не является исходным зерном проекта.
    </p>}
