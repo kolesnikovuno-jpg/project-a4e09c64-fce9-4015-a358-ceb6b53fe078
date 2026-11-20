@@ -7,6 +7,7 @@ import EggPhotoWorkspace, { PhotoMarkupOverlay, type PhotoMarkup } from "./EggPh
 import EggLinkWorkspace, { normalizeSiteUrl } from "./EggLinkWorkspace";
 import EggMatterDialogue, { type MatterCard } from "./EggMatterDialogue";
 import EggWorkspaceSync from "./EggWorkspaceSync";
+import EggRecoveredFieldMedia from "./EggRecoveredFieldMedia";
 
 type Point = { x:number; y:number };
 // Retain legacy mark records in saved project data; never display viewport-only anchors as content anchors.
@@ -393,7 +394,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
   {workspace==="matter"&&!matterDialogueOpen&&<button type="button" aria-label="Открыть диалог Материальное"
     className="absolute right-5 top-16 z-40 flex items-center gap-2 rounded-full bg-[#f9f7f2] px-4 py-2 text-xs text-[#45574b] shadow-md"
     onClick={()=>setMatterDialogueOpen(true)}><MessageCircle size={16}/> Диалог с ИИ</button>}
-  {workspace==="matter"&&!visibleItems.length&&<p className="pointer-events-none absolute inset-x-8 top-1/2 text-center text-sm text-foreground/45">Выберите карточки в общем поле кнопкой «В работу».</p>}
+  {workspace==="matter"&&!visibleItems.length&&<EggRecoveredFieldMedia projectId={projectId}/>}
   {!tool && !sketchEditor && !openId && <EggRadialMenu actions={menuActions} side="left"/>}
   {tool!==null&&<div className="absolute bottom-[max(6rem,env(safe-area-inset-bottom))] left-4 z-40 w-[min(340px,calc(100vw-32px))] rounded-2xl border border-foreground/15 bg-background/95 p-3 shadow-xl sm:left-6">
    <div className="flex items-center justify-between px-1 pb-1">
