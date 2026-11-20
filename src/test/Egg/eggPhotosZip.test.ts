@@ -1,4 +1,4 @@
-// @vitest-environment node
+// @vitest-environment jsdom
 import {describe,expect,it} from "vitest";
 import {createEggPhotosZip,eggPhotosFromCards} from "../../lib/eggPhotosZip";
 
@@ -13,7 +13,13 @@ describe("export Field images as actual JPGs rather than JSON strings",()=>{
   ]);
   expect(blob.type).toBe("application/zip");
   expect(filenames).toEqual(["002.jpg","004.jpg"]);
-  const bytes=new Uint8Array(await blob.arrayBuffer());
+  const contents=await new Promise<ArrayBuffer>((resolve,reject)=>{
+   const reader=new FileReader();
+   reader.onload=()=>resolve(reader.result as ArrayBuffer);
+   reader.onerror=()=>reject(reader.error);
+   reader.readAsArrayBuffer(blob);
+  });
+  const bytes=new Uint8Array(contents);
   const v=new DataView(bytes.buffer);
   expect(v.getUint32(0,true)).toBe(0x04034b50);
   const length=v.getUint16(26,true),size=v.getUint32(18,true);
