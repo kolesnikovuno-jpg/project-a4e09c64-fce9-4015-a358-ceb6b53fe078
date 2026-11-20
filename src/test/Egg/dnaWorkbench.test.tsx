@@ -52,4 +52,22 @@ describe("Author DNA workbench",()=>{
   expect(onReviewChange).not.toHaveBeenCalledWith(expect.objectContaining({dna:expect.any(String)}));
   expect(screen.getByTestId("egg-review-dna").hasAttribute("disabled")).toBe(false);
  });
+
+ it("adopts the formed Idea only after Author clicks Continue and preserves existing edits",async()=>{
+  const onReviewChange=vi.fn();
+  const view=render(<EggDnaFormation {...props} onRequestAi={vi.fn()}
+    onReviewChange={onReviewChange} continueToken={0}/>);
+  expect((screen.getByRole("textbox",{name:"Сформированная Идея"}) as HTMLTextAreaElement).value).toBe("");
+  view.rerender(<EggDnaFormation {...props} onRequestAi={vi.fn()}
+    onReviewChange={onReviewChange} continueToken={1}/>);
+  await waitFor(()=>expect((screen.getByRole("textbox",{name:"Сформированная Идея"}) as HTMLTextAreaElement).value)
+    .toBe(props.suggestedIdea));
+  fireEvent.change(screen.getByRole("textbox",{name:"Сформированная Идея"}),{
+   target:{value:"Автор уточнил исходное предложение и выбрал новый смысл"}
+  });
+  view.rerender(<EggDnaFormation {...props} onRequestAi={vi.fn()}
+    onReviewChange={onReviewChange} continueToken={2}/>);
+  expect((screen.getByRole("textbox",{name:"Сформированная Идея"}) as HTMLTextAreaElement).value)
+    .toBe("Автор уточнил исходное предложение и выбрал новый смысл");
+ });
 });
