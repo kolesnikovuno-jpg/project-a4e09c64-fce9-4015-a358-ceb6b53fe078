@@ -455,11 +455,11 @@ export async function matterModelReply(provider:Provider,input:MatterPayload,mod
  const externalFindings=input.externalFindings?
   "\nEight independent sphere findings (not Author-approved):\n"+
   JSON.stringify(input.externalFindings):"";
- const prompt="Отобранное Материальное ("+materials.length+" материалов; приоритет авторского отбора):\\n"+
-  JSON.stringify(materials)+"\\n\\n"+
+ const prompt="Отобранное Материальное ("+materials.length+" материалов; приоритет авторского отбора):\n"+
+  JSON.stringify(materials)+"\n\n"+
   (mode==="idea"?"ВНЕШНЕЕ ПОЛЕ (не отобрано Автором; только текст и метаданные; передано "+
-   externalField.length+" карточек):\\n"+JSON.stringify(externalField)+"\\n"+
-   "URL здесь не открыты; изображения/видео не просмотрены. Внешние карточки НЕ являются утверждённой ДНК.\\n\\n":"")+(mode==="idea"&&materials.some(m=>m.id==="space-context-photo")?"Материал space-context-photo обозначает фото СРЕДЫ, не образец проектируемого объекта. Вложенные изображения даны в порядке перечисления их материалов.\n\n":"")+"Фокус: "+(input.focusId??"весь холст")+
+   externalField.length+" карточек):\n"+JSON.stringify(externalField)+"\n"+
+   "URL здесь не открыты; изображения/видео не просмотрены. Внешние карточки НЕ являются утверждённой ДНК.\n\n":"")+(mode==="idea"&&materials.some(m=>m.id==="space-context-photo")?"Материал space-context-photo обозначает фото СРЕДЫ, не образец проектируемого объекта. Вложенные изображения даны в порядке перечисления их материалов.\n\n":"")+"Фокус: "+(input.focusId??"весь холст")+
   (mode==="idea"?"\n\nИнициация Автора: "+(input.intent??"не задана")+"\nРамки: "+(input.constraints??"не заданы")+"\nЧерновая карта из Материального: "+(input.materialInsight??"нет"):"")+"\n\nДиалог:\n"+messages+externalFindings;
  const controller=new AbortController();
  const timeout=setTimeout(()=>controller.abort(),45000);
