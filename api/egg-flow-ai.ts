@@ -330,7 +330,8 @@ export async function generate(model:Provider,prompt:{instructions:string;input:
 
 type MatterMaterial={id:string;type:"thought"|"link"|"image"|"sketch"|"video";text:string;url?:string;imageData?:string};
 type MatterMessage={role:"user"|"assistant";content:string};
-type MatterPayload={projectId:string;materials:MatterMaterial[];messages:MatterMessage[];focusId?:string;intent?:string;constraints?:string;materialInsight?:string;mapRequested?:boolean};
+type ExternalFieldReference=Pick<MatterMaterial,"id"|"type"|"text"|"url">;
+type MatterPayload={projectId:string;materials:MatterMaterial[];externalField?:ExternalFieldReference[];messages:MatterMessage[];focusId?:string;intent?:string;constraints?:string;materialInsight?:string;mapRequested?:boolean};
 const matterTypes=new Set(["thought","link","image","sketch","video"]);
 const isMatterPayload=(value:unknown):value is MatterPayload=>{
  if(!value||typeof value!=="object"||Array.isArray(value))return false;
@@ -343,6 +344,12 @@ const isMatterPayload=(value:unknown):value is MatterPayload=>{
    (m.url===undefined||(typeof m.url==="string"&&m.url.length<=2048&&/^https?:\/\//i.test(m.url)))&&
    (m.imageData===undefined||(typeof m.imageData==="string"&&
     /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(m.imageData)&&m.imageData.length<220000)))&&
+  (v.externalField===undefined||(Array.isArray(v.externalField)&&v.externalField.length<=16&&
+   v.externalField.every(c=>c&&typeof c.id==="string"&&c.id.length>0&&c.id.length<=120&&
+    typeof c.type==="string"&&matterTypes.has(c.type)&&
+    typeof c.text==="string"&&c.text.length<=500&&
+    (c.url===undefined||(typeof c.url==="string"&&c.url.length<=2048&&/^https?:\/\//i.test(c.url)))&&
+    !("imageData" in c))))&&
   Array.isArray(v.messages)&&v.messages.length>=1&&v.messages.length<=16&&
   v.messages.every(m=>m&&(m.role==="user"||m.role==="assistant")&&typeof m.content==="string"&&m.content.length<=3000)&&
   v.messages[v.messages.length-1].role==="user"&&
@@ -373,7 +380,11 @@ const ideaInstructions=[
  "Ты — исследовательский партнёр Автора в сфере EGG «Идея».",
  "Твоя роль: "+EGG_ENTRY_MANIFESTS.idea.role+". "+EGG_ENTRY_MANIFESTS.idea.mission,
  "Только Автор инициирует направление и утверждает идею. Рамки Автора имеют приоритет над гипотезами Материального.",
- "Используй подготовленную карту поля и разрешённые карточки как контекст, а не как готовый или утверждённый концепт.",
+ "Используй карту Материального и отобранные Автором карточки как приоритетные основания исследования, а не как готовую концепцию.",
+ "ВНЕШНЕЕ ПОЛЕ — отдельный список ещё НЕ ОТОБРАННЫХ карточек. Они могут указывать возможности и противоречия, но НЕ входят в Материальное и НЕ утверждают ДНК.",
+ "Не смешивай происхождение данных двух слоёв: при упоминании конкретного наблюдения укажи его ID и статус (Материальное / внешнее Поле). Образы из внешнего Поля не должны навязывать Автору чужую форму.",
+ "Ни ссылки, ни фото, ни видео во внешнем Поле не открываются автоматически: если прочитан только текст/метаданные, не приписывай содержимое непроверенным источникам.",
+
  "Если среди материалов есть id space-context-photo, это отдельная ФОТОГРАФИЯ СУЩЕСТВУЮЩЕГО ПРОСТРАНСТВА: анализируй только видимые композиционные и средовые особенности как контекст размещения замысла. Это не референс формы будущего объекта. Не выводи точные размеры, материалы скрытых конструкций, требования заказчика или геометрию по одному фото.",
  "Если у Автора есть намерение, развивай его образно-смысловое ядро. Если рамки не заданы, не выдумывай размеры, материалы, назначение или технологию.",
  "Не своди идею преждевременно к утилитарному предмету либо геометрии; сохраняй образ, характер, аккорд и потенциал.",
@@ -412,9 +423,17 @@ export async function matterModelReply(provider:Provider,input:MatterPayload,mod
   ref:i+1,id:m.id,type:m.type,text:m.text,url:m.url??null,
   vision:m.imageData?"Визуальное превью приложено":"Изображение/содержимое не передано",
  }));
+ const externalField=mode==="idea"?(input.externalField??[]).map(c=>({
+  id:c.id,type:c.type,text:c.text,url:c.url??null,
+  status:"unselected_field_reference",
+  vision:"metadata_only; image/video/link NOT opened",
+ })):[];
  const messages=input.messages.map(m=>m.role+": "+m.content).join("\n\n");
- const prompt="Состав материального холста ("+materials.length+" материалов):\n"+
-  JSON.stringify(materials)+"\n\n"+(mode==="idea"&&materials.some(m=>m.id==="space-context-photo")?"Материал space-context-photo обозначает фото СРЕДЫ, не образец проектируемого объекта. Вложенные изображения даны в порядке перечисления их материалов.\n\n":"")+"Фокус: "+(input.focusId??"весь холст")+
+ const prompt="Отобранное Материальное ("+materials.length+" материалов; приоритет авторского отбора):\\n"+
+  JSON.stringify(materials)+"\\n\\n"+
+  (mode==="idea"?"ВНЕШНЕЕ ПОЛЕ (не отобрано Автором; только текст и метаданные; передано "+
+   externalField.length+" карточек):\\n"+JSON.stringify(externalField)+"\\n"+
+   "URL здесь не открыты; изображения/видео не просмотрены. Внешние карточки НЕ являются утверждённой ДНК.\\n\\n":"")+(mode==="idea"&&materials.some(m=>m.id==="space-context-photo")?"Материал space-context-photo обозначает фото СРЕДЫ, не образец проектируемого объекта. Вложенные изображения даны в порядке перечисления их материалов.\n\n":"")+"Фокус: "+(input.focusId??"весь холст")+
   (mode==="idea"?"\n\nИнициация Автора: "+(input.intent??"не задана")+"\nРамки: "+(input.constraints??"не заданы")+"\nЧерновая карта из Материального: "+(input.materialInsight??"нет"):"")+"\n\nДиалог:\n"+messages;
  const controller=new AbortController();
  const timeout=setTimeout(()=>controller.abort(),45000);
