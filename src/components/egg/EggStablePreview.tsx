@@ -35,5 +35,9 @@ export default function EggStablePreview({ children }: { children: ReactNode }) 
     role="status" data-testid="egg-canonical-redirect">
     Открываем постоянный адрес EGG…
   </main>;
-  return <>{children}</>;
+  // Shared backdrop for EGG-only routes; the studio's public landing is untouched.
+  // The wordmark is purely visual. Project state, auth and navigation stay intact.
+  return <div className="egg-brand-shell" data-testid="egg-brand-shell">
+    <div className="egg-brand-content">{children}</div>
+  </div>;
 }
