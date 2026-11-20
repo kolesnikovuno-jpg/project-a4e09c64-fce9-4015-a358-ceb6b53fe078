@@ -31,7 +31,7 @@ const readableIdeaText=(value:string)=>value
  .replace(/^\\s*#{1,4}\\s+/gm,"")
  .replace(/\\*\\*/g,"");
 type FieldItem=MatterCard&{location?:string;sourceUrl?:string};
-type IdeaRecord={intent:string;constraints:string;messages:Message[];savedDraft:string;spacePhoto:string};
+type IdeaRecord={intent:string;constraints:string;messages:Message[];savedDraft:string;spacePhoto:string;priorDnaBasis?:string};
 const readJSON=(key:string):unknown=>{
  try{return JSON.parse(localStorage.getItem(key)??"null");}catch{return null;}
 };
@@ -65,7 +65,13 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
   old?.dna===next?.dna&&old?.idea===next?.idea?old:next),[]);
  // A confirmed DNA draft should reveal the actual server approval control.
  // Never approve automatically; only expose the next Author action.
- useEffect(()=>{if(reviewedDna?.dna)setCycleEntryOpen(true);},[reviewedDna?.dna]);
+ useEffect(()=>{
+  if(!reviewedDna?.dna)return;
+  setCycleEntryOpen(true);
+  document.querySelector('[data-testid="egg-open-iteration"]')?.scrollIntoView?.({
+   behavior:"smooth",block:"center",
+  });
+ },[reviewedDna?.dna]);
  const [sketchOpen,setSketchOpen]=useState(false);
  const [sketchStrokes,setSketchStrokes]=useState<SketchStroke[]>([]);
  const [sketchImage,setSketchImage]=useState("");
@@ -103,6 +109,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
    setIntent(typeof state.intent==="string"?state.intent:"");
    setConstraints(typeof state.constraints==="string"?state.constraints:"");
    setSavedDraft(typeof state.savedDraft==="string"?state.savedDraft:"");
+   setPriorIdeaForDna(typeof state.priorDnaBasis==="string"?state.priorDnaBasis.slice(0,1000):"");
    setSpacePhoto(typeof state.spacePhoto==="string"&&/^data:image\/jpeg;base64,/.test(state.spacePhoto)&&state.spacePhoto.length<210000?state.spacePhoto:"");
    setMessages(Array.isArray(state.messages)?state.messages.filter(m=>m&&(m.role==="user"||m.role==="assistant")&&typeof m.content==="string").slice(-40):[]);
   }
@@ -164,7 +171,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
   return()=>{active=false;};
  },[projectId]);
  useEffect(()=>{
-  if(loaded)try{localStorage.setItem(key,JSON.stringify({intent,constraints,messages:messages.slice(-40),savedDraft,spacePhoto}));}catch{setError("Недостаточно места для сохранения черновика.");}
+  if(loaded)try{localStorage.setItem(key,JSON.stringify({intent,constraints,messages:messages.slice(-40),savedDraft,spacePhoto,priorDnaBasis:priorIdeaForDna}));}catch{setError("Недостаточно места для сохранения черновика.");}
  },[key,intent,constraints,messages,savedDraft,spacePhoto,loaded]);
  useEffect(()=>{bottom.current?.scrollIntoView?.({behavior:"smooth",block:"nearest"});},[messages,busy]);
  const latestAnswer=useMemo(()=>[...messages].reverse().find(m=>m.role==="assistant")?.content??"",[messages]);
@@ -283,7 +290,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
       onClick={()=>{
        // Snapshot only; Author has not approved a cycle or DNA.
        try{localStorage.setItem(key,JSON.stringify({
-        intent,constraints,messages:messages.slice(-40),savedDraft,spacePhoto,
+        intent,constraints,messages:messages.slice(-40),savedDraft,spacePhoto,priorDnaBasis:priorIdeaForDna,
        }));}catch{/* local draft remains unaffected */}
        if(onOpenYolk)onOpenYolk();
        else window.location.assign("/egg/yolk?project="+encodeURIComponent(projectId));
@@ -292,13 +299,14 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
       Желток · 3D-поле
      </button>
      <EggWorkspaceSync projectId={projectId} scope="idea" ready={loaded}
-      value={{intent,constraints,savedDraft,spacePhoto,messages:messages.slice(-40)}}
-      isEmpty={v=>!v.intent.trim()&&!v.savedDraft.trim()&&!v.spacePhoto&&!v.constraints.trim()&&!v.messages.length}
+      value={{intent,constraints,savedDraft,spacePhoto,messages:messages.slice(-40),priorDnaBasis:priorIdeaForDna}}
+      isEmpty={v=>!v.intent.trim()&&!v.savedDraft.trim()&&!v.spacePhoto&&!v.constraints.trim()&&!v.messages.length&&!v.priorDnaBasis}
       onRestore={v=>{
        if(!v||typeof v!=="object")return;
        setIntent(typeof v.intent==="string"?v.intent.slice(0,3000):"");
        setConstraints(typeof v.constraints==="string"?v.constraints.slice(0,2000):"");
        setSavedDraft(typeof v.savedDraft==="string"?v.savedDraft.slice(0,4000):"");
+       setPriorIdeaForDna(typeof v.priorDnaBasis==="string"?v.priorDnaBasis.slice(0,1000):"");
        setSpacePhoto(typeof v.spacePhoto==="string"&&
         /^data:image\/jpeg;base64,/.test(v.spacePhoto)&&v.spacePhoto.length<210000?v.spacePhoto:"");
        setMessages(Array.isArray(v.messages)?v.messages.filter(m=>m&&
