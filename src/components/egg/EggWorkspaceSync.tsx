@@ -119,7 +119,17 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
  const emptyRef=useRef(isEmpty);
  valueRef.current=value;restoreRef.current=onRestore;emptyRef.current=isEmpty;
  const valueHash=eggSnapshotHash(value);
+ const pendingServerWrite=ready&&initializedRef.current&&status!=="conflict"&&
+  status!=="local"&&status!=="error"&&valueHash!==savedHashRef.current;
  const metaKey="egg:sync-meta:v1:"+scope+":"+projectId;
+ // Do not tell authors their Field was saved while the 950ms write is only
+ // scheduled. On refresh, Safari may abandon a pending network write.
+ useEffect(()=>{
+  if(scope!=="field"||!pendingServerWrite)return;
+  const guard=(event:BeforeUnloadEvent)=>{event.preventDefault();event.returnValue="";};
+  window.addEventListener("beforeunload",guard);
+  return()=>window.removeEventListener("beforeunload",guard);
+ },[scope,pendingServerWrite]);
 
  async function readRemote():Promise<Remote|null>{
   const session=clientRef.current;
@@ -260,7 +270,7 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
   const timer=setTimeout(()=>{
    if(busyRef.current)return;
    void save(valueRef.current,revisionRef.current);
-  },950);
+  },scope==="field"?450:950);
   return()=>clearTimeout(timer);
  },[ready,projectId,scope,valueHash,status]);
  async function restoreRecovery(){
@@ -366,7 +376,9 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
  return <div className={"text-[10px] text-foreground/60 "+className}
   data-testid={"egg-workspace-sync-"+scope}>
   {status==="synced"?<div className="flex flex-wrap items-center gap-2">
-   <span title={"Серверная версия "+serverRevision}>В EGG · синхронизировано</span>
+   <span title={"Серверная версия "+serverRevision}>
+    {pendingServerWrite?"Изменения ещё сохраняются в EGG…":"В EGG · синхронизировано"}
+   </span>
    {scope==="field"&&<button type="button"
     data-testid="egg-download-field-archive" onClick={()=>void downloadVerifiedField()}
     className="border-b border-foreground/25 text-[11px] text-foreground/70">
