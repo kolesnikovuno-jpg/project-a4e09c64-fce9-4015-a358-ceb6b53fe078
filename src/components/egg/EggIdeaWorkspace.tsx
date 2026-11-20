@@ -8,6 +8,7 @@ import EggFormStudyAccess from "./EggFormStudyAccess";
 import EggWorkspaceSync from "./EggWorkspaceSync";
 import EggIdeaProjectFork from "./EggIdeaProjectFork";
 import EggDnaFormation from "./EggDnaFormation";
+import EggIdeaExteriorRound from "./EggIdeaExteriorRound";
 import EggAuthorProcessMonitor from "./EggAuthorProcessMonitor";
 import EggSketchEditor, {type SketchStroke} from "./EggSketchEditor";
 import type {EggIdeaHandoff} from "../../lib/eggIdeaHandoff";
@@ -51,6 +52,8 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
  const [fieldCards,setFieldCards]=useState<FieldItem[]>([]);
  const [materialInsight,setMaterialInsight]=useState("");
  const [materialMap,setMaterialMap]=useState<EggMaterialMapRecord|null>(null);
+ const [exteriorIdea,setExteriorIdea]=useState("");
+ const onExteriorIdea=useCallback((value:string)=>setExteriorIdea(previous=>previous===value?previous:value),[]);
  const [loaded,setLoaded]=useState(false);
  const [cycleEntryOpen,setCycleEntryOpen]=useState(false);
  const dnaStepRef=useRef<HTMLDetailsElement>(null);
@@ -259,9 +262,11 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
       placeholder="Что хочешь инициировать? Например: неутилитарный элемент пространства — отдельная нота…"
       className="mt-2 w-full resize-y rounded-xl border border-foreground/15 bg-background/80 p-3 text-base outline-none focus:border-foreground/40 md:text-sm"/>
     </label>
+    <EggIdeaExteriorRound projectId={projectId} intent={intent} constraints={constraints}
+     materials={materials} fieldCards={fieldCards} materialInsight={materialInsight}
+     sketchImage={sketchImage} spacePhoto={spacePhoto} visualKey={visualSourceKey}
+     onIdeaReady={onExteriorIdea}/>
     <div className="flex flex-wrap items-center gap-3">
-     <button type="button" disabled={!intent.trim()||busy} onClick={()=>void submit("Исследуй исходное намерение с учётом принятых материалов и моего рисунка. Кратко сопоставь исследовательские перспективы восьми сфер, без заявления о фактическом запуске внутреннего цикла и без вымышленных внешних источников. Раздели наблюдения, гипотезы и противоречия; предложи одну рабочую формулировку Идеи и один существенный вопрос.")}
-      data-testid="egg-idea-start-research" className="rounded-full bg-[#607466] px-4 py-2 text-xs text-white disabled:opacity-40">Пуск · исследовать Идею</button>
      <button type="button" onClick={()=>setSketchOpen(true)} className="rounded-full border border-foreground/30 px-3 py-2 text-xs" data-testid="egg-author-draw-sketch">
       {sketchStrokes.length?"Изменить рисунок":"Нарисовать скетч"}</button>
      <button type="button" data-testid="egg-save-author-draft"
@@ -355,11 +360,12 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
     </details>
     <details className="rounded-xl border border-foreground/15 bg-background/75 p-3" data-testid="egg-author-dna-step">
      <summary className="cursor-pointer text-sm font-medium">
-      {reviewedDna?"Идея и ДНК · проверены Автором":latestAnswer?"Следующий шаг · сформировать Идею и ДНК":"Формирование ДНК · после исследования"}
+      {reviewedDna?"ДНК · проверена Автором":exteriorIdea?"Следующий шаг · выделить ДНК из Идеи":"ДНК · после внешнего круга сфер"}
      </summary>
      <div className="mt-3">
     <EggDnaFormation projectId={projectId} intent={intent} constraints={constraints}
-     materials={materials} materialInsight={materialInsight} visualSourceKey={visualSourceKey} latestAnswer={latestAnswer}
+     materials={materials} materialInsight={materialInsight} visualSourceKey={visualSourceKey+":"+exteriorIdea} latestAnswer={latestAnswer}
+     suggestedIdea={exteriorIdea}
      onRequestAi={prompt=>{void submit(prompt);setMobilePane("dialogue");}}
      onReviewChange={onDnaReview}/>
      </div>
