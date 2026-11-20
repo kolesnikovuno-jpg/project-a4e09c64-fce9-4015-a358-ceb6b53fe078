@@ -304,7 +304,7 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
   try{
    const content=JSON.parse(await file.text()) as {format?:string;projectId?:string;cards?:unknown[]};
    if(content.format!=="EGG_FIELD_BACKUP_V1"||content.projectId!==projectId||
-      !Array.isArray(content.cards)||content.cards.length>500)
+      !Array.isArray(content.cards)||content.cards.length===0||content.cards.length>500)
     throw Error("Архив не относится к этому проекту или имеет неверный формат.");
    const ids=new Set<string>();
    for(const item of content.cards){
@@ -326,9 +326,10 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
   try{
    const existing=await readRemote();
    const snapshot=pendingImport.cards as T;
-   if(existing&&Array.isArray(existing.payload)&&existing.payload.length>0&&
-      !backupLocal(projectId,scope,existing.payload)){
-     setNotice("Сначала освободите место для резервной копии текущего Поля.");return;
+   if(existing&&Array.isArray(existing.payload)&&existing.payload.length>0){
+    // Best-effort browser backup; mandatory previous versions are archived by
+    // the server-side Field trigger, even if Safari's local quota is full.
+    backupLocal(projectId,scope,existing.payload);
    }
    await save(snapshot,existing?.revision??0,true);
    if(savedHashRef.current!==eggSnapshotHash(snapshot)){
