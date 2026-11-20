@@ -79,6 +79,11 @@ export default function EggIdeaExteriorRound({
  useEffect(()=>()=>{runId.current++;requestController.current?.abort();},[]);
 
  async function run(refreshSynthesis=false,repairOnly=false){
+  // When an interrupted repair leaves 8/8 records but no synthesis, continue
+  // from the remaining damaged sphere instead of skipping it and synthesizing
+  // the old truncated answer.
+  if(!refreshSynthesis&&!repairOnly&&count===8&&!validSnapshot.idea&&repairCandidates.length>0)
+   repairOnly=true;
   if(running||!intent.trim()||(refreshSynthesis&&(count!==8||!validSnapshot.idea))||
     (repairOnly&&repairCandidates.length===0))return;
   const current=++runId.current;
@@ -117,6 +122,8 @@ export default function EggIdeaExteriorRound({
     const result=await response.json() as {ok?:boolean;reply?:string;error?:string};
     if(!response.ok||!result.ok||!result.reply)
       throw Error(response.status===429?"Провайдер ограничил запросы. Результаты сохранены; позже можно продолжить.":
+        result.error==="ai_provider_bad_request"?
+        "Провайдер ИИ отклонил запрос этой сферы (некорректный запрос). Результаты остальных сфер сохранены. Попробуйте продолжить только оставшийся шаг.":
         "ИИ не завершил исследование: "+(result.error||response.status));
     if(result.reply.length>2400)throw Error("Ответ ИИ слишком длинный. Ничего не обрезано и не сохранено; повторите только текущий шаг.");
     return result.reply;
@@ -172,7 +179,7 @@ export default function EggIdeaExteriorRound({
     <button type="button" onClick={()=>void run()} disabled={!intent.trim()||!!validSnapshot.idea}
      data-testid="egg-idea-start-research"
      className="rounded-full bg-[#607466] px-4 py-2 text-xs text-white disabled:opacity-40">
-     {validSnapshot.idea?"Завершено":count>0?"Продолжить внешний круг":"Пуск · 8 сфер"}
+     {validSnapshot.idea?"Завершено":count===8&&repairCandidates.length>0?"Продолжить · "+repairCandidates.length+" сфера":count>0?"Продолжить внешний круг":"Пуск · 8 сфер"}
     </button>}
   </div>
   {running&&<div role="progressbar" aria-label="Исследование восьми сфер"
@@ -212,7 +219,7 @@ export default function EggIdeaExteriorRound({
         <summary className="cursor-pointer">Предыдущие версии синтеза · {validSnapshot.history?.length}</summary>
         {validSnapshot.history?.map((item,i)=><p key={i} className="mt-2 whitespace-pre-wrap break-words">{item}</p>)}
       </details>}
-      {count===8&&<button type="button" disabled={running} onClick={()=>void run(true)}
+      {count===8&&repairCandidates.length===0&&<button type="button" disabled={running} onClick={()=>void run(true)}
         data-testid="egg-rethink-existing-eight" className="mt-3 border border-foreground/20 px-3 py-2 text-xs disabled:opacity-40">
         Пересобрать вывод из 8 сфер · 1 запрос ИИ
       </button>}
