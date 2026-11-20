@@ -172,7 +172,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
  },[projectId]);
  useEffect(()=>{
   if(loaded)try{localStorage.setItem(key,JSON.stringify({intent,constraints,messages:messages.slice(-40),savedDraft,spacePhoto,priorDnaBasis:priorIdeaForDna}));}catch{setError("Недостаточно места для сохранения черновика.");}
- },[key,intent,constraints,messages,savedDraft,spacePhoto,loaded]);
+ },[key,intent,constraints,messages,savedDraft,spacePhoto,priorIdeaForDna,loaded]);
  useEffect(()=>{bottom.current?.scrollIntoView?.({behavior:"smooth",block:"nearest"});},[messages,busy]);
  const latestAnswer=useMemo(()=>[...messages].reverse().find(m=>m.role==="assistant")?.content??"",[messages]);
  const addSpacePhoto=async(file:File|undefined)=>{
