@@ -47,7 +47,7 @@ export function eggPhotosFromCards(cards:readonly EggPhotoCard[]):ZipEntry[]{
   let name=filename(typeof c.text==="string"?c.text:"",formats[m[1]],result.length);
   const suffix="."+formats[m[1]],stem=name.slice(0,-suffix.length);
   let counter=2;
-  while(used.has(name.toLowerCase()))name=stem+"-"+counter+++suffix;
+  while(used.has(name.toLowerCase()))name=stem+"-"+String(counter++)+suffix;
   used.add(name.toLowerCase());
   result.push({name,nameBytes:encoder.encode(name),data,crc:crc32(data)});
  }
