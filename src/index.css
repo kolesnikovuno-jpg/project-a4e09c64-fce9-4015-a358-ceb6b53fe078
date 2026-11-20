@@ -49,7 +49,7 @@
     --input: 0 0% 90%;
     --ring: 203 24% 45%;
 
-    --radius: 9999px;
+    --radius: 0px;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 0 0% 20%;
@@ -210,11 +210,10 @@
  .egg-menu-hub > span {font-size:11px;}
 }
 
-/* EGG iteration reader: do not inherit the global 9999px pill radius on
-   article cards. Pill buttons and small status counters keep their own form. */
+/* EGG iteration reader: retain sharp, readable edges on mobile. */
 @media(max-width:767px){
  .egg-iteration-layout :is(section,div,details)[class*="rounded"]{
-  border-radius:12px;
+  border-radius:0;
  }
  .egg-iteration-layout [data-testid="egg-cycle-summary"]{
   max-width:100%;
@@ -232,4 +231,20 @@
  .egg-idea-reading .egg-menu-launcher{opacity:.33;transition:opacity 150ms ease;}
  .egg-idea-reading .egg-menu-launcher:focus-visible,
  .egg-idea-reading .egg-menu-launcher:active{opacity:1;}
+}
+
+/* EGG / Idea + Author: one architectural language for frames.
+   Global radius used to be 9999px, turning even multiline form fields into
+   ellipses. No rounded paper/card/textarea surfaces here. Navigation dials and
+   explicit close circles remain circular by design. */
+[data-testid="egg-idea-workspace"] :is(
+  section, article, details, textarea, select, input:not([type="checkbox"]),
+  div[class*="rounded"],
+  button:not(.egg-menu-launcher):not(.egg-menu-orbit-item):not(.egg-menu-hub):not([aria-label="Закрыть сферу Идея"])
+){
+  border-radius:0 !important;
+}
+/* The fixed circular menu stays circular, even when rendered inside Idea. */
+[data-testid="egg-idea-workspace"] :is(.egg-menu-launcher,.egg-menu-orbit-item,.egg-menu-hub){
+  border-radius:50% !important;
 }
