@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS public.egg_workspace_snapshot_history (
 );
 
 ALTER TABLE public.egg_workspace_snapshot_history ENABLE ROW LEVEL SECURITY;
+GRANT SELECT ON public.egg_workspace_snapshot_history TO authenticated;
 DROP POLICY IF EXISTS "Read own field history" ON public.egg_workspace_snapshot_history;
 CREATE POLICY "Read own field history" ON public.egg_workspace_snapshot_history
   FOR SELECT TO authenticated USING (owner_id=auth.uid());
