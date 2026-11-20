@@ -31,8 +31,13 @@ export type EggReconciliation="empty"|"upload_local"|"load_remote"|"in_sync"|"co
 /** No choice is permitted to silently discard two different unsynced versions. */
 export function decideEggReconciliation(
  local:unknown,remote:Remote|null,meta:Meta|null,localEmpty:boolean,
+ remoteEmpty?:boolean,
 ):EggReconciliation{
  if(!remote)return localEmpty?"empty":"upload_local";
+ // An empty browser cache is not explicit deletion. If the server has real
+ // content, always recover it first — even when an older sync-meta token
+ // would otherwise authorize uploading an empty array.
+ if(localEmpty&&remoteEmpty===false)return "load_remote";
  const localHash=eggSnapshotHash(local),remoteHash=eggSnapshotHash(remote.payload);
  if(localHash===remoteHash)return "in_sync";
  if(meta&&meta.revision===remote.revision&&meta.hash===remoteHash)return "upload_local";
@@ -110,7 +115,7 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
   writeMeta(metaKey,revision,data);
   setStatus("synced");setNotice("");
  }
- async function save(snapshot:T,expected:number){
+ async function save(snapshot:T,expected:number,allowDestructive=false){
   if(busyRef.current)return;
   const session=clientRef.current;
   if(!session)return;
@@ -121,6 +126,17 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
   }
   busyRef.current=true;setStatus("saving");
   try{
+   // Image cards live in the same Field record, including those moved to
+   // Matter. Never replace a larger remote selection with a smaller local
+   // snapshot silently (Safari may evict localStorage on refresh).
+   if(scope==="field"&&Array.isArray(snapshot)&&expected>0&&!allowDestructive){
+    const fresh=await readRemote();
+    if(fresh&&Array.isArray(fresh.payload)&&snapshot.length<fresh.payload.length){
+     setConflict(fresh);setStatus("conflict");
+     setNotice("Сервер содержит больше карточек, чем локальный холст. Для удаления нужно явное решение Автора.");
+     return;
+    }
+   }
    let revision:number|undefined;
    if(expected===0){
     const {data,error}=await session.client.from(TABLE)
@@ -170,11 +186,17 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
     const remote=await readRemote();
     if(!active)return;
     const current=valueRef.current,meta=readMeta(metaKey);
-    const decision=decideEggReconciliation(current,remote,meta,emptyRef.current(current));
+    const localIsEmpty=emptyRef.current(current);
+    const remoteIsEmpty=remote?emptyRef.current(remote.payload as T):true;
+    const decision=decideEggReconciliation(current,remote,meta,localIsEmpty,remoteIsEmpty);
+    // Even a non-empty truncated Field (fewer cards than the server) must
+    // never be assumed to be an intentional deletion after reloading.
+    const safeDecision=scope==="field"&&remote&&Array.isArray(remote.payload)&&Array.isArray(current)&&
+      current.length>0&&current.length<remote.payload.length&&decision==="upload_local"?"conflict":decision;
     initializedRef.current=true;
-    if(decision==="empty"){setStatus("synced");setServerRevision(0);return;}
-    if(decision==="in_sync"&&remote){mark(remote.revision,remote.payload);return;}
-    if(decision==="load_remote"&&remote){
+    if(safeDecision==="empty"){setStatus("synced");setServerRevision(0);return;}
+    if(safeDecision==="in_sync"&&remote){mark(remote.revision,remote.payload);return;}
+    if(safeDecision==="load_remote"&&remote){
      if(!emptyRef.current(current)&&eggSnapshotHash(current)!==eggSnapshotHash(remote.payload)&&
        !backupLocal(projectId,scope,current)){
        setStatus("error");setNotice("Резервная копия не поместилась. Локальный черновик оставлен без изменений.");
@@ -183,7 +205,7 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
      mark(remote.revision,remote.payload);restoreRef.current(remote.payload as T);
      return;
     }
-    if(decision==="conflict"&&remote){
+    if(safeDecision==="conflict"&&remote){
      setConflict(remote);setStatus("conflict");return;
     }
     revisionRef.current=remote?.revision??0;
@@ -229,7 +251,7 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
   }
   const revision=conflict.revision;
   setConflict(null);
-  void save(valueRef.current,revision);
+  void save(valueRef.current,revision,true);
  }
  return <div className={"text-[10px] text-foreground/60 "+className}
   data-testid={"egg-workspace-sync-"+scope}>
