@@ -187,8 +187,9 @@ describe("External research in the Author Idea workspace",()=>{
   }));
   const fetchMock=vi.fn();vi.stubGlobal("fetch",fetchMock);
   const onReady=vi.fn();
+  const onProceed=vi.fn();
   const props={projectId:id,intent,constraints:"",fieldCards:[],materialInsight:"",
-   sketchImage:"",spacePhoto:"",visualKey:"v",onIdeaReady:onReady};
+   sketchImage:"",spacePhoto:"",visualKey:"v",onIdeaReady:onReady,onProceed};
   const screenView=render(<EggIdeaExteriorRound {...props} materials={[]}/>);
   expect(screen.getByTestId("egg-formed-idea-core").textContent).toContain("Сохранённое");
   screenView.rerender(<EggIdeaExteriorRound {...props}
@@ -196,6 +197,8 @@ describe("External research in the Author Idea workspace",()=>{
   await waitFor(()=>expect(screen.getByTestId("egg-exterior-prior-source")).toBeTruthy());
   expect(screen.queryByTestId("egg-formed-idea-core")).toBeNull();
   expect(screen.getByTestId("egg-exterior-prior-source").textContent).toContain("8/8");
+  fireEvent.click(screen.getByTestId("egg-use-prior-idea-for-dna"));
+  expect(onProceed).toHaveBeenCalledWith("Сохранённое исследование старого набора изображений.");
   expect(screen.getByTestId("egg-idea-start-research").textContent).toContain("Пуск · 8 сфер");
   expect(JSON.parse(localStorage.getItem("egg:idea-exterior:v1:"+id)||"{}").findings).toHaveLength(8);
   expect(fetchMock).not.toHaveBeenCalled();
