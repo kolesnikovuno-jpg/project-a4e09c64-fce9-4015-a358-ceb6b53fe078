@@ -248,3 +248,32 @@
 [data-testid="egg-idea-workspace"] :is(.egg-menu-launcher,.egg-menu-orbit-item,.egg-menu-hub){
   border-radius:50% !important;
 }
+
+
+/* Yolk DNA reception: a quiet heartbeat, not a premature 3D object.
+   Motion is disabled for the user's reduced-motion setting. */
+.egg-dna-heart {
+  transform-origin: 50% 52%;
+  animation: egg-dna-breathe 5.6s ease-in-out infinite;
+  will-change: transform;
+}
+.egg-dna-aura {
+  background: radial-gradient(circle at center,
+    rgba(147, 214, 208, .17) 0%,
+    rgba(147, 214, 208, .07) 40%,
+    rgba(147, 214, 208, 0) 74%);
+  animation: egg-dna-glow 5.6s ease-in-out infinite;
+  will-change: opacity;
+}
+@keyframes egg-dna-breathe {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.045); }
+}
+@keyframes egg-dna-glow {
+  0%,100% { opacity: .48; }
+  50% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .egg-dna-heart,
+  .egg-dna-aura { animation: none; will-change: auto; }
+}
