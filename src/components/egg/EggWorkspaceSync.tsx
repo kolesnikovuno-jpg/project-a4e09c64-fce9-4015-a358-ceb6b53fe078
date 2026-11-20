@@ -4,6 +4,24 @@ import {createClient,type SupabaseClient} from "@supabase/supabase-js";
 export type EggWorkspaceScope="idea"|"field"|"matter"|"research"|"exterior";
 type Meta={revision:number;hash:string};
 type Remote={payload:unknown;revision:number};
+type RecoveryCandidate={payload:unknown;source:"browser"|"server";revision:number};
+function findLocalFieldRecovery(projectId:string):RecoveryCandidate|null{
+ try{
+  const prefix="egg:sync-backup:field:"+projectId+":";
+  const keys:string[]=[];
+  for(let i=0;i<localStorage.length;i++){
+   const key=localStorage.key(i);
+   if(key?.startsWith(prefix))keys.push(key);
+  }
+  keys.sort().reverse();
+  for(const key of keys){
+   const raw=localStorage.getItem(key),parsed=raw?JSON.parse(raw):null;
+   if(Array.isArray(parsed)&&parsed.length)
+    return {payload:parsed,source:"browser",revision:0};
+  }
+ }catch{/* Browser backup may be inaccessible. */}
+ return null;
+}
 type Status="connecting"|"synced"|"saving"|"conflict"|"local"|"error";
 const TABLE="egg_workspace_snapshots";
 const MAX_BYTES=2_700_000;
@@ -87,6 +105,7 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
  const [retryTick,setRetryTick]=useState(0);
  const [notice,setNotice]=useState("");
  const [conflict,setConflict]=useState<Remote|null>(null);
+ const [recovery,setRecovery]=useState<RecoveryCandidate|null>(null);
  const [serverRevision,setServerRevision]=useState(0);
  const clientRef=useRef<{client:SupabaseClient;ownerId:string}|null>(null);
  const revisionRef=useRef(0);
@@ -172,7 +191,7 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
   initializedRef.current=false;
   clientRef.current=null;
   revisionRef.current=0;savedHashRef.current="";
-  setConflict(null);setNotice("");setStatus("connecting");
+  setConflict(null);setRecovery(null);setNotice("");setStatus("connecting");
   void(async()=>{
    try{
     const config=await fetch("/api/egg-config",{cache:"no-store"});
@@ -188,6 +207,19 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
     const current=valueRef.current,meta=readMeta(metaKey);
     const localIsEmpty=emptyRef.current(current);
     const remoteIsEmpty=remote?emptyRef.current(remote.payload as T):true;
+    if(scope==="field"&&localIsEmpty&&remoteIsEmpty){
+     let candidate=findLocalFieldRecovery(projectId);
+     if(!candidate){
+      // Versioned server history is populated by the archive trigger before
+      // overwriting a prior non-empty Field snapshot. It is owner-RLS scoped.
+      const {data:prior}=await client.from("egg_workspace_snapshot_history")
+       .select("payload,revision").eq("project_id",projectId).eq("scope","field")
+       .order("revision",{ascending:false}).limit(1).maybeSingle();
+      if(prior&&Array.isArray(prior.payload)&&prior.payload.length)
+       candidate={payload:prior.payload,source:"server",revision:Number(prior.revision)};
+     }
+     if(active)setRecovery(candidate);
+    }
     const decision=decideEggReconciliation(current,remote,meta,localIsEmpty,remoteIsEmpty);
     // Even a non-empty truncated Field (fewer cards than the server) must
     // never be assumed to be an intentional deletion after reloading.
@@ -229,6 +261,26 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
   },950);
   return()=>clearTimeout(timer);
  },[ready,projectId,scope,valueHash,status]);
+ async function restoreRecovery(){
+  const candidate=recovery;
+  if(!candidate||scope!=="field"||busyRef.current)return;
+  try{
+   const current=await readRemote();
+   if(current&&Array.isArray(current.payload)&&current.payload.length){
+    setConflict(current);setStatus("conflict");
+    setNotice("На сервере уже есть карточки. Сначала сравните версии.");
+    return;
+   }
+   const snapshot=candidate.payload as T;
+   // This is a deliberate Author restore. It does not start a sphere cycle
+   // and cannot silently overwrite a nonempty remote Field.
+   restoreRef.current(snapshot);
+   setRecovery(null);
+   await save(snapshot,current?.revision??0,true);
+  }catch(e){
+   setStatus("error");setNotice(e instanceof Error?e.message:"Не удалось восстановить копию.");
+  }
+ }
  async function useServer(){
   if(!conflict)return;
   const current=valueRef.current;
@@ -255,7 +307,15 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
  }
  return <div className={"text-[10px] text-foreground/60 "+className}
   data-testid={"egg-workspace-sync-"+scope}>
-  {status==="synced"?<span title={"Серверная версия "+serverRevision}>В EGG · синхронизировано</span>:
+  {status==="synced"?<div className="flex flex-wrap items-center gap-2">
+   <span title={"Серверная версия "+serverRevision}>В EGG · синхронизировано</span>
+   {scope==="field"&&recovery&&<button type="button"
+    data-testid="egg-restore-field-recovery"
+    className="border border-foreground/30 px-3 py-1 text-[11px] text-foreground"
+    onClick={()=>void restoreRecovery()}>
+    Восстановить {Array.isArray(recovery.payload)?recovery.payload.length:0} карточек из {recovery.source==="browser"?"копии браузера":"истории EGG"}
+   </button>}
+  </div>:
    status==="saving"||status==="connecting"?<span>{status==="saving"?"Сохранение в EGG…":"Проверка синхронизации…"}</span>:
    status==="local"||status==="error"?<div className="flex flex-wrap items-center gap-2">
     <span role="status" className="text-amber-800">{status==="local"?"Только на этом устройстве":"Не синхронизировано"} · {notice}</span>
