@@ -26,11 +26,11 @@ function restore(projectId:string,key:string):Snapshot{
 const asMessage=(sphere:string)=>"Исследуй инициацию Автора через профессиональную позицию "+sphere+
  ". Внешний круг, до формирования ДНК. Дай краткий независимый диагностический результат.";
 export default function EggIdeaExteriorRound({
- projectId,intent,constraints,materials,fieldCards,materialInsight,sketchImage,spacePhoto,visualKey,onIdeaReady,
+ projectId,intent,constraints,materials,fieldCards,materialInsight,sketchImage,spacePhoto,visualKey,onIdeaReady,onProceed,
 }:{
  projectId:string;intent:string;constraints:string;materials:Selected[];
  fieldCards:EggOuterFieldCard[];materialInsight:string;sketchImage:string;spacePhoto:string;
- visualKey:string;onIdeaReady:(idea:string)=>void;
+ visualKey:string;onIdeaReady:(idea:string)=>void;onProceed?:(idea:string)=>void;
 }){
  const externalField=useMemo(()=>buildEggIdeaExternalField(fieldCards),[fieldCards]);
  const sourceKey=eggIdeaExteriorSourceKey({intent,constraints,materialInsight,
@@ -153,19 +153,24 @@ export default function EggIdeaExteriorRound({
   {validSnapshot.idea&&<div className="rounded-lg border border-foreground/15 bg-background p-3"
     data-testid="egg-exterior-formed-idea">
     <p className="text-[11px] text-foreground/55">Сформированная Идея · предложение, не утверждено</p>
-    <p className="mt-2 whitespace-pre-wrap text-base leading-relaxed" data-testid="egg-formed-idea-core">{formed.idea}</p>
-    {formed.tension&&<p className="mt-3 text-xs leading-relaxed text-foreground/70">
-      <strong>Возможное напряжение:</strong> {formed.tension}
-    </p>}
-    {formed.question&&<p className="mt-2 text-xs leading-relaxed text-foreground/70">
-      <strong>Вопрос для Автора:</strong> {formed.question}
-    </p>}
-    <p className="mt-3 text-xs text-foreground/60">
-      Если смысл верен, перенеси Идею в раздел «Идея → ДНК»; там её можно исправить до утверждения.
-    </p>
-    <details className="mt-3 border-t border-foreground/10 pt-2 text-xs text-foreground/65">
-      <summary className="cursor-pointer">Основания и полный исследовательский вывод</summary>
-      <p className="mt-2 whitespace-pre-wrap break-words leading-relaxed">{formed.fullText}</p>
+    <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed" data-testid="egg-formed-idea-core">{formed.idea}</p>
+    {onProceed&&<button type="button" onClick={()=>onProceed(formed.idea)}
+      disabled={!formed.idea.trim()} data-testid="egg-proceed-to-dna"
+      className="mt-3 min-h-10 rounded-full bg-[#607466] px-4 py-2 text-sm text-white disabled:opacity-40">
+      Продолжить → ДНК
+    </button>}
+    <details className="mt-3 border-t border-foreground/10 pt-3 text-xs text-foreground/65" data-testid="egg-idea-research-details">
+      <summary className="cursor-pointer">Анализ · напряжение, вопрос, основания</summary>
+      {formed.tension&&<p className="mt-3 whitespace-pre-wrap leading-relaxed">
+        <strong>Возможное напряжение:</strong> {formed.tension}
+      </p>}
+      {formed.question&&<p className="mt-3 whitespace-pre-wrap leading-relaxed">
+        <strong>Вопрос для Автора:</strong> {formed.question}
+      </p>}
+      <details className="mt-3 border-t border-foreground/10 pt-2">
+        <summary className="cursor-pointer">Полный исследовательский вывод</summary>
+        <p className="mt-2 whitespace-pre-wrap break-words leading-relaxed">{formed.fullText}</p>
+      </details>
     </details>
    </div>}
   {count>0&&<details className="text-xs text-foreground/65">
