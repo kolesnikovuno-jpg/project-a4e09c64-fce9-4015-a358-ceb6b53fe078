@@ -30,6 +30,18 @@ export function readExteriorContribution(raw:string):ExteriorReading{
   raw:text,
  };
 }
+/** Detect old 1200-character clipping and repeated model fragments.
+ * This does not claim to verify the semantic accuracy of a finding.
+ */
+export function exteriorFindingNeedsRepair(text:string):boolean{
+ if(text.length===1200)return true; // Historical client cut-off
+ if(/(?:^|\s)_norm(?:\s|$)/i.test(text))return true;
+ const sections=Array.from(text.matchAll(/(?:^|\n|\\n)\s*\*{0,2}(?:НАБЛЮДЕНИЕ|ВКЛАД)\s*:/gim));
+ return sections.length>1;
+}
+export function exteriorRepairCandidates(findings:readonly EggIdeaExteriorFinding[]){
+ return findings.filter(f=>exteriorFindingNeedsRepair(f.text)).map(f=>f.sphere);
+}
 export function exteriorResearchAudit(findings:readonly EggIdeaExteriorFinding[]){
  let structured=0,legacy=0,unstructured=0;
  for(const f of findings){
