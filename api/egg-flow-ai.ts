@@ -448,9 +448,16 @@ export async function matterModelReply(provider:Provider,input:MatterPayload,mod
   "Never claim an Internet search or approve DNA.":
   input.externalFindings?
   "\nEXTERNAL EIGHT-SPHERE SYNTHESIS BEFORE DNA: You receive eight independent UNAPPROVED sphere hypotheses. "+
-  "Find the common core and important disagreements; propose one coherent formed IDEA, "+
-  "not an approved DNA, in 2-5 sentences. Add at most one essential question. "+
-  "Do not invent external research, supplier checks, physical tests or market facts.":
+  "Find the common core and important disagreements. Do not simply paraphrase the Author's initiation; "+
+  "distill a meaningful organizing principle without committing to a fixed shape. "+
+  "Do NOT force a binary choice if the Author's concept aims to integrate both qualities. "+
+  "Return exactly four short marked lines in Russian WITHOUT Markdown: "+
+  "ИДЕЯ: (one formed-idea sentence, no ID codes); "+
+  "ОСНОВАНИЯ: (up to two specific source-card IDs and what they actually contribute, with uncertainty); "+
+  "НАПРЯЖЕНИЕ: (one hypothesis about an unresolved relationship); "+
+  "ВОПРОС: (at most one non-leading useful question). "+
+  "Only the ИДЕЯ line can be taken into the Author's DNA editor. "+
+  "No approved DNA, fabricated research, suppliers, tests, market or legal facts.":
   "";
  const externalFindings=input.externalFindings?
   "\nEight independent sphere findings (not Author-approved):\n"+
