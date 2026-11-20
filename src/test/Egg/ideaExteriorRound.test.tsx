@@ -106,4 +106,39 @@ describe("External research in the Author Idea workspace",()=>{
   expect(stored.findings).toHaveLength(8);
   expect(stored.history).toEqual(["ИДЕЯ: Старый сформированный столик."]);
  });
+
+ it("repairs only the three legacy truncated spheres and keeps the other five",async()=>{
+  const id="01b3d29f-bfc4-41ed-b31a-2e0db7fa2fe9",intent="Точка опоры и скульптурный образ";
+  const sourceKey=eggIdeaExteriorSourceKey({intent,constraints:"",materialInsight:"",
+    selected:[],field:[],visualKey:"v"});
+  const damaged=new Set(["commerce","legal","production"]);
+  localStorage.setItem("egg:idea-exterior:v1:"+id,JSON.stringify({
+   sourceKey,updatedAt:"2026-11-20T09:00:00Z",idea:"ИДЕЯ: Исходный замысел.",
+   findings:EGG_IDEA_EXTERIOR_ORDER.map(sphere=>({sphere,text:damaged.has(sphere)?
+    ("НАБЛЮДЕНИЕ: "+sphere+" ").padEnd(1200,"!"):"НАБЛЮДЕНИЕ: полный ответ "+sphere}))
+  }));
+  const calls:string[]=[];
+  vi.stubGlobal("fetch",vi.fn(async(url:string,init?:{body?:string})=>{
+   if(url==="/api/egg-config")return {ok:true,json:async()=>({supabaseUrl:"https://example.test",publishableKey:"anon"})};
+   const body=JSON.parse(init?.body||"{}") as {externalSphere?:string;externalFindings?:unknown[]};
+   calls.push(body.externalSphere??"synthesis");
+   return {ok:true,json:async()=>({ok:true,reply:body.externalSphere?
+    "ВКЛАД: Отличный профессиональный принцип.\\nОПОРА: инициация.\\nГИПОТЕЗА: проверить.\\nПРОВЕРКА: макет.":
+    "ИДЕЯ: Выявлен принцип соединения двух качеств.\\nПРИРОСТ: предложена проверяемая конструктивная связь."})};
+  }));
+  render(<EggIdeaExteriorRound projectId={id} intent={intent} constraints=""
+    materials={[]} fieldCards={[]} materialInsight="" sketchImage="" spacePhoto="" visualKey="v"
+    onIdeaReady={vi.fn()}/>);
+  fireEvent.click(screen.getByTestId("egg-exterior-detail-toggle"));
+  expect(screen.getByTestId("egg-exterior-damaged-count").textContent).toContain("3 ответов");
+  fireEvent.click(screen.getByTestId("egg-repair-damaged-exterior"));
+  await waitFor(()=>expect(screen.getByTestId("egg-formed-idea-core").textContent).toContain("Выявлен принцип"),{timeout:12000});
+  expect(calls).toEqual(["commerce","legal","production","synthesis"]);
+  const result=JSON.parse(localStorage.getItem("egg:idea-exterior:v1:"+id)||"{}");
+  expect(result.findings).toHaveLength(8);
+  expect(result.history).toContain("ИДЕЯ: Исходный замысел.");
+  expect(result.previousFindings).toHaveLength(3);
+  expect(result.findings.find((f:{sphere:string})=>f.sphere==="design").text)
+   .toBe("НАБЛЮДЕНИЕ: полный ответ design");
+ });
 });
