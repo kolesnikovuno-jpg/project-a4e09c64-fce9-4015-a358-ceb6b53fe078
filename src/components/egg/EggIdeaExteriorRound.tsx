@@ -5,14 +5,14 @@ import EggWorkspaceSync from "./EggWorkspaceSync";
 import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
 import {buildEggIdeaExternalField,type EggOuterFieldCard} from "../../lib/eggIdeaExternalField";
 import {parseEggFormedIdea} from "../../lib/eggFormedIdeaView";
-import {readExteriorContribution,exteriorResearchAudit,exteriorAuditForExport} from "../../lib/eggIdeaResearchAudit";
+import {readExteriorContribution,exteriorResearchAudit,exteriorAuditForExport,exteriorRepairCandidates} from "../../lib/eggIdeaResearchAudit";
 import {
  EGG_IDEA_EXTERIOR_ORDER,EGG_IDEA_EXTERIOR_LENSES,eggIdeaExteriorProgress,
  eggIdeaExteriorSourceKey,type EggIdeaExteriorFinding,
 } from "../../lib/eggIdeaExterior";
 
 type Selected=MatterCard&{location?:string};
-type Snapshot={sourceKey:string;findings:EggIdeaExteriorFinding[];idea:string;updatedAt:string;history?:string[]};
+type Snapshot={sourceKey:string;findings:EggIdeaExteriorFinding[];idea:string;updatedAt:string;history?:string[];previousFindings?:EggIdeaExteriorFinding[]};
 const empty=(sourceKey:string):Snapshot=>({sourceKey,findings:[],idea:"",updatedAt:""});
 const storageKey=(id:string)=>"egg:idea-exterior:v1:"+id;
 function restore(projectId:string,key:string):Snapshot{
@@ -20,19 +20,25 @@ function restore(projectId:string,key:string):Snapshot{
   const data=JSON.parse(localStorage.getItem(storageKey(projectId))||"null") as Partial<Snapshot>|null;
   if(data?.sourceKey!==key||!Array.isArray(data.findings))return empty(key);
   const findings=data.findings.filter(f=>f&&EGG_IDEA_EXTERIOR_ORDER.some(id=>id===f.sphere)&&
-    typeof f.text==="string"&&f.text.trim().length>=8).map(f=>({sphere:f.sphere,text:f.text.slice(0,1200)}));
+    typeof f.text==="string"&&f.text.trim().length>=8).map(f=>({sphere:f.sphere,text:f.text.slice(0,2400)}));
   return {sourceKey:key,findings,idea:typeof data.idea==="string"?data.idea.slice(0,2500):"",
     updatedAt:typeof data.updatedAt==="string"?data.updatedAt:"",
-    history:Array.isArray(data.history)?data.history.filter(x=>typeof x==="string").slice(-4):[]};
+    history:Array.isArray(data.history)?data.history.filter(x=>typeof x==="string").slice(-4):[],
+    previousFindings:Array.isArray(data.previousFindings)?
+     data.previousFindings.filter(f=>f&&EGG_IDEA_EXTERIOR_ORDER.some(id=>id===f.sphere)&&typeof f.text==="string")
+      .map(f=>({sphere:f.sphere,text:f.text.slice(0,2400)})).slice(-8):[]};
  }catch{return empty(key);}
 }
 function restoreFromServer(value:Partial<Snapshot>,sourceKey:string):Snapshot{
  if(value.sourceKey!==sourceKey||!Array.isArray(value.findings))return empty(sourceKey);
  const findings=value.findings.filter(f=>f&&EGG_IDEA_EXTERIOR_ORDER.some(id=>id===f.sphere)&&
    typeof f.text==="string"&&f.text.trim().length>=8)
-  .map(f=>({sphere:f.sphere,text:f.text.slice(0,1200)}));
+  .map(f=>({sphere:f.sphere,text:f.text.slice(0,2400)}));
  return {sourceKey,findings,idea:typeof value.idea==="string"?value.idea.slice(0,2500):"",
   history:Array.isArray(value.history)?value.history.filter(x=>typeof x==="string").slice(-4):[],
+  previousFindings:Array.isArray(value.previousFindings)?
+   value.previousFindings.filter(f=>f&&EGG_IDEA_EXTERIOR_ORDER.some(id=>id===f.sphere)&&typeof f.text==="string")
+    .map(f=>({sphere:f.sphere,text:f.text.slice(0,2400)})).slice(-8):[],
   updatedAt:typeof value.updatedAt==="string"?value.updatedAt:""};
 }
 const asMessage=(sphere:string)=>"Исследуй инициацию Автора через профессиональную позицию "+sphere+
@@ -56,6 +62,7 @@ export default function EggIdeaExteriorRound({
  const count=eggIdeaExteriorProgress(validSnapshot.findings);
  const formed=useMemo(()=>parseEggFormedIdea(validSnapshot.idea),[validSnapshot.idea]);
  const audit=useMemo(()=>exteriorResearchAudit(validSnapshot.findings),[validSnapshot.findings]);
+ const repairCandidates=useMemo(()=>exteriorRepairCandidates(validSnapshot.findings),[validSnapshot.findings]);
  const store=useCallback((next:Snapshot)=>{
   setSnapshot(next);
   try{localStorage.setItem(storageKey(projectId),JSON.stringify(next));}
@@ -71,11 +78,13 @@ export default function EggIdeaExteriorRound({
  },[formed.idea,onIdeaReady]);
  useEffect(()=>()=>{runId.current++;requestController.current?.abort();},[]);
 
- async function run(refreshSynthesis=false){
-  if(running||!intent.trim()||(refreshSynthesis&&(count!==8||!validSnapshot.idea)))return;
+ async function run(refreshSynthesis=false,repairOnly=false){
+  if(running||!intent.trim()||(refreshSynthesis&&(count!==8||!validSnapshot.idea))||
+    (repairOnly&&repairCandidates.length===0))return;
   const current=++runId.current;
   setRunning(true);setMessage("");
   let next=validSnapshot;
+  const priorIdea=next.idea;
   try{
    const configResponse=await fetch("/api/egg-config",{cache:"no-store"});
    if(!configResponse.ok)throw Error("Настройки ИИ недоступны.");
@@ -109,14 +118,21 @@ export default function EggIdeaExteriorRound({
     if(!response.ok||!result.ok||!result.reply)
       throw Error(response.status===429?"Провайдер ограничил запросы. Результаты сохранены; позже можно продолжить.":
         "ИИ не завершил исследование: "+(result.error||response.status));
-    return result.reply.slice(0,extra.externalFindings?2400:1200);
+    if(result.reply.length>2400)throw Error("Ответ ИИ слишком длинный. Ничего не обрезано и не сохранено; повторите только текущий шаг.");
+    return result.reply;
    };
    for(const sphere of EGG_IDEA_EXTERIOR_ORDER){
     if(runId.current!==current)throw Error("Исследование остановлено");
-    if(next.findings.some(f=>f.sphere===sphere))continue;
+    const already=next.findings.find(f=>f.sphere===sphere);
+    if(repairOnly?!already||!repairCandidates.includes(sphere):!!already)continue;
     setMessage("Внешний круг · "+EGG_IDEA_EXTERIOR_LENSES[sphere].name);
     const reply=await post({externalSphere:sphere},asMessage(EGG_IDEA_EXTERIOR_LENSES[sphere].name));
-    next={...next,findings:[...next.findings,{sphere,text:reply}],idea:"",
+    next={...next,findings:already?
+      next.findings.map(f=>f.sphere===sphere?{sphere,text:reply}:f):
+      [...next.findings,{sphere,text:reply}],idea:"",
+      history:priorIdea&&!(next.history||[]).includes(priorIdea)?
+       [...(next.history||[]),priorIdea].slice(-4):next.history,
+      previousFindings:already?[...(next.previousFindings||[]),already].slice(-8):next.previousFindings,
       updatedAt:new Date().toISOString()};
     store(next);
    }
@@ -208,6 +224,17 @@ export default function EggIdeaExteriorRound({
      {audit.structured} ответов в новом проверяемом формате; {audit.legacy} в предыдущем; {audit.unstructured} без меток.
      Это проверка структуры, не доказательство новизны или правильности.
    </p>
+   {repairCandidates.length>0&&<div className="mt-3 border-t border-foreground/10 pt-2">
+    <p className="text-[11px] leading-relaxed" data-testid="egg-exterior-damaged-count">
+     {repairCandidates.length} ответов повреждены старым обрезанием или повторами:
+     {" "}{repairCandidates.map(s=>EGG_IDEA_EXTERIOR_LENSES[s].name).join(", ")}.
+    </p>
+    <button type="button" disabled={running} onClick={()=>void run(false,true)}
+     data-testid="egg-repair-damaged-exterior"
+     className="mt-2 border border-foreground/20 px-3 py-2 text-xs disabled:opacity-40">
+     Перепроверить только {repairCandidates.length} сфер и пересобрать Идею · {repairCandidates.length+1} запросов ИИ
+    </button>
+   </div>}
    <button type="button" className="mt-2 border border-foreground/20 px-3 py-2 text-xs"
     data-testid="egg-copy-exterior-audit"
     onClick={()=>{void navigator.clipboard.writeText(exteriorAuditForExport(intent,validSnapshot.findings,validSnapshot.idea))
