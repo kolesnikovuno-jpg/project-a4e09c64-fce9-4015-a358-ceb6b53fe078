@@ -10,6 +10,7 @@ const props={
   materials:[{id:"m1",type:"thought",text:"Пластическая опора"}],
   materialInsight:"Возможно поддерживать тело мягко",
   visualSourceKey:"author-sketch-a",
+  suggestedIdea:"Система поддержки тела с пространственным потенциалом",
   latestAnswer:"",
 };
 afterEach(()=>{cleanup();localStorage.clear();});
