@@ -141,4 +141,37 @@ describe("External research in the Author Idea workspace",()=>{
   expect(result.findings.find((f:{sphere:string})=>f.sphere==="design").text)
    .toBe("НАБЛЮДЕНИЕ: полный ответ design");
  });
+
+ it("after a provider interruption resumes the one remaining damaged sphere before synthesis",async()=>{
+  const id="01b3d29f-bfc4-41ed-b31a-2e0db7fa2fe9",intent="Столик как опора и пространственное присутствие";
+  const sourceKey=eggIdeaExteriorSourceKey({intent,constraints:"",materialInsight:"",
+    selected:[],field:[],visualKey:"v"});
+  const damaged=("НАБЛЮДЕНИЕ: прежняя гипотеза ").padEnd(1200,"!");
+  localStorage.setItem("egg:idea-exterior:v1:"+id,JSON.stringify({
+   sourceKey,updatedAt:"2026-11-20T10:00:00Z",idea:"",
+   history:["ИДЕЯ: Прежняя версия"],
+   findings:EGG_IDEA_EXTERIOR_ORDER.map(sphere=>({sphere,text:sphere==="production"?damaged:
+     "ВКЛАД: проверка роли "+sphere+". ОПОРА: слова Автора. ГИПОТЕЗА: совместимость. ПРОВЕРКА: макет."}))
+  }));
+  const calls:string[]=[];
+  vi.stubGlobal("fetch",vi.fn(async(url:string,init?:{body?:string})=>{
+   if(url==="/api/egg-config")return {ok:true,json:async()=>({supabaseUrl:"https://example.test",publishableKey:"anon"})};
+   const input=JSON.parse(init?.body||"{}");
+   calls.push(input.externalSphere??"synthesis");
+   return {ok:true,json:async()=>({ok:true,reply:input.externalSphere?
+    "ВКЛАД: форму поддерживает облегчённая оболочка.\\nОПОРА: инициация Автора.\\nГИПОТЕЗА: добиться стабильности.\\nПРОВЕРКА: макет.":
+    "ИДЕЯ: Столик объединяет опору и выразительность.\\nПРИРОСТ: альтернатива массивной опоре."})};
+  }));
+  render(<EggIdeaExteriorRound projectId={id} intent={intent} constraints=""
+    materials={[]} fieldCards={[]} materialInsight="" sketchImage="" spacePhoto="" visualKey="v"
+    onIdeaReady={vi.fn()}/>);
+  const button=screen.getByTestId("egg-idea-start-research");
+  expect(button.textContent).toContain("Продолжить · 1 сфера");
+  fireEvent.click(button);
+  await waitFor(()=>expect(screen.getByTestId("egg-formed-idea-core").textContent).toContain("Столик объединяет"),{timeout:12000});
+  expect(calls).toEqual(["production","synthesis"]);
+  const saved=JSON.parse(localStorage.getItem("egg:idea-exterior:v1:"+id)||"{}");
+  expect(saved.history).toContain("ИДЕЯ: Прежняя версия");
+  expect(saved.previousFindings).toHaveLength(1);
+ });
 });
