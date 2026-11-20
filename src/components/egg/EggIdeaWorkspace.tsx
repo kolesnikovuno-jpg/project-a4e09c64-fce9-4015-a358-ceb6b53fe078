@@ -53,6 +53,8 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
  const [materialInsight,setMaterialInsight]=useState("");
  const [materialMap,setMaterialMap]=useState<EggMaterialMapRecord|null>(null);
  const [exteriorIdea,setExteriorIdea]=useState("");
+ const [priorIdeaForDna,setPriorIdeaForDna]=useState("");
+ const dnaBasis=exteriorIdea||priorIdeaForDna;
  const [dnaContinueToken,setDnaContinueToken]=useState(0);
  const onExteriorIdea=useCallback((value:string)=>setExteriorIdea(previous=>previous===value?previous:value),[]);
  const [loaded,setLoaded]=useState(false);
@@ -313,7 +315,10 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
      onIdeaReady={onExteriorIdea}
      onProceed={idea=>{
       if(!idea.trim())return;
-      setDnaContinueToken(v=>v+1);
+      // Explicitly permit the Author to reuse an old Idea without claiming
+       // replacement images were in its eight-sphere analysis.
+       setPriorIdeaForDna(idea===exteriorIdea?"":idea);
+       setDnaContinueToken(v=>v+1);
       if(dnaStepRef.current){
        dnaStepRef.current.open=true;
        dnaStepRef.current.scrollIntoView?.({behavior:"smooth",block:"start"});
@@ -372,12 +377,17 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
     </details>
     <details ref={dnaStepRef} className="rounded-xl border border-foreground/15 bg-background/75 p-3" data-testid="egg-author-dna-step">
      <summary className="cursor-pointer text-sm font-medium">
-      {reviewedDna?"ДНК · проверена Автором":exteriorIdea?"Следующий шаг · выделить ДНК из Идеи":"ДНК · после внешнего круга сфер"}
+      {reviewedDna?"ДНК · проверена Автором":dnaBasis?"Следующий шаг · выделить ДНК из Идеи":"ДНК · после внешнего круга сфер"}
      </summary>
      <div className="mt-3">
+    {priorIdeaForDna&&!exteriorIdea&&<p className="mb-3 text-xs text-foreground/65"
+      data-testid="egg-prior-research-dna-basis">
+      Выбран синтез прежнего внешнего круга. Текущие две фотографии ещё не исследованы восемью сферами.
+      Решение использовать его для ДНК принимает Автор.
+     </p>}
     <EggDnaFormation projectId={projectId} intent={intent} constraints={constraints}
-     materials={materials} materialInsight={materialInsight} visualSourceKey={visualSourceKey+":"+exteriorIdea} latestAnswer={latestAnswer}
-     suggestedIdea={exteriorIdea} continueToken={dnaContinueToken}
+     materials={materials} materialInsight={materialInsight} visualSourceKey={visualSourceKey+":"+dnaBasis} latestAnswer={latestAnswer}
+     suggestedIdea={dnaBasis} continueToken={dnaContinueToken}
      onRequestAi={prompt=>{void submit(prompt);setMobilePane("dialogue");}}
      onReviewChange={onDnaReview}/>
      </div>
