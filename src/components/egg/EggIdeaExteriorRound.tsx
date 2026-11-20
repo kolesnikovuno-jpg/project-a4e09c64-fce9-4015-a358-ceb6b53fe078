@@ -207,9 +207,19 @@ export default function EggIdeaExteriorRound({
      Входные изображения или параметры изменились. Старый синтез не удалён,
      но не считается исследованием новой подборки.
     </p>
-    {priorSnapshot.idea&&<p className="mt-2 whitespace-pre-wrap leading-relaxed">
-     {parseEggFormedIdea(priorSnapshot.idea).idea}
-    </p>}
+    {priorSnapshot.idea&&<div className="mt-2 space-y-2">
+     <p className="whitespace-pre-wrap leading-relaxed">
+      {parseEggFormedIdea(priorSnapshot.idea).idea}
+     </p>
+     {onProceed&&<button type="button" data-testid="egg-use-prior-idea-for-dna"
+      className="min-h-10 border border-[#607466] px-3 py-2 text-xs text-[#607466]"
+      onClick={()=>onProceed(parseEggFormedIdea(priorSnapshot.idea).idea)}>
+      Использовать прежнюю Идею → ДНК
+     </button>}
+     <p className="text-[11px] text-foreground/55">
+      Это осознанный выбор прежнего исследования. Новые материалы пока не исследованы восьмью сферами.
+     </p>
+    </div>}
     <details className="mt-2">
      <summary className="cursor-pointer">Старые вклады сфер и основания</summary>
      {priorSnapshot.findings.map(f=><p className="mt-2 whitespace-pre-wrap break-words"
