@@ -198,11 +198,11 @@ export default function EggIdeaExteriorRound({
     <div className="h-full rounded-full bg-[#607466] transition-all" style={{width:Math.round(count/8*100)+"%"}}/>
   </div>}
   {message&&<p role="status" className="text-xs text-foreground/65">{message}</p>}
-  {priorSnapshot&&<details className="border-t border-foreground/15 pt-3 text-xs"
+  {priorSnapshot&&<section className="border-t border-foreground/15 pt-3 text-xs"
    data-testid="egg-exterior-prior-source">
-    <summary className="cursor-pointer font-medium">
+    <h4 className="font-medium">
      Сохранённое исследование предыдущих материалов · {eggIdeaExteriorProgress(priorSnapshot.findings)}/8
-    </summary>
+    </h4>
     <p className="mt-2 text-foreground/65">
      Входные изображения или параметры изменились. Старый синтез не удалён,
      но не считается исследованием новой подборки.
@@ -225,7 +225,7 @@ export default function EggIdeaExteriorRound({
      {priorSnapshot.findings.map(f=><p className="mt-2 whitespace-pre-wrap break-words"
       key={f.sphere}><strong>{EGG_IDEA_EXTERIOR_LENSES[f.sphere].name}:</strong> {f.text}</p>)}
     </details>
-   </details>}
+   </section>}
   {validSnapshot.idea&&<div className="border-t border-foreground/10 pt-3"
     data-testid="egg-exterior-formed-idea">
     <p className="text-[11px] text-foreground/55">Сформированная Идея · предложение, не утверждено</p>
