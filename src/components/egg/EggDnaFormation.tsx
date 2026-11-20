@@ -92,7 +92,7 @@ export default function EggDnaFormation({
     setNotice("Кандидат ДНК проверен Автором для текущих материалов. Серверная ДНК ещё не утверждена.");
   }
   const sourceChanged=!!fields.reviewedAt&&!ready;
-  return <section className="rounded-xl border border-foreground/20 bg-background/90 p-3 sm:p-4 space-y-3"
+  return <section className="space-y-3"
     data-testid="egg-dna-formation" aria-label="Формирование Идеи и ДНК">
     <div className="flex items-center justify-between gap-2">
       <h3 className="text-sm font-medium">Идея → ДНК</h3>
