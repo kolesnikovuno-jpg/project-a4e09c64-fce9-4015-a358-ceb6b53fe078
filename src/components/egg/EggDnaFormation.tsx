@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {
   buildEggDnaCandidate, eggDnaSourceKey, emptyEggDnaReview,
   isEggDnaReviewComplete, parseEggDnaSuggestion,
@@ -26,21 +26,32 @@ function readReview(projectId:string):EggDnaReview {
   return emptyEggDnaReview();
 }
 export default function EggDnaFormation({
-  projectId,intent,constraints,materials,materialInsight,visualSourceKey="",suggestedIdea="",latestAnswer,
+  projectId,intent,constraints,materials,materialInsight,visualSourceKey="",suggestedIdea="",continueToken=0,latestAnswer,
   onRequestAi,onReviewChange,
 }:{
   projectId:string;intent:string;constraints:string;
-  materials:Source[];materialInsight:string;visualSourceKey?:string;suggestedIdea?:string;latestAnswer:string;
+  materials:Source[];materialInsight:string;visualSourceKey?:string;suggestedIdea?:string;continueToken?:number;latestAnswer:string;
   onRequestAi:(prompt:string)=>void;
   onReviewChange:(reviewedCandidate:{dna:string;idea:string}|null)=>void;
 }){
   const [fields,setFields]=useState<EggDnaReview>(()=>readReview(projectId));
   const [notice,setNotice]=useState("");
+  const lastContinueToken=useRef(0);
   const sourceKey=eggDnaSourceKey(intent,constraints,materials,materialInsight,visualSourceKey);
   const candidate=useMemo(()=>buildEggDnaCandidate(fields),[fields]);
   const ready=!!suggestedIdea.trim()&&!!candidate&&isEggDnaReviewComplete(fields,sourceKey);
 
-  useEffect(()=>{setFields(readReview(projectId));setNotice("");},[projectId]);
+  useEffect(()=>{setFields(readReview(projectId));setNotice("");lastContinueToken.current=0;},[projectId]);
+  useEffect(()=>{
+    if(!continueToken||lastContinueToken.current===continueToken)return;
+    lastContinueToken.current=continueToken;
+    if(!suggestedIdea.trim())return;
+    setFields(previous=>{
+      if(previous.formedIdea.trim())return previous; // Never overwrite Author edits.
+      return {...previous,formedIdea:suggestedIdea.trim(),reviewedAt:null};
+    });
+    setNotice("Идея передана в редактор как черновик. Автор может изменить её перед утверждением.");
+  },[continueToken,suggestedIdea]);
   useEffect(()=>{try{localStorage.setItem(keyFor(projectId),JSON.stringify(fields));}
    catch{setNotice("Недостаточно места для сохранения черновика ДНК в браузере.");}
   },[projectId,fields]);
