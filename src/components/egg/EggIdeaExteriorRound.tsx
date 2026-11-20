@@ -3,6 +3,7 @@ import {createClient} from "@supabase/supabase-js";
 import {makePreview,type MatterCard} from "./EggMatterDialogue";
 import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
 import {buildEggIdeaExternalField,type EggOuterFieldCard} from "../../lib/eggIdeaExternalField";
+import {parseEggFormedIdea} from "../../lib/eggFormedIdeaView";
 import {
  EGG_IDEA_EXTERIOR_ORDER,EGG_IDEA_EXTERIOR_LENSES,eggIdeaExteriorProgress,
  eggIdeaExteriorSourceKey,type EggIdeaExteriorFinding,
@@ -41,6 +42,7 @@ export default function EggIdeaExteriorRound({
  const requestController=useRef<AbortController|null>(null);
  const validSnapshot=snapshot.sourceKey===sourceKey?snapshot:empty(sourceKey);
  const count=eggIdeaExteriorProgress(validSnapshot.findings);
+ const formed=useMemo(()=>parseEggFormedIdea(validSnapshot.idea),[validSnapshot.idea]);
  const store=useCallback((next:Snapshot)=>{
   setSnapshot(next);
   try{localStorage.setItem(storageKey(projectId),JSON.stringify(next));}
@@ -52,8 +54,8 @@ export default function EggIdeaExteriorRound({
   setRunning(false);setSnapshot(restore(projectId,sourceKey));setMessage("");
  },[projectId,sourceKey]);
  useEffect(()=>{
-  onIdeaReady(validSnapshot.idea);
- },[validSnapshot.idea,onIdeaReady]);
+  onIdeaReady(formed.idea);
+ },[formed.idea,onIdeaReady]);
  useEffect(()=>()=>{runId.current++;requestController.current?.abort();},[]);
 
  async function run(){
@@ -110,7 +112,9 @@ export default function EggIdeaExteriorRound({
     const summary=await post({externalFindings:next.findings},
      "Синтезируй результаты восьми независимых исследовательских сфер. "+
      "Сформулируй ОДНУ рабочую Идею, главное напряжение и максимум один вопрос. "+
-     "ДНК пока не создавай и ничего не утверждай.");
+     "Идея — ОДНО ёмкое предложение, не пересказ инициации и не список референсов. "+
+     "Не вынуждай Автора выбирать между двумя качествами, если замысел именно в их сочетании. "+
+     "Раздели идею и доказательные основания. ДНК пока не создавай и ничего не утверждай.");
     next={...next,idea:summary,updatedAt:new Date().toISOString()};
     store(next);
    }
@@ -148,11 +152,21 @@ export default function EggIdeaExteriorRound({
   {message&&<p role="status" className="text-xs text-foreground/65">{message}</p>}
   {validSnapshot.idea&&<div className="rounded-lg border border-foreground/15 bg-background p-3"
     data-testid="egg-exterior-formed-idea">
-    <p className="text-[11px] text-foreground/55">Предложение после восьми исследований · ещё не утверждено</p>
-    <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{validSnapshot.idea}</p>
-    <p className="mt-2 text-xs text-foreground/60">
-      Следующий шаг: проверь формулировку в разделе «Идея → ДНК».
+    <p className="text-[11px] text-foreground/55">Сформированная Идея · предложение, не утверждено</p>
+    <p className="mt-2 whitespace-pre-wrap text-base leading-relaxed" data-testid="egg-formed-idea-core">{formed.idea}</p>
+    {formed.tension&&<p className="mt-3 text-xs leading-relaxed text-foreground/70">
+      <strong>Возможное напряжение:</strong> {formed.tension}
+    </p>}
+    {formed.question&&<p className="mt-2 text-xs leading-relaxed text-foreground/70">
+      <strong>Вопрос для Автора:</strong> {formed.question}
+    </p>}
+    <p className="mt-3 text-xs text-foreground/60">
+      Если смысл верен, перенеси Идею в раздел «Идея → ДНК»; там её можно исправить до утверждения.
     </p>
+    <details className="mt-3 border-t border-foreground/10 pt-2 text-xs text-foreground/65">
+      <summary className="cursor-pointer">Основания и полный исследовательский вывод</summary>
+      <p className="mt-2 whitespace-pre-wrap break-words leading-relaxed">{formed.fullText}</p>
+    </details>
    </div>}
   {count>0&&<details className="text-xs text-foreground/65">
    <summary className="cursor-pointer" data-testid="egg-exterior-detail-toggle">Вклады сфер · {count}/8</summary>
