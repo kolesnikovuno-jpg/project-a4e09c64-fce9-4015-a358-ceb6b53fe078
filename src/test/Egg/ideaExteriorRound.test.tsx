@@ -1,7 +1,7 @@
 import {afterEach,describe,expect,it,vi} from "vitest";
 import {cleanup,fireEvent,render,screen,waitFor} from "@testing-library/react";
 import EggIdeaExteriorRound from "../../components/egg/EggIdeaExteriorRound";
-import {EGG_IDEA_EXTERIOR_ORDER} from "../../lib/eggIdeaExterior";
+import {EGG_IDEA_EXTERIOR_ORDER,eggIdeaExteriorSourceKey} from "../../lib/eggIdeaExterior";
 vi.mock("@supabase/supabase-js",()=>({
  createClient:vi.fn(()=>({auth:{getSession:async()=>({data:{session:{access_token:"test-auth"}}})}})),
 }));
@@ -50,5 +50,28 @@ describe("External research in the Author Idea workspace",()=>{
   const stored=JSON.parse(localStorage.getItem("egg:idea-exterior:v1:01b3d29f-bfc4-41ed-b31a-2e0db7fa2fe9")||"{}");
   expect(stored.findings).toHaveLength(8);
   expect(stored).not.toHaveProperty("approvedDna");
+ });
+
+ it("shows an existing completed round as one idea and exposes a single action without spending more tokens",async()=>{
+  const id="01b3d29f-bfc4-41ed-b31a-2e0db7fa2fe9";
+  const intent="Небольшой столик-подставка как пространственный арт-акцент";
+  const sourceKey=eggIdeaExteriorSourceKey({intent,constraints:"",materialInsight:"",selected:[],field:[],visualKey:"v"});
+  const idea="**Рабочая Идея:** небольшой столик-подставка, который одновременно существует как самостоятельный арт-акцент: его практическая роль понятна, но выразительность не сводится к функции. В Материальном (ID m1, m2) заметен интересный контраст.\n\n**Главное напряжение:** не потерять выразительность при сохранении пользы.\n\n**Вопрос:** что должно считываться первым?";
+  localStorage.setItem("egg:idea-exterior:v1:"+id,JSON.stringify({
+   sourceKey,updatedAt:"2026-11-20T09:00:00Z",idea,
+   findings:EGG_IDEA_EXTERIOR_ORDER.map(sphere=>({sphere,text:"Наблюдение: текст инициации подтверждён; вопрос остаётся."}))
+  }));
+  const onProceed=vi.fn(), onIdeaReady=vi.fn(), fetchMock=vi.fn();
+  vi.stubGlobal("fetch",fetchMock);
+  render(<EggIdeaExteriorRound projectId={id} intent={intent} constraints="" materials={[]}
+    fieldCards={[]} materialInsight="" sketchImage="" spacePhoto="" visualKey="v"
+    onIdeaReady={onIdeaReady} onProceed={onProceed}/>);
+  await waitFor(()=>expect(screen.getByTestId("egg-formed-idea-core").textContent).toContain("столик-подставка"));
+  expect(screen.getByTestId("egg-formed-idea-core").textContent).not.toContain("В Материальном");
+  expect(screen.getByTestId("egg-idea-research-details")).not.toHaveAttribute("open");
+  fireEvent.click(screen.getByTestId("egg-proceed-to-dna"));
+  expect(onProceed).toHaveBeenCalledWith(expect.stringContaining("самостоятельный арт-акцент"));
+  expect(onProceed.mock.calls[0][0]).not.toContain("ID m1");
+  expect(fetchMock).not.toHaveBeenCalled();
  });
 });
