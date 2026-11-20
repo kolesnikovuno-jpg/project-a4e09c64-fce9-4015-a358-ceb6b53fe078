@@ -11,6 +11,8 @@ import {createClient} from "@supabase/supabase-js";
 import {getEggStorageConfig} from "../src/server/eggStorageConfig.js";
 import {eggFormImageHandler} from "../src/server/eggFormImage.js";
 import {EGG_MATERIAL_RESONANCE_INSTRUCTIONS,EGG_ENTRY_MANIFESTS} from "../src/lib/eggSphereProtocol.js";
+import {EGG_IDEA_EXTERIOR_LENSES,EGG_IDEA_EXTERIOR_ORDER,type EggIdeaExteriorFinding} from "../src/lib/eggIdeaExterior.js";
+import type {SphereId} from "../src/lib/eggEngine.js";
 import {EggEngineError,type EggProject} from "../src/lib/eggEngine.js";
 import {prepareGroundedEggYolkReview} from "../src/lib/eggYolkSemantic.js";
 import {parseEggRetryAfter} from "../src/lib/eggAiPacing.js";
@@ -331,7 +333,7 @@ export async function generate(model:Provider,prompt:{instructions:string;input:
 type MatterMaterial={id:string;type:"thought"|"link"|"image"|"sketch"|"video";text:string;url?:string;imageData?:string};
 type MatterMessage={role:"user"|"assistant";content:string};
 type ExternalFieldReference=Pick<MatterMaterial,"id"|"type"|"text"|"url">;
-type MatterPayload={projectId:string;materials:MatterMaterial[];externalField?:ExternalFieldReference[];messages:MatterMessage[];focusId?:string;intent?:string;constraints?:string;materialInsight?:string;mapRequested?:boolean};
+type MatterPayload={projectId:string;materials:MatterMaterial[];externalField?:ExternalFieldReference[];externalSphere?:SphereId;externalFindings?:EggIdeaExteriorFinding[];messages:MatterMessage[];focusId?:string;intent?:string;constraints?:string;materialInsight?:string;mapRequested?:boolean};
 const matterTypes=new Set(["thought","link","image","sketch","video"]);
 const isMatterPayload=(value:unknown):value is MatterPayload=>{
  if(!value||typeof value!=="object"||Array.isArray(value))return false;
@@ -350,6 +352,13 @@ const isMatterPayload=(value:unknown):value is MatterPayload=>{
     typeof c.text==="string"&&c.text.length<=500&&
     (c.url===undefined||(typeof c.url==="string"&&c.url.length<=2048&&/^https?:\/\//i.test(c.url)))&&
     !("imageData" in c))))&&
+  (v.externalSphere===undefined||(typeof v.externalSphere==="string"&&EGG_IDEA_EXTERIOR_ORDER.some(s=>s===v.externalSphere)))&&
+  (v.externalFindings===undefined||(Array.isArray(v.externalFindings)&&
+    v.externalFindings.length===8&&new Set(v.externalFindings.map(f=>f?.sphere)).size===8&&
+    v.externalFindings.every(f=>f&&typeof f.sphere==="string"&&
+      EGG_IDEA_EXTERIOR_ORDER.some(s=>s===f.sphere)&&
+      typeof f.text==="string"&&f.text.trim().length>=8&&f.text.length<=1200)))&&
+  !(v.externalSphere!==undefined&&v.externalFindings!==undefined)&&
   Array.isArray(v.messages)&&v.messages.length>=1&&v.messages.length<=16&&
   v.messages.every(m=>m&&(m.role==="user"||m.role==="assistant")&&typeof m.content==="string"&&m.content.length<=3000)&&
   v.messages[v.messages.length-1].role==="user"&&
@@ -429,12 +438,29 @@ export async function matterModelReply(provider:Provider,input:MatterPayload,mod
   vision:"metadata_only; image/video/link NOT opened",
  })):[];
  const messages=input.messages.map(m=>m.role+": "+m.content).join("\n\n");
+ const lens=input.externalSphere?EGG_IDEA_EXTERIOR_LENSES[input.externalSphere]:null;
+ const externalLensInstructions=lens?
+  "\nEXTERNAL SPHERE RESEARCH BEFORE DNA. Act ONLY as "+lens.name+". "+
+  "Research question: "+lens.question+" Safety boundary: "+lens.boundary+
+  " All eight spheres independently read the same Author intention and source context, "+
+  "but you see no other sphere outputs. Return one SHORT result containing lines "+
+  "НАБЛЮДЕНИЕ: (grounded in actual provided text/visible image), ГИПОТЕЗА:, НАПРЯЖЕНИЕ:, ВОПРОС:. "+
+  "Never claim an Internet search or approve DNA.":
+  input.externalFindings?
+  "\nEXTERNAL EIGHT-SPHERE SYNTHESIS BEFORE DNA: You receive eight independent UNAPPROVED sphere hypotheses. "+
+  "Find the common core and important disagreements; propose one coherent formed IDEA, "+
+  "not an approved DNA, in 2-5 sentences. Add at most one essential question. "+
+  "Do not invent external research, supplier checks, physical tests or market facts.":
+  "";
+ const externalFindings=input.externalFindings?
+  "\nEight independent sphere findings (not Author-approved):\n"+
+  JSON.stringify(input.externalFindings):"";
  const prompt="Отобранное Материальное ("+materials.length+" материалов; приоритет авторского отбора):\\n"+
   JSON.stringify(materials)+"\\n\\n"+
   (mode==="idea"?"ВНЕШНЕЕ ПОЛЕ (не отобрано Автором; только текст и метаданные; передано "+
    externalField.length+" карточек):\\n"+JSON.stringify(externalField)+"\\n"+
    "URL здесь не открыты; изображения/видео не просмотрены. Внешние карточки НЕ являются утверждённой ДНК.\\n\\n":"")+(mode==="idea"&&materials.some(m=>m.id==="space-context-photo")?"Материал space-context-photo обозначает фото СРЕДЫ, не образец проектируемого объекта. Вложенные изображения даны в порядке перечисления их материалов.\n\n":"")+"Фокус: "+(input.focusId??"весь холст")+
-  (mode==="idea"?"\n\nИнициация Автора: "+(input.intent??"не задана")+"\nРамки: "+(input.constraints??"не заданы")+"\nЧерновая карта из Материального: "+(input.materialInsight??"нет"):"")+"\n\nДиалог:\n"+messages;
+  (mode==="idea"?"\n\nИнициация Автора: "+(input.intent??"не задана")+"\nРамки: "+(input.constraints??"не заданы")+"\nЧерновая карта из Материального: "+(input.materialInsight??"нет"):"")+"\n\nДиалог:\n"+messages+externalFindings;
  const controller=new AbortController();
  const timeout=setTimeout(()=>controller.abort(),45000);
  try{
@@ -445,7 +471,7 @@ export async function matterModelReply(provider:Provider,input:MatterPayload,mod
     method:"POST",redirect:"error",signal:controller.signal,
     headers:{"x-goog-api-key":provider.key,"Content-Type":"application/json"},
     body:JSON.stringify({
-     systemInstruction:{parts:[{text:(mode==="idea"?ideaInstructions:matterInstructions)+(mapRequested?"\n"+mapInstructions:"")}]},
+     systemInstruction:{parts:[{text:(mode==="idea"?ideaInstructions:matterInstructions)+externalLensInstructions+(mapRequested?"\n"+mapInstructions:"")}]},
      contents:[{role:"user",parts:[{text:prompt},...images.map(src=>({
       inlineData:{mimeType:"image/jpeg",data:src.slice("data:image/jpeg;base64,".length)}
      }))]}],
@@ -460,7 +486,7 @@ export async function matterModelReply(provider:Provider,input:MatterPayload,mod
     headers:{Authorization:"Bearer "+provider.key,"Content-Type":"application/json"},
     body:JSON.stringify({
      model:provider.model,
-     instructions:(mode==="idea"?ideaInstructions:matterInstructions)+(mapRequested?"\n"+mapInstructions:""),
+     instructions:(mode==="idea"?ideaInstructions:matterInstructions)+externalLensInstructions+(mapRequested?"\n"+mapInstructions:""),
      store:false,max_output_tokens:mapRequested?3600:2400,
      ...(mapRequested?{text:{format:{type:"json_object"}}}:{}),
      ...(provider.kind==="direct_openai"&&provider.model==="gpt-6-luna"?{reasoning:{effort:"none"}}:{}),
@@ -549,6 +575,8 @@ async function matterDialogue(req:Request,res:ServerResponse,mode:"matter"|"idea
   const provider=providerFromEnv(process.env,req.headers["x-vercel-oidc-token"]);
   if(!provider)return fail(res,503,"ai_provider_not_configured");
   if(mode==="idea"&&!payload.intent?.trim())return fail(res,400,"invalid_request");
+ if(mode==="matter"&&(payload.externalSphere||payload.externalFindings||payload.externalField))
+   return fail(res,400,"invalid_request");
   const modelResult=await matterModelReply(provider,payload,mode);
   return send(res,200,{ok:true,...modelResult,materialsSeen:payload.materials.length,
    imagesSeen:payload.materials.filter(m=>Boolean(m.imageData)).length});
