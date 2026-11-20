@@ -442,22 +442,36 @@ export async function matterModelReply(provider:Provider,input:MatterPayload,mod
  const externalLensInstructions=lens?
   "\nEXTERNAL SPHERE RESEARCH BEFORE DNA. Act ONLY as "+lens.name+". "+
   "Research question: "+lens.question+" Safety boundary: "+lens.boundary+
-  " All eight spheres independently read the same Author intention and source context, "+
-  "but you see no other sphere outputs. Return one SHORT result containing lines "+
-  "НАБЛЮДЕНИЕ: (grounded in actual provided text/visible image), ГИПОТЕЗА:, НАПРЯЖЕНИЕ:, ВОПРОС:. "+
-  "Never claim an Internet search or approve DNA.":
+  " All eight spheres independently read the SAME Author initiation and context. "+
+  "You DO NOT see other sphere answers. Your UNIQUE professional deliverable: "+lens.deliverable+". "+
+  "Your job is not to repeat or praise the Author's intention but to disclose a SPECIFIC new relationship, "+
+  "alternative, constraint or experiment relevant to your profession. "+
+  "Return exactly four short labelled lines IN RUSSIAN: "+
+  "ВКЛАД: (one unique actionable insight or «нового пока не выявлено»; not a paraphrase); "+
+  "ОПОРА: (verifiable user-provided fact and precise source-card ID if actually inspected; "+
+  "if no facts, say «только инициация Автора», not imaginary evidence); "+
+  "ГИПОТЕЗА: (one explicitly unverified professional inference); "+
+  "ПРОВЕРКА: (one feasible real-world question or observation that could disprove it). "+
+  "A sphere may return «нового пока не выявлено» instead of fabricating progress. "+
+  "Never assert an Internet search, completed user tests, market findings or DNA approval.":
   input.externalFindings?
   "\nEXTERNAL EIGHT-SPHERE SYNTHESIS BEFORE DNA: You receive eight independent UNAPPROVED sphere hypotheses. "+
-  "Find the common core and important disagreements. Do not simply paraphrase the Author's initiation; "+
-  "distill a meaningful organizing principle without committing to a fixed shape. "+
-  "Do NOT force a binary choice if the Author's concept aims to integrate both qualities. "+
-  "Return exactly four short marked lines in Russian WITHOUT Markdown: "+
-  "ИДЕЯ: (one formed-idea sentence, no ID codes); "+
-  "ОСНОВАНИЯ: (up to two specific source-card IDs and what they actually contribute, with uncertainty); "+
-  "НАПРЯЖЕНИЕ: (one hypothesis about an unresolved relationship); "+
-  "ВОПРОС: (at most one non-leading useful question). "+
-  "Only the ИДЕЯ line can be taken into the Author's DNA editor. "+
-  "No approved DNA, fabricated research, suppliers, tests, market or legal facts.":
+  "You are a CRITICAL SYNTHESIS reviewer, not a text editor. Compare the eight independent findings "+
+  "AGAINST the actual Author initiation. Do not simply paraphrase it. Separate usable professional insights "+
+  "from duplicates, speculation, and statements with no visible source. "+
+  "Search for the one non-obvious ORGANIZING RELATIONSHIP that could change how the Idea develops. "+
+  "If no meaningful new principle emerges, say so plainly; do not invent novelty. "+
+  "Do NOT force a choice between two complementary qualities (for example art vs function). "+
+  "Keep the form, materials and geometry OPEN unless the Author explicitly restricted them. "+
+  "Return exactly FIVE labelled Russian lines WITHOUT Markdown: "+
+  "ИДЕЯ: (ONE concise formed-idea sentence; no ID codes; must stay faithful to the Author); "+
+  "ПРИРОСТ: (what is now NEW compared with initiation; if nothing, «существенный прирост пока не найден»); "+
+  "ОСНОВАНИЯ: (one or two concrete sphere findings plus exact provided card IDs IF they exist; "+
+  "do not call model speculation evidence); "+
+  "НАПРЯЖЕНИЕ: (one relevant, UNPROVEN trade-off, never forced); "+
+  "ВОПРОС: (one question whose answer could change a real design decision, or «нет»). "+
+  "Never claim a finished DNA, market check, physical test, legal review or web search. "+
+  "Only ИДЕЯ is proposed to the Author for possible adoption.":
   "";
  const externalFindings=input.externalFindings?
   "\nEight independent sphere findings (not Author-approved):\n"+
