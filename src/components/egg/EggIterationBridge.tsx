@@ -154,9 +154,12 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
   <h3 className="text-sm font-medium">Утверждение ДНК → Желток</h3>
   <div className="mt-3 space-y-3 text-xs leading-relaxed">
    <p className="text-foreground/65">Внешний круг → сформированная Идея → проверенный Автором кандидат ДНК → отдельное серверное утверждение → Желток получает зерно. Последующая работа сфер развивает концепт и будущую форму. Черновик ИИ ничего не утверждает автоматически.</p>
-   {project?.seed.text.trim()&&<p role="status" data-testid="egg-dna-in-yolk" className="text-[#607466]">
-    ДНК получена Желтком · на уровне Идеи она отображается маленьким яйцом, пока пространственная форма не сформирована.
-   </p>}
+   {project?.seed.text.trim()&&<div role="status" data-testid="egg-dna-in-yolk" className="space-y-2">
+    <p className="text-[#607466]">ДНК утверждена и получена Желтком.</p>
+    <a href={"/egg/yolk?project="+encodeURIComponent(projectId)}
+     className="inline-block border border-foreground/30 px-4 py-2 text-xs underline-offset-4 hover:underline"
+     data-testid="egg-go-to-yolk-after-dna">Открыть Желток →</a>
+   </div>}
    {project&&!project.seed.text.trim()&&!dnaReviewed&&<p role="status" className="rounded-lg border border-foreground/20 p-3">
     Сначала заполните и подтвердите блок «Идея → ДНК» выше. Черновик намерения или ответ ИИ не является исходным зерном проекта.
    </p>}
@@ -189,16 +192,22 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
     </details>
    </div>}
    {project&&!historicalCycle&&<>
-    <details className="rounded-lg border border-foreground/10 p-3" data-testid="egg-original-seed-details" open={!project.seed.text.trim()}>
+    {!project.seed.text.trim()&&dnaReviewed&&<div data-testid="egg-dna-final-approval" className="space-y-2 border-t border-foreground/15 pt-3">
+      <p className="text-xs font-medium">ДНК проверена. Следующий шаг — передать её Желтку.</p>
+      <p className="text-[11px] text-foreground/60">Это отдельное авторское утверждение. Оно сохранит исходную ДНК в проекте один раз и не запустит восемь сфер.</p>
+      <button type="button" disabled={!dnaDraft.trim()||dnaDraft!==dnaCandidate||seeding||revision===null||!authorToken}
+       onClick={()=>void fixOriginalSeed()} data-testid="egg-approve-original-seed"
+       className="min-h-10 border border-[#607466] bg-[#607466] px-4 py-2 text-sm text-white disabled:opacity-40">
+       {seeding?"Сохраняем ДНК…":"Утвердить ДНК → Желток"}
+      </button>
+    </div>}
+    <details className="rounded-lg border border-foreground/10 p-3" data-testid="egg-original-seed-details">
      <summary className="cursor-pointer text-xs font-medium">Исходная ДНК проекта · подробности</summary>
      <p className="mt-2 text-foreground/50">Исходное зерно не изменяется при новых итерациях.</p>
      <p className="mt-1 whitespace-pre-wrap">{project.seed.text||"Не задана — сначала требуется утвердить исходное зерно проекта."}</p>
-     {!project.seed.text.trim()&&<button type="button" disabled={!dnaReviewed||!dnaDraft.trim()||seeding}
-      onClick={()=>void fixOriginalSeed()} data-testid="egg-approve-original-seed"
-      className="mt-3 rounded-full border border-foreground/35 px-3 py-2 text-xs disabled:opacity-40">
-      {seeding?"Сохраняем…":"Утвердить исходную ДНК (один раз)"}</button>}
+
     </details>
-    {(!cycle||cycle.status==="accepted")&&<>
+    {!!project.seed.text.trim()&&(!cycle||cycle.status==="accepted")&&<>
      <label className="block text-xs font-medium">Рабочая версия ДНК для текущего круга
       <textarea aria-label="Рабочая ДНК первого круга" value={dnaDraft} readOnly={Boolean(dnaReviewed&&project.level===1)} onChange={e=>{setDnaDraft(e.target.value);setDnaEdited(true);}}
        maxLength={3000} rows={4} className="mt-2 w-full resize-y rounded-xl border border-foreground/20 bg-background p-3 text-base font-normal outline-none md:text-sm"
@@ -212,8 +221,8 @@ export default function EggIterationBridge({projectId,intent,constraints,savedDr
      {materials.length>20&&<p role="alert">Для запуска сократите подборку до 20 карточек, чтобы ничего не было отброшено без вашего решения.</p>}
      <p className="font-medium">При нажатии «Утвердить пакет и запустить цикл» рабочая ДНК, отобранные тексты и фото будут записаны в серверный проект EGG, затем проверится доступ к ИИ. Запуск возможен только после явного действия Автора.</p>
     </>}
-    <EggFlowCyclePanel project={project} revision={revision} authorControls
-     initialHandoff={handoff??undefined} onSaved={()=>{setRefresh(v=>v+1);window.dispatchEvent(new Event("egg:author-state-updated"));}}/>
+    {!!project.seed.text.trim()&&<EggFlowCyclePanel project={project} revision={revision} authorControls
+     initialHandoff={handoff??undefined} onSaved={()=>{setRefresh(v=>v+1);window.dispatchEvent(new Event("egg:author-state-updated"));}}/>}
    </>}
   </div>
  </section>;
