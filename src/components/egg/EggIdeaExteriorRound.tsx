@@ -18,10 +18,10 @@ const storageKey=(id:string)=>"egg:idea-exterior:v1:"+id;
 function restore(projectId:string,key:string):Snapshot{
  try{
   const data=JSON.parse(localStorage.getItem(storageKey(projectId))||"null") as Partial<Snapshot>|null;
-  if(data?.sourceKey!==key||!Array.isArray(data.findings))return empty(key);
+  if(!data||typeof data.sourceKey!=="string"||!Array.isArray(data.findings))return empty(key);
   const findings=data.findings.filter(f=>f&&EGG_IDEA_EXTERIOR_ORDER.some(id=>id===f.sphere)&&
     typeof f.text==="string"&&f.text.trim().length>=8).map(f=>({sphere:f.sphere,text:f.text.slice(0,2400)}));
-  return {sourceKey:key,findings,idea:typeof data.idea==="string"?data.idea.slice(0,2500):"",
+  return {sourceKey:data.sourceKey,findings,idea:typeof data.idea==="string"?data.idea.slice(0,2500):"",
     updatedAt:typeof data.updatedAt==="string"?data.updatedAt:"",
     history:Array.isArray(data.history)?data.history.filter(x=>typeof x==="string").slice(-4):[],
     previousFindings:Array.isArray(data.previousFindings)?
@@ -30,11 +30,11 @@ function restore(projectId:string,key:string):Snapshot{
  }catch{return empty(key);}
 }
 function restoreFromServer(value:Partial<Snapshot>,sourceKey:string):Snapshot{
- if(value.sourceKey!==sourceKey||!Array.isArray(value.findings))return empty(sourceKey);
+ if(typeof value.sourceKey!=="string"||!Array.isArray(value.findings))return empty(sourceKey);
  const findings=value.findings.filter(f=>f&&EGG_IDEA_EXTERIOR_ORDER.some(id=>id===f.sphere)&&
    typeof f.text==="string"&&f.text.trim().length>=8)
   .map(f=>({sphere:f.sphere,text:f.text.slice(0,2400)}));
- return {sourceKey,findings,idea:typeof value.idea==="string"?value.idea.slice(0,2500):"",
+ return {sourceKey:value.sourceKey,findings,idea:typeof value.idea==="string"?value.idea.slice(0,2500):"",
   history:Array.isArray(value.history)?value.history.filter(x=>typeof x==="string").slice(-4):[],
   previousFindings:Array.isArray(value.previousFindings)?
    value.previousFindings.filter(f=>f&&EGG_IDEA_EXTERIOR_ORDER.some(id=>id===f.sphere)&&typeof f.text==="string")
@@ -59,6 +59,10 @@ export default function EggIdeaExteriorRound({
  const runId=useRef(0);
  const requestController=useRef<AbortController|null>(null);
  const validSnapshot=snapshot.sourceKey===sourceKey?snapshot:empty(sourceKey);
+ // Saved external results from an earlier set of references remain readable.
+ // They are NOT valid evidence for new Field/Material sources.
+ const priorSnapshot=snapshot.sourceKey!==sourceKey&&
+  (snapshot.findings.length>0||Boolean(snapshot.idea))?snapshot:null;
  const count=eggIdeaExteriorProgress(validSnapshot.findings);
  const formed=useMemo(()=>parseEggFormedIdea(validSnapshot.idea),[validSnapshot.idea]);
  const audit=useMemo(()=>exteriorResearchAudit(validSnapshot.findings),[validSnapshot.findings]);
@@ -69,9 +73,15 @@ export default function EggIdeaExteriorRound({
   catch{setMessage("Нет места для сохранения локального исследования. Проверьте хранилище браузера.");}
  },[projectId]);
  useEffect(()=>{
+  setSnapshot(restore(projectId,sourceKey));
+ // Project change reloads its last preserved version; changes to source
+ // selections must NEVER replace a valid old snapshot with empty data.
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ },[projectId]);
+ useEffect(()=>{
   runId.current++;
   requestController.current?.abort();requestController.current=null;
-  setRunning(false);setSnapshot(restore(projectId,sourceKey));setMessage("");
+  setRunning(false);setMessage("");
  },[projectId,sourceKey]);
  useEffect(()=>{
   onIdeaReady(formed.idea);
@@ -188,6 +198,24 @@ export default function EggIdeaExteriorRound({
     <div className="h-full rounded-full bg-[#607466] transition-all" style={{width:Math.round(count/8*100)+"%"}}/>
   </div>}
   {message&&<p role="status" className="text-xs text-foreground/65">{message}</p>}
+  {priorSnapshot&&<details className="border-t border-foreground/15 pt-3 text-xs"
+   data-testid="egg-exterior-prior-source">
+    <summary className="cursor-pointer font-medium">
+     Сохранённое исследование предыдущих материалов · {eggIdeaExteriorProgress(priorSnapshot.findings)}/8
+    </summary>
+    <p className="mt-2 text-foreground/65">
+     Входные изображения или параметры изменились. Старый синтез не удалён,
+     но не считается исследованием новой подборки.
+    </p>
+    {priorSnapshot.idea&&<p className="mt-2 whitespace-pre-wrap leading-relaxed">
+     {parseEggFormedIdea(priorSnapshot.idea).idea}
+    </p>}
+    <details className="mt-2">
+     <summary className="cursor-pointer">Старые вклады сфер и основания</summary>
+     {priorSnapshot.findings.map(f=><p className="mt-2 whitespace-pre-wrap break-words"
+      key={f.sphere}><strong>{EGG_IDEA_EXTERIOR_LENSES[f.sphere].name}:</strong> {f.text}</p>)}
+    </details>
+   </details>}
   {validSnapshot.idea&&<div className="border-t border-foreground/10 pt-3"
     data-testid="egg-exterior-formed-idea">
     <p className="text-[11px] text-foreground/55">Сформированная Идея · предложение, не утверждено</p>
@@ -268,10 +296,10 @@ export default function EggIdeaExteriorRound({
    </div>
   </details>}
   <EggWorkspaceSync projectId={projectId} scope="exterior"
-   ready={!!validSnapshot.idea||validSnapshot.findings.length>0}
-   value={validSnapshot}
+   ready
+   value={snapshot}
    onRestore={remote=>{
-    if(!remote||typeof remote!=="object"||remote.sourceKey!==sourceKey)return;
+    if(!remote||typeof remote!=="object")return;
     const clean=restoreFromServer(remote,sourceKey);
     setSnapshot(clean);
     try{localStorage.setItem(storageKey(projectId),JSON.stringify(clean));}
