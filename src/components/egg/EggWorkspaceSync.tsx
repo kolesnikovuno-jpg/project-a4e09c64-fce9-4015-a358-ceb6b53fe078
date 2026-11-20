@@ -314,7 +314,7 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
        !["image","thought","link","sketch","video"].includes(String(c.type)))
      throw Error("В архиве найдена неподдерживаемая карточка.");
     if(c.src!==undefined&&(typeof c.src!=="string"||
-       !/^data:image\\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(c.src)))
+       !new RegExp("^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$").test(c.src)))
      throw Error("В архиве найдены неверные данные изображения.");
     ids.add(c.id);
    }
