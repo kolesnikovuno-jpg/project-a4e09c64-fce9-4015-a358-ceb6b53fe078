@@ -1,7 +1,7 @@
 import {useEffect,useMemo,useRef,useState} from "react";
 import {createClient,type SupabaseClient} from "@supabase/supabase-js";
 
-export type EggWorkspaceScope="idea"|"field"|"matter"|"research";
+export type EggWorkspaceScope="idea"|"field"|"matter"|"research"|"exterior";
 type Meta={revision:number;hash:string};
 type Remote={payload:unknown;revision:number};
 type Status="connecting"|"synced"|"saving"|"conflict"|"local"|"error";
