@@ -150,7 +150,7 @@ export default function EggIdeaExteriorRound({
     <div className="h-full rounded-full bg-[#607466] transition-all" style={{width:Math.round(count/8*100)+"%"}}/>
   </div>}
   {message&&<p role="status" className="text-xs text-foreground/65">{message}</p>}
-  {validSnapshot.idea&&<div className="rounded-lg border border-foreground/15 bg-background p-3"
+  {validSnapshot.idea&&<div className="border-t border-foreground/10 pt-3"
     data-testid="egg-exterior-formed-idea">
     <p className="text-[11px] text-foreground/55">Сформированная Идея · предложение, не утверждено</p>
     <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed" data-testid="egg-formed-idea-core">{formed.idea}</p>
