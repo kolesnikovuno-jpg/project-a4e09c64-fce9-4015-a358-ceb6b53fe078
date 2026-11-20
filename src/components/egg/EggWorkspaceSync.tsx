@@ -1,5 +1,6 @@
 import {useEffect,useMemo,useRef,useState} from "react";
 import {createClient,type SupabaseClient} from "@supabase/supabase-js";
+import {createEggPhotosZip} from "../../lib/eggPhotosZip";
 
 export type EggWorkspaceScope="idea"|"field"|"matter"|"research"|"exterior";
 type Meta={revision:number;hash:string};
@@ -308,8 +309,30 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
     exportedAt:new Date().toISOString(),revision:remote!.revision,cards};
    // Preserve image data URLs inside JSON, unlike a list of file names.
    exportLocal(projectId,"field",data);
-   setNotice("Архив карточек и изображений выгружен из EGG. Сохраните файл на Google Диске.");
+   setNotice("Резервная копия JSON получена. Это файл восстановления EGG, не отдельные фотографии.");
   }catch(e){setNotice(e instanceof Error?e.message:"Не удалось выгрузить архив.");}
+ }
+ async function downloadPhotos(){
+  if(scope!=="field")return;
+  try{
+   const remote=await readRemote();
+   if(!remote||!Array.isArray(remote.payload))
+    throw Error("Серверная копия недоступна. Проверьте синхронизацию EGG.");
+   // Export only confirmed SERVER photos. Pending local-only cards are never
+   // mislabeled as archived images.
+   const {blob,filenames}=createEggPhotosZip(remote.payload);
+   const url=URL.createObjectURL(blob);
+   try{
+    const a=document.createElement("a");
+    a.href=url;
+    a.download="EGG-photos-"+projectId+".zip";
+    a.style.display="none";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setNotice("Фотографии ("+filenames.length+") сохранены в ZIP. Откройте его через приложение «Файлы» для получения JPG.");
+   }finally{setTimeout(()=>URL.revokeObjectURL(url),60000);}
+  }catch(e){setNotice(e instanceof Error?e.message:"Не удалось выгрузить фотографии.");}
  }
  async function inspectBackup(file:File|undefined){
   if(!file)return;
@@ -385,9 +408,14 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
     {pendingServerWrite?"Изменения ещё сохраняются в EGG…":"В EGG · синхронизировано"}
    </span>
    {scope==="field"&&<button type="button"
+    data-testid="egg-download-field-photos" onClick={()=>void downloadPhotos()}
+    className="border-b border-foreground/25 text-[11px] text-foreground/70">
+    Скачать фотографии (.zip)
+   </button>}
+   {scope==="field"&&<button type="button"
     data-testid="egg-download-field-archive" onClick={()=>void downloadVerifiedField()}
     className="border-b border-foreground/25 text-[11px] text-foreground/70">
-    Скачать карточки и изображения
+    Резервная копия проекта (.json)
    </button>}
    {scope==="field"&&<button type="button"
     data-testid="egg-open-field-import" onClick={()=>importInputRef.current?.click()}
