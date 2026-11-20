@@ -2,7 +2,7 @@ import {useEffect,useMemo,useRef,useState} from "react";
 import {createClient,type SupabaseClient} from "@supabase/supabase-js";
 import {createEggPhotosZip} from "../../lib/eggPhotosZip";
 
-export type EggWorkspaceScope="idea"|"field"|"matter"|"research"|"exterior";
+export type EggWorkspaceScope="idea"|"field"|"matter"|"research"|"exterior"|"dna";
 type Meta={revision:number;hash:string};
 type Remote={payload:unknown;revision:number};
 type RecoveryCandidate={payload:unknown;source:"browser"|"server";revision:number};
