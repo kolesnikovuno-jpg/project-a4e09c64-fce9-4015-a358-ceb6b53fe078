@@ -277,3 +277,61 @@
   .egg-dna-heart,
   .egg-dna-aura { animation: none; will-change: auto; }
 }
+
+/* EGG: site-matched, viewport-anchored oversized background wordmark.
+   Values mirror the studio landing's final EGG backdrop (Landing.css / main).
+   One shared source for EGG routes; opaque fullscreen Idea/Concept workspaces
+   repeat the same purely decorative glyph behind their own content. */
+.egg-brand-shell {
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  background: hsl(var(--background));
+}
+
+.egg-brand-shell::before,
+.egg-brand-shell [data-testid="egg-idea-workspace"]::before,
+.egg-brand-shell [data-testid="egg-concept-workspace"]::before {
+  content: "EGG";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 900;
+  font-size: max(58vw, 101vh);
+  letter-spacing: -0.105em;
+  line-height: 0.8;
+  color: rgba(119, 116, 102, 0.055);
+  transform: translateY(6vh) scaleX(1.18);
+  transform-origin: center;
+}
+
+.egg-brand-content {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+}
+
+/* The full-screen shells must not paint over their shared background.
+   Keep actual cards, text areas and modal dialogs opaque and readable. */
+.egg-brand-content > .bg-background,
+.egg-brand-content > [data-testid="yolk-experience"],
+.egg-brand-content [data-testid="egg-project-field"] {
+  background-color: transparent !important;
+}
+
+@media (max-width: 640px) {
+  .egg-brand-shell::before,
+  .egg-brand-shell [data-testid="egg-idea-workspace"]::before,
+  .egg-brand-shell [data-testid="egg-concept-workspace"]::before {
+    font-size: max(90vw, 95vh);
+    transform: translateY(6vh) scaleX(1.10);
+  }
+}
