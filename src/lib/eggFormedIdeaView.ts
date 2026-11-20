@@ -4,13 +4,15 @@
  */
 export type EggFormedIdeaView={
  idea:string;
+ growth:string;
+ basis:string;
  tension:string;
  question:string;
  fullText:string;
 };
 export function parseEggFormedIdea(raw:string):EggFormedIdeaView{
  const fullText=(raw||"").replace(/\*\*/g,"").replace(/^\s*#{1,4}\s+/gm,"").trim();
- const marker=/^\s*((?:Рабочая\s+)?Идея|Главное\s+напряжение|Напряжение|Вопрос)\s*:\s*/gim;
+ const marker=/^\s*((?:Рабочая\s+)?Идея|Прирост|Основания|Главное\s+напряжение|Напряжение|Вопрос)\s*:\s*/gim;
  const parts:{kind:string;start:number;end:number}[]=[];
  for(const match of fullText.matchAll(marker)){
   const kind=(match[1]||"").toLowerCase();
@@ -27,11 +29,15 @@ export function parseEggFormedIdea(raw:string):EggFormedIdeaView{
  const firstSentence=idea.match(/^([\s\S]*?[.!?])(?=\s|$)/);
  if(firstSentence)idea=firstSentence[1];
  idea=idea.replace(/\s+/g," ").trim().slice(0,500);
+ const growth=(sections.get("прирост")||"").split(/\n\s*\n/)[0]
+  .replace(/\s+/g," ").trim().slice(0,450);
+ const basis=(sections.get("основания")||"").split(/\n\s*\n/)[0]
+  .replace(/\s+/g," ").trim().slice(0,600);
  const tension=(
    sections.get("главное напряжение")||sections.get("напряжение")||""
  ).split(/\n\s*\n/)[0].replace(/\s+/g," ").trim().slice(0,500);
  const question=(
    sections.get("вопрос")||""
  ).split(/\n\s*\n/)[0].split(/\nСледующий шаг:/i)[0].replace(/\s+/g," ").trim().slice(0,350);
- return {idea,tension,question,fullText};
+ return {idea,growth,basis,tension,question,fullText};
 }
