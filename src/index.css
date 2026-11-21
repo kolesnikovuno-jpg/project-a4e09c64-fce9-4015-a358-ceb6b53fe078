@@ -590,22 +590,18 @@
   }
 }
 
-/* Behind an opened layer, Field cards remain stored/mounted, but are not
-   interactive through the transparent reading surface. */
+/* Material/Field cards persist in project state, NOT as ghosted DOM behind
+   the next workspace. `contentActive` also removes card children during
+   navigation, so iPad/Safari cannot keep an old transformed image layer alive.
+   A hard display boundary is deliberate: fading to 8% caused bleed-through. */
+.egg-one-screen [data-testid="egg-project-field"][data-content-active="false"] [data-testid="egg-field-items"],
 .egg-one-screen:has([data-testid="egg-idea-workspace"]) [data-testid="egg-field-items"],
 .egg-one-screen:has([data-testid="egg-concept-workspace"]) [data-testid="egg-field-items"],
 .egg-one-screen:has([data-testid="egg-one-yolk-layer"]) [data-testid="egg-field-items"],
 .egg-one-screen:has([data-testid="egg-sphere-panel"]) [data-testid="egg-field-items"],
 .egg-one-screen:has([data-testid="egg-one-utility-layer"]) [data-testid="egg-field-items"] {
-  opacity: .08;
+  display: none !important;
   pointer-events: none;
-  transition: opacity .25s ease;
-}
-.egg-one-screen [data-testid="egg-field-items"] {
-  transition: opacity .25s ease;
-}
-@media (prefers-reduced-motion: reduce) {
-  .egg-one-screen [data-testid="egg-field-items"] { transition: none; }
 }
 
 /* EGG / quiet studio refinement, 2026-11-21.
