@@ -838,3 +838,21 @@
     left: clamp(1.5rem, 3vw, 3.75rem);
   }
 }
+
+
+/* EGG / exclusive workspace switch. Even while the Field and rotating Egg
+   stay mounted behind the editor, prior cards and dialogue must not shine
+   through a transparent workspace. Use the EXACT same canvas surface, not
+   another floating card, shadow, or tinted overlay. */
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-sphere-panel"],
+  [data-testid="egg-matter-dialogue"],
+  .egg-one-utility-layer
+) {
+  background-color: hsl(var(--background)) !important;
+  background-image: radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px) !important;
+  background-size: 25px 25px !important;
+  box-shadow: none !important;
+}
