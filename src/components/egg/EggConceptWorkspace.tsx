@@ -135,8 +135,8 @@ export default function EggConceptWorkspace({projectId,onClose,onOpenIdea,onOpen
         className="absolute right-2 top-2 rounded-full bg-background/90 p-1.5"><X size={14}/></button>
       </div>)}
      </div>:
-     <div className="flex min-h-[160px] items-center justify-center rounded-xl border border-dashed border-foreground/20 bg-background/40 px-6 text-center text-sm text-foreground/55">
-      {ui.conceptEmptyVisual}
+     <div className="flex min-h-[120px] items-center justify-end px-3 py-8 text-right text-sm text-foreground/55">
+      <p className="ml-auto max-w-[36ch]">{ui.conceptEmptyVisual}</p>
      </div>}
    </div>
   </div>
