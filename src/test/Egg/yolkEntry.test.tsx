@@ -11,7 +11,7 @@ describe("EGG outlined Yolk console entry",()=>{
   const yolk=screen.getByTestId("unocalc-yolk-sphere");
   const outline=screen.getByTestId("unocalc-yolk-outline");
   expect(outline.getAttribute("fill")).toBe("none");
-  expect(outline.getAttribute("r")).toBe("68");
+  expect(outline.getAttribute("r")).toBe("148");
   expect(yolk.querySelectorAll("circle")).toHaveLength(2);
   expect(yolk.querySelector("text")).toBeNull();
   const hit=screen.getByTestId("unocalc-yolk-hit");
