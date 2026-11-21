@@ -3,7 +3,7 @@ import {afterEach,describe,expect,it,vi} from "vitest";
 import {cleanup,fireEvent,render,screen} from "@testing-library/react";
 import UnoEggScene from "../../components/unocalc/UnoEggScene";
 import {EGG_STAGES} from "../../lib/unocalcEggStages";
-import {eggFormationStageNodes} from "../../lib/unocalcEgg3d";
+import {eggFormationStageNodes,eggLowerSphereNodes} from "../../lib/unocalcEgg3d";
 
 afterEach(cleanup);
 
@@ -33,7 +33,9 @@ describe("EGG interactive console",()=>{
   );
   expect(expected).toBeDefined();
   expect(outline.getAttribute("fill")).toBe("none");
-  expect(Number(outline.getAttribute("r"))).toBeGreaterThan(47);
+  const lowerSphere=eggLowerSphereNodes({yaw:0,tilt:0})[0];
+  const expectedRadius=Math.hypot(lowerSphere.x-expected!.x,lowerSphere.y-expected!.y);
+  expect(Number(outline.getAttribute("r"))).toBeCloseTo(expectedRadius,0);
   expect(Number(outline.getAttribute("cx"))).toBeCloseTo(expected!.x,5);
   expect(Number(outline.getAttribute("cy"))).toBeCloseTo(expected!.y,5);
   expect(hit.getAttribute("cx")).toBe(outline.getAttribute("cx"));
