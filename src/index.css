@@ -445,7 +445,7 @@
 }
 .egg-one-screen :is([data-testid="egg-idea-mobile-tabs"],[data-testid="egg-concept-mobile-tabs"]) > div:first-child {
   flex-direction: row-reverse;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 .egg-one-screen :is([data-testid="egg-idea-mobile-tabs"],[data-testid="egg-concept-mobile-tabs"]) [role="tablist"] {
   display: flex !important;
@@ -468,7 +468,7 @@
 }
 .egg-one-screen :is([data-testid="egg-idea-canvas-pane"],[data-testid="egg-idea-dialogue-pane"],[data-testid="egg-concept-canvas-pane"],[data-testid="egg-concept-description-pane"]) > div:first-child {
   flex-direction: row-reverse;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 .egg-one-screen [data-testid="egg-idea-workspace"] .flex-wrap,
 .egg-one-screen [data-testid="egg-concept-workspace"] .flex-wrap,
@@ -588,4 +588,22 @@
   .egg-one-screen .egg-one-stage-label {
     top: calc(var(--egg-stage-height) + 1rem);
   }
+}
+
+/* Behind an opened layer, Field cards remain stored/mounted, but are not
+   interactive through the transparent reading surface. */
+.egg-one-screen:has([data-testid="egg-idea-workspace"]) [data-testid="egg-field-items"],
+.egg-one-screen:has([data-testid="egg-concept-workspace"]) [data-testid="egg-field-items"],
+.egg-one-screen:has([data-testid="egg-one-yolk-layer"]) [data-testid="egg-field-items"],
+.egg-one-screen:has([data-testid="egg-sphere-panel"]) [data-testid="egg-field-items"],
+.egg-one-screen:has([data-testid="egg-one-utility-layer"]) [data-testid="egg-field-items"] {
+  opacity: .08;
+  pointer-events: none;
+  transition: opacity .25s ease;
+}
+.egg-one-screen [data-testid="egg-field-items"] {
+  transition: opacity .25s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .egg-one-screen [data-testid="egg-field-items"] { transition: none; }
 }
