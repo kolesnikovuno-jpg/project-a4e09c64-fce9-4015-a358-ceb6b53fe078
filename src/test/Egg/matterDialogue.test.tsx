@@ -15,7 +15,9 @@ describe("Material research workspace",()=>{
    {id:"material1",type:"thought",text:"Тихая лёгкая форма",location:"matter",x:0,y:0}
   ]));
   const {container}=render(<EggProjectField workspace="matter" projectId={projectId}><div>EGG form</div></EggProjectField>);
-  expect(screen.getByTestId("egg-matter-dialogue")).toBeTruthy();
+  // Material starts with movable cards, not a dialogue that disables dragging.
+  expect(screen.queryByTestId("egg-matter-dialogue")).toBeNull();
+  expect(screen.getByTestId("egg-project-field")).toHaveAttribute("data-dialogue-open","false");
   const card=container.querySelector('[data-field-item="material1"]') as HTMLElement;
   expect(card).toBeTruthy();
   // Explicit focus is reliable in JSDOM; hover-specific pointerType is browser tested.
@@ -28,6 +30,27 @@ describe("Material research workspace",()=>{
   expect(screen.queryByTestId("egg-matter-dialogue")).toBeNull();
   fireEvent.click(screen.getByRole("button",{name:"Открыть диалог Материальное"}));
   expect(screen.getByTestId("egg-matter-dialogue")).toBeTruthy();
+ });
+ it("keeps two Material cards in memory but removes their DOM behind another workspace",()=>{
+  const projectId="matter-visibility-01";
+  const cards=[
+   {id:"material-a",type:"image",text:"Первый референс",location:"matter",x:0,y:0,src:"data:image/png;base64,AAAA"},
+   {id:"material-b",type:"thought",text:"Второй референс",location:"matter",x:260,y:0},
+  ];
+  localStorage.setItem("egg:project-field:v1:"+projectId,JSON.stringify(cards));
+  const node=(active:boolean)=><EggProjectField workspace="matter" projectId={projectId}
+   contentActive={active}><div>EGG form</div></EggProjectField>;
+  const {container,rerender}=render(node(true));
+  expect(container.querySelectorAll("[data-field-item]")).toHaveLength(2);
+  expect(screen.getByTestId("egg-project-field")).toHaveAttribute("data-dialogue-open","false");
+  rerender(node(false));
+  expect(container.querySelectorAll("[data-field-item]")).toHaveLength(0);
+  expect(screen.getByTestId("egg-project-field")).toHaveAttribute("data-content-active","false");
+  expect(JSON.parse(localStorage.getItem("egg:project-field:v1:"+projectId)??"[]")).toHaveLength(2);
+  rerender(node(true));
+  expect(container.querySelectorAll("[data-field-item]")).toHaveLength(2);
+  expect(container.querySelector('[data-field-item="material-a"]')).not.toBeNull();
+  expect(container.querySelector('[data-field-item="material-b"]')).not.toBeNull();
  });
  it("sends the full current board once author requests research and stores the real response",async()=>{
   const fetchMock=vi.fn(async(input:string)=>input==="/api/egg-config"?
