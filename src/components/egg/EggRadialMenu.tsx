@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent, type WheelEvent } from "react";
 import { ChevronLeft, CircleDot, type LucideIcon } from "lucide-react";
+import {useEggUi} from "../../i18n/eggUi";
 
 export type EggMenuAction = {
   id: string;
@@ -17,6 +18,7 @@ export type EggMenuAction = {
  * All actions orbit around it continuously instead of replacing fixed slots.
  */
 export default function EggRadialMenu({ actions, title = "EGG", side = "left" }: { actions: EggMenuAction[]; title?: string; side?:"left"|"right" }) {
+  const {ui}=useEggUi();
   const [open, setOpen] = useState(false);
   const [path, setPath] = useState<EggMenuAction[]>([]);
   const [rotation, setRotation] = useState(0);
@@ -91,15 +93,15 @@ export default function EggRadialMenu({ actions, title = "EGG", side = "left" }:
   const position="egg-menu-dial fixed bottom-[max(.5rem,env(safe-area-inset-bottom))] "+(side==="right"?"right-[max(.5rem,env(safe-area-inset-right))] ":"left-[max(.5rem,env(safe-area-inset-left))] ");
   if(!open)return (
     <div className={position+" pointer-events-none z-[75]"} data-testid="egg-menu-fixed-position">
-      <button type="button" aria-label="Открыть круговое меню" title="Меню EGG" onClick={()=>setOpen(true)}
+      <button type="button" aria-label={ui.menuOpen} title={ui.menuTitle} onClick={()=>setOpen(true)}
         className="egg-menu-launcher pointer-events-auto absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#989a92]/50 bg-[#f8f6f1]/65 text-[#777b73] shadow-[0_2px_12px_rgba(65,64,56,.06)] backdrop-blur-[3px] transition-colors hover:border-[#777b73]/70 hover:bg-[#f8f6f1]/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#989a92]">
         <CircleDot size={24} strokeWidth={1.05}/>
       </button>
     </div>
   );
   return (
-    <div className="fixed inset-0 z-[75]" aria-label="Круговое меню EGG">
-      <button type="button" aria-label="Закрыть круговое меню" className="absolute inset-0 cursor-default bg-[#f6f1e9]/5" onClick={close}/>
+    <div className="fixed inset-0 z-[75]" aria-label={ui.menuTitle}>
+      <button type="button" aria-label={ui.menuClose} className="absolute inset-0 cursor-default bg-[#f6f1e9]/5" onClick={close}/>
       <div ref={dial} data-testid="egg-menu-fixed-position"
         className={position+" select-none touch-none"}
         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}>
@@ -122,10 +124,10 @@ export default function EggRadialMenu({ actions, title = "EGG", side = "left" }:
             className={"egg-menu-orbit-item absolute flex h-[76px] w-[76px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full border bg-[#faf9f6]/85 p-1 text-[#727770] shadow-[0_2px_12px_rgba(65,64,56,.06)] backdrop-blur-sm transition-[left,top,background-color] duration-75 hover:bg-[#f8f6f1] disabled:opacity-35 "+
               (entry.selected?"border-[#8b9286]/65 bg-[#ebece7]/90":"border-[#a6a89e]/40")}>
             <Icon size={20} strokeWidth={1.25} color={entry.tint}/>
-            <span className="egg-menu-orbit-label max-w-[69px] text-center text-[10px] font-normal leading-[1.05rem]">{entry.label}</span>
+            <span className="egg-menu-orbit-label max-w-[69px] break-words text-center text-[10px] font-normal leading-[1.05rem]">{entry.label}</span>
           </button>;
         })}
-        <button type="button" data-dial-hub aria-label={path.length?"Назад к разделам":"Закрыть меню"}
+        <button type="button" data-dial-hub aria-label={path.length?ui.menuBack:ui.menuExit}
           onPointerDown={e=>e.stopPropagation()}
           onClick={()=>{if(path.length)setPath(v=>v.slice(0,-1));else close();}}
           className="egg-menu-hub absolute left-1/2 top-1/2 flex h-[100px] w-[100px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full border border-[#92958b]/50 bg-[#f8f6f1]/90 text-[#727770] shadow-[0_2px_12px_rgba(65,64,56,.07)] backdrop-blur-sm">
