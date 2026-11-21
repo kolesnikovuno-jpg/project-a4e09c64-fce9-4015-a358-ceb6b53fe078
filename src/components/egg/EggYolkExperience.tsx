@@ -87,7 +87,10 @@ function YolkTypewriter({title,description,number,side}:{title:string;descriptio
   </div>;
 }
 
-export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
+export default function EggYolkExperience({view="yolk",embedded=false,onClose,onOpenField,onOpenMatter,onOpenIdea,onOpenConcept}:{
+ view?:"egg"|"yolk";embedded?:boolean;onClose?:()=>void;
+ onOpenField?:()=>void;onOpenMatter?:()=>void;onOpenIdea?:()=>void;onOpenConcept?:()=>void;
+}){
   const [params]=useSearchParams();
   const navigate=useNavigate();
   const id=params.get("project");
@@ -330,9 +333,10 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
     setShowDna(false);
   };
   if (view === "yolk") return (
-    <main className="relative flex h-[100dvh] w-full items-center justify-center overflow-hidden bg-background" data-testid="yolk-experience" aria-label="Желток — объект">
+    <main className={embedded?"egg-one-yolk relative flex h-full w-full items-center justify-center overflow-hidden bg-transparent":"relative flex h-[100dvh] w-full items-center justify-center overflow-hidden bg-background"} data-testid="yolk-experience" aria-label="Желток — объект">
 
-      <section className="relative aspect-square w-[min(96vw,94dvh)] max-w-[1100px]" data-testid="yolk-central-object"
+      {embedded&&<div className="pointer-events-none absolute inset-x-4 top-4 z-20 flex items-center justify-end gap-3 text-right sm:inset-x-8 sm:top-6"><span className="text-sm font-light tracking-[.12em]">Желток</span><button type="button" aria-label="Закрыть Желток" onClick={onClose} className="pointer-events-auto rounded-full border border-foreground/20 px-3 py-1.5 text-xs">×</button></div>}
+      <section className={embedded?"relative aspect-square w-[min(92%,72dvh)] max-w-[760px]":"relative aspect-square w-[min(96vw,94dvh)] max-w-[1100px]"} data-testid="yolk-central-object"
         data-morphology-source={aiMorphology?"cited_eight_spheres":completedSpatial?"structural_cycle":"provisional_idea"}
         data-spatial-form={spatialForm?.status??"none"}
         aria-label="Пространственный объект">
@@ -348,12 +352,12 @@ export default function EggYolkExperience({view="yolk"}:{view?:"egg"|"yolk"}){
           </EggYolkIdeaVisual>)}
       </section>
       {id&&!project&&!loading&&<p role="alert" className="pointer-events-none absolute inset-x-5 top-5 text-center text-xs text-foreground/65">{notice||"Проект не загружен; отображается демонстрационный эскиз."}</p>}
-      <EggWorkspaceNavigation active="yolk"
-        onOpenField={()=>navigate(eggCanvasPath("field"))}
-        onOpenMatter={()=>navigate(eggCanvasPath("matter"))}
-        onOpenIdea={()=>navigate(eggCanvasPath("idea"))}
-        onOpenConcept={()=>navigate(eggCanvasPath("concept"))}
-        onOpenYolk={()=>{}}/>
+      {!embedded&&<EggWorkspaceNavigation active="yolk"
+        onOpenField={onOpenField??(()=>navigate(eggCanvasPath("field")))}
+        onOpenMatter={onOpenMatter??(()=>navigate(eggCanvasPath("matter")))}
+        onOpenIdea={onOpenIdea??(()=>navigate(eggCanvasPath("idea")))}
+        onOpenConcept={onOpenConcept??(()=>navigate(eggCanvasPath("concept")))}
+        onOpenYolk={()=>{}}/>}
     </main>
   );
   return (
