@@ -62,8 +62,10 @@ export default function EggProjectField({projectId,children,workspace="field",si
  // full-field scaling on smaller screens and when embedded independently.
  const splitStage=singleCanvas && typeof window!=="undefined" &&
   window.innerWidth>=900 && window.innerWidth>window.innerHeight;
+ // Fit the default 0.8-scale Egg to the 37% control zone; zoom and pinch
+ // still use eggScale and are never replaced by layout-only CSS transforms.
  const eggFit=splitStage
-  ?Math.min(1,Math.max(.28,(eggViewport.width/.58*.42-28)/900),Math.max(.28,(eggViewport.height-130)/650))
+  ?Math.min(1,Math.max(.28,(eggViewport.width*.37-24)/(900*.8)),Math.max(.28,(eggViewport.height-130)/(650*.8)))
   :Math.min(1,Math.max(.3,(eggViewport.width-24)/480),Math.max(.3,(eggViewport.height-130)/650));
  const [sketchEditor,setSketchEditor]=useState<{id:string|null;initialStrokes:SketchStroke[]}|null>(null);
  const [openId,setOpenId]=useState<string|null>(null);
