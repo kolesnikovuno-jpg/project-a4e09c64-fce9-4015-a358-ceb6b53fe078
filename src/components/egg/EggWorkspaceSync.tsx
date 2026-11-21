@@ -1,5 +1,6 @@
 import {useEffect,useMemo,useRef,useState} from "react";
 import {createClient,type SupabaseClient} from "@supabase/supabase-js";
+import {useEggUi} from "../../i18n/eggUi";
 import {createEggPhotosZip} from "../../lib/eggPhotosZip";
 
 export type EggWorkspaceScope="idea"|"field"|"matter"|"research"|"exterior"|"dna";
@@ -102,6 +103,7 @@ type Props<T>={
  */
 export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
  onRestore,isEmpty,className=""}:Props<T>){
+ const {ui}=useEggUi();
  const [status,setStatus]=useState<Status>("connecting");
  const [retryTick,setRetryTick]=useState(0);
  const [notice,setNotice]=useState("");
@@ -404,23 +406,23 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
  return <div className={"text-[10px] text-foreground/60 "+className}
   data-testid={"egg-workspace-sync-"+scope}>
   {status==="synced"?<div className="flex flex-wrap items-center gap-2">
-   <span title={"Серверная версия "+serverRevision}>
-    {pendingServerWrite?"Изменения ещё сохраняются в EGG…":"В EGG · синхронизировано"}
+   <span title={ui.syncVersion+" "+serverRevision}>
+    {pendingServerWrite?ui.syncPending:ui.syncSynced}
    </span>
    {scope==="field"&&<button type="button"
     data-testid="egg-download-field-photos" onClick={()=>void downloadPhotos()}
     className="border-b border-foreground/25 text-[11px] text-foreground/70">
-    Скачать фотографии (.zip)
+    {ui.syncPhotos}
    </button>}
    {scope==="field"&&<button type="button"
     data-testid="egg-download-field-archive" onClick={()=>void downloadVerifiedField()}
     className="border-b border-foreground/25 text-[11px] text-foreground/70">
-    Резервная копия проекта (.json)
+    {ui.syncArchive}
    </button>}
    {scope==="field"&&<button type="button"
     data-testid="egg-open-field-import" onClick={()=>importInputRef.current?.click()}
     className="border-b border-foreground/25 text-[11px] text-foreground/70">
-    Восстановить из файла
+    {ui.syncImport}
    </button>}
    {scope==="field"&&recovery&&<button type="button"
     data-testid="egg-restore-field-recovery"
@@ -429,27 +431,27 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
     Восстановить {Array.isArray(recovery.payload)?recovery.payload.length:0} карточек из {recovery.source==="browser"?"копии браузера":"истории EGG"}
    </button>}
   </div>:
-   status==="saving"||status==="connecting"?<span>{status==="saving"?"Сохранение в EGG…":"Проверка синхронизации…"}</span>:
+   status==="saving"||status==="connecting"?<span>{status==="saving"?ui.syncSaving:ui.syncConnecting}</span>:
    status==="local"||status==="error"?<div className="flex flex-wrap items-center gap-2">
-    <span role="status" className="text-amber-800">{status==="local"?"Только на этом устройстве":"Не синхронизировано"} · {notice}</span>
-    <button type="button" className="underline underline-offset-2" onClick={()=>setRetryTick(v=>v+1)}>Повторить</button>
+    <span role="status" className="text-amber-800">{status==="local"?ui.syncLocal:ui.syncError} · {notice}</span>
+    <button type="button" className="underline underline-offset-2" onClick={()=>setRetryTick(v=>v+1)}>{ui.syncRetry}</button>
     <button type="button" className="underline underline-offset-2"
-     onClick={()=>exportLocal(projectId,scope,valueRef.current)}>Экспорт</button>
+     onClick={()=>exportLocal(projectId,scope,valueRef.current)}>{ui.syncExport}</button>
    </div>:
    <div className="max-w-md space-y-2 rounded-xl border border-amber-700/25 bg-background/95 p-3 text-xs text-foreground/80"
     data-testid={"egg-sync-conflict-"+scope}>
-    <p>Есть две разные версии. Ни одна не перезаписана.</p>
+    <p>{ui.syncConflict}</p>
     <div className="flex flex-wrap gap-2">
      <button type="button" className="rounded-full border px-3 py-1.5" onClick={()=>void useServer()}>
-      Использовать серверную
+      {ui.syncUseServer}
      </button>
      <button type="button" className="rounded-full border px-3 py-1.5" onClick={()=>void useLocal()}>
-      Сохранить местную в EGG
+      {ui.syncUseLocal}
      </button>
      <button type="button" className="rounded-full border px-3 py-1.5"
-      onClick={()=>exportLocal(projectId,scope,valueRef.current)}>Экспорт местной</button>
+      onClick={()=>exportLocal(projectId,scope,valueRef.current)}>{ui.syncExportLocal}</button>
      <button type="button" className="rounded-full border px-3 py-1.5"
-      onClick={()=>exportLocal(projectId,scope,conflict?.payload)}>Экспорт серверной</button>
+      onClick={()=>exportLocal(projectId,scope,conflict?.payload)}>{ui.syncExportServer}</button>
     </div>
     {notice&&<p role="status">{notice}</p>}
    </div>}
@@ -464,7 +466,7 @@ export default function EggWorkspaceSync<T>({projectId,scope,ready,value,
      <button type="button" className="border border-foreground/40 px-3 py-2"
       onClick={()=>void restoreImportedField()} data-testid="egg-confirm-field-restore">Восстановить в EGG</button>
      <button type="button" className="border px-3 py-2"
-      onClick={()=>setPendingImport(null)}>Отмена</button>
+      onClick={()=>setPendingImport(null)}>{ui.syncCancel}</button>
     </div>
   </div>}
   {scope==="field"&&notice&&status==="synced"&&<span role="status" className="block text-foreground/60">{notice}</span>}
