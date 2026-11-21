@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   DEFAULT_LOCALE,
@@ -8,7 +8,7 @@ import {
   type Locale,
 } from "./config";
 import { getDict, type Dictionary } from "./dictionary";
-import { setStoredLocale } from "./storage";
+import { getStoredLocale, setStoredLocale } from "./storage";
 
 /**
  * Resolves the active locale from the `:locale` route param, exposes the
@@ -22,7 +22,19 @@ export function useLocale() {
   // Parse locale from the first path segment so the hook works whether
   // routes are declared with a `:locale` param or as static `/en/...` paths.
   const firstSegment = location.pathname.split("/").filter(Boolean)[0];
-  const locale: Locale = isLocale(firstSegment) ? firstSegment : DEFAULT_LOCALE;
+  // EGG account / Yolk routes intentionally stay unprefixed: the Supabase
+  // magic-link callback must remain /egg/connect on the canonical origin.
+  // For these routes, use the saved choice rather than silently showing EN.
+  const isBareEggRoute = firstSegment === "egg";
+  const [bareEggLocale, setBareEggLocale] = useState<Locale>(() => getStoredLocale() ?? DEFAULT_LOCALE);
+  const locale: Locale = isLocale(firstSegment) ? firstSegment :
+    isBareEggRoute ? bareEggLocale : DEFAULT_LOCALE;
+  useEffect(() => {
+    if (!isBareEggRoute) return;
+    const refresh = () => setBareEggLocale(getStoredLocale() ?? DEFAULT_LOCALE);
+    window.addEventListener("egg:locale-change", refresh);
+    return () => window.removeEventListener("egg:locale-change", refresh);
+  }, [isBareEggRoute]);
   const t: Dictionary = useMemo(() => getDict(locale), [locale]);
 
   // Keep <html lang> in sync for accessibility and SEO.
@@ -40,6 +52,13 @@ export function useLocale() {
   const switchTo = (target: Locale) => {
     // Persist the choice so it survives navigation, refreshes and sessions.
     setStoredLocale(target);
+    if (isBareEggRoute) {
+      // Change the language in place: don't interrupt authentication callbacks,
+      // Yolk data loads, or the project's current route/query/hash.
+      setBareEggLocale(target);
+      window.dispatchEvent(new Event("egg:locale-change"));
+      return;
+    }
     const segments = location.pathname.split("/").filter(Boolean);
     if (isLocale(segments[0])) segments[0] = target;
     else segments.unshift(target);
