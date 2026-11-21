@@ -103,7 +103,7 @@ export default function EggConceptWorkspace({projectId,onClose,onOpenIdea,onOpen
    <button type="button" role="tab" aria-selected={mobilePane==="description"} onClick={()=>setMobilePane("description")} className={"min-h-10 rounded-full px-3 text-sm "+(mobilePane==="description"?"bg-[#607466] text-white":"bg-foreground/5 text-foreground/75")}>{ui.commonDescription}</button>
   </div>
  </div>
- <div data-testid="egg-concept-canvas-pane" className={"min-h-0 min-w-0 w-full flex-1 flex-col border-b border-foreground/10 px-4 py-3 md:w-auto md:border-b-0 md:border-r md:px-8 md:py-5 "+(mobilePane==="canvas"?"flex":"hidden md:flex")}>
+ <div data-testid="egg-concept-canvas-pane" data-active={mobilePane==="canvas"} className={"min-h-0 min-w-0 w-full flex-1 flex-col border-b border-foreground/10 px-4 py-3 md:w-auto md:border-b-0 md:border-r md:px-8 md:py-5 "+(mobilePane==="canvas"?"flex":"hidden md:flex")}>
    <div className="flex shrink-0 items-center justify-between gap-3">
     <h2 className="text-lg font-light">{ui.concept} <span className="text-xs opacity-50">{ui.conceptImageForm}</span></h2>
     <button type="button" onClick={onOpenIdea} className="flex items-center gap-1 rounded-full bg-background/80 px-3 py-2 text-xs shadow-sm">
@@ -140,7 +140,7 @@ export default function EggConceptWorkspace({projectId,onClose,onOpenIdea,onOpen
      </div>}
    </div>
   </div>
-  <div data-testid="egg-concept-description-pane" className={"min-h-0 min-w-0 w-full flex-1 flex-col px-4 py-3 md:w-auto md:max-w-[480px] md:px-6 md:py-5 "+(mobilePane==="description"?"flex":"hidden md:flex")}>
+  <div data-testid="egg-concept-description-pane" data-active={mobilePane==="description"} className={"min-h-0 min-w-0 w-full flex-1 flex-col px-4 py-3 md:w-auto md:max-w-[480px] md:px-6 md:py-5 "+(mobilePane==="description"?"flex":"hidden md:flex")}>
    <div className="flex items-center justify-between gap-3">
     <span className="text-sm">{ui.conceptWorking}</span>
     <button type="button" aria-label={ui.conceptClose} onClick={onClose}
