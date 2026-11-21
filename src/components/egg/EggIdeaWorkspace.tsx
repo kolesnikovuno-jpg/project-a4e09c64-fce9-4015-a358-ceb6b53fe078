@@ -17,6 +17,7 @@ import {buildEggIdeaExternalField} from "../../lib/eggIdeaExternalField";
 import {eggMaterialInsight,isEggMaterialMapCurrent,readEggMaterialMapRecord,
  readLocalEggMaterialMap,eggMaterialMapKey,type EggMaterialMapRecord} from "../../lib/eggMaterialMap";
 import {waitForEggAiRequest,postponeEggAiRequests} from "../../lib/eggAiPacing";
+import {useEggUi} from "../../i18n/eggUi";
 
 declare const __EGG_BUILD_SHA__:string;
 type Message={role:"user"|"assistant";content:string};
@@ -40,6 +41,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
  onOpenField?:()=>void;onOpenConcept?:()=>void;onOpenYolk?:()=>void;
  onProjectCreated?:(projectId:string)=>void;
 }){
+ const {ui}=useEggUi();
  const key="egg:idea-workspace:v1:"+projectId;
  const [intent,setIntent]=useState("");
  const [constraints,setConstraints]=useState("");
@@ -253,38 +255,38 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
   }catch(e){setError(e instanceof Error?e.message:"Не удалось получить ответ ИИ.");}
   finally{setBusy(false);}
  };
- return <section aria-label="Сфера Идея — мастерская" data-testid="egg-idea-workspace"
+ return <section aria-label={ui.ideaWorkspace} data-testid="egg-idea-workspace"
   className={"fixed inset-0 z-[90] flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-background text-foreground md:flex-row"+(cycleEntryOpen?" egg-idea-reading":"")}
   style={{backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}}>
   <div className="shrink-0 border-b border-foreground/10 bg-background/95 px-4 pb-2 pt-[max(.65rem,env(safe-area-inset-top))] md:hidden" data-testid="egg-idea-mobile-tabs">
-  <div className="flex items-center justify-between gap-2"><span className="text-sm font-medium">Идея</span><button type="button" aria-label="Закрыть сферу Идея" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full border border-foreground/15"><X size={17}/></button></div>
-  <div className="mt-1 grid grid-cols-2 gap-2" role="tablist" aria-label="Режим мастерской Идея">
-   <button type="button" role="tab" aria-selected={mobilePane==="canvas"} onClick={()=>setMobilePane("canvas")} className={"min-h-10 rounded-full px-3 text-sm "+(mobilePane==="canvas"?"bg-[#607466] text-white":"bg-foreground/5 text-foreground/75")}>Холст</button>
-   <button type="button" role="tab" aria-selected={mobilePane==="dialogue"} onClick={()=>setMobilePane("dialogue")} className={"min-h-10 rounded-full px-3 text-sm "+(mobilePane==="dialogue"?"bg-[#607466] text-white":"bg-foreground/5 text-foreground/75")}>Диалог с ИИ</button>
+  <div className="flex items-center justify-between gap-2"><span className="text-sm font-medium">{ui.idea}</span><button type="button" aria-label={ui.ideaClose} onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full border border-foreground/15"><X size={17}/></button></div>
+  <div className="mt-1 grid grid-cols-2 gap-2" role="tablist" aria-label={ui.ideaTablist}>
+   <button type="button" role="tab" aria-selected={mobilePane==="canvas"} onClick={()=>setMobilePane("canvas")} className={"min-h-10 rounded-full px-3 text-sm "+(mobilePane==="canvas"?"bg-[#607466] text-white":"bg-foreground/5 text-foreground/75")}>{ui.commonCanvas}</button>
+   <button type="button" role="tab" aria-selected={mobilePane==="dialogue"} onClick={()=>setMobilePane("dialogue")} className={"min-h-10 rounded-full px-3 text-sm "+(mobilePane==="dialogue"?"bg-[#607466] text-white":"bg-foreground/5 text-foreground/75")}>{ui.commonDialogue}</button>
   </div>
  </div>
  <div data-testid="egg-idea-canvas-pane" className={"min-h-0 min-w-0 w-full flex-1 flex-col px-4 py-3 md:w-1/2 md:px-8 md:py-5 "+(mobilePane==="canvas"?"flex":"hidden md:flex")}>
    <div className="mb-6 flex items-center justify-between gap-2">
-    <h2 className="text-lg font-light">Идея <span className="text-xs opacity-50">· Автор инициирует</span></h2>
-    <button type="button" onClick={onOpenMatter} className="flex items-center gap-1 rounded-full bg-background/80 px-3 py-2 text-xs shadow-sm"><ArrowLeft size={14}/> Материальное</button>
+    <h2 className="text-lg font-light">{ui.idea} <span className="text-xs opacity-50">{ui.ideaInitiates}</span></h2>
+    <button type="button" onClick={onOpenMatter} className="flex items-center gap-1 rounded-full bg-background/80 px-3 py-2 text-xs shadow-sm"><ArrowLeft size={14}/> {ui.matter}</button>
    </div>
    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pb-36 md:pb-5">
     <EggAuthorProcessMonitor projectId={projectId} onOpenConcept={onOpenConcept} onOpenYolk={onOpenYolk}/>
-    <label className="block text-xs text-foreground/60">Намерение Автора
-     <textarea aria-label="Намерение Автора" value={intent} maxLength={3000} rows={4} onChange={e=>{setIntent(e.target.value);setDraftSavedNotice(false);}}
+    <label className="block text-xs text-foreground/60">{ui.ideaIntent}
+     <textarea aria-label={ui.ideaIntent} value={intent} maxLength={3000} rows={4} onChange={e=>{setIntent(e.target.value);setDraftSavedNotice(false);}}
       placeholder="Что хочешь инициировать? Например: неутилитарный элемент пространства — отдельная нота…"
       className="mt-2 w-full resize-y rounded-xl border border-foreground/15 bg-background/80 p-3 text-base outline-none focus:border-foreground/40 md:text-sm"/>
     </label>
     <div className="flex flex-wrap items-center gap-3">
      <button type="button" onClick={()=>setSketchOpen(true)} className="rounded-full border border-foreground/30 px-3 py-2 text-xs" data-testid="egg-author-draw-sketch">
-      {sketchStrokes.length?"Изменить рисунок":"Нарисовать скетч"}</button>
+      {sketchStrokes.length?ui.ideaEditDrawing:ui.ideaDraw}</button>
      <button type="button" data-testid="egg-save-author-draft"
       disabled={!intent.trim()||!loaded}
       onClick={()=>{setSavedDraft(intent.trim());setDraftSavedNotice(true);}}
       className="rounded-full border border-foreground/30 bg-background/70 px-3 py-2 text-xs disabled:opacity-40">
-      <Check size={13} className="mr-1 inline"/> Сохранить черновик идеи
+      <Check size={13} className="mr-1 inline"/> {ui.ideaSaveDraft}
      </button>
-     {draftSavedNotice&&<span role="status" className="text-[11px] text-foreground/60">Сохранено в этом браузере · не утверждено</span>}
+     {draftSavedNotice&&<span role="status" className="text-[11px] text-foreground/60">{ui.ideaSavedLocal}</span>}
      <button type="button" data-testid="egg-open-current-idea-yolk"
       disabled={!intent.trim()||!loaded}
       onClick={()=>{
@@ -428,7 +430,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
   <div data-testid="egg-idea-dialogue-pane" className={"min-h-0 min-w-0 w-full flex-1 flex-col px-4 py-3 md:w-1/2 md:px-6 md:py-5 "+(mobilePane==="dialogue"?"flex":"hidden md:flex")}>
    <div className="mb-3 flex items-center justify-between gap-2">
     <div className="flex items-center gap-2 text-sm"><BrainCircuit size={16}/> Идея · Автор ↔ ИИ</div>
-    <button type="button" onClick={onClose} aria-label="Закрыть сферу Идея" className="rounded-full bg-background/70 p-2"><X size={17}/></button>
+    <button type="button" onClick={onClose} aria-label={ui.ideaClose} className="rounded-full bg-background/70 p-2"><X size={17}/></button>
    </div>
    <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pb-24 pt-3 md:pb-3" aria-live="polite">
     {!messages.length&&<div className="space-y-3 text-sm text-foreground/65">
