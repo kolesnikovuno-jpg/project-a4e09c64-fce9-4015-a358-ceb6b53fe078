@@ -506,10 +506,13 @@
   .egg-one-screen .egg-one-utility-layer,
   .egg-one-screen .egg-one-yolk-layer {
     position: fixed !important;
-    inset: 0 0 0 var(--egg-stage-width) !important;
-    width: calc(100% - var(--egg-stage-width)) !important;
+    inset: 0 !important;
+    width: 100% !important;
     max-width: none !important;
     height: 100dvh !important;
+    box-sizing: border-box;
+    /* Full-screen transparent canvas, while text stays in the original right 63%. */
+    padding-left: var(--egg-stage-width) !important;
     overflow-x: hidden;
     border-left: 0 !important;
     background: transparent !important;
@@ -561,10 +564,13 @@
   .egg-one-screen .egg-one-utility-layer,
   .egg-one-screen .egg-one-yolk-layer {
     position: fixed !important;
-    inset: var(--egg-stage-height) 0 0 0 !important;
+    inset: 0 !important;
     width: 100% !important;
     max-width: none !important;
-    height: calc(100dvh - var(--egg-stage-height)) !important;
+    height: 100dvh !important;
+    box-sizing: border-box;
+    /* Canvas occupies the screen; content starts below the persistent Egg. */
+    padding-top: var(--egg-stage-height) !important;
     background: transparent !important;
     box-shadow: none !important;
     border: 0 !important;
@@ -835,20 +841,46 @@
   }
 }
 
-
-/* EGG / exclusive workspace switch. Even while the Field and rotating Egg
-   stay mounted behind the editor, prior cards and dialogue must not shine
-   through a transparent workspace. Use the EXACT same canvas surface, not
-   another floating card, shadow, or tinted overlay. */
+/* EGG / continuous full-screen canvas — 2026-11-21.
+   The workspace fills the viewport but paints no separate surface. The
+   persistent Field provides the common dotted canvas. Field/Material cards
+   are unmounted by contentActive while an editor is open; never ghost them.
+   Keep panel content in its previous right (or below-Egg) column. */
 .egg-one-screen :is(
   [data-testid="egg-idea-workspace"],
   [data-testid="egg-concept-workspace"],
-  [data-testid="egg-sphere-panel"],
   [data-testid="egg-matter-dialogue"],
-  .egg-one-utility-layer
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer,
+  .egg-one-yolk-layer
 ) {
-  background-color: hsl(var(--background)) !important;
-  background-image: radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px) !important;
-  background-size: 25px 25px !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
   box-shadow: none !important;
+  pointer-events: none;
+}
+/* Only the actual editor is interactive; its empty full-screen surface does
+   not capture rotations, touch/pinch, or clicks on the Egg at the left/top. */
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer,
+  .egg-one-yolk-layer
+) > * {
+  pointer-events: auto;
+}
+/* The Egg, the original radial navigation and the wordmark sit above the
+   transparent editor surface without changing their positions or text. */
+.egg-one-screen [data-testid="egg-left-stage"] {
+  z-index: 130 !important;
+}
+.egg-one-screen [data-testid="egg-menu-fixed-position"],
+.egg-one-screen [data-testid="egg-menu-overlay"] {
+  z-index: 145 !important;
+}
+.egg-one-screen > main > header {
+  z-index: 150 !important;
 }
