@@ -607,3 +607,180 @@
 @media (prefers-reduced-motion: reduce) {
   .egg-one-screen [data-testid="egg-field-items"] { transition: none; }
 }
+
+/* EGG / quiet studio refinement, 2026-11-21.
+   Lyra's descriptive typography informs the rhythm: Medeo Sans, light weight,
+   discreet tracking and generous line-height. Lyra Info itself uses a
+   monospaced document face; avoid importing that mechanical reading style
+   into the creative workspaces. All changes are scoped to the EGG canvas. */
+.egg-one-screen {
+  --egg-studio-tracking: .055em;
+  --egg-studio-heading-tracking: .105em;
+  --egg-studio-meta-tracking: .14em;
+}
+@media (min-width:900px) and (orientation:landscape) {
+  /* Relative top does not override the inline scale transform used for
+     wheel/pinch gestures. Correct the SVG's visually low center on iPad. */
+  .egg-one-screen [data-testid="egg-left-stage"] [data-egg-anchor] {
+    top: -8dvh;
+  }
+}
+@media (max-width:899px), (orientation:portrait) {
+  .egg-one-screen [data-testid="egg-left-stage"] [data-egg-anchor] {
+    top: -1.4dvh;
+  }
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) {
+  font-family: var(--font-body) !important;
+  font-weight: 300;
+  letter-spacing: var(--egg-studio-tracking);
+  line-height: 1.75;
+  color: hsl(var(--foreground) / .81);
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) :is(h1,h2,h3,h4) {
+  font-family: var(--font-body);
+  font-weight: 300 !important;
+  letter-spacing: var(--egg-studio-heading-tracking);
+  line-height: 1.45;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) :is(p,blockquote,li,label) {
+  font-family: var(--font-body);
+  font-weight: 300 !important;
+  letter-spacing: var(--egg-studio-tracking);
+  line-height: 1.75;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) :is(button,summary,[role="tab"]) {
+  font-family: var(--font-body);
+  font-weight: 300 !important;
+  letter-spacing: .085em;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) :is(strong,b) {
+  font-weight: 400 !important;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) :is(.text-sm) {
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+/* Panels, cards and placeholder zones have no default bounding rectangles.
+   Input focus and selected tabs keep a subtle active indicator. */
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) :is(div,section,article,aside,details,fieldset,blockquote,figure) {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) :is(button,label) {
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) :is(input:not([type="file"]):not([type="checkbox"]),textarea,select) {
+  font-family: var(--font-body);
+  font-weight: 300;
+  letter-spacing: .05em;
+  line-height: 1.65;
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid hsl(var(--foreground) / .13) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: hsl(var(--foreground) / .88);
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) :is(button,input,textarea,select,summary):focus-visible {
+  outline: 1px solid hsl(var(--foreground) / .45) !important;
+  outline-offset: 3px;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-mobile-tabs"],
+  [data-testid="egg-concept-mobile-tabs"]
+) {
+  border: 0 !important;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-mobile-tabs"],
+  [data-testid="egg-concept-mobile-tabs"]
+) [role="tab"][aria-selected="true"] {
+  border-bottom: 1px solid hsl(var(--foreground) / .50) !important;
+}
+.egg-one-screen [data-testid="egg-concept-canvas-pane"] > div:nth-child(2) > div:first-child,
+.egg-one-screen [data-testid="egg-concept-description-pane"] > div:nth-child(2) {
+  border: 0 !important;
+}
+.egg-one-screen :is(
+  [data-testid="egg-concept-canvas-pane"],
+  [data-testid="egg-idea-canvas-pane"],
+  [data-testid="egg-concept-description-pane"]
+) :is(p,blockquote):not([role="status"]):not([role="alert"]) {
+  max-width: 68ch;
+  margin-left: auto;
+}
+.egg-one-screen [data-testid="egg-concept-canvas-pane"] .border-dashed {
+  min-height: 110px;
+  padding-block: 1.7rem;
+  border: 0 !important;
+}
+.egg-one-screen .egg-one-stage-label :is(h2,span) {
+  font-family: var(--font-body);
+  font-weight: 300 !important;
+  letter-spacing: var(--egg-studio-heading-tracking);
+}
+/* Do not interfere with the original Egg scales, data coordinates, editor
+   drawers, photo selection, or genuinely critical modal focus indicators. */
