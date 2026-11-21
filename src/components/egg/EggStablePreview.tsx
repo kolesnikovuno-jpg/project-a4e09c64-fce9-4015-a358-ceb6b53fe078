@@ -1,6 +1,8 @@
 import { useEffect, type ReactNode } from "react";
 import { EGG_CANONICAL_ORIGIN } from "../../lib/eggAuthRedirect";
 import LanguageSwitcher from "../../i18n/LanguageSwitcher";
+import {useLocale} from "../../i18n/useLocale";
+import {EggUiProvider} from "../../i18n/eggUi";
 
 /**
  * EGG uses one canonical origin for BOTH project authorization and UI.
@@ -30,6 +32,7 @@ export function eggCanonicalRedirect(location:{
 }
 
 export default function EggStablePreview({ children }: { children: ReactNode }) {
+  const {locale}=useLocale();
   const destination=eggCanonicalRedirect(window.location);
   useEffect(()=>{if(destination)window.location.replace(destination);},[destination]);
   if(destination)return <main className="mx-auto max-w-lg p-8 text-sm text-foreground"
@@ -40,6 +43,6 @@ export default function EggStablePreview({ children }: { children: ReactNode }) 
   // The wordmark is purely visual. Project state, auth and navigation stay intact.
   return <div className="egg-brand-shell" data-testid="egg-brand-shell">
     <LanguageSwitcher background="hsl(24 26% 94%)" />
-    <div className="egg-brand-content">{children}</div>
+    <EggUiProvider locale={locale}><div className="egg-brand-content">{children}</div></EggUiProvider>
   </div>;
 }
