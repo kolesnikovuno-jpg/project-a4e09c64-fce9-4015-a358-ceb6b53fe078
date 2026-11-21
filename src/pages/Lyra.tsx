@@ -853,7 +853,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
         </span>
       </button>
       <div className="uno-actions">
-        {commercial && <button type="button" onClick={() => setRequestOpen(true)}>{locale === "ru" ? "запрос" : locale === "uk" ? "запит" : "request"}</button>}
+        {commercial && !switcherVisible && <button type="button" onClick={() => setRequestOpen(true)}>{locale === "ru" ? "запрос" : locale === "uk" ? "запит" : "request"}</button>}
         {modelFullyVisible && (
           <button
             type="button"
