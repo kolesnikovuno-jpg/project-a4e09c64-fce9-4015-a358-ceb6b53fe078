@@ -616,7 +616,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
         }
         .uno-actions{
           position:fixed; right:0; bottom:22px; z-index:60;
-          display:flex; align-items:center; gap:22px;
+          display:flex; align-items:center; gap:0;
           padding:5px 22px 5px 20px;
           background:hsl(24 26% 94%);
           border:none;
@@ -629,11 +629,21 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
           font-size:12px; font-weight:300;
           letter-spacing:0.18em; text-transform:lowercase;
           color:hsl(203 24% 40%);
-          transition:color .25s ease;
+          transition:color .25s ease, opacity .65s ease, max-width .65s ease, transform .65s ease, margin-left .65s ease;
+        }
+        .uno-actions button + button{ margin-left:22px; }
+        .uno-actions .uno-action-conditional{
+          max-width:110px; opacity:1; overflow:hidden; white-space:nowrap;
+          transform:translateY(0);
+        }
+        .uno-actions .uno-action-conditional.is-hidden{
+          max-width:0; opacity:0; transform:translateY(5px);
+          pointer-events:none; margin-left:0;
         }
         .uno-actions button:hover{ color:#C97A63; }
         @media(max-width:768px){
-          .uno-actions{ bottom:18px; padding:4px 18px 4px 16px; gap:18px; }
+          .uno-actions{ bottom:18px; padding:4px 18px 4px 16px; gap:0; }
+          .uno-actions button + button{ margin-left:18px; }
         }
         /* Scroll indicator: vertical 2px track rising from the middle of the
            "info" button up to ~2/3 of the viewport. A small colored segment
@@ -853,10 +863,13 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
         </span>
       </button>
       <div className="uno-actions">
-        {commercial && !switcherVisible && <button type="button" onClick={() => setRequestOpen(true)}>{locale === "ru" ? "запрос" : locale === "uk" ? "запит" : "request"}</button>}
-        {modelFullyVisible && (
+        {commercial && <button type="button" className={`uno-action-conditional ${switcherVisible ? "is-hidden" : ""}`} tabIndex={switcherVisible ? -1 : 0} aria-hidden={switcherVisible} onClick={() => setRequestOpen(true)}>{locale === "ru" ? "запрос" : locale === "uk" ? "запит" : "request"}</button>}
+        {(
           <button
             type="button"
+            className={`uno-action-conditional ${modelFullyVisible ? "" : "is-hidden"}`}
+            tabIndex={modelFullyVisible ? 0 : -1}
+            aria-hidden={!modelFullyVisible}
             aria-label={t.nav.ar}
             onClick={() => {
               const mv: any = modelRef.current;
