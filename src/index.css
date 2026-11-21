@@ -829,3 +829,12 @@
   font-weight: 400 !important;
 }
 /* Preserve status clarity and keyboard focus while refining typography. */
+
+/* The new 1.5x first-view Egg would otherwise clip its left edge against the
+   viewport at desktop widths. Nudge the interactive SVG right within its
+   fixed stage without changing its pan, pinch or rotation transforms. */
+@media (min-width:900px) and (orientation:landscape) {
+  .egg-one-screen [data-testid="egg-left-stage"] [data-egg-anchor] {
+    left: clamp(1.5rem, 3vw, 3.75rem);
+  }
+}
