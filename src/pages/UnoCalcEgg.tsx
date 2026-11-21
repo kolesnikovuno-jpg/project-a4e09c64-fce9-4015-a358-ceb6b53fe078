@@ -111,6 +111,7 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
             key={params.get("project") || ""}
             projectId={params.get("project") || ""}
             singleCanvas={fieldMode}
+            contentActive={!entryWorkspace && !selectedWorkSphere && !panelOpen}
             workspace={fieldWorkspace} onWorkspaceChange={openBoard}
             onOpenAuthor={() => openEntry("idea") }
             onOpenProject={() => openUtility()}
