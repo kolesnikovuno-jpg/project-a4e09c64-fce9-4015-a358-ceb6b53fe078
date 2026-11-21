@@ -551,6 +551,15 @@ const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen, onConcept
     // never a misleading local prototype description or old Author panel.
     if (node === "idea" && onConceptOpen) { onConceptOpen(); giveNodeFeedback(); return; }
     if (node === "matter" && onMatterOpen) { onMatterOpen(); giveNodeFeedback(); return; }
+    // On the unified EGG canvas, the Egg itself is the control surface:
+    // a single click/tap on a sphere opens its corresponding right-side panel.
+    // The local UNOcalc prototype still uses its original selection behavior.
+    if (onSphereOpen && node !== "idea" && node !== "matter") {
+      setSelectedNodes([node]);
+      onSphereOpen(node);
+      giveNodeFeedback();
+      return;
+    }
     // Every sphere can be selected for its short description; execution gates remain in the workspace.
     if (node === "design" && hasIdea) {
       if (!brief.concept.trim()) {
@@ -647,6 +656,11 @@ const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen, onConcept
       stageNodes: eggFormationStageNodes(orientation),
     };
   }, [orientation]);
+  // Stage 2 is the warm yellow Concept sphere. Use its projected 3D
+  // position so the outlined Yolk stays registered while the Egg rotates.
+  const yolkAnchor = geometry.stageNodes.find(
+    point => EGG_STAGES[point.index - 1].index === 2
+  ) ?? geometry.stageNodes[3];
 
   const onPointerDown = (event: PointerEvent<SVGSVGElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
@@ -763,11 +777,6 @@ const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen, onConcept
               <stop offset="0%" stopColor={EGG_POLES.matter.color} stopOpacity=".60" />
               <stop offset="100%" stopColor={EGG_POLES.matter.color} stopOpacity=".10" />
             </radialGradient>
-            <radialGradient id="egg-temporary-yolk-light" cx="34%" cy="30%" r="74%">
-              <stop offset="0%" stopColor="#f8e7a7" stopOpacity=".70" />
-              <stop offset="55%" stopColor="#dbb86a" stopOpacity=".34" />
-              <stop offset="100%" stopColor="#a38346" stopOpacity=".11" />
-            </radialGradient>
           </defs>
           <line
             data-testid="unocalc-egg-axis"
@@ -881,20 +890,18 @@ const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen, onConcept
               className="cursor-pointer focus:outline-none focus-visible:stroke-primary focus-visible:stroke-[1.5px]"
               onKeyDown={(event) => onNodeKeyDown(event, "author")} />
           </g>
-          {/* Temporary translucent Yolk. This is navigation, not a claim that synthesis
-              or DNA approval has occurred. Drawn below other spheres so overlapping
-              functional nodes retain their pointer priority. */}
+          {/* Yolk — one larger, quiet circular contour registered to the
+              yellow level-2 Concept sphere, not an approved DNA indicator.
+              The existing hit target keeps it an active navigation control. */}
           {onYolkOpen && <g data-testid="unocalc-yolk-sphere">
-            <circle cx="380" cy="350" r="58" fill="#d8b06a" fillOpacity=".055" pointerEvents="none" />
-            <circle cx="380" cy="350" r="47" fill="url(#egg-temporary-yolk-light)"
-              stroke="#b99558" strokeOpacity=".36" strokeWidth="1.1" pointerEvents="none" />
-            <circle cx="365" cy="334" r="15" fill="#fff6d8" fillOpacity=".19" pointerEvents="none" />
-            <text x="380" y="354" fontSize="11" fontWeight="400" textAnchor="middle"
-              letterSpacing="1.9" fill="#80643d" fillOpacity=".76" pointerEvents="none">
-              {locale === "ru" ? "ЖЕЛТОК" : locale === "uk" ? "ЖОВТОК" : "YOLK"}
-            </text>
+            <circle data-testid="unocalc-yolk-outline"
+              cx={yolkAnchor.x} cy={yolkAnchor.y} r="68"
+              fill="none" stroke="#b89b60" strokeOpacity=".54"
+              strokeWidth="1.05" vectorEffect="non-scaling-stroke"
+              pointerEvents="none" />
             <circle data-testid="unocalc-yolk-hit" data-egg-node="yolk"
-              cx="380" cy="350" r="47" fill="transparent" stroke="none" pointerEvents="all"
+              cx={yolkAnchor.x} cy={yolkAnchor.y} r="68" fill="transparent"
+              stroke="none" pointerEvents="all"
               role="button" tabIndex={0}
               aria-label={locale === "ru" ? "Открыть Желток" : locale === "uk" ? "Відкрити Жовток" : "Open Yolk"}
               className="cursor-pointer focus:outline-none focus-visible:stroke-[#a38346] focus-visible:stroke-[1.5px]"
