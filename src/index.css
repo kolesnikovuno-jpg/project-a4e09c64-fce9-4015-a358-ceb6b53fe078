@@ -305,11 +305,11 @@
   white-space: nowrap;
   font-family: Georgia, "Times New Roman", serif;
   font-weight: 900;
-  font-size: max(58vw, 101vh);
-  letter-spacing: -0.105em;
+  font-size: max(60vw, 103vh);
+  letter-spacing: -0.16em;
   line-height: 0.8;
-  color: rgba(119, 116, 102, 0.055);
-  transform: translateY(6vh) scaleX(1.18);
+  color: rgba(119, 116, 102, 0.046);
+  transform: translateY(6vh) scaleX(1.06);
   transform-origin: center;
 }
 
@@ -331,7 +331,8 @@
   .egg-brand-shell::before,
   .egg-brand-shell [data-testid="egg-idea-workspace"]::before,
   .egg-brand-shell [data-testid="egg-concept-workspace"]::before {
-    font-size: max(90vw, 95vh);
-    transform: translateY(6vh) scaleX(1.10);
+    font-size: max(92vw, 97vh);
+    letter-spacing: -0.145em;
+    transform: translateY(6vh) scaleX(1.02);
   }
 }
