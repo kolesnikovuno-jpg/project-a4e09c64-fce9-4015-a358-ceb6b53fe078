@@ -4,12 +4,16 @@ import UnoEggScene from "@/components/unocalc/UnoEggScene";
 
 afterEach(()=>{cleanup();localStorage.clear();});
 
-describe("EGG temporary central Yolk entry",()=>{
- it("is a translucent separate navigable center only in real EGG project mode",()=>{
+describe("EGG outlined Yolk console entry",()=>{
+ it("is a single-line navigable circle only in real EGG project mode",()=>{
   const onYolkOpen=vi.fn();
   const {rerender}=render(<UnoEggScene locale="ru" onYolkOpen={onYolkOpen}/>);
   const yolk=screen.getByTestId("unocalc-yolk-sphere");
-  expect(yolk.querySelector('circle[fill="url(#egg-temporary-yolk-light)"]')).toBeTruthy();
+  const outline=screen.getByTestId("unocalc-yolk-outline");
+  expect(outline.getAttribute("fill")).toBe("none");
+  expect(outline.getAttribute("r")).toBe("68");
+  expect(yolk.querySelectorAll("circle")).toHaveLength(2);
+  expect(yolk.querySelector("text")).toBeNull();
   const hit=screen.getByTestId("unocalc-yolk-hit");
   expect(hit.getAttribute("aria-label")).toBe("Открыть Желток");
   expect(hit.getAttribute("data-egg-node")).toBe("yolk");
