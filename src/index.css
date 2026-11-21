@@ -342,7 +342,7 @@
    The underlying Field/Material and EGG Engine stay mounted; only placement,
    readable panel layers and text alignment change. */
 .egg-one-screen {
-  --egg-stage-width: 42%;
+  --egg-stage-width: 37%;
   position: relative;
   isolation: isolate;
 }
@@ -784,3 +784,48 @@
 }
 /* Do not interfere with the original Egg scales, data coordinates, editor
    drawers, photo selection, or genuinely critical modal focus indicators. */
+
+/* EGG / console proportions and finer typography.
+   Desktop: 37% for the interactive Egg, 63% for the creative work surface.
+   Tablet portrait keeps the existing vertical composition. */
+.egg-one-screen {
+  --egg-studio-tracking: .065em;
+  --egg-studio-heading-tracking: .12em;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) {
+  font-weight: 250 !important;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) :is(p,span,li,label,summary,button,[role="tab"],input,textarea,select) {
+  font-weight: 250 !important;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) :is(h1,h2,h3,h4) {
+  font-weight: 240 !important;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) :is(strong,b) {
+  font-weight: 400 !important;
+}
+/* Preserve status clarity and keyboard focus while refining typography. */
