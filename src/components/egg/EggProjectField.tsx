@@ -93,7 +93,15 @@ export default function EggProjectField({projectId,children,workspace="field",on
   catch{setItems([]);}
   setSketchEditor(null);setPan({x:0,y:0});setZoom(1);setLoadedKey(key);
  },[key]);
- useEffect(()=>{if(ready)try{localStorage.setItem(key,JSON.stringify(items));}catch{setNotice("Память браузера заполнена. Карточки изменены на холсте, но локальное сохранение не удалось; проверьте синхронизацию EGG.");}},[items,key,ready]);
+ // Local browser storage is an optional cache, not proof of project persistence.
+ // Image-heavy Field snapshots can exceed Safari's small localStorage quota.
+ // EggWorkspaceSync independently saves to the server and shows pending/error
+ // states; do not replace useful action feedback with a misleading quota toast.
+ useEffect(()=>{
+  if(!ready)return;
+  try{localStorage.setItem(key,JSON.stringify(items));}
+  catch{/* The server sync indicator handles actual persistence failures. */}
+ },[items,key,ready]);
  useEffect(()=>{
   let active=true;const urls:string[]=[];
   void (async()=>{const next:Record<string,string>={};for(const mediaId of videoKeys.split("|").filter(Boolean)){
@@ -135,7 +143,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
   // Transfer must be an in-memory state change, not a full localStorage write:
   // 10 JPEG data URLs can already exceed Safari's remaining quota.
   // The existing persistence effect and owner-scoped EGG snapshot sync save
-  // the new state asynchronously, with explicit errors if storage is full.
+  // the new state asynchronously; the sync widget reports server errors.
   setItems(previous=>{
    const selected=previous.find(item=>item.id===id&&(item.location??"field")===workspace);
    if(!selected)return previous;
