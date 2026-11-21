@@ -42,7 +42,7 @@ async function readVideo(key:string):Promise<Blob|null>{
  finally{db.close();}
 }
 
-export default function EggProjectField({projectId,children,workspace="field",onWorkspaceChange,onOpenAuthor,onOpenProject,onOpenYolk,onOpenAccount}:{workspace?:Workspace;onWorkspaceChange?:(workspace:Workspace)=>void;projectId:string;children:ReactNode;onOpenAuthor?:()=>void;onOpenProject?:()=>void;onOpenYolk?:()=>void;onOpenAccount?:()=>void}){
+export default function EggProjectField({projectId,children,workspace="field",singleCanvas=false,onWorkspaceChange,onOpenAuthor,onOpenProject,onOpenYolk,onOpenAccount}:{workspace?:Workspace;singleCanvas?:boolean;onWorkspaceChange?:(workspace:Workspace)=>void;projectId:string;children:ReactNode;onOpenAuthor?:()=>void;onOpenProject?:()=>void;onOpenYolk?:()=>void;onOpenAccount?:()=>void}){
  const {ui}=useEggUi();
  const key="egg:project-field:v1:"+projectId;
  const [items,setItems]=useState<Item[]>([]);
@@ -58,7 +58,13 @@ export default function EggProjectField({projectId,children,workspace="field",on
   height:typeof window==="undefined"?700:window.innerHeight,
  }));
  // Preserve the 900px scene geometry while fitting the viewport on phones.
- const eggFit=Math.min(1,Math.max(.3,(eggViewport.width-24)/480),Math.max(.3,(eggViewport.height-130)/650));
+ // A persistent Egg fits its left-hand stage; preserve the original
+ // full-field scaling on smaller screens and when embedded independently.
+ const splitStage=singleCanvas && typeof window!=="undefined" &&
+  window.innerWidth>=900 && window.innerWidth>window.innerHeight;
+ const eggFit=splitStage
+  ?Math.min(1,Math.max(.28,(eggViewport.width/.58*.42-28)/900),Math.max(.28,(eggViewport.height-130)/650))
+  :Math.min(1,Math.max(.3,(eggViewport.width-24)/480),Math.max(.3,(eggViewport.height-130)/650));
  const [sketchEditor,setSketchEditor]=useState<{id:string|null;initialStrokes:SketchStroke[]}|null>(null);
  const [openId,setOpenId]=useState<string|null>(null);
  const [focusedPhotoNoteId,setFocusedPhotoNoteId]=useState<string|null>(null);
@@ -323,9 +329,9 @@ export default function EggProjectField({projectId,children,workspace="field",on
  ];
  const active=items.find(item=>item.id===openId);
  const currentScale=Math.round(zoom*100);
- return <section className="absolute inset-0 overflow-hidden bg-background" style={{backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}} aria-label={workspace==="matter"?ui.matter:ui.field} data-workspace={workspace} data-testid="egg-project-field">
-  <div ref={field} className={"absolute inset-y-0 left-0 touch-none overflow-hidden "+(workspace==="matter"&&matterDialogueOpen?"right-0 md:right-1/2":"right-0")} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}>
-   <div className={"pointer-events-none absolute inset-0 z-10 flex items-center justify-center"+(workspace==="matter"?" hidden":"")}>
+ return <section className="absolute inset-0 overflow-hidden bg-background" style={{backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}} aria-label={workspace==="matter"?ui.matter:ui.field} data-workspace={workspace} data-dialogue-open={matterDialogueOpen} data-testid="egg-project-field">
+  <div ref={field} data-testid="egg-field-plane" className={"egg-field-plane absolute inset-y-0 left-0 touch-none overflow-hidden "+(workspace==="matter"&&matterDialogueOpen?"right-0 md:right-1/2":"right-0")} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}>
+   <div data-testid="egg-left-stage" className={"egg-left-stage pointer-events-none absolute inset-0 z-10 flex items-center justify-center"+(workspace==="matter"&&!singleCanvas?" hidden":"")}>
     <div data-egg-anchor className="pointer-events-auto relative shrink-0 [&_[data-testid=unocalc-maturity-readout]]:hidden [&_[data-testid=unocalc-rotation-hint]]:hidden" style={{width:900,height:620,transform:"scale("+(eggScale*eggFit)+")",touchAction:"none"}}
      onPointerDownCapture={eggDown} onPointerMoveCapture={eggMove} onPointerUpCapture={eggUp} onPointerCancelCapture={eggUp}
      onPointerDown={e=>e.stopPropagation()} onPointerMove={e=>e.stopPropagation()} onPointerUp={e=>e.stopPropagation()} onPointerCancel={e=>e.stopPropagation()}
@@ -333,7 +339,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
      {children}
     </div>
    </div>
-   <div className="absolute left-0 top-0 z-20" style={{transform:"translate("+(center().x+pan.x)+"px,"+(center().y+pan.y)+"px) scale("+zoom+")",transformOrigin:"0 0"}}>
+   <div data-testid="egg-field-items" className="egg-field-items absolute left-0 top-0 z-20" style={{transform:"translate("+(center().x+pan.x)+"px,"+(center().y+pan.y)+"px) scale("+zoom+")",transformOrigin:"0 0"}}>
     {visibleItems.map(item=><div key={item.id} data-field-item={item.id}
      onPointerEnter={event=>{if(workspace==="matter"&&event.pointerType==="mouse")setMatterFocusId(item.id);}}
      className={"group absolute select-none cursor-grab active:cursor-grabbing transition-[filter] duration-150 " + (workspace==="matter"&&matterFocusId===item.id?"drop-shadow-[0_0_9px_rgba(88,119,92,.36)] ":"") + (item.type==="image"?"w-max max-w-[240px]":"w-[218px]")}
