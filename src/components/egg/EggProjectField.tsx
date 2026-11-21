@@ -52,7 +52,12 @@ export default function EggProjectField({projectId,children,workspace="field",si
  const [entry,setEntry]=useState("");
  const [zoom,setZoom]=useState(1);
  const [pan,setPan]=useState<Point>({x:0,y:0});
- const [eggScale,setEggScale]=useState(.8);
+ // Start 50% larger on the wide EGG canvas; preserve the previous
+ // compact initial view on smaller/portrait screens and embedded previews.
+ const [eggScale,setEggScale]=useState(()=>
+  singleCanvas && typeof window!=="undefined" &&
+  window.innerWidth>=900 && window.innerWidth>window.innerHeight ? 1.2 : .8
+ );
  const [eggViewport,setEggViewport]=useState(()=>({
   width:typeof window==="undefined"?900:window.innerWidth,
   height:typeof window==="undefined"?700:window.innerHeight,
@@ -62,8 +67,9 @@ export default function EggProjectField({projectId,children,workspace="field",si
  // full-field scaling on smaller screens and when embedded independently.
  const splitStage=singleCanvas && typeof window!=="undefined" &&
   window.innerWidth>=900 && window.innerWidth>window.innerHeight;
- // Fit the default 0.8-scale Egg to the 37% control zone; zoom and pinch
- // still use eggScale and are never replaced by layout-only CSS transforms.
+ // Fit the base 0.8-scale Egg to the 37% control zone. The initial
+ // 1.2-scale wide-screen view is intentionally 50% larger and may extend
+ // slightly beyond that visual zone; user zoom/pinch remains independent.
  const eggFit=splitStage
   ?Math.min(1,Math.max(.28,(eggViewport.width*.37-24)/(900*.8)),Math.max(.28,(eggViewport.height-130)/(650*.8)))
   :Math.min(1,Math.max(.3,(eggViewport.width-24)/480),Math.max(.3,(eggViewport.height-130)/650));
