@@ -16,9 +16,9 @@ vi.mock("@/components/unocalc/UnoEggScene",()=>({
  </div>,
 }));
 vi.mock("@/components/egg/EggProjectField",()=>({
- default:({children,workspace,onWorkspaceChange,onOpenProject}:{children:React.ReactNode;workspace:string;
-  onWorkspaceChange?:(value:"field"|"matter")=>void;onOpenProject?:()=>void})=>
-   <section data-testid="persistent-field" data-workspace={workspace}>
+ default:({children,workspace,onWorkspaceChange,onOpenProject,contentActive}:{children:React.ReactNode;workspace:string;
+  onWorkspaceChange?:(value:"field"|"matter")=>void;onOpenProject?:()=>void;contentActive?:boolean})=>
+   <section data-testid="persistent-field" data-workspace={workspace} data-content-active={contentActive}>
     {children}
     <button onClick={()=>onWorkspaceChange?.("field")}>Back to Field</button>
     <button onClick={()=>onWorkspaceChange?.("matter")}>Field Menu: Material</button>
@@ -90,6 +90,7 @@ describe("EGG single canvas",()=>{
   const egg=screen.getByTestId("persistent-egg-visual");
   fireEvent.click(screen.getByRole("button",{name:"Open Idea"}));
   expect(screen.getByTestId("egg-idea-workspace")).toBeInTheDocument();
+  expect(screen.getByTestId("persistent-field")).toHaveAttribute("data-content-active","false");
 
   fireEvent.click(screen.getByRole("button",{name:"Open Design"}));
   expect(screen.queryByTestId("egg-idea-workspace")).toBeNull();
@@ -107,6 +108,7 @@ describe("EGG single canvas",()=>{
   fireEvent.click(screen.getByRole("button",{name:"Open Material"}));
   expect(screen.queryByTestId("egg-one-utility-layer")).toBeNull();
   expect(screen.getByTestId("persistent-field")).toHaveAttribute("data-workspace","matter");
+  expect(screen.getByTestId("persistent-field")).toHaveAttribute("data-content-active","true");
 
   fireEvent.click(screen.getByRole("button",{name:"Open Idea"}));
   expect(screen.getByTestId("egg-idea-workspace")).toBeInTheDocument();
