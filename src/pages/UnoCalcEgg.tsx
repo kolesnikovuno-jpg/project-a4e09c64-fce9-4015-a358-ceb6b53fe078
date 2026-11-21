@@ -104,8 +104,8 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
         </section>
         {eggBrand && fieldMode && !entryWorkspace && fieldWorkspace==="field" && !panelOpen && !selectedWorkSphere &&
           <div className="egg-one-stage-label pointer-events-none absolute right-[max(2rem,env(safe-area-inset-right))] top-[max(4.25rem,env(safe-area-inset-top))] z-20 flex flex-col items-end gap-1 text-right" data-testid="egg-one-field-title">
-            <span className="text-[10px] tracking-[.20em] text-foreground/45">EGG / 01</span>
-            <h2 className="text-xl font-light text-foreground/75">{ui.field}</h2>
+            <span className="text-[10px] tracking-[.16em] text-foreground/45">{ui.fieldSpaceCaption}</span>
+            <h2 className="text-xl font-light tracking-[.09em] text-foreground/75">{ui.field}</h2>
           </div>}
         {eggBrand && !fieldMode && <div className="flex flex-wrap items-center justify-center gap-3 py-5">
           {hasProject && <button type="button" onClick={() => { setActiveSphere("author"); setPanelOpen(true); }} className="rounded-full bg-foreground px-5 py-3 text-sm text-background" data-testid="egg-open-concept">Идея · решение по ДНК</button>}
