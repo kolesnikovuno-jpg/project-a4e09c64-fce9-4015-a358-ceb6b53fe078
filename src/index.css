@@ -336,3 +336,256 @@
     transform: translateY(6vh) scaleX(1.02);
   }
 }
+
+
+/* EGG unified studio canvas — prototype 01 (persistent Egg + transparent layers).
+   The underlying Field/Material and EGG Engine stay mounted; only placement,
+   readable panel layers and text alignment change. */
+.egg-one-screen {
+  --egg-stage-width: 42%;
+  position: relative;
+  isolation: isolate;
+}
+.egg-one-screen .egg-left-stage {
+  pointer-events: none;
+}
+.egg-one-screen .egg-left-stage [data-egg-anchor] {
+  pointer-events: auto;
+}
+
+/* Shared unframed panel language; preserve button differentiation and
+   alert contrast, but remove any artificial opaque panel/background cards. */
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) :is(div, section, article, aside, details, form, textarea, input, select) {
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) :is(p, span, h1, h2, h3, h4, h5, label, summary, input, textarea, select, button, li, blockquote) {
+  text-align: right !important;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) :is(input, textarea) {
+  direction: ltr; /* Preserve URLs, coordinates and entered text as authored. */
+  border-color: hsl(var(--foreground) / .17);
+  border-radius: 0 !important;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-workspace"],
+  [data-testid="egg-concept-workspace"],
+  [data-testid="egg-matter-dialogue"],
+  [data-testid="egg-sphere-panel"],
+  .egg-one-utility-layer
+) :is(p, h1, h2, h3, h4, li, label) {
+  overflow-wrap: anywhere;
+}
+.egg-one-screen [data-testid="egg-idea-workspace"]::before,
+.egg-one-screen [data-testid="egg-concept-workspace"]::before {
+  content: none !important; /* Use the one, fixed EGG wordmark behind all layers. */
+}
+.egg-one-screen [data-testid="egg-idea-workspace"] :is([data-testid="egg-idea-canvas-pane"],[data-testid="egg-idea-dialogue-pane"]),
+.egg-one-screen [data-testid="egg-concept-workspace"] :is([data-testid="egg-concept-canvas-pane"],[data-testid="egg-concept-description-pane"]) {
+  min-width: 0;
+  width: 100% !important;
+  max-width: 100% !important;
+  border: 0 !important;
+  flex: 1 1 auto;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-canvas-pane"],
+  [data-testid="egg-idea-dialogue-pane"],
+  [data-testid="egg-concept-canvas-pane"],
+  [data-testid="egg-concept-description-pane"]
+)[data-active="false"] {
+  display: none !important;
+}
+.egg-one-screen :is(
+  [data-testid="egg-idea-canvas-pane"],
+  [data-testid="egg-idea-dialogue-pane"],
+  [data-testid="egg-concept-canvas-pane"],
+  [data-testid="egg-concept-description-pane"]
+)[data-active="true"] {
+  display: flex !important;
+}
+.egg-one-screen :is([data-testid="egg-idea-workspace"],[data-testid="egg-concept-workspace"]) {
+  flex-direction: column !important;
+}
+.egg-one-screen :is([data-testid="egg-idea-mobile-tabs"],[data-testid="egg-concept-mobile-tabs"]) {
+  display: block !important;
+  flex: 0 0 auto;
+  border-bottom: 1px solid hsl(var(--foreground) / .12);
+  background: transparent !important;
+  padding: max(2.5rem, env(safe-area-inset-top)) 1.8rem .75rem;
+}
+.egg-one-screen :is([data-testid="egg-idea-mobile-tabs"],[data-testid="egg-concept-mobile-tabs"]) > div:first-child {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+.egg-one-screen :is([data-testid="egg-idea-mobile-tabs"],[data-testid="egg-concept-mobile-tabs"]) [role="tablist"] {
+  display: flex !important;
+  justify-content: flex-end;
+  gap: 1.35rem;
+}
+.egg-one-screen :is([data-testid="egg-idea-mobile-tabs"],[data-testid="egg-concept-mobile-tabs"]) [role="tab"] {
+  min-height: 34px;
+  padding: .45rem .15rem;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: hsl(var(--foreground) / .55) !important;
+  box-shadow: none !important;
+}
+.egg-one-screen :is([data-testid="egg-idea-mobile-tabs"],[data-testid="egg-concept-mobile-tabs"]) [role="tab"][aria-selected="true"] {
+  border-bottom-color: hsl(var(--foreground) / .7);
+  color: hsl(var(--foreground) / .9) !important;
+}
+.egg-one-screen :is([data-testid="egg-idea-canvas-pane"],[data-testid="egg-idea-dialogue-pane"],[data-testid="egg-concept-canvas-pane"],[data-testid="egg-concept-description-pane"]) > div:first-child {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+.egg-one-screen [data-testid="egg-idea-workspace"] .flex-wrap,
+.egg-one-screen [data-testid="egg-concept-workspace"] .flex-wrap,
+.egg-one-screen [data-testid="egg-matter-dialogue"] .flex-wrap {
+  justify-content: flex-end;
+}
+.egg-one-screen :is([data-testid="egg-idea-dialogue-pane"],[data-testid="egg-matter-dialogue"]) [aria-live="polite"] > div:not([role]) {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+  text-align: right !important;
+}
+.egg-one-screen [data-testid="egg-field-items"] :is(p, button, a) {
+  text-align: right;
+}
+
+@media (min-width: 900px) and (orientation: landscape) {
+  /* The Egg is an always-visible landmark; cards belong to the right
+     workspace, not to the Egg's visual stage. */
+  .egg-one-screen [data-testid="egg-field-plane"] {
+    left: var(--egg-stage-width) !important;
+    right: 0 !important;
+  }
+  .egg-one-screen [data-testid="egg-left-stage"] {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    width: var(--egg-stage-width) !important;
+    height: 100dvh !important;
+    display: flex !important;
+    z-index: 35;
+  }
+  .egg-one-screen [data-testid="egg-idea-workspace"],
+  .egg-one-screen [data-testid="egg-concept-workspace"],
+  .egg-one-screen [data-testid="egg-matter-dialogue"],
+  .egg-one-screen [data-testid="egg-sphere-panel"],
+  .egg-one-screen .egg-one-utility-layer,
+  .egg-one-screen .egg-one-yolk-layer {
+    position: fixed !important;
+    inset: 0 0 0 var(--egg-stage-width) !important;
+    width: calc(100% - var(--egg-stage-width)) !important;
+    max-width: none !important;
+    height: 100dvh !important;
+    overflow-x: hidden;
+    border-left: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .egg-one-screen .egg-one-utility-layer > [role="dialog"] {
+    width: 100% !important;
+    max-width: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .egg-one-screen [data-testid="egg-project-field"][data-workspace="matter"][data-dialogue-open="true"] [data-testid="egg-field-items"] {
+    opacity: .13;
+    pointer-events: none;
+  }
+  .egg-one-screen .egg-one-stage-label {
+    max-width: 52%;
+  }
+}
+
+@media (max-width: 899px), (orientation: portrait) {
+  /* A smaller viewport retains the same canvas as two vertical zones.
+     Both remain visible; never squeeze the Egg and editor into tiny columns. */
+  .egg-one-screen {
+    --egg-stage-height: 31dvh;
+  }
+  .egg-one-screen [data-testid="egg-field-plane"] {
+    top: var(--egg-stage-height) !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+  }
+  .egg-one-screen [data-testid="egg-left-stage"] {
+    position: fixed !important;
+    inset: 0 0 auto 0 !important;
+    display: flex !important;
+    width: 100vw !important;
+    height: var(--egg-stage-height) !important;
+    z-index: 35;
+    transform: scale(.66);
+    transform-origin: center 40%;
+  }
+  .egg-one-screen [data-testid="egg-idea-workspace"],
+  .egg-one-screen [data-testid="egg-concept-workspace"],
+  .egg-one-screen [data-testid="egg-matter-dialogue"],
+  .egg-one-screen [data-testid="egg-sphere-panel"],
+  .egg-one-screen .egg-one-utility-layer,
+  .egg-one-screen .egg-one-yolk-layer {
+    position: fixed !important;
+    inset: var(--egg-stage-height) 0 0 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: calc(100dvh - var(--egg-stage-height)) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .egg-one-screen .egg-one-utility-layer > [role="dialog"] {
+    width: 100% !important;
+    max-width: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .egg-one-screen :is([data-testid="egg-idea-mobile-tabs"],[data-testid="egg-concept-mobile-tabs"]) {
+    padding-top: .4rem;
+    padding-bottom: .35rem;
+  }
+  .egg-one-screen [data-testid="egg-project-field"][data-workspace="matter"][data-dialogue-open="true"] [data-testid="egg-field-items"] {
+    opacity: .13;
+    pointer-events: none;
+  }
+  .egg-one-screen .egg-one-stage-label {
+    top: calc(var(--egg-stage-height) + 1rem);
+  }
+}
