@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from "react";
 import { EGG_CANONICAL_ORIGIN } from "../../lib/eggAuthRedirect";
+import LanguageSwitcher from "../../i18n/LanguageSwitcher";
 
 /**
  * EGG uses one canonical origin for BOTH project authorization and UI.
@@ -38,6 +39,7 @@ export default function EggStablePreview({ children }: { children: ReactNode }) 
   // Shared backdrop for EGG-only routes; the studio's public landing is untouched.
   // The wordmark is purely visual. Project state, auth and navigation stay intact.
   return <div className="egg-brand-shell" data-testid="egg-brand-shell">
+    <LanguageSwitcher background="hsl(24 26% 94%)" />
     <div className="egg-brand-content">{children}</div>
   </div>;
 }
