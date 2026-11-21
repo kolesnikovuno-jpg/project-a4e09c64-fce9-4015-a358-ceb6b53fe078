@@ -265,7 +265,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
    <button type="button" role="tab" aria-selected={mobilePane==="dialogue"} onClick={()=>setMobilePane("dialogue")} className={"min-h-10 rounded-full px-3 text-sm "+(mobilePane==="dialogue"?"bg-[#607466] text-white":"bg-foreground/5 text-foreground/75")}>{ui.commonDialogue}</button>
   </div>
  </div>
- <div data-testid="egg-idea-canvas-pane" className={"min-h-0 min-w-0 w-full flex-1 flex-col px-4 py-3 md:w-1/2 md:px-8 md:py-5 "+(mobilePane==="canvas"?"flex":"hidden md:flex")}>
+ <div data-testid="egg-idea-canvas-pane" data-active={mobilePane==="canvas"} className={"min-h-0 min-w-0 w-full flex-1 flex-col px-4 py-3 md:w-1/2 md:px-8 md:py-5 "+(mobilePane==="canvas"?"flex":"hidden md:flex")}>
    <div className="mb-6 flex items-center justify-between gap-2">
     <h2 className="text-lg font-light">{ui.idea} <span className="text-xs opacity-50">{ui.ideaInitiates}</span></h2>
     <button type="button" onClick={onOpenMatter} className="flex items-center gap-1 rounded-full bg-background/80 px-3 py-2 text-xs shadow-sm"><ArrowLeft size={14}/> {ui.matter}</button>
@@ -427,7 +427,7 @@ export default function EggIdeaWorkspace({projectId,onClose,onOpenMatter,onOpenF
     </details>
    </div>
   </div>
-  <div data-testid="egg-idea-dialogue-pane" className={"min-h-0 min-w-0 w-full flex-1 flex-col px-4 py-3 md:w-1/2 md:px-6 md:py-5 "+(mobilePane==="dialogue"?"flex":"hidden md:flex")}>
+  <div data-testid="egg-idea-dialogue-pane" data-active={mobilePane==="dialogue"} className={"min-h-0 min-w-0 w-full flex-1 flex-col px-4 py-3 md:w-1/2 md:px-6 md:py-5 "+(mobilePane==="dialogue"?"flex":"hidden md:flex")}>
    <div className="mb-3 flex items-center justify-between gap-2">
     <div className="flex items-center gap-2 text-sm"><BrainCircuit size={16}/> Идея · Автор ↔ ИИ</div>
     <button type="button" onClick={onClose} aria-label={ui.ideaClose} className="rounded-full bg-background/70 p-2"><X size={17}/></button>
