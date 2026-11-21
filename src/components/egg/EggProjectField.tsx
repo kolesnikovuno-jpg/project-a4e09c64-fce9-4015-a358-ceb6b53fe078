@@ -42,7 +42,7 @@ async function readVideo(key:string):Promise<Blob|null>{
  finally{db.close();}
 }
 
-export default function EggProjectField({projectId,children,workspace="field",singleCanvas=false,onWorkspaceChange,onOpenAuthor,onOpenProject,onOpenYolk,onOpenAccount}:{workspace?:Workspace;singleCanvas?:boolean;onWorkspaceChange?:(workspace:Workspace)=>void;projectId:string;children:ReactNode;onOpenAuthor?:()=>void;onOpenProject?:()=>void;onOpenYolk?:()=>void;onOpenAccount?:()=>void}){
+export default function EggProjectField({projectId,children,workspace="field",singleCanvas=false,onWorkspaceChange,onOpenAuthor,onOpenProject,onOpenYolk,onOpenAccount,contentActive=true}:{workspace?:Workspace;singleCanvas?:boolean;contentActive?:boolean;onWorkspaceChange?:(workspace:Workspace)=>void;projectId:string;children:ReactNode;onOpenAuthor?:()=>void;onOpenProject?:()=>void;onOpenYolk?:()=>void;onOpenAccount?:()=>void}){
  const {ui}=useEggUi();
  const key="egg:project-field:v1:"+projectId;
  const [items,setItems]=useState<Item[]>([]);
@@ -80,7 +80,8 @@ export default function EggProjectField({projectId,children,workspace="field",si
  const [recentMaterialTransfer,setRecentMaterialTransfer]=useState(false);
  const [listening,setListening]=useState(false);
  const [videoUrls,setVideoUrls]=useState<Record<string,string>>({});
- const [matterDialogueOpen,setMatterDialogueOpen]=useState(()=>typeof window==="undefined"||window.innerWidth>=768);
+ // Material cards must be movable on entry. Dialogue opens only on demand.
+ const [matterDialogueOpen,setMatterDialogueOpen]=useState(false);
  const [matterFocusId,setMatterFocusId]=useState<string|null>(null);
  const gesture=useRef<{kind:"pan"|"item";id?:string;x:number;y:number;startX:number;startY:number;px:number;py:number}|null>(null);
  const pointers=useRef(new Map<number,Point>());
@@ -128,7 +129,7 @@ export default function EggProjectField({projectId,children,workspace="field",si
  useEffect(()=>()=>{recognition.current?.stop();},[]);
  useEffect(()=>{
   setPan({x:0,y:0});setZoom(1);setOpenId(null);setFocusedPhotoNoteId(null);setTool(null);setSketchEditor(null);
-  setMatterDialogueOpen(window.innerWidth>=768);setMatterFocusId(null);
+  setMatterDialogueOpen(false);setMatterFocusId(null);
   gesture.current=null;pointers.current.clear();pinch.current=null;
  },[workspace]);
  const visibleItems=items.filter(item=>(item.location??"field")===workspace);
@@ -337,7 +338,7 @@ export default function EggProjectField({projectId,children,workspace="field",si
  ];
  const active=items.find(item=>item.id===openId);
  const currentScale=Math.round(zoom*100);
- return <section className="absolute inset-0 overflow-hidden bg-background" style={{backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}} aria-label={workspace==="matter"?ui.matter:ui.field} data-workspace={workspace} data-dialogue-open={matterDialogueOpen} data-testid="egg-project-field">
+ return <section className="absolute inset-0 overflow-hidden bg-background" style={{backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}} aria-label={workspace==="matter"?ui.matter:ui.field} data-workspace={workspace} data-dialogue-open={matterDialogueOpen} data-content-active={contentActive} data-testid="egg-project-field">
   <div ref={field} data-testid="egg-field-plane" className={"egg-field-plane absolute inset-y-0 left-0 touch-none overflow-hidden "+(workspace==="matter"&&matterDialogueOpen?"right-0 md:right-1/2":"right-0")} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}>
    <div data-testid="egg-left-stage" className={"egg-left-stage pointer-events-none absolute inset-0 z-10 flex items-center justify-center"+(workspace==="matter"&&!singleCanvas?" hidden":"")}>
     <div data-egg-anchor className="pointer-events-auto relative shrink-0 [&_[data-testid=unocalc-maturity-readout]]:hidden [&_[data-testid=unocalc-rotation-hint]]:hidden" style={{width:900,height:620,transform:"scale("+(eggScale*eggFit)+")",touchAction:"none"}}
@@ -348,7 +349,7 @@ export default function EggProjectField({projectId,children,workspace="field",si
     </div>
    </div>
    <div data-testid="egg-field-items" className="egg-field-items absolute left-0 top-0 z-20" style={{transform:"translate("+(center().x+pan.x)+"px,"+(center().y+pan.y)+"px) scale("+zoom+")",transformOrigin:"0 0"}}>
-    {visibleItems.map(item=><div key={item.id} data-field-item={item.id}
+    {contentActive&&visibleItems.map(item=><div key={item.id} data-field-item={item.id}
      onPointerEnter={event=>{if(workspace==="matter"&&event.pointerType==="mouse")setMatterFocusId(item.id);}}
      className={"group absolute select-none cursor-grab active:cursor-grabbing transition-[filter] duration-150 " + (workspace==="matter"&&matterFocusId===item.id?"drop-shadow-[0_0_9px_rgba(88,119,92,.36)] ":"") + (item.type==="image"?"w-max max-w-[240px]":"w-[218px]")}
      style={{left:item.x,top:item.y}}>
@@ -411,14 +412,14 @@ export default function EggProjectField({projectId,children,workspace="field",si
    className="pointer-events-auto absolute bottom-6 right-5 z-40 max-w-[55vw] rounded-lg bg-background/85 px-2 py-1 shadow-sm" />
   {workspace==="matter"&&<button type="button" aria-label={ui.fieldShowAll} onClick={fitMatterItems} className="absolute left-5 top-[164px] z-30 rounded-full bg-background/90 px-3 py-2 text-xs text-foreground/70 shadow-sm sm:left-8">{ui.fieldShowAll}</button>}
   {workspace==="matter"&&<button type="button" aria-label={ui.fieldBackToEgg} onClick={()=>onWorkspaceChange?.("field")} className="absolute left-5 top-[116px] z-30 rounded-full border border-foreground/20 bg-background/95 px-3 py-2 text-xs shadow-sm sm:left-8">{ui.fieldBackToEgg}</button>}
-  {workspace==="matter"&&matterDialogueOpen&&<EggMatterDialogue
+  {contentActive&&workspace==="matter"&&matterDialogueOpen&&<EggMatterDialogue
     projectId={projectId} cards={matterCards} focusId={matterFocusId} onClearFocus={()=>setMatterFocusId(null)}
     onBack={()=>onWorkspaceChange?.("field")} onClose={()=>setMatterDialogueOpen(false)}
     onOpenIdea={onOpenAuthor}/>}
-  {workspace==="matter"&&!matterDialogueOpen&&<button type="button" aria-label={ui.fieldOpenMatterDialogue}
+  {contentActive&&workspace==="matter"&&!matterDialogueOpen&&<button type="button" aria-label={ui.fieldOpenMatterDialogue}
     className="absolute right-5 top-16 z-40 flex items-center gap-2 rounded-full bg-[#f9f7f2] px-4 py-2 text-xs text-[#45574b] shadow-md"
     onClick={()=>setMatterDialogueOpen(true)}><MessageCircle size={16}/> {ui.commonDialogue}</button>}
-  {workspace==="matter"&&!visibleItems.length&&<EggRecoveredFieldMedia projectId={projectId}/>}
+  {contentActive&&workspace==="matter"&&!visibleItems.length&&<EggRecoveredFieldMedia projectId={projectId}/>}
   {!tool && !sketchEditor && !openId && <EggRadialMenu actions={menuActions} side="left"/>}
   {tool!==null&&<div className="absolute bottom-[max(6rem,env(safe-area-inset-bottom))] left-4 z-40 w-[min(340px,calc(100vw-32px))] rounded-2xl border border-foreground/15 bg-background/95 p-3 shadow-xl sm:left-6">
    <div className="flex items-center justify-between px-1 pb-1">
