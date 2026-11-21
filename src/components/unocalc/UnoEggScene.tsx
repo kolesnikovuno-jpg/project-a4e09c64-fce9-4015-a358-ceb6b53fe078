@@ -661,6 +661,10 @@ const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen, onConcept
   const yolkAnchor = geometry.stageNodes.find(
     point => EGG_STAGES[point.index - 1].index === 2
   ) ?? geometry.stageNodes[3];
+  // At the initial frontal projection this radius passes through the centers
+  // of the two visible diagonal lower spheres (~147.84 SVG units).
+  // Keep it fixed in projection while the anchor follows stage two in 3D.
+  const yolkOutlineRadius = 148;
 
   const onPointerDown = (event: PointerEvent<SVGSVGElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
@@ -895,12 +899,12 @@ const UnoEggScene = ({ locale, onSphereOpen, onMatterOpen, onIdeaOpen, onConcept
               The existing hit target keeps it an active navigation control. */}
           {onYolkOpen && <g data-testid="unocalc-yolk-sphere">
             <circle data-testid="unocalc-yolk-outline"
-              cx={yolkAnchor.x} cy={yolkAnchor.y} r="68"
+              cx={yolkAnchor.x} cy={yolkAnchor.y} r={yolkOutlineRadius}
               fill="none" stroke="#b89b60" strokeOpacity=".54"
               strokeWidth="1.05" vectorEffect="non-scaling-stroke"
               pointerEvents="none" />
             <circle data-testid="unocalc-yolk-hit" data-egg-node="yolk"
-              cx={yolkAnchor.x} cy={yolkAnchor.y} r="68" fill="transparent"
+              cx={yolkAnchor.x} cy={yolkAnchor.y} r={yolkOutlineRadius} fill="transparent"
               stroke="none" pointerEvents="all"
               role="button" tabIndex={0}
               aria-label={locale === "ru" ? "Открыть Желток" : locale === "uk" ? "Відкрити Жовток" : "Open Yolk"}
