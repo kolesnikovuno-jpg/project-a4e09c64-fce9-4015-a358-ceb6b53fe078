@@ -4,6 +4,10 @@ import { useLocale } from "@/i18n/useLocale";
 import { lyraSupabase } from "@/integrations/supabase/lyraClient";
 import { trackLyra } from "@/lib/lyraAnalytics";
 
+declare global {
+  interface Window { gtag?: (...args: unknown[]) => void; }
+}
+
 type Intent = "purchase" | "custom" | "production";
 type Props = { open: boolean; onClose: () => void };
 
@@ -53,6 +57,10 @@ export default function LyraRequestPanel({ open, onClose }: Props) {
       if (dbError) throw dbError;
       setSuccess(true);
       trackLyra("request_success", locale);
+      // Fire Google Ads only after the inquiry has been stored successfully.
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "conversion", { send_to: "AW-18588333495/67EICJnL67wdELfrzZ9F" });
+      }
     } catch (submissionError) {
       console.error("Lyra request failed", submissionError);
       setError(true);
