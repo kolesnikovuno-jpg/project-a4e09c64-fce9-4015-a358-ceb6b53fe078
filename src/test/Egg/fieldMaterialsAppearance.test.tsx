@@ -51,8 +51,13 @@ describe("EGG field material appearance", () => {
     // Previously this would silently return before setItems and leave image1.
     await waitFor(()=>expect(container.querySelector('[data-field-item="image1"]')).toBeNull());
     expect(container.querySelector('[data-field-item="image2"]')).not.toBeNull();
+    // A browser cache quota failure must not mask the actual transfer result.
+    // The independent server sync indicator reports persistence errors.
     expect(screen.getByTestId("egg-field-transfer-feedback").textContent)
-     .toContain("Память браузера заполнена");
+     .toContain("Перенесено в Материальное");
+    expect(screen.getByTestId("egg-field-transfer-feedback").textContent)
+     .not.toContain("Память браузера заполнена");
+    expect(screen.getByTestId("egg-workspace-sync-field")).toBeTruthy();
     const open=screen.getByRole("button",{name:"Открыть Материальное"});
     fireEvent.click(open);
     expect(onWorkspaceChange).toHaveBeenCalledWith("matter");
