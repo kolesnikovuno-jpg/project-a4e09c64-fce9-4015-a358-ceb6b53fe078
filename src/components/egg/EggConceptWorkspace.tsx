@@ -112,16 +112,16 @@ export default function EggConceptWorkspace({projectId,onClose,onOpenIdea,onOpen
    </div>
    <div className="mt-4 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain pb-36 md:pb-28">
     <div className="rounded-xl border border-foreground/15 bg-background/65 p-4">
-     <p className="text-xs text-foreground/55">{serverBasis?"Опора · утверждённая Идея из серверного цикла":"Опора · черновик из сферы «Идея»"}</p>
-     <p className="mt-2 whitespace-pre-wrap text-sm">{serverBasis?.idea||idea.savedDraft||idea.intent||"В сфере «Идея» пока нет сохранённого замысла."}</p>
+     <p className="text-xs text-foreground/55">{serverBasis?ui.conceptBasisServer:ui.conceptBasisDraft}</p>
+     <p className="mt-2 whitespace-pre-wrap text-sm">{serverBasis?.idea||idea.savedDraft||idea.intent||ui.conceptNoIdea}</p>
      {idea.savedDraft&&idea.intent&&!serverBasis&&<p className="mt-3 border-t border-foreground/10 pt-3 text-xs text-foreground/55">Намерение Автора: {idea.intent}</p>}
      {serverBasis&&<details className="mt-3 border-t border-foreground/10 pt-3 text-xs text-foreground/65"><summary className="cursor-pointer">ДНК · утверждённый инвариант</summary><p className="mt-2 whitespace-pre-wrap">{serverBasis.dna}</p></details>}
-     <p className="mt-2 text-[10px] text-foreground/45">{serverBasis?"Исходное зерно утверждено Автором и не изменяется из мастерской Концепта.":"Локальный черновик не утверждён как ДНК. Возврат к Идее не изменяет историю проекта."}</p>
+     <p className="mt-2 text-[10px] text-foreground/45">{serverBasis?ui.conceptSeedFixed:ui.conceptDraftNotDna}</p>
     </div>
     <div className="flex flex-wrap items-center justify-between gap-3">
-     <span className="text-xs text-foreground/70">Визуальное исследование · {images.length} / 8</span>
+     <span className="text-xs text-foreground/70">{ui.conceptVisualStudy} · {images.length} / 8</span>
      <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-foreground/20 bg-background/90 px-3 py-2 text-xs">
-      <ImagePlus size={15}/> Добавить изображение
+      <ImagePlus size={15}/> {ui.conceptAddImage}
       <input aria-label="Добавить изображение концепта" type="file" accept="image/*" className="sr-only"
        onChange={e=>{void addImage(e.currentTarget.files?.[0]);e.currentTarget.value="";}}/>
      </label>
@@ -136,7 +136,7 @@ export default function EggConceptWorkspace({projectId,onClose,onOpenIdea,onOpen
       </div>)}
      </div>:
      <div className="flex min-h-[160px] items-center justify-center rounded-xl border border-dashed border-foreground/20 bg-background/40 px-6 text-center text-sm text-foreground/55">
-      Здесь будут формироваться визуальные варианты концепта. Начните с эскиза или изображения, сохраняя исходный аккорд идеи.
+      {ui.conceptEmptyVisual}
      </div>}
    </div>
   </div>
@@ -147,14 +147,14 @@ export default function EggConceptWorkspace({projectId,onClose,onOpenIdea,onOpen
      className="rounded-full bg-background/70 p-2"><X size={17}/></button>
    </div>
    <div className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain pb-36 md:pb-32">
-    <p className="text-sm leading-relaxed text-foreground/65">Здесь замысел переводится в визуальные и функциональные гипотезы. Это отдельная мастерская, не копия Идеи и пока не автоматическое проектирование.</p>
-    <label className="mt-6 block text-xs text-foreground/60">Рабочее описание концепта
+    <p className="text-sm leading-relaxed text-foreground/65">{ui.conceptDescriptionIntro}</p>
+    <label className="mt-6 block text-xs text-foreground/60">{ui.conceptDescriptionLabel}
      <textarea aria-label="Описание концепта" value={description} rows={8} maxLength={8000}
       onChange={e=>setDescription(e.target.value)}
-      placeholder="Характер формы, взаимодействие с пространством, предполагаемая функция, открытые вопросы…"
+      placeholder={ui.conceptDescriptionHint}
       className="mt-2 w-full resize-y rounded-xl border border-foreground/15 bg-background/85 p-3 text-base outline-none focus:border-foreground/40 md:text-sm"/>
     </label>
-    <p className="mt-2 text-[11px] text-foreground/50">Черновик автоматически сохраняется только в этом браузере; не утверждает уровень «Концепт» и не меняет ДНК.</p>
+    <p className="mt-2 text-[11px] text-foreground/50">{ui.conceptDraftReminder}</p>
     {notice&&<p role="status" className="mt-3 text-xs text-foreground/70">{notice}</p>}
    </div>
   </div>
