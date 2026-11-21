@@ -42,6 +42,12 @@ function context() {
   }
 }
 export function trackLyra(event_type: LyraEvent, locale: string) {
+  // GTM receives anonymous funnel events; never send contact form values or PII.
+  if (typeof window !== "undefined") {
+    const dataLayerWindow = window as typeof window & { dataLayer?: Array<Record<string, unknown>> };
+    dataLayerWindow.dataLayer = dataLayerWindow.dataLayer || [];
+    dataLayerWindow.dataLayer.push({ event: `lyra_${event_type}`, product: "lyra", locale });
+  }
   void lyraSupabase.from("lyra_interaction_events").insert({
     event_type, locale, ...context(),
   }).then(({ error }) => { if (error) console.warn("Lyra interaction analytics:", event_type, error.message); });
