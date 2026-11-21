@@ -1,14 +1,17 @@
+import {useEggUi} from "../../i18n/eggUi";
+
 /** A quiet reception signal — not an object sketch, 3D model, approval control,
  * or new idea. The server-backed seed is checked by the parent component.
  */
 export default function EggYolkDnaSeed(){
+ const {ui}=useEggUi();
  return <div className="relative flex h-full w-full flex-col items-center justify-center gap-1"
    data-testid="yolk-dna-received"
-   role="status" aria-label="Желток получил утверждённую ДНК Идеи">
+   role="status" aria-label={ui.yolkDnaStatus}>
     <div aria-hidden="true" className="egg-dna-aura pointer-events-none absolute top-1/2 left-1/2 h-[185px] w-[185px] -translate-x-1/2 -translate-y-[60%] rounded-full"/>
     <svg viewBox="0 0 160 198" width="112" height="139"
       className="egg-dna-heart relative z-10 h-[clamp(104px,20vh,150px)] w-auto"
-      role="img" aria-label="Зерно ДНК — маленькое яйцо">
+      role="img" aria-label={ui.yolkSeedImage}>
       <defs>
         <radialGradient id="egg-dna-body" cx="37%" cy="25%" r="85%">
           <stop offset="0%" stopColor="#e3f2ea"/>
@@ -28,10 +31,10 @@ export default function EggYolkDnaSeed(){
         transform="rotate(18 64 72)"/>
     </svg>
     <p className="relative z-10 mt-5 text-[12px] font-normal tracking-[0.12em] text-foreground/70">
-      ДНК получена
+      {ui.yolkDnaReceived}
     </p>
     <p className="relative z-10 text-[10px] font-light tracking-[0.05em] text-foreground/45">
-      Зерно Идеи · форма ещё не определена
+      {ui.yolkDnaHint}
     </p>
   </div>;
 }
