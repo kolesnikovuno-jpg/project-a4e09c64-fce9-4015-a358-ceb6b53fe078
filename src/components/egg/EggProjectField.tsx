@@ -8,6 +8,7 @@ import EggLinkWorkspace, { normalizeSiteUrl } from "./EggLinkWorkspace";
 import EggMatterDialogue, { type MatterCard } from "./EggMatterDialogue";
 import EggWorkspaceSync from "./EggWorkspaceSync";
 import EggRecoveredFieldMedia from "./EggRecoveredFieldMedia";
+import {useEggUi} from "../../i18n/eggUi";
 
 type Point = { x:number; y:number };
 // Retain legacy mark records in saved project data; never display viewport-only anchors as content anchors.
@@ -42,6 +43,7 @@ async function readVideo(key:string):Promise<Blob|null>{
 }
 
 export default function EggProjectField({projectId,children,workspace="field",onWorkspaceChange,onOpenAuthor,onOpenProject,onOpenYolk,onOpenAccount}:{workspace?:Workspace;onWorkspaceChange?:(workspace:Workspace)=>void;projectId:string;children:ReactNode;onOpenAuthor?:()=>void;onOpenProject?:()=>void;onOpenYolk?:()=>void;onOpenAccount?:()=>void}){
+ const {ui}=useEggUi();
  const key="egg:project-field:v1:"+projectId;
  const [items,setItems]=useState<Item[]>([]);
  const [loadedKey,setLoadedKey]=useState<string|null>(null);
@@ -158,7 +160,7 @@ export default function EggProjectField({projectId,children,workspace="field",on
   });
   setOpenId(null);
   setRecentMaterialTransfer(destination==="matter");
-  setNotice(destination==="matter"?"Перенесено в Материальное":"Возвращено в общее поле");
+  setNotice(destination==="matter"?ui.fieldMovedToMatter:ui.fieldReturned);
  };
  const center=()=>({x:(field.current?.clientWidth||window.innerWidth)/2,y:(field.current?.clientHeight||window.innerHeight)/2});
  const world=(x:number,y:number)=>{const c=center();return{x:(x-c.x-pan.x)/zoom,y:(y-c.y-pan.y)/zoom};};
@@ -292,36 +294,36 @@ export default function EggProjectField({projectId,children,workspace="field",on
   setSketchEditor(null);
  };
  const menuActions: EggMenuAction[] = [
-  {id:"workspace",label:workspace==="field"?"Материальное":"Общее поле",icon:Layers,onSelect:()=>onWorkspaceChange?.(workspace==="field"?"matter":"field")},
-  {id:"collect",label:"Добавить",icon:Layers,children:[
-   {id:"thought",label:"Заметка",icon:Pencil,onSelect:()=>{setTool("thought");setEntry("");}},
-   {id:"photo",label:"Фото",icon:Camera,onSelect:()=>camera.current?.click()},
-   {id:"file",label:"Изображение",icon:ImageIcon,onSelect:()=>imageInput.current?.click()},
-   {id:"video",label:"Видео",icon:Video,onSelect:()=>videoInput.current?.click()},
-   {id:"link",label:"Ссылка",icon:Link2,onSelect:()=>{setTool("link");setEntry("");}},
+  {id:"workspace",label:workspace==="field"?ui.matter:ui.fieldAll,icon:Layers,onSelect:()=>onWorkspaceChange?.(workspace==="field"?"matter":"field")},
+  {id:"collect",label:ui.commonAdd,icon:Layers,children:[
+   {id:"thought",label:ui.fieldNote,icon:Pencil,onSelect:()=>{setTool("thought");setEntry("");}},
+   {id:"photo",label:ui.fieldPhoto,icon:Camera,onSelect:()=>camera.current?.click()},
+   {id:"file",label:ui.fieldImage,icon:ImageIcon,onSelect:()=>imageInput.current?.click()},
+   {id:"video",label:ui.fieldVideo,icon:Video,onSelect:()=>videoInput.current?.click()},
+   {id:"link",label:ui.fieldLink,icon:Link2,onSelect:()=>{setTool("link");setEntry("");}},
   ]},
-  {id:"sketch",label:"Скетч",icon:Pencil,onSelect:()=>{setTool(null);setSketchEditor({id:null,initialStrokes:[]});}},
-  {id:"field",label:"Поле",icon:Move,children:[
-   {id:"center",label:"К центру",icon:Move,onSelect:()=>{setPan({x:0,y:0});setZoom(1);}},
-   {id:"zoomIn",label:"Приблизить",icon:ZoomIn,onSelect:()=>setZoom(v=>clamp(v*1.2,.25,3))},
-   {id:"zoomOut",label:"Отдалить",icon:ZoomOut,onSelect:()=>setZoom(v=>clamp(v/1.2,.25,3))},
-   {id:"resetZoom",label:"Масштаб 100%",icon:RotateCcw,onSelect:()=>setZoom(1)},
+  {id:"sketch",label:ui.fieldSketch,icon:Pencil,onSelect:()=>{setTool(null);setSketchEditor({id:null,initialStrokes:[]});}},
+  {id:"field",label:ui.field,icon:Move,children:[
+   {id:"center",label:ui.fieldCenter,icon:Move,onSelect:()=>{setPan({x:0,y:0});setZoom(1);}},
+   {id:"zoomIn",label:ui.fieldZoomIn,icon:ZoomIn,onSelect:()=>setZoom(v=>clamp(v*1.2,.25,3))},
+   {id:"zoomOut",label:ui.fieldZoomOut,icon:ZoomOut,onSelect:()=>setZoom(v=>clamp(v/1.2,.25,3))},
+   {id:"resetZoom",label:ui.fieldResetZoom,icon:RotateCcw,onSelect:()=>setZoom(1)},
   ]},
-  {id:"egg",label:"Яйцо",icon:CircleDot,children:[
-   {id:"eggIn",label:"Увеличить",icon:ZoomIn,onSelect:()=>setEggScale(v=>clamp(v*1.15,.35,1.8))},
-   {id:"eggOut",label:"Уменьшить",icon:ZoomOut,onSelect:()=>setEggScale(v=>clamp(v/1.15,.35,1.8))},
-   {id:"eggReset",label:"Исходный размер",icon:RotateCcw,onSelect:()=>setEggScale(.8)},
+  {id:"egg",label:ui.fieldEgg,icon:CircleDot,children:[
+   {id:"eggIn",label:ui.fieldEnlarge,icon:ZoomIn,onSelect:()=>setEggScale(v=>clamp(v*1.15,.35,1.8))},
+   {id:"eggOut",label:ui.fieldReduce,icon:ZoomOut,onSelect:()=>setEggScale(v=>clamp(v/1.15,.35,1.8))},
+   {id:"eggReset",label:ui.fieldOriginalSize,icon:RotateCcw,onSelect:()=>setEggScale(.8)},
   ]},
-  {id:"navigation",label:"Разделы",icon:FolderOpen,children:[
-   {id:"author",label:"Идея",icon:UserRound,onSelect:onOpenAuthor},
-   {id:"project",label:"Проект",icon:FolderOpen,onSelect:onOpenProject},
-   {id:"yolk",label:"Желток",icon:CircleDot,onSelect:onOpenYolk},
-   {id:"account",label:"Аккаунт",icon:UserRound,onSelect:onOpenAccount},
+  {id:"navigation",label:ui.sections,icon:FolderOpen,children:[
+   {id:"author",label:ui.idea,icon:UserRound,onSelect:onOpenAuthor},
+   {id:"project",label:ui.project,icon:FolderOpen,onSelect:onOpenProject},
+   {id:"yolk",label:ui.yolk,icon:CircleDot,onSelect:onOpenYolk},
+   {id:"account",label:ui.account,icon:UserRound,onSelect:onOpenAccount},
   ]}
  ];
  const active=items.find(item=>item.id===openId);
  const currentScale=Math.round(zoom*100);
- return <section className="absolute inset-0 overflow-hidden bg-background" style={{backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}} aria-label={workspace==="matter"?"Холст сферы Материальное":"Поле проекта EGG"} data-workspace={workspace} data-testid="egg-project-field">
+ return <section className="absolute inset-0 overflow-hidden bg-background" style={{backgroundImage:"radial-gradient(hsl(var(--foreground) / .10) 1px, transparent 1px)",backgroundSize:"25px 25px"}} aria-label={workspace==="matter"?ui.matter:ui.field} data-workspace={workspace} data-testid="egg-project-field">
   <div ref={field} className={"absolute inset-y-0 left-0 touch-none overflow-hidden "+(workspace==="matter"&&matterDialogueOpen?"right-0 md:right-1/2":"right-0")} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onWheel={wheel}>
    <div className={"pointer-events-none absolute inset-0 z-10 flex items-center justify-center"+(workspace==="matter"?" hidden":"")}>
     <div data-egg-anchor className="pointer-events-auto relative shrink-0 [&_[data-testid=unocalc-maturity-readout]]:hidden [&_[data-testid=unocalc-rotation-hint]]:hidden" style={{width:900,height:620,transform:"scale("+(eggScale*eggFit)+")",touchAction:"none"}}
@@ -393,26 +395,26 @@ export default function EggProjectField({projectId,children,workspace="field",on
     item=>item&&typeof item.id==="string"&&typeof item.type==="string").slice(0,500));}}
    isEmpty={value=>value.length===0}
    className="pointer-events-auto absolute bottom-6 right-5 z-40 max-w-[55vw] rounded-lg bg-background/85 px-2 py-1 shadow-sm" />
-  {workspace==="matter"&&<button type="button" aria-label="Показать все материалы" onClick={fitMatterItems} className="absolute left-5 top-[164px] z-30 rounded-full bg-background/90 px-3 py-2 text-xs text-foreground/70 shadow-sm sm:left-8">Показать всё</button>}
-  {workspace==="matter"&&<button type="button" aria-label="Вернуться к Яйцу" onClick={()=>onWorkspaceChange?.("field")} className="absolute left-5 top-[116px] z-30 rounded-full border border-foreground/20 bg-background/95 px-3 py-2 text-xs shadow-sm sm:left-8">← К Яйцу</button>}
+  {workspace==="matter"&&<button type="button" aria-label={ui.fieldShowAll} onClick={fitMatterItems} className="absolute left-5 top-[164px] z-30 rounded-full bg-background/90 px-3 py-2 text-xs text-foreground/70 shadow-sm sm:left-8">{ui.fieldShowAll}</button>}
+  {workspace==="matter"&&<button type="button" aria-label={ui.fieldBackToEgg} onClick={()=>onWorkspaceChange?.("field")} className="absolute left-5 top-[116px] z-30 rounded-full border border-foreground/20 bg-background/95 px-3 py-2 text-xs shadow-sm sm:left-8">{ui.fieldBackToEgg}</button>}
   {workspace==="matter"&&matterDialogueOpen&&<EggMatterDialogue
     projectId={projectId} cards={matterCards} focusId={matterFocusId} onClearFocus={()=>setMatterFocusId(null)}
     onBack={()=>onWorkspaceChange?.("field")} onClose={()=>setMatterDialogueOpen(false)}
     onOpenIdea={onOpenAuthor}/>}
-  {workspace==="matter"&&!matterDialogueOpen&&<button type="button" aria-label="Открыть диалог Материальное"
+  {workspace==="matter"&&!matterDialogueOpen&&<button type="button" aria-label={ui.fieldOpenMatterDialogue}
     className="absolute right-5 top-16 z-40 flex items-center gap-2 rounded-full bg-[#f9f7f2] px-4 py-2 text-xs text-[#45574b] shadow-md"
-    onClick={()=>setMatterDialogueOpen(true)}><MessageCircle size={16}/> Диалог с ИИ</button>}
+    onClick={()=>setMatterDialogueOpen(true)}><MessageCircle size={16}/> {ui.commonDialogue}</button>}
   {workspace==="matter"&&!visibleItems.length&&<EggRecoveredFieldMedia projectId={projectId}/>}
   {!tool && !sketchEditor && !openId && <EggRadialMenu actions={menuActions} side="left"/>}
   {tool!==null&&<div className="absolute bottom-[max(6rem,env(safe-area-inset-bottom))] left-4 z-40 w-[min(340px,calc(100vw-32px))] rounded-2xl border border-foreground/15 bg-background/95 p-3 shadow-xl sm:left-6">
    <div className="flex items-center justify-between px-1 pb-1">
-     <span className="text-sm font-medium">{tool==="link"?"Ссылка":"Заметка"}</span>
-     <button type="button" aria-label="Закрыть ввод" className="rounded-full p-1 text-foreground/60" onClick={()=>setTool(null)}><X size={17}/></button>
+     <span className="text-sm font-medium">{tool==="link"?ui.fieldLink:ui.fieldNote}</span>
+     <button type="button" aria-label={ui.fieldCloseInput} className="rounded-full p-1 text-foreground/60" onClick={()=>setTool(null)}><X size={17}/></button>
    </div>
    <div className="mt-3 border-t border-foreground/10 pt-3"><div className="relative">
-      <textarea rows={3} value={entry} onChange={e=>setEntry(e.target.value)} placeholder={tool==="link"?"Вставьте ссылку":"Запишите мысль или наблюдение"} className="w-full resize-y rounded-xl border border-foreground/15 bg-background p-3 pr-10 text-sm"/>
-      {tool==="thought"&&<button type="button" title="Голосовой ввод" aria-label="Голосовой ввод" className={"absolute right-2 top-2 rounded-full p-1.5 "+(listening?"bg-red-100 text-red-700":"text-foreground/65")} onClick={voice}><Mic size={18}/></button>}
-     </div><div className="mt-2 flex justify-between gap-2"><button onClick={commit} disabled={!entry.trim()} className="rounded-full bg-foreground px-4 py-2 text-xs text-background disabled:opacity-40">{workspace==="matter"?"Добавить в Материальное":"Добавить в поле"}</button><button className="px-2 text-xs text-foreground/60" onClick={()=>setTool(null)}>Закрыть</button></div></div>
+      <textarea rows={3} value={entry} onChange={e=>setEntry(e.target.value)} placeholder={tool==="link"?ui.fieldAddLinkHint:ui.fieldAddNoteHint} className="w-full resize-y rounded-xl border border-foreground/15 bg-background p-3 pr-10 text-sm"/>
+      {tool==="thought"&&<button type="button" title={ui.fieldVoice} aria-label={ui.fieldVoice} className={"absolute right-2 top-2 rounded-full p-1.5 "+(listening?"bg-red-100 text-red-700":"text-foreground/65")} onClick={voice}><Mic size={18}/></button>}
+     </div><div className="mt-2 flex justify-between gap-2"><button onClick={commit} disabled={!entry.trim()} className="rounded-full bg-foreground px-4 py-2 text-xs text-background disabled:opacity-40">{workspace==="matter"?ui.fieldAddToMatter:ui.fieldAddToField}</button><button className="px-2 text-xs text-foreground/60" onClick={()=>setTool(null)}>{ui.commonClose}</button></div></div>
   </div>}
   <input ref={camera} type="file" accept="image/*" capture="environment" className="hidden" onChange={e=>{void images(e.target.files);e.target.value="";}}/>
   <input ref={imageInput} type="file" accept="image/*" multiple className="hidden" onChange={e=>{void images(e.target.files);e.target.value="";}}/>
@@ -423,8 +425,8 @@ export default function EggProjectField({projectId,children,workspace="field",on
    {recentMaterialTransfer&&workspace==="field"&&onWorkspaceChange&&
     <button type="button" data-testid="egg-open-matter-after-transfer"
      className="shrink-0 rounded-full border border-foreground/25 px-3 py-1.5 font-medium"
-     onClick={()=>{setNotice("");setRecentMaterialTransfer(false);onWorkspaceChange("matter");}}>Открыть Материальное</button>}
-   <button type="button" aria-label="Закрыть сообщение" className="opacity-65"
+     onClick={()=>{setNotice("");setRecentMaterialTransfer(false);onWorkspaceChange("matter");}}>{ui.fieldOpenMatter}</button>}
+   <button type="button" aria-label={ui.fieldCloseNotice} className="opacity-65"
     onClick={()=>{setNotice("");setRecentMaterialTransfer(false);}}><X size={14}/></button>
   </div>}
   {active?.src&&<EggPhotoWorkspace key={active.id} src={active.src} title={active.text} initialMarkup={active.photoMarkup} initialFocusNoteId={focusedPhotoNoteId??undefined}
