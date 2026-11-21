@@ -100,7 +100,7 @@ export default function EggRadialMenu({ actions, title = "EGG", side = "left" }:
     </div>
   );
   return (
-    <div className="fixed inset-0 z-[75]" aria-label={ui.menuTitle}>
+    <div className="fixed inset-0 z-[75]" data-testid="egg-menu-overlay" aria-label={ui.menuTitle}>
       <button type="button" aria-label={ui.menuClose} className="absolute inset-0 cursor-default bg-[#f6f1e9]/5" onClick={close}/>
       <div ref={dial} data-testid="egg-menu-fixed-position"
         className={position+" select-none touch-none"}
