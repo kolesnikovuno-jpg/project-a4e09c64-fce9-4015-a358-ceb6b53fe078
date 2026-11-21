@@ -63,7 +63,7 @@ const UnoCalcEgg = ({ eggBrand = false }: { eggBrand?: boolean }) => {
         paddingRight: "max(1.25rem, env(safe-area-inset-right))",
       }}
     >
-      {!fieldMode && <LanguageSwitcher />}
+      {!eggBrand && <LanguageSwitcher />}
       <main className={fieldMode ? "relative h-full w-full" : "mx-auto w-full max-w-[1060px]"}>
         <header className={fieldMode ? "pointer-events-none absolute inset-x-0 top-0 z-50 flex items-center justify-between px-5 pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-8" : "flex items-center justify-between pb-4 pr-2"}>
           <h1 className="pointer-events-auto text-[25px] font-extralight leading-none tracking-[-0.04em] text-foreground/85 sm:text-[28px]">
