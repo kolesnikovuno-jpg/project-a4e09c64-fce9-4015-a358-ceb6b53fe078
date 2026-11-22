@@ -282,6 +282,11 @@ export default function EggConnect() {
           <Link to={"/egg/collab?project="+encodeURIComponent(member.project_id)} className="text-sm underline underline-offset-4">Открыть чаты</Link>
         </div>)}
       </section>}
+      {user && <section className="mb-5 rounded-xl border border-border p-4 sm:p-6" data-testid="egg-operating-products">
+        <h2 className="mb-2 text-lg font-medium">Работающие продукты</h2>
+        <p className="mb-3 text-sm text-muted-foreground">Lyra — цель, утверждённые рекламные пределы, реальные наблюдения и очередь задач сфер. Это отдельный операционный режим, не новый цикл формирования Идеи.</p>
+        <Link to="/egg/operations" className="inline-flex rounded border border-border px-4 py-2 text-sm">Открыть Lyra · функционирование</Link>
+      </section>}
       <section className="rounded-xl border border-border p-6">
         <h2 className="mb-3 text-xl font-medium">Мои проекты</h2>
         <p className="mb-3 text-sm text-muted-foreground">Проекты ниже читаются из EGG Engine. Холсты синхронизируются с отдельными черновиками EGG при действующем входе и соединении. Перед сменой устройства проверьте отметку «В EGG · синхронизировано» на нужном холсте; при конфликте версия выбирается Автором.</p>
