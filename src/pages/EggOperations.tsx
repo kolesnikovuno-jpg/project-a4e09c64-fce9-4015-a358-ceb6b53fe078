@@ -16,6 +16,7 @@ type OperationalActivation = {
   id:string;event_id:string;sphere:string;task:string;
   status:"pending"|"researching"|"proposed"|"verified"|"blocked";
   created_at:string;
+  finding?:{kind?:string;observation?:string;hypothesis?:string;nextStep?:string;confidence?:string;limitations?:string[];code?:string}|null;
 };
 const sphereNames:Record<string,string>={
   marketing:"Маркетинг",design:"Дизайн",testDrive:"Тестдрайв",commerce:"Коммерция",
@@ -27,6 +28,8 @@ const readableDate=(value:string)=>new Date(value).toLocaleString("ru-UA",{dateS
 export default function EggOperations(){
   const [busy,setBusy]=useState(true);
   const [revision,setRevision]=useState(0);
+  const [running,setRunning]=useState<string|null>(null);
+  const [researchError,setResearchError]=useState("");
   const [error,setError]=useState("");
   const [project,setProject]=useState<OperationalProject|null>(null);
   const [events,setEvents]=useState<OperationalEvent[]>([]);
@@ -59,7 +62,7 @@ export default function EggOperations(){
         if(rows.length){
           const {data:taskRows,error:taskError}=await auth
             .from("egg_operational_activations")
-            .select("id,event_id,sphere,task,status,created_at")
+            .select("id,event_id,sphere,task,status,created_at,finding")
             .in("event_id",rows.map(row=>row.id))
             .order("created_at",{ascending:false}).limit(120);
           if(taskError)throw Error("Не удалось прочитать задачи сфер.");
@@ -71,6 +74,28 @@ export default function EggOperations(){
     })();
     return ()=>{live=false};
   },[revision]);
+  const researchOne=async(id:string)=>{
+    if(running)return;
+    setRunning(id);setResearchError("");
+    try{
+      const cfgResponse=await fetch("/api/egg-config",{cache:"no-store"});
+      if(!cfgResponse.ok)throw Error("Нет конфигурации EGG");
+      const cfg=await cfgResponse.json() as {supabaseUrl:string;publishableKey:string};
+      const auth=createClient(cfg.supabaseUrl,cfg.publishableKey);
+      const {data:{session}}=await auth.auth.getSession();
+      if(!session)throw Error("Войдите в EGG для запуска исследования");
+      const response=await fetch("/api/egg-operational-research",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token},
+        body:JSON.stringify({activationId:id}),
+      });
+      if(!response.ok)throw Error(response.status===429
+        ?"Лимит вызовов ИИ пилота за сутки исчерпан."
+        :"ИИ не завершил исследование. Проверьте состояние задачи после обновления.");
+      setRevision(v=>v+1);
+    }catch(e){setResearchError(e instanceof Error?e.message:"Ошибка исследования");setRevision(v=>v+1);}
+    finally{setRunning(null);}
+  };
   const recordedOrders=events.filter(item=>item.kind==="order_confirmed").length;
   const openTasks=activations.filter(item=>item.status==="pending").length;
   return <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:mx-auto sm:max-w-3xl">
@@ -118,11 +143,24 @@ export default function EggOperations(){
       <section aria-label="Активность сфер" className="rounded-xl border border-border p-4 sm:p-5">
         <div className="mb-3 flex items-center justify-between gap-2"><h2 className="text-sm font-semibold">Событийная активация сфер</h2><span className="text-xs text-muted-foreground">{openTasks} ожидают обработки</span></div>
         {!activations.length&&<p className="text-sm text-muted-foreground">Задачи пока не активированы.</p>}
+        {researchError&&<p role="alert" className="mb-3 text-sm text-destructive">{researchError}</p>}
         {activations.map(a=><div key={a.id} className="border-t border-border py-3">
           <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-medium">{sphereNames[a.sphere]??a.sphere}</p><span className="text-xs text-muted-foreground">{a.status==="pending"?"Ожидает обработки":a.status}</span></div>
           <p className="mt-1 text-sm text-muted-foreground">{a.task}</p>
+          {a.finding?.kind==="ai_research_proposal"&&<div className="mt-3 space-y-2 rounded-lg border border-border p-3 text-sm">
+            <p><strong>Наблюдение:</strong> {a.finding.observation}</p>
+            <p><strong>Гипотеза:</strong> {a.finding.hypothesis}</p>
+            <p><strong>Следующий шаг:</strong> {a.finding.nextStep}</p>
+            <p className="text-xs text-muted-foreground">Вывод ИИ — предложение, не выполненное действие. Требует проверки.</p>
+          </div>}
+          {a.finding?.kind==="worker_error"&&<p className="mt-2 text-xs text-destructive">Запрос завершился ошибкой. Реклама и данные проекта не изменены.</p>}
+          {a.status==="pending"&&<button type="button" disabled={running!==null}
+            onClick={()=>void researchOne(a.id)}
+            className="mt-3 rounded border border-border px-3 py-2 text-xs disabled:opacity-50">
+            {running===a.id?"ИИ исследует…":"Исследовать через ИИ"}
+          </button>}
         </div>)}
-        <p className="mt-2 text-xs text-muted-foreground">Наличие задачи не означает, что её уже выполнил ИИ. Задачи возникают из событий, без запуска полного круга восьми сфер.</p>
+        <p className="mt-2 text-xs text-muted-foreground">Каждая кнопка исследования запускает один отдельный платный запрос подключённой модели. Вывод сохраняется в EGG; внешние действия, траты и авторские утверждения не выполняются. Автоматический исполнитель пока не включён.</p>
       </section>
     </div>}
   </main>;
