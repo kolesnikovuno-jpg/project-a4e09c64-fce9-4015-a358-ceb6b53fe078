@@ -4,7 +4,7 @@ import { lyraSupabase as supabase } from "@/integrations/supabase/lyraClient";
 import { OperatorShell, UtilityRow, ActionBar, BarGroup, PageTitle, ToolLink, StateLabel, ListRow, CompactSelect } from "@/components/operator/ui";
 
 type Inquiry = {
-  id: string; created_at: string; name: string; email: string; location: string;
+  id: string; created_at: string; name: string; email: string | null; contact_channel?: "email" | "telegram" | "viber"; contact_value?: string | null; location: string;
   intent: string; message: string | null; locale: string; status: string; operator_notes: string | null;
 };
 const options = [
@@ -99,7 +99,7 @@ export default function OperatorLyra() {
       <ul>{items.map(item => <ListRow key={item.id}>
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
           <div className="min-w-0 text-sm">
-            <div className="font-medium">{item.name} · <a href={`mailto:${item.email}`} className="underline">{item.email}</a></div>
+            <div className="font-medium">{item.name} · {item.contact_channel === "viber" ? "Viber" : item.contact_channel === "telegram" ? "Telegram" : "Email"} · {item.contact_channel === "telegram" && (item.contact_value ?? "").startsWith("@") ? <a className="underline" href={`https://t.me/${(item.contact_value ?? "").slice(1)}`} target="_blank" rel="noopener noreferrer">{item.contact_value}</a> : item.contact_channel === "email" || (!item.contact_channel && item.email) ? <a className="underline" href={`mailto:${item.contact_value || item.email}`}>{item.contact_value || item.email}</a> : <span>{item.contact_value || item.email || "—"}</span>}</div>
             <div className="mt-1 text-xs text-muted-foreground">{item.intent} · {item.location} · {item.locale} · {new Date(item.created_at).toLocaleString()}</div>
             {item.message && <p className="mt-2 whitespace-pre-wrap text-xs">{item.message}</p>}
             <div className="mt-2"><StateLabel>{item.status}</StateLabel></div>
