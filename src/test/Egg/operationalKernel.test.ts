@@ -8,13 +8,13 @@ const now="2026-11-23T12:00:00.000Z";
 const actual=(amountUAH:number) => ({amountUAH,source:"trusted:account:metric",verifiedAt:now});
 const base=():EggOperationalField => ({
   projectId:"lyra-project",goal:{metric:"confirmed_orders_per_month",target:2,approvedBy:"author",revision:1},
-  commerce:{advertising:null,spentToday:null,spentMonth:null,unitPrice:null,variableCost:null},
+  commerce:{advertising:null,spentToday:null,spentRolling30Days:null,unitPrice:null,variableCost:null},
   processedEventIds:[],
 });
 const funded=():EggOperationalField => ({
   ...base(),commerce:{
     advertising:{authorApproved:true,dailyMaxUAH:100,monthlyMaxUAH:3000,approvedAt:now},
-    spentToday:actual(0),spentMonth:actual(200),unitPrice:actual(55000),variableCost:actual(20000),
+    spentToday:actual(0),spentRolling30Days:actual(200),unitPrice:actual(55000),variableCost:actual(20000),
   },
 });
 
@@ -70,7 +70,7 @@ describe("ADR-030: operational triad — goal, sphere, common field",()=>{
   });
   it("stale evidence fails closed, irrespective of AI presence",()=>{
     const old={...actual(0),verifiedAt:"2026-11-19T12:00:00.000Z"};
-    const field={...funded(),commerce:{...funded().commerce,spentMonth:old}};
+    const field={...funded(),commerce:{...funded().commerce,spentRolling30Days:old}};
     expect(assessEggAdExperiment(field,100,now).status).toBe("insufficient_data");
   });
 });
