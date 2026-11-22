@@ -49,7 +49,8 @@ export type EggCommercialField = {
     approvedAt: string;
   };
   spentToday: EggObservedAmount | null;
-  spentMonth: EggObservedAmount | null;
+  /** Must be spend within the last 30 rolling days, never calendar-month spend. */
+  spentRolling30Days: EggObservedAmount | null;
   unitPrice: EggObservedAmount | null;
   variableCost: EggObservedAmount | null;
 };
@@ -185,19 +186,19 @@ export function assessEggAdExperiment(field: EggOperationalField, requestedDaily
   if (!b || b.authorApproved !== true || !validInstant(b.approvedAt) ||
     !validMoney(b.dailyMaxUAH) || !validMoney(b.monthlyMaxUAH) ||
     b.dailyMaxUAH === 0 || b.monthlyMaxUAH === 0) missing.push("Нет действующего авторского лимита рекламы");
-  if (!fresh(c.spentToday, 48) || !fresh(c.spentMonth, 48)) missing.push("Нет свежих подтверждённых расходов Google Ads");
+  if (!fresh(c.spentToday, 48) || !fresh(c.spentRolling30Days, 48)) missing.push("Нет свежих подтверждённых расходов Google Ads за день и скользящие 30 дней");
   if (!fresh(c.unitPrice, 24 * 30) || !fresh(c.variableCost, 24 * 30)) missing.push("Нет свежей проверяемой экономики единицы продукта");
   if (missing.length) return {status:"insufficient_data",reasons:missing,candidateSpendUAH:null,
     researchAllowed:true,externalActionExecuted:false};
   const budget = b!;
   const spentToday = c.spentToday!.amountUAH;
-  const spentMonth = c.spentMonth!.amountUAH;
+  const spentRolling30Days = c.spentRolling30Days!.amountUAH;
   if (c.unitPrice!.amountUAH <= c.variableCost!.amountUAH)
     blocked.push("Цена не покрывает проверенные переменные расходы");
   if (spentToday + requestedDailyUAH > budget.dailyMaxUAH)
     blocked.push("Дневной лимит будет превышен");
-  if (spentMonth + requestedDailyUAH > budget.monthlyMaxUAH)
-    blocked.push("Месячный лимит будет превышен");
+  if (spentRolling30Days + requestedDailyUAH > budget.monthlyMaxUAH)
+    blocked.push("Лимит за любые 30 дней будет превышен");
   if (Date.parse(at) < Date.parse(budget.approvedAt))
     blocked.push("Состояние не может предшествовать авторскому утверждению");
   if (blocked.length) return {status:"outside_corridor",reasons:blocked,candidateSpendUAH:null,
