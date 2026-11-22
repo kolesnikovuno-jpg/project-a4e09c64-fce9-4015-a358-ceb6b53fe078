@@ -141,3 +141,28 @@ alter table public.egg_operational_activations
 alter table public.egg_operational_activations
   add column if not exists retry_count integer not null default 0
     check (retry_count between 0 and 2);
+
+
+-- Daily synchronization is tracked separately, including zero-activity days.
+create table if not exists public.egg_operational_source_checks (
+ id uuid primary key default gen_random_uuid(),
+ operational_project_id uuid not null references public.egg_operational_projects(id) on delete cascade,
+ source text not null check (char_length(source) between 3 and 120),
+ source_day date not null,
+ status text not null check(status in ('ok','no_activity','error')),
+ checked_at timestamptz not null default now(),
+ website_events integer not null default 0 check (website_events>=0),
+ inquiries integer not null default 0 check (inquiries>=0),
+ error_code text,
+ unique (operational_project_id,source,source_day)
+);
+alter table public.egg_operational_source_checks enable row level security;
+revoke all on public.egg_operational_source_checks from anon,authenticated;
+grant select on public.egg_operational_source_checks to authenticated;
+grant all on public.egg_operational_source_checks to service_role;
+create policy egg_operational_source_checks_owner_read
+on public.egg_operational_source_checks for select to authenticated
+using (exists (
+ select 1 from public.egg_operational_projects p
+ where p.id=operational_project_id and p.owner_id=(select auth.uid())
+));
