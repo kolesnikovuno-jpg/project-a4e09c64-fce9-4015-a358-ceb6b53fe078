@@ -2,6 +2,16 @@ import { lyraSupabase } from "@/integrations/supabase/lyraClient";
 
 export type LyraEvent = "page_view" | "scroll_3d" | "scroll_details" | "model_interact" | "ar_click" | "info_open" | "request_open" | "request_success";
 type Source = "direct" | "google" | "bing" | "instagram" | "facebook" | "telegram" | "other_search" | "other_social" | "referral" | "campaign";
+const OWNER_DEVICE_KEY = "lyra_owner_device_v1";
+
+export function isLyraOwnerDevice(): boolean {
+  try { return window.localStorage.getItem(OWNER_DEVICE_KEY) === "true"; } catch { return false; }
+}
+
+export function setLyraOwnerDevice(enabled: boolean): void {
+  try { if (enabled) window.localStorage.setItem(OWNER_DEVICE_KEY, "true"); else window.localStorage.removeItem(OWNER_DEVICE_KEY); } catch { /* storage unavailable */ }
+}
+
 const SESSION_KEY = "lyra_analytics_session_v2";
 const SOURCE_KEY = "lyra_analytics_source_v2";
 const CAMPAIGN_KEY = "lyra_analytics_campaign_v2";
@@ -42,6 +52,8 @@ function context() {
   }
 }
 export function trackLyra(event_type: LyraEvent, locale: string) {
+  // Owner test traffic is excluded from future commercial events at the source.
+  if (typeof window !== "undefined" && isLyraOwnerDevice()) return;
   // GTM receives anonymous funnel events; never send contact form values or PII.
   if (typeof window !== "undefined") {
     const dataLayerWindow = window as typeof window & { dataLayer?: Array<Record<string, unknown>> };
