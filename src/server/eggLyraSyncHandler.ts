@@ -107,12 +107,13 @@ export default async function handler(req:Request,res:ServerResponse){
   let days:number;
   try{days=allowed.parse(await readJson(req)).days??1;}
   catch{safeResponse(res,400,{ok:false,error:"invalid_request"});return;}
-  // Even cron must run only the previous full day. Manual authenticated backfill
-  // can request up to seven days.
-  if(isJob&&days!==1){safeResponse(res,400,{ok:false,error:"cron_day_limit"});return;}
+  // Both authenticated callers are bounded to <=7 closed days. The pg_cron
+  // command requests exactly one day; backfill uses the same private route.
   const response:Array<IngestReport>=[];
+  let processingDay:string|null=null;
   try{
     for(const day of previousClosedKyivDays(days,new Date())){
+      processingDay=day;
       const src=new URL("https://gdsvwiemdggxboxzbdqd.supabase.co/functions/v1/lyra-egg-feed");
       src.searchParams.set("day",day);
       const controller=new AbortController();
@@ -182,6 +183,18 @@ export default async function handler(req:Request,res:ServerResponse){
             ignoreDuplicates:true});
         if(writeError)throw Error("destination_write_failed");
       }
+      const status=events.length?"ok":"no_activity";
+      const {error:auditError}=await db.from("egg_operational_source_checks").upsert({
+        operational_project_id:project.id,
+        source:"lyra_supabase_daily_v1",
+        source_day:day,
+        status,
+        checked_at:new Date().toISOString(),
+        website_events:snapshot.websiteEvents,
+        inquiries:snapshot.inquiries,
+        error_code:null,
+      },{onConflict:"operational_project_id,source,source_day"});
+      if(auditError)throw Error("destination_audit_failed");
       response.push({day,websiteEvents:snapshot.websiteEvents,inquiries:snapshot.inquiries,
         inserted:events.length>0,status:events.length?"ingested_or_existing":"no_activity"});
     }
@@ -194,6 +207,18 @@ export default async function handler(req:Request,res:ServerResponse){
       reason==="source_feed_unavailable"?"source_feed_unavailable":
       reason==="source_feed_invalid"||reason==="source_metric_inconsistent"?"source_data_invalid":
       "sync_failed";
+    if(processingDay){
+      try{
+        await db.from("egg_operational_source_checks").upsert({
+          operational_project_id:project.id,
+          source:"lyra_supabase_daily_v1",
+          source_day:processingDay,
+          status:"error",
+          checked_at:new Date().toISOString(),
+          website_events:0,inquiries:0,error_code:status,
+        },{onConflict:"operational_project_id,source,source_day"});
+      }catch{/* Preserve original error; no raw data in log. */}
+    }
     safeResponse(res,502,{ok:false,error:status,completedDays:response.length,
       externalActionsExecuted:0});
   }
