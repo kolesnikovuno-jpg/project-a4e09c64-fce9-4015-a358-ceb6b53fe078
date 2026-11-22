@@ -28,6 +28,7 @@ import SemanticAbout from "./pages/SemanticAbout";
 import OperatorLogin from "./pages/OperatorLogin";
 import EggOAuthConsent from "./pages/EggOAuthConsent";
 import EggConnect from "./pages/EggConnect";
+import EggOperations from "./pages/EggOperations";
 import EggAuthorPage from "./pages/EggAuthorPage";
 import EggStablePreview from "./components/egg/EggStablePreview";
 import EggYolkExperience from "./components/egg/EggYolkExperience";
@@ -163,6 +164,7 @@ const App = () => (
 
           <Route path="/oauth/consent" element={<EggOAuthConsent />} />
           <Route path="/egg/connect" element={<EggStablePreview><EggConnect /></EggStablePreview>} />
+          <Route path="/egg/operations" element={<EggStablePreview><EggOperations /></EggStablePreview>} />
           <Route path="/egg/collab" element={<EggStablePreview><EggCollaboration /></EggStablePreview>} />
           <Route path="/egg/demo" element={<EggStablePreview><EggDemo /></EggStablePreview>} />
           <Route path="/egg/yolk" element={<EggStablePreview><EggYolkExperience /></EggStablePreview>} />
