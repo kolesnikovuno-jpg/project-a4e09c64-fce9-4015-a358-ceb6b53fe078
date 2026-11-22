@@ -163,7 +163,7 @@ export default async function handler(req:Request,res:ServerResponse){
       }),
     };
     stage="model_call";
-    const raw=await generate(model,{...prompt,responseJsonSchema:strictOutputSchema},1800);
+    const raw=await generate(model,{...prompt,...(model.kind==="direct_openai"?{responseJsonSchema:strictOutputSchema}:{})},1800);
     stage="validate_response";
     const parsed=resultSchema.parse(JSON.parse(raw));
     const finding={kind:"ai_research_proposal",...parsed,sourceEventIds:[source.id],
