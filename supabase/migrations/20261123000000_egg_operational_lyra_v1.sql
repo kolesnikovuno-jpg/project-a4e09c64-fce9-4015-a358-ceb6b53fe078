@@ -136,3 +136,8 @@ alter table public.egg_operational_activations
   add column if not exists started_at timestamptz null;
 alter table public.egg_operational_activations
   add column if not exists completed_at timestamptz null;
+
+-- Applied to live EGG database as egg_operational_research_retry_limit.
+alter table public.egg_operational_activations
+  add column if not exists retry_count integer not null default 0
+    check (retry_count between 0 and 2);
