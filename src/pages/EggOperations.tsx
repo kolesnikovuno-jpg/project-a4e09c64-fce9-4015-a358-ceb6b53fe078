@@ -122,7 +122,7 @@ export default function EggOperations(){
       const auth=createClient(cfg.supabaseUrl,cfg.publishableKey);
       const {data:{session}}=await auth.auth.getSession();
       if(!session)throw Error("Необходимо войти в аккаунт EGG");
-      const response=await fetch("/api/egg-operational-sync",{
+      const response=await fetch("/api/egg-operational-research?mode=sync",{
         method:"POST",
         headers:{"content-type":"application/json","authorization":"Bearer "+session.access_token},
         body:JSON.stringify({days:7}),
