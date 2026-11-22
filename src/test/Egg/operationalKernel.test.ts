@@ -62,6 +62,13 @@ describe("ADR-030: operational triad — goal, sphere, common field",()=>{
     const negative=assessEggAdExperiment({...funded(),commerce:{...funded().commerce,variableCost:actual(60000)}},100,now);
     expect(negative.status).toBe("outside_corridor");
   });
+  it("enforces the Author's rolling 30-day ceiling rather than a calendar-month reset",()=>{
+    const field={...funded(),commerce:{...funded().commerce,spentRolling30Days:actual(2950)}};
+    const out=assessEggAdExperiment(field,100,now);
+    expect(out.status).toBe("outside_corridor");
+    expect(out.reasons.some(message=>message.includes("30 дней"))).toBe(true);
+    expect(out.externalActionExecuted).toBe(false);
+  });
   it("can form a bounded proposal but does not execute it",()=>{
     const out=assessEggAdExperiment(funded(),100,now);
     expect(out.status).toBe("within_corridor");
