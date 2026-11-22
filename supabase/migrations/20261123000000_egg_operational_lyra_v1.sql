@@ -125,3 +125,14 @@ revoke all on function public.egg_queue_operational_activations() from public,an
 grant execute on function public.egg_queue_operational_activations() to service_role;
 create trigger egg_operational_event_activate after insert on public.egg_operational_events
 for each row execute function public.egg_queue_operational_activations();
+
+
+-- Applied to live EGG project as egg_operational_sphere_research_v1.
+-- AI proposals stay scoped to their original event and are not approvals.
+alter table public.egg_operational_activations
+  add column if not exists finding jsonb null
+  check (finding is null or jsonb_typeof(finding)='object');
+alter table public.egg_operational_activations
+  add column if not exists started_at timestamptz null;
+alter table public.egg_operational_activations
+  add column if not exists completed_at timestamptz null;
