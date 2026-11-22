@@ -31,6 +31,8 @@ export default function EggOperations(){
   const [revision,setRevision]=useState(0);
   const [running,setRunning]=useState<string|null>(null);
   const [researchError,setResearchError]=useState("");
+  const [syncing,setSyncing]=useState(false);
+  const [syncMessage,setSyncMessage]=useState("");
   const [error,setError]=useState("");
   const [project,setProject]=useState<OperationalProject|null>(null);
   const [events,setEvents]=useState<OperationalEvent[]>([]);
@@ -110,6 +112,30 @@ export default function EggOperations(){
     }catch(e){setResearchError(e instanceof Error?e.message:"Ошибка исследования");setRevision(v=>v+1);}
     finally{setRunning(null);}
   };
+  const syncLyra=async()=>{
+    if(syncing)return;
+    setSyncing(true);setSyncMessage("");
+    try{
+      const cfgResponse=await fetch("/api/egg-config",{cache:"no-store"});
+      if(!cfgResponse.ok)throw Error("Нет конфигурации EGG");
+      const cfg=await cfgResponse.json() as {supabaseUrl:string;publishableKey:string};
+      const auth=createClient(cfg.supabaseUrl,cfg.publishableKey);
+      const {data:{session}}=await auth.auth.getSession();
+      if(!session)throw Error("Необходимо войти в аккаунт EGG");
+      const response=await fetch("/api/egg-operational-sync",{
+        method:"POST",
+        headers:{"content-type":"application/json","authorization":"Bearer "+session.access_token},
+        body:JSON.stringify({days:7}),
+      });
+      const data=await response.json().catch(()=>null) as
+        {ok?:boolean;error?:string;days?:Array<{day:string;status:string}>}|null;
+      if(!response.ok||!data?.ok)
+        throw Error("Источник Lyra временно недоступен ("+(data?.error??"unknown")+").");
+      setSyncMessage("Проверено дней: "+(data.days?.length??0)+". Новые наблюдения сохранены без изменения рекламы.");
+      setRevision(v=>v+1);
+    }catch(e){setSyncMessage(e instanceof Error?e.message:"Не удалось обновить источник Lyra");}
+    finally{setSyncing(false);}
+  };
   const recordedOrders=events.filter(item=>item.kind==="order_confirmed").length;
   const openTasks=activations.filter(item=>item.status==="pending").length;
   return <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:mx-auto sm:max-w-3xl">
@@ -145,6 +171,16 @@ export default function EggOperations(){
           {project.ads_operation_allowed?"Для расходов требуется отдельный подтверждённый механизм исполнения.":"Изменение рекламы и расходование средств движком отключены."}
         </p>
       </section>
+      <section aria-label="Синхронизация источника" className="rounded-xl border border-border p-4 sm:p-5">
+        <h2 className="mb-2 text-sm font-semibold">Источник Lyra · ежедневные агрегаты</h2>
+        <p className="mb-3 text-sm text-muted-foreground">Передаются только количества событий и заявок за закрытые дни по Киеву. Контакты клиентов не копируются. Google Ads — отдельный пока не подключённый источник.</p>
+        <button type="button" onClick={()=>void syncLyra()} disabled={syncing||busy}
+          className="rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-50">
+          {syncing?"Получаем данные…":"Синхронизировать 7 дней"}
+        </button>
+        {syncMessage&&<p role="status" className="mt-3 text-sm">{syncMessage}</p>}
+        <p className="mt-2 text-xs text-muted-foreground">Этот запуск только читает Lyra и обновляет общее поле. Исследование ИИ и реклама не запускаются.</p>
+      </section>
       <section aria-label="События общего поля" className="rounded-xl border border-border p-4 sm:p-5">
         <div className="mb-3 flex items-center justify-between gap-2"><h2 className="text-sm font-semibold">Общее поле · наблюдения</h2><span className="text-xs text-muted-foreground">{events.length} записей</span></div>
         {!events.length&&<p className="text-sm text-muted-foreground">События ещё не поступили.</p>}
@@ -152,7 +188,7 @@ export default function EggOperations(){
           <p className="text-xs text-muted-foreground">{readableDate(event.observed_at)} · {event.source} · {event.evidence_status==="verified_source"?"данные источника":event.evidence_status==="hypothesis"?"гипотеза":"неполные данные"}</p>
           <p className="mt-1 text-sm">{event.summary}</p>
         </article>)}
-        <p className="mt-2 text-xs text-muted-foreground">Первый снимок Lyra получен вручную через подключённую базу. Автоматическая синхронизация Google Ads и сайта ещё не включена.</p>
+        <p className="mt-2 text-xs text-muted-foreground">Первый исторический снимок получен вручную. Ежедневные записи из Lyra имеют источник lyra_supabase_daily_v1. Google Ads API не подключён.</p>
       </section>
       <section aria-label="Активность сфер" className="rounded-xl border border-border p-4 sm:p-5">
         <div className="mb-3 flex items-center justify-between gap-2"><h2 className="text-sm font-semibold">Событийная активация сфер</h2><span className="text-xs text-muted-foreground">{openTasks} ожидают обработки</span></div>
