@@ -31,7 +31,7 @@ export function eggCanonicalRedirect(location:{
   return EGG_CANONICAL_ORIGIN+path+location.search+location.hash;
 }
 
-export default function EggStablePreview({ children }: { children: ReactNode }) {
+export default function EggStablePreview({ children, plain = false }: { children: ReactNode; plain?: boolean }) {
   const {locale}=useLocale();
   const destination=eggCanonicalRedirect(window.location);
   useEffect(()=>{if(destination)window.location.replace(destination);},[destination]);
@@ -39,6 +39,9 @@ export default function EggStablePreview({ children }: { children: ReactNode }) 
     role="status" data-testid="egg-canonical-redirect">
     Открываем постоянный адрес EGG…
   </main>;
+  // Operational dashboards are information-dense and should not inherit the
+  // animated Egg branding or floating language selector above their text.
+  if(plain)return <EggUiProvider locale={locale}>{children}</EggUiProvider>;
   // Shared backdrop for EGG-only routes; the studio's public landing is untouched.
   // The wordmark is purely visual. Project state, auth and navigation stay intact.
   return <div className="egg-brand-shell" data-testid="egg-brand-shell">
