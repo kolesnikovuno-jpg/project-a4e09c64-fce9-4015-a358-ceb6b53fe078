@@ -9,12 +9,13 @@ declare global {
 }
 
 type Intent = "purchase" | "custom" | "production";
+type ContactChannel = "email" | "telegram" | "viber";
 type Props = { open: boolean; onClose: () => void };
 
 const labels = {
-  en: { title: "LYRA / Request", intro: "Lyra is made to order in its original form, with a choice of color. Send a request to discuss the color, price and production timeframe. We will reply by email.", purchase: "Acquire Lyra", custom: "Discuss color", production: "Production / collaboration", name: "Name", email: "Email", location: "Country / city", note: "Message (optional)", send: "Send request", sending: "Sending…", success: "Your request has been received. We will contact you by email.", error: "The request could not be sent. Please try again.", close: "Close" },
-  ru: { title: "LYRA / Запрос", intro: "Lyra изготавливается под заказ в авторской форме, с возможностью выбора цвета. Отправьте запрос, чтобы обсудить цвет, стоимость и сроки. Мы ответим по электронной почте.", purchase: "Приобретение Lyra", custom: "Выбор цвета", production: "Производство / сотрудничество", name: "Имя", email: "Email", location: "Страна / город", note: "Сообщение (необязательно)", send: "Отправить запрос", sending: "Отправка…", success: "Запрос получен. Мы свяжемся с вами по электронной почте.", error: "Не удалось отправить запрос. Попробуйте ещё раз.", close: "Закрыть" },
-  uk: { title: "LYRA / Запит", intro: "Lyra виготовляється на замовлення в авторській формі, з можливістю вибору кольору. Надішліть запит, щоб обговорити колір, вартість і терміни. Ми відповімо електронною поштою.", purchase: "Придбання Lyra", custom: "Вибір кольору", production: "Виробництво / співпраця", name: "Ім’я", email: "Email", location: "Країна / місто", note: "Повідомлення (необов’язково)", send: "Надіслати запит", sending: "Надсилання…", success: "Запит отримано. Ми зв’яжемося з вами електронною поштою.", error: "Не вдалося надіслати запит. Спробуйте ще раз.", close: "Закрити" },
+  en: { title: "LYRA / Request", intro: "Lyra is made to order in its original form, with a choice of color. Send a request to discuss the color, price and production timeframe. We will contact you using your selected channel.", purchase: "Acquire Lyra", custom: "Discuss color", production: "Production / collaboration", name: "Name", email: "Email", location: "Country / city", note: "Message (optional)", send: "Send request", sending: "Sending…", success: "Your request has been received. We will contact you using your selected channel.", error: "The request could not be sent. Please try again.", close: "Close" },
+  ru: { title: "LYRA / Запрос", intro: "Lyra изготавливается под заказ в авторской форме, с возможностью выбора цвета. Отправьте запрос, чтобы обсудить цвет, стоимость и сроки. Мы свяжемся с вами выбранным способом.", purchase: "Приобретение Lyra", custom: "Выбор цвета", production: "Производство / сотрудничество", name: "Имя", email: "Email", location: "Страна / город", note: "Сообщение (необязательно)", send: "Отправить запрос", sending: "Отправка…", success: "Запрос получен. Мы свяжемся с вами выбранным способом.", error: "Не удалось отправить запрос. Попробуйте ещё раз.", close: "Закрыть" },
+  uk: { title: "LYRA / Запит", intro: "Lyra виготовляється на замовлення в авторській формі, з можливістю вибору кольору. Надішліть запит, щоб обговорити колір, вартість і терміни. Ми зв’яжемося з вами обраним способом.", purchase: "Придбання Lyra", custom: "Вибір кольору", production: "Виробництво / співпраця", name: "Ім’я", email: "Email", location: "Країна / місто", note: "Повідомлення (необов’язково)", send: "Надіслати запит", sending: "Надсилання…", success: "Запит отримано. Ми зв’яжемося з вами обраним способом.", error: "Не вдалося надіслати запит. Спробуйте ще раз.", close: "Закрити" },
 };
 
 export default function LyraRequestPanel({ open, onClose }: Props) {
@@ -22,7 +23,8 @@ export default function LyraRequestPanel({ open, onClose }: Props) {
   const T = labels[locale];
   const [intent, setIntent] = useState<Intent>("purchase");
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [contactChannel, setContactChannel] = useState<ContactChannel>("email");
+  const [contactValue, setContactValue] = useState("");
   const [location, setLocation] = useState("");
   const [note, setNote] = useState("");
   const [sending, setSending] = useState(false);
@@ -44,11 +46,14 @@ export default function LyraRequestPanel({ open, onClose }: Props) {
     setSending(true);
     setError(false);
     const cleanName = name.trim().slice(0, 100);
-    const cleanEmail = email.trim().slice(0, 255);
+    const cleanContact = contactValue.trim().slice(0, 255);
+    const cleanEmail = contactChannel === "email" ? cleanContact : null;
     try {
       const { error: dbError } = await lyraSupabase.from("lyra_inquiries").insert({
         name: cleanName,
         email: cleanEmail,
+        contact_channel: contactChannel,
+        contact_value: cleanContact,
         location: location.trim().slice(0, 200),
         intent,
         message: note.trim().slice(0, 1500) || null,
@@ -91,7 +96,18 @@ export default function LyraRequestPanel({ open, onClose }: Props) {
             <hr className="lr-rule" />
             <div className="lr-heading lr-space">{locale === "en" ? "Contact" : "Контакт"}</div>
             <label className="lr-field">{T.name}<input className="lr-input" autoComplete="name" maxLength={100} required value={name} onChange={(e) => setName(e.target.value)} /></label>
-            <label className="lr-field">{T.email}<input className="lr-input" type="email" autoComplete="email" maxLength={255} required value={email} onChange={(e) => setEmail(e.target.value)} /></label>
+            <fieldset className="lr-options"><legend className="lr-heading">{locale === "ru" ? "Способ связи" : locale === "uk" ? "Спосіб зв’язку" : "Preferred contact"}</legend>
+              {(["email", "telegram", "viber"] as const).map((channel) => (
+                <label key={channel} className="lr-option">
+                  <input type="radio" name="lyra-contact-channel" value={channel} checked={contactChannel === channel} onChange={() => { setContactChannel(channel); setContactValue(""); }} />
+                  <span>{channel === "email" ? "Email" : channel === "telegram" ? "Telegram" : "Viber"}</span>
+                </label>
+              ))}
+            </fieldset>
+            <label className="lr-field">
+              {contactChannel === "email" ? T.email : contactChannel === "telegram" ? "Telegram" : "Viber"}
+              <input className="lr-input" type={contactChannel === "email" ? "email" : contactChannel === "viber" ? "tel" : "text"} autoComplete={contactChannel === "email" ? "email" : contactChannel === "viber" ? "tel" : "off"} placeholder={contactChannel === "email" ? "name@example.com" : contactChannel === "telegram" ? "@username" : "+380…"} maxLength={255} minLength={contactChannel === "email" ? undefined : 3} pattern={contactChannel === "viber" ? "\\+?[0-9 ()-]{7,25}" : undefined} required value={contactValue} onChange={(e) => setContactValue(e.target.value)} />
+            </label>
             <label className="lr-field">{T.location}<input className="lr-input" maxLength={200} required value={location} onChange={(e) => setLocation(e.target.value)} /></label>
             <hr className="lr-rule" />
             <div className="lr-heading lr-space">{locale === "en" ? "Details" : locale === "uk" ? "Деталі" : "Детали"}</div>
