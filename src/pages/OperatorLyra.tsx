@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { isLyraOwnerDevice, setLyraOwnerDevice } from "@/lib/lyraAnalytics";
 import { lyraSupabase as supabase } from "@/integrations/supabase/lyraClient";
 import { OperatorShell, UtilityRow, ActionBar, BarGroup, PageTitle, ToolLink, StateLabel, ListRow, CompactSelect } from "@/components/operator/ui";
 
@@ -16,6 +17,7 @@ const options = [
 export default function OperatorLyra() {
   const navigate = useNavigate();
   const [authorized, setAuthorized] = useState<boolean | null>(null);
+  const [ownerDevice, setOwnerDevice] = useState(() => isLyraOwnerDevice());
   const [items, setItems] = useState<Inquiry[]>([]);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState<string | null>(null);
@@ -64,6 +66,8 @@ export default function OperatorLyra() {
           <h2 className="text-sm font-medium tracking-wide">Lyra / Analytics</h2>
           <button type="button" onClick={() => void loadAnalytics()} disabled={analyticsLoading} className="text-xs underline underline-offset-4 disabled:opacity-50">{analyticsLoading ? "Обновление…" : "Обновить"}</button>
         </div>
+        <label className="mb-4 flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" checked={ownerDevice} onChange={event => { const checked = event.target.checked; setLyraOwnerDevice(checked); setOwnerDevice(checked); }} />Это моё устройство</label>
+        <p className="mb-4 text-[11px] text-muted-foreground">При включении новые посещения Lyra из этого браузера не отправляются в аналитику сайта. Уже собранные данные не изменяются. Метка хранится только в этом браузере и не распространяется на другие устройства или приватные вкладки.</p>
         {analyticsError && <p role="alert" className="mb-4 text-xs text-red-700">{analyticsError}</p>}
         {analytics ? <>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
