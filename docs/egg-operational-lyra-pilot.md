@@ -1,5 +1,17 @@
 # EGG operational pilot: Lyra — 2026-11-23
 
+## Реализовано в пилоте 23.11.2026 — операционная запись, события и очередь
+
+- В EGG Supabase (`daluvgoonhgzomckxqnj`) реально применены миграции `egg_operational_lyra_registry_v1` и `egg_operational_event_activation_v1`; воспроизводимая схема закоммичена в `supabase/migrations/20261123000000_egg_operational_lyra_v1.sql`.
+- Создан операционный проект Lyra для единственного текущего владельца EGG. Авторская цель: 2 подтверждённых заказа за календарный месяц. Авторский потолок рекламных расходов: 100 грн за день и 3 000 грн за **любые скользящие 30 дней**. Рекламные операции выключены на уровне данных (`ads_operation_allowed=false`), это не команда на оплату.
+- RLS: читать может только соответствующий владелец; публичная запись, изменение лимитов и запись внешних событий из браузера запрещены. События может записывать только доверенный сервисный слой.
+- Один фактический не-PII снимок данных из Lyra Supabase перенесён в общее поле: 110 событий, 33 идентификатора сессий, 3 заявки (2 со статусом new), 1 событие с меткой google, 36 с меткой campaign. Это **не** число реальных клиентов, платёжеспособного спроса или оплаченных заказов; старые посещения Автора могли войти в события. Источник: один раз прочитан через подключённую базу, не автоматический коннектор.
+- После вставки снимка **триггер БД самостоятельно создал три ожидающих задания**: Маркетинг, Ритейл, Тестдрайв. Проверено SQL. Задачи ещё не исполнены моделью.
+- Созданы read-only страница `/egg/operations` и ссылка в аккаунте EGG; данные защищены тем же EGG Auth/RLS, что другие проекты, и не видны анонимному посетителю.
+- В кодовом экономическом коридоре и тестах термин `spentRolling30Days` теперь явно обозначает скользящее окно, не календарный месяц; тестирует превышение лимита.
+- Следующий разрыв: автоматический защищённый источник Lyra Supabase, проверенная статистика Google Ads, исполнитель задач сфер, надёжный учет расходов с учётом временной зоны рекламного аккаунта. До этого `/egg/operations` — живой просмотр **сохранённого снимка и очереди**, а не постоянно обновляемая внешняя аналитика.
+
+
 **Author's goal:** two **confirmed orders** per month. This is neither two inquiries nor two clicks. Only Author may revise the goal, as a separately authenticated and versioned action.
 
 **Implementation status:** The code in src/lib/eggOperationalKernel.ts is a standalone, deterministic, executable **pure operational kernel** with Vitest coverage. This is NOT yet a complete live operational engine: connectors, persistent common field, scheduler, AI executors, authenticated action execution and UI remain to be integrated.
