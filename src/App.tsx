@@ -164,7 +164,7 @@ const App = () => (
 
           <Route path="/oauth/consent" element={<EggOAuthConsent />} />
           <Route path="/egg/connect" element={<EggStablePreview><EggConnect /></EggStablePreview>} />
-          <Route path="/egg/operations" element={<EggStablePreview><EggOperations /></EggStablePreview>} />
+          <Route path="/egg/operations" element={<EggStablePreview plain><EggOperations /></EggStablePreview>} />
           <Route path="/egg/collab" element={<EggStablePreview><EggCollaboration /></EggStablePreview>} />
           <Route path="/egg/demo" element={<EggStablePreview><EggDemo /></EggStablePreview>} />
           <Route path="/egg/yolk" element={<EggStablePreview><EggYolkExperience /></EggStablePreview>} />
