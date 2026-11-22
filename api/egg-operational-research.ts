@@ -21,7 +21,30 @@ const resultSchema=z.object({
   confidence:z.enum(["low","medium"]),
   limitations:z.array(z.string().trim().min(8).max(360)).min(1).max(4),
 }).strict();
-type Activation={id:string;event_id:string;sphere:SphereId;task:string;status:string};
+type Activation={id:string;event_id:string;sphere:SphereId;task:string;status:string;retry_count:number};
+const strictOutputSchema={
+  type:"object",additionalProperties:false,
+  properties:{
+    observation:{type:"string"},
+    hypothesis:{type:"string"},
+    nextStep:{type:"string"},
+    confidence:{type:"string",enum:["low","medium"]},
+    limitations:{type:"array",items:{type:"string"}},
+  },
+  required:["observation","hypothesis","nextStep","confidence","limitations"],
+};
+function safeFailureCode(error:unknown):string{
+  const reason=error instanceof Error?error.message:"unknown";
+  const allowed=new Set([
+    "ai_rate_limited","ai_budget_exhausted","ai_model_not_authorized",
+    "ai_provider_bad_request","model_incomplete","invalid_ai_output",
+    "model_request_failed","provider_timeout","ai_context_too_large",
+    "source_unavailable","save_failed",
+  ]);
+  if(reason==="invalid_ai_output"||error instanceof z.ZodError||error instanceof SyntaxError)
+    return "invalid_ai_response";
+  return allowed.has(reason)?reason:"internal_research_error";
+}
 type Source={id:string;operational_project_id:string;kind:string;summary:string;source:string;
   observed_at:string;evidence_status:string;facts:Record<string,unknown>};
 type OperatingProject={id:string;owner_id:string;goal_target:number;
@@ -68,7 +91,7 @@ export default async function handler(req:Request,res:ServerResponse){
   if(sessionError||!identity.user?.id){respond(res,401,{ok:false,error:"invalid_author_session"});return;}
   const db=createClient(cfg.url,cfg.serviceKey,{auth:{persistSession:false,autoRefreshToken:false}});
   const {data:task,error:taskError}=await db.from("egg_operational_activations")
-    .select("id,event_id,sphere,task,status").eq("id",activationId).maybeSingle();
+    .select("id,event_id,sphere,task,status,retry_count").eq("id",activationId).maybeSingle();
   if(taskError){respond(res,503,{ok:false,error:"database_unavailable"});return;}
   if(!task){respond(res,404,{ok:false,error:"task_not_found"});return;}
   const activation=task as Activation;
@@ -83,7 +106,10 @@ export default async function handler(req:Request,res:ServerResponse){
   if(ownerError||!record){respond(res,503,{ok:false,error:"project_unavailable"});return;}
   const project=record as OperatingProject;
   if(project.owner_id!==identity.user.id){respond(res,403,{ok:false,error:"not_project_author"});return;}
-  if(activation.status!=="pending"){respond(res,409,{ok:false,error:"task_already_processed"});return;}
+  const isRetry=activation.status==="blocked"&&activation.retry_count<1;
+  if(activation.status!=="pending"&&!isRetry){
+    respond(res,409,{ok:false,error:activation.status==="blocked"?"retry_limit_reached":"task_already_processed"});return;
+  }
   if(!Object.prototype.hasOwnProperty.call(EGG_SPHERE_MANIFESTS,activation.sphere)){
     respond(res,400,{ok:false,error:"invalid_sphere"});return;
   }
@@ -96,9 +122,12 @@ export default async function handler(req:Request,res:ServerResponse){
   if(countError){respond(res,503,{ok:false,error:"usage_limit_unavailable"});return;}
   if((count??0)>=6){respond(res,429,{ok:false,error:"pilot_daily_ai_call_limit"});return;}
   const {data:claimed,error:claimError}=await db.from("egg_operational_activations")
-    .update({status:"researching",started_at:new Date().toISOString()})
-    .eq("id",activation.id).eq("status","pending").select("id").maybeSingle();
+    .update({status:"researching",started_at:new Date().toISOString(),
+      retry_count:activation.retry_count+(isRetry?1:0)})
+    .eq("id",activation.id).eq("status",activation.status)
+    .eq("retry_count",activation.retry_count).select("id").maybeSingle();
   if(claimError||!claimed){respond(res,409,{ok:false,error:"task_claim_conflict"});return;}
+  let stage:"read_context"|"model_call"|"validate_response"|"save_result"="read_context";
   try{
     const {data:context,error:contextError}=await db.from("egg_operational_events")
       .select("id,kind,observed_at,evidence_status,summary,facts")
@@ -133,23 +162,31 @@ export default async function handler(req:Request,res:ServerResponse){
         })),
       }),
     };
-    const raw=await generate(model,prompt,1000);
+    stage="model_call";
+    const raw=await generate(model,{...prompt,responseJsonSchema:strictOutputSchema},1800);
+    stage="validate_response";
     const parsed=resultSchema.parse(JSON.parse(raw));
     const finding={kind:"ai_research_proposal",...parsed,sourceEventIds:[source.id],
       aiProvider:model.kind,model:model.model,generatedAt:new Date().toISOString(),
       actionsExecuted:0,authorGoalChanged:false};
+    stage="save_result";
     const {error:saveError}=await db.from("egg_operational_activations").update({
       finding,status:"proposed",completed_at:new Date().toISOString(),
     }).eq("id",activation.id).eq("status","researching");
     if(saveError)throw Error("save_failed");
     respond(res,200,{ok:true,activationId:activation.id,finding});
   }catch(error){
-    const category=error instanceof Error&&["source_unavailable","save_failed"].includes(error.message)?
-      "storage_unavailable":"ai_research_failed";
-    // No raw model response, user material, or credentials in logs / API errors.
+    const category=safeFailureCode(error);
+    // Only a coarse error classification, never the raw provider message,
+    // user-provided field, request payload or credentials.
+    console.warn("egg_operational_research_diagnostic",{
+      stage,category,provider:model.kind,model:model.model,
+    });
     await db.from("egg_operational_activations").update({
-      status:"blocked",finding:{kind:"worker_error",code:category},completed_at:new Date().toISOString(),
+      status:"blocked",
+      finding:{kind:"worker_error",code:category,stage,canRetry:!isRetry},
+      completed_at:new Date().toISOString(),
     }).eq("id",activation.id).eq("status","researching");
-    respond(res,502,{ok:false,error:category});
+    respond(res,502,{ok:false,error:category,stage,retryAvailable:!isRetry});
   }
 }
