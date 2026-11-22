@@ -16,7 +16,8 @@ type OperationalActivation = {
   id:string;event_id:string;sphere:string;task:string;
   status:"pending"|"researching"|"proposed"|"verified"|"blocked";
   created_at:string;
-  finding?:{kind?:string;observation?:string;hypothesis?:string;nextStep?:string;confidence?:string;limitations?:string[];code?:string}|null;
+  retry_count:number;
+  finding?:{kind?:string;observation?:string;hypothesis?:string;nextStep?:string;confidence?:string;limitations?:string[];code?:string;stage?:string;canRetry?:boolean}|null;
 };
 const sphereNames:Record<string,string>={
   marketing:"Маркетинг",design:"Дизайн",testDrive:"Тестдрайв",commerce:"Коммерция",
@@ -62,7 +63,7 @@ export default function EggOperations(){
         if(rows.length){
           const {data:taskRows,error:taskError}=await auth
             .from("egg_operational_activations")
-            .select("id,event_id,sphere,task,status,created_at,finding")
+            .select("id,event_id,sphere,task,status,created_at,retry_count,finding")
             .in("event_id",rows.map(row=>row.id))
             .order("created_at",{ascending:false}).limit(120);
           if(taskError)throw Error("Не удалось прочитать задачи сфер.");
@@ -89,9 +90,22 @@ export default function EggOperations(){
         headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token},
         body:JSON.stringify({activationId:id}),
       });
-      if(!response.ok)throw Error(response.status===429
-        ?"Лимит вызовов ИИ пилота за сутки исчерпан."
-        :"ИИ не завершил исследование. Проверьте состояние задачи после обновления.");
+      if(!response.ok){
+        const reason=await response.json().catch(()=>null) as {error?:string;stage?:string}|null;
+        const descriptions:Record<string,string>={
+          ai_model_not_authorized:"Нет доступа к модели ИИ — требуется проверить API-ключ.",
+          ai_budget_exhausted:"У провайдера ИИ исчерпан бюджет.",
+          ai_rate_limited:"Провайдер ограничил частоту запросов.",
+          ai_provider_bad_request:"Модель отклонила формат запроса.",
+          model_incomplete:"Модель не завершила формирование ответа.",
+          invalid_ai_response:"Ответ ИИ не прошёл проверку формата.",
+          provider_timeout:"Модель не ответила в пределах времени.",
+          model_request_failed:"Ошибка запроса к провайдеру ИИ.",
+          pilot_daily_ai_call_limit:"Лимит вызовов ИИ пилота за 24 часа исчерпан.",
+          retry_limit_reached:"Повторный запуск этой задачи уже был использован.",
+        };
+        throw Error(descriptions[reason?.error??""]??"Исследование завершилось ошибкой. Данные проекта не изменены.");
+      }
       setRevision(v=>v+1);
     }catch(e){setResearchError(e instanceof Error?e.message:"Ошибка исследования");setRevision(v=>v+1);}
     finally{setRunning(null);}
@@ -153,11 +167,20 @@ export default function EggOperations(){
             <p><strong>Следующий шаг:</strong> {a.finding.nextStep}</p>
             <p className="text-xs text-muted-foreground">Вывод ИИ — предложение, не выполненное действие. Требует проверки.</p>
           </div>}
-          {a.finding?.kind==="worker_error"&&<p className="mt-2 text-xs text-destructive">Запрос завершился ошибкой. Реклама и данные проекта не изменены.</p>}
-          {a.status==="pending"&&<button type="button" disabled={running!==null}
+          {a.finding?.kind==="worker_error"&&<p className="mt-2 text-xs text-destructive">
+            {a.finding.code==="ai_model_not_authorized"?"ИИ не авторизован у провайдера.":
+            a.finding.code==="invalid_ai_response"?"ИИ вернул ответ, не соответствующий формату.":
+            a.finding.code==="model_incomplete"?"ИИ не успел закончить ответ.":
+            a.finding.code==="ai_provider_bad_request"?"Провайдер отклонил формат запроса.":
+            a.finding.code==="ai_rate_limited"?"Временное ограничение провайдера ИИ.":
+            a.finding.code==="ai_budget_exhausted"?"Лимит оплаты ИИ исчерпан.":
+            "Исследование завершилось ошибкой; точная причина предыдущей попытки не определена."}
+            {" "}Реклама и данные проекта не изменены.
+          </p>}
+          {(a.status==="pending"||(a.status==="blocked"&&a.retry_count<1))&&<button type="button" disabled={running!==null}
             onClick={()=>void researchOne(a.id)}
             className="mt-3 rounded border border-border px-3 py-2 text-xs disabled:opacity-50">
-            {running===a.id?"ИИ исследует…":"Исследовать через ИИ"}
+            {running===a.id?"ИИ исследует…":a.status==="blocked"?"Повторить исследование":"Исследовать через ИИ"}
           </button>}
         </div>)}
         <p className="mt-2 text-xs text-muted-foreground">Каждая кнопка исследования запускает один отдельный платный запрос подключённой модели. Вывод сохраняется в EGG; внешние действия, траты и авторские утверждения не выполняются. Автоматический исполнитель пока не включён.</p>
