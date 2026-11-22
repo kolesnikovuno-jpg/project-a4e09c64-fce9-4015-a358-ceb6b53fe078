@@ -12,6 +12,10 @@ type OperationalEvent = {
   evidence_status:"verified_source"|"hypothesis"|"incomplete";
   observed_at:string;facts:Record<string,unknown>;
 };
+type SourceCheck={
+  source_day:string;status:"ok"|"no_activity"|"error";checked_at:string;
+  website_events:number;inquiries:number;error_code:string|null;
+};
 type OperationalActivation = {
   id:string;event_id:string;sphere:string;task:string;
   status:"pending"|"researching"|"proposed"|"verified"|"blocked";
@@ -37,6 +41,7 @@ export default function EggOperations(){
   const [project,setProject]=useState<OperationalProject|null>(null);
   const [events,setEvents]=useState<OperationalEvent[]>([]);
   const [activations,setActivations]=useState<OperationalActivation[]>([]);
+  const [sourceChecks,setSourceChecks]=useState<SourceCheck[]>([]);
   useEffect(()=>{
     let live=true;
     void (async()=>{
@@ -71,7 +76,16 @@ export default function EggOperations(){
           if(taskError)throw Error("Не удалось прочитать задачи сфер.");
           tasks=(taskRows??[]) as OperationalActivation[];
         }
-        if(live){setProject(projectRow as OperationalProject);setEvents(rows);setActivations(tasks);}
+        const {data:checkRows,error:checksError}=await auth
+          .from("egg_operational_source_checks")
+          .select("source_day,status,checked_at,website_events,inquiries,error_code")
+          .eq("operational_project_id",projectRow.id)
+          .order("source_day",{ascending:false}).limit(14);
+        if(checksError)throw Error("Не удалось прочитать состояние синхронизации.");
+        if(live){
+          setProject(projectRow as OperationalProject);
+          setEvents(rows);setActivations(tasks);setSourceChecks((checkRows??[]) as SourceCheck[]);
+        }
       }catch(e){if(live)setError(e instanceof Error?e.message:"Неизвестная ошибка");}
       finally{if(live)setBusy(false);}
     })();
@@ -174,6 +188,19 @@ export default function EggOperations(){
       <section aria-label="Синхронизация источника" className="rounded-xl border border-border p-4 sm:p-5">
         <h2 className="mb-2 text-sm font-semibold">Источник Lyra · ежедневные агрегаты</h2>
         <p className="mb-3 text-sm text-muted-foreground">Передаются только количества событий и заявок за закрытые дни по Киеву. Контакты клиентов не копируются. Google Ads — отдельный пока не подключённый источник.</p>
+        <p className="mb-3 text-xs text-muted-foreground">Автопроверка: ежедневно в 07:20 зимой / 08:20 летом (Киев). Записи с нулевой активностью также учитываются.</p>
+        {sourceChecks.length>0&&<div className="mb-3 rounded-lg border border-border p-3 text-sm">
+          <p className="font-medium">Последняя проверенная дата: {sourceChecks[0].source_day}</p>
+          <p className="text-muted-foreground">
+            Статус: {sourceChecks[0].status==="ok"?"данные получены":
+              sourceChecks[0].status==="no_activity"?"новых событий не было":"ошибка источника"}
+            {" · "}Проверено: {readableDate(sourceChecks[0].checked_at)}
+          </p>
+          {sourceChecks[0].status==="error"&&<p className="text-xs text-destructive">
+            Код: {sourceChecks[0].error_code??"unknown"}
+          </p>}
+        </div>}
+        {!sourceChecks.length&&<p className="mb-3 text-sm text-muted-foreground">Ещё нет записи о завершённой автоматической проверке.</p>}
         <button type="button" onClick={()=>void syncLyra()} disabled={syncing||busy}
           className="rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-50">
           {syncing?"Получаем данные…":"Синхронизировать 7 дней"}
