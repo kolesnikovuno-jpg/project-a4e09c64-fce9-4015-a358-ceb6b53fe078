@@ -22,3 +22,9 @@ Goal: 2 confirmed orders/month. Advertising ceilings: 100 UAH/day and 3000 UAH/3
 
 ## Continuity rule
 Do not reconstruct the architecture from memory alone. Read this handoff and current code/DB state. Preserve why decisions were made; avoid changing the eight-sphere model or author's goal without explicit approval. Prior PDFs/chat exports may contain additional decisions not yet transcribed here.
+
+## 2026-11-23 follow-on execution (verified)
+- Isolated exact fatal build issue in Vercel logs: EggActionExecutor.test.ts failed the valid ISO date evidence test (351 passed, 1 failed, 5 skipped). The root cause was double-escaped \\d in datePattern within src/server/eggActionExecutor.ts.
+- Corrected regex to /^\\d{4}-\\d{2}-\\d{2}$/ in branch integration/egg-unified-2026-11-12, commit ee3b19bd389ffd621cd1846439f32ef12991498a. Vercel preview deployment dpl_AZokkZMHrUKVrrmdDNhCDiH6GoXk was BUILDING at last check, not yet confirmed READY.
+- Read-only database status: auto_runs = 1 proposed, 1 blocked; followups = 1 waiting; source_checks = 5 ok, 2 no_activity. These statuses alone do not establish full feedback-loop completion. No external action was authorized or executed in this session.
+- Next: verify deployment READY, inspect test/build logs if not, then investigate followup completion after new source day.
