@@ -13,18 +13,26 @@ import {createClient} from "@supabase/supabase-js";
 import {z} from "zod";
 import {getEggStorageConfig} from "./eggStorageConfig.js";
 import {executeEggAction} from "./eggActionExecutor.js";
-import {EGG_SPHERE_MANIFESTS} from "../lib/eggSphereProtocol.js";
+import {EGG_SPHERE_MANIFESTS,routeEggEvidenceGap} from "../lib/eggSphereProtocol.js";
 import type {SphereId} from "../lib/eggEngine.js";
 import {providerFromEnv,generate} from "../../api/egg-flow-ai.js";
 
 type Request=IncomingMessage&{body?:unknown};
 const requestSchema=z.object({slot:z.union([z.literal(1),z.literal(2)])}).strict();
+const evidenceGapSchema=z.object({
+  missingFact:z.string().trim().min(8).max(320),
+  whyNeeded:z.string().trim().min(8).max(320),
+  sourceType:z.enum(["internal","external","authorial"]),
+  priority:z.enum(["critical","important","optional"]),
+  affectedDecision:z.string().trim().min(8).max(320),
+});
 const analysisSchema=z.object({
   observation:z.string().trim().min(12).max(1200),
   hypothesis:z.string().trim().min(12).max(1200),
   nextStep:z.string().trim().min(12).max(1200),
   confidence:z.enum(["low","medium"]),
   limitations:z.array(z.string().trim().min(8).max(360)).min(1).max(4),
+  evidenceGaps:z.array(evidenceGapSchema).max(5).default([]),
 });
 const responseSchema={
   type:"object",additionalProperties:false,
@@ -34,7 +42,13 @@ const responseSchema={
     nextStep:{type:"string"},
     confidence:{type:"string",enum:["low","medium"]},
     limitations:{type:"array",items:{type:"string"}},
-  },required:["observation","hypothesis","nextStep","confidence","limitations"],
+    evidenceGaps:{type:"array",items:{type:"object",additionalProperties:false,properties:{
+      missingFact:{type:"string"},whyNeeded:{type:"string"},
+      sourceType:{type:"string",enum:["internal","external","authorial"]},
+      priority:{type:"string",enum:["critical","important","optional"]},
+      affectedDecision:{type:"string"},
+    },required:["missingFact","whyNeeded","sourceType","priority","affectedDecision"]}},
+  },required:["observation","hypothesis","nextStep","confidence","limitations","evidenceGaps"],
 };
 type EventRow={
   id:string;kind:string;source:string;recorded_at:string;
@@ -215,8 +229,10 @@ export default async function handler(req:Request,res:ServerResponse){
         "Поле confirmedOrders:null означает НЕИЗВЕСТНО. Не утверждай, что фактических заказов нет: подтверждения просто не получены.",
         "Пределы 100 грн/сутки, 3000 грн/скользящие 30 дней НЕ разрешают расходовать или менять рекламу.",
         "Твоя автономная операция в этом пилоте: сформировать обоснованное исследование, сохранить его и поставить ожидание следующего проверенного закрытого дня.",
+        "Укажи до пяти недостающих фактов: internal — общее поле и другие сферы; external — внешние источники; authorial — намерения, лимиты и решения автора.",
+        "Не задавай автору вопрос, если ответ доступен внутри или извне. Укажи, какое решение блокирует каждый пробел.",
         "Никаких внешних действий, заявлений о выполнении рекомендаций, рекламе, закупках или контактах с клиентами.",
-        'Верни только JSON {"observation":"...","hypothesis":"...","nextStep":"...","confidence":"low|medium","limitations":["..."]}.',
+        'Верни только JSON {"observation":"...","hypothesis":"...","nextStep":"...","confidence":"low|medium","limitations":["..."],"evidenceGaps":[{"missingFact":"...","whyNeeded":"...","sourceType":"internal|external|authorial","priority":"critical|important|optional","affectedDecision":"..."}]}.',
       ].join("\n"),
       input:JSON.stringify({
         task:{sphere:picked.task.sphere,description:picked.task.task,
@@ -238,8 +254,14 @@ export default async function handler(req:Request,res:ServerResponse){
     const trimmed=raw.trim();
     const fenced=/^```(?:json)?\s*([\s\S]*?)\s*```$/i.exec(trimmed);
     const parsed=analysisSchema.parse(JSON.parse(fenced?fenced[1]:trimmed));
+    const gaps=parsed.evidenceGaps.map((gap,index)=>{
+      const item={...gap,id:picked.task.id+":"+index,sphere:picked.task.sphere,
+        status:gap.sourceType==="authorial"?"awaiting_author":gap.sourceType==="external"?"awaiting_external":"open",
+        evidenceRefs:[picked.event.id],authorActionRequired:gap.sourceType==="authorial"};
+      return {...item,routing:routeEggEvidenceGap(item)};
+    });
     const finding={
-      kind:"ai_research_proposal",...parsed,
+      kind:"ai_research_proposal",...parsed,evidenceGaps:gaps,
       sourceEventIds:[picked.event.id],runMode:"autonomous",
       aiProvider:model.kind,model:model.model,
       generatedAt:new Date().toISOString(),
