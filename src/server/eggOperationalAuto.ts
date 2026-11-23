@@ -168,11 +168,11 @@ export default async function handler(req:Request,res:ServerResponse){
   if(!picked){json(res,200,{ok:true,status:"no_pending_tasks",paidAiCalls:0});return;}
   const sourceDay=isDate(picked.event.facts?.day)?picked.event.facts.day:utcDay;
   const {data:check,error:checkErr}=await db.from("egg_operational_source_checks")
-    .select("source_day").eq("operational_project_id",project.id)
+    .select("source_day,status").eq("operational_project_id",project.id)
     .eq("source","lyra_supabase_daily_v1").in("status",["ok","no_activity"])
     .order("source_day",{ascending:false}).limit(1).maybeSingle();
   if(checkErr){json(res,503,{ok:false,error:"source_check_unavailable"});return;}
-  const evidence=executeEggAction({type:"verify_source_evidence",source:"lyra_supabase_daily_v1",sourceDay:check?.source_day??"",status:"ok"});
+  const evidence=executeEggAction({type:"verify_source_evidence",source:"lyra_supabase_daily_v1",sourceDay:check?.source_day??"",status:check?.status??""});
   if(!evidence.ok){json(res,503,{ok:false,error:"verified_source_check_required",paidAiCalls:0});return;}
   const baselineDay=isDate(check?.source_day)&&check.source_day>sourceDay?check.source_day:sourceDay;
   const model=providerFromEnv(process.env,req.headers["x-vercel-oidc-token"]);
