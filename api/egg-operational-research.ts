@@ -11,6 +11,7 @@ import {EGG_SPHERE_MANIFESTS} from "../src/lib/eggSphereProtocol.js";
 import type {SphereId} from "../src/lib/eggEngine.js";
 import {providerFromEnv,generate} from "./egg-flow-ai.js";
 import lyraSyncHandler from "../src/server/eggLyraSyncHandler.js";
+import operationalAutopilot from "../src/server/eggOperationalAuto.js";
 
 export const config={maxDuration:75};
 type Request=IncomingMessage&{body?:unknown};
@@ -72,9 +73,9 @@ async function readRequest(req:Request):Promise<unknown>{
   return JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown;
 }
 export default async function handler(req:Request,res:ServerResponse){
-  if(new URL(req.url??"/", "https://egg.kolesnikov.studio").searchParams.get("mode")==="sync"){
-    return lyraSyncHandler(req,res);
-  }
+  const mode=new URL(req.url??"/","https://egg.kolesnikov.studio").searchParams.get("mode");
+  if(mode==="sync")return lyraSyncHandler(req,res);
+  if(mode==="auto")return operationalAutopilot(req,res);
   if(req.method!=="POST"){res.setHeader("Allow","POST");respond(res,405,{ok:false,error:"method_not_allowed"});return;}
   const origin=req.headers.origin;
   const host=req.headers.host;
