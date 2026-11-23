@@ -14,7 +14,7 @@ import {z} from "zod";
 import {getEggStorageConfig} from "./eggStorageConfig.js";
 import {executeEggAction} from "./eggActionExecutor.js";
 import {assessEggInformation, type EggInformationItem} from "../lib/eggInformationSufficiency.js";
-import {EGG_SPHERE_MANIFESTS,routeEggEvidenceGap} from "../lib/eggSphereProtocol.js";
+import {EGG_SPHERE_MANIFESTS,routeEggEvidenceGap,type EggEvidenceGap} from "../lib/eggSphereProtocol.js";
 import type {SphereId} from "../lib/eggEngine.js";
 import {providerFromEnv,generate} from "../../api/egg-flow-ai.js";
 
@@ -256,7 +256,7 @@ export default async function handler(req:Request,res:ServerResponse){
     const fenced=/^```(?:json)?\s*([\s\S]*?)\s*```$/i.exec(trimmed);
     const parsed=analysisSchema.parse(JSON.parse(fenced?fenced[1]:trimmed));
     const gaps=parsed.evidenceGaps.map((gap,index)=>{
-      const item={...gap,id:picked.task.id+":"+index,sphere:picked.task.sphere,
+      const item:EggEvidenceGap={missingFact:gap.missingFact!,whyNeeded:gap.whyNeeded!,sourceType:gap.sourceType!,priority:gap.priority!,affectedDecision:gap.affectedDecision!,id:picked.task.id+":"+index,sphere:picked.task.sphere,
         status:(gap.sourceType==="authorial"?"awaiting_author":gap.sourceType==="external"?"awaiting_external":"open") as "awaiting_author"|"awaiting_external"|"open",
         evidenceRefs:[picked.event.id],authorActionRequired:gap.sourceType==="authorial"};
       return {...item,routing:routeEggEvidenceGap(item)};
