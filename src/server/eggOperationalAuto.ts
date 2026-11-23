@@ -229,10 +229,12 @@ export default async function handler(req:Request,res:ServerResponse){
         })),
       }),
     };
-    stage="model_call";\n    const raw=await generate(model,{
+    stage="model_call";
+    const raw=await generate(model,{
       ...prompt,...(model.kind==="direct_openai"?{responseJsonSchema:responseSchema}:{}),
     },1800);
-    stage="validate_response";\n    const trimmed=raw.trim();
+    stage="validate_response";
+    const trimmed=raw.trim();
     const fenced=/^```(?:json)?\s*([\s\S]*?)\s*```$/i.exec(trimmed);
     const parsed=analysisSchema.parse(JSON.parse(fenced?fenced[1]:trimmed));
     const finding={
@@ -244,7 +246,8 @@ export default async function handler(req:Request,res:ServerResponse){
       internalActionsExecuted:1,externalActionsExecuted:0,
       authorGoalChanged:false,
     };
-    stage="save_result";\n    const {data:finished,error:finishError}=await db.rpc("egg_complete_operational_auto_run",{
+    stage="save_result";
+    const {data:finished,error:finishError}=await db.rpc("egg_complete_operational_auto_run",{
       p_run_id:run.id,p_activation_id:picked.task.id,p_project_id:project.id,
       p_finding:finding,p_baseline_day:baselineDay,
     });
