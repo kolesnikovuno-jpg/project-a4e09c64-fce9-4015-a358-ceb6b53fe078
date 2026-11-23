@@ -13,6 +13,7 @@ import {createClient} from "@supabase/supabase-js";
 import {z} from "zod";
 import {getEggStorageConfig} from "./eggStorageConfig.js";
 import {executeEggAction} from "./eggActionExecutor.js";
+import {assessEggInformation, type EggInformationItem} from "../lib/eggInformationSufficiency.js";
 import {EGG_SPHERE_MANIFESTS,routeEggEvidenceGap} from "../lib/eggSphereProtocol.js";
 import type {SphereId} from "../lib/eggEngine.js";
 import {providerFromEnv,generate} from "../../api/egg-flow-ai.js";
@@ -260,8 +261,17 @@ export default async function handler(req:Request,res:ServerResponse){
         evidenceRefs:[picked.event.id],authorActionRequired:gap.sourceType==="authorial"};
       return {...item,routing:routeEggEvidenceGap(item)};
     });
+    const informationItems:EggInformationItem[]=gaps.map(gap=>({
+      id:gap.id,sphereId:gap.sphere,question:gap.missingFact,kind:"missing",
+      sourceRefs:[...gap.evidenceRefs],requiredFor:[gap.affectedDecision],
+      blocking:gap.priority==="critical",
+      verificationAction:gap.sourceType==="authorial"?undefined:gap.whyNeeded,
+    }));
+    const affectedActions=[...new Set(informationItems.map(item=>item.requiredFor[0]))];
+    const informationReadiness=affectedActions.map(action=>assessEggInformation(action,informationItems));
     const finding={
       kind:"ai_research_proposal",...parsed,evidenceGaps:gaps,
+      informationReadiness,informationModelVersion:"0.1",
       sourceEventIds:[picked.event.id],runMode:"autonomous",
       aiProvider:model.kind,model:model.model,
       generatedAt:new Date().toISOString(),
