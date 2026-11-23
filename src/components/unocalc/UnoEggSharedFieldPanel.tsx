@@ -18,6 +18,7 @@ export function UnoEggSharedFieldPanel({ client, projectId, locale }: Props) {
   const [uploadProgress,setUploadProgress] = useState<{done:number;total:number}|null>(null);
   const [message, setMessage] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
+  const [preview,setPreview] = useState<{id:string;url:string}|null>(null);
   const refresh = async () => setAssets(await listEggFieldAssets(client, projectId));
   useEffect(() => {
     let active = true;
@@ -55,8 +56,10 @@ export function UnoEggSharedFieldPanel({ client, projectId, locale }: Props) {
   };
   const view = (asset: EggFieldAsset) => void execute(async () => {
     const url = await getEggFieldOriginalUrl(client, asset);
-    const tab = window.open(url, "_blank", "noopener,noreferrer");
-    if (!tab) setMessage(url);
+    // Safari on iPad can block window.open after an awaited network request.
+    // Render the original inside the project folder instead of exposing
+    // the private signed URL as a long error message.
+    setPreview({id:asset.id,url});
   });
   const choose = (asset: EggFieldAsset) => void execute(async () => {
     await selectEggMaterial(client, projectId, asset.id);
@@ -77,6 +80,7 @@ export function UnoEggSharedFieldPanel({ client, projectId, locale }: Props) {
     {assets.map(asset => <div key={asset.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-foreground/10 p-2">
       <span className="min-w-0 flex-1 break-all text-[12px]">{asset.original_name} · {(asset.size_bytes / 1024 / 1024).toFixed(2)} MB</span>
       <button type="button" className={button} disabled={busy} onClick={() => view(asset)}>{t.view}</button>
+      {preview?.id===asset.id && <div className="w-full space-y-2"><button type="button" className={button} onClick={()=>setPreview(null)}>Закрыть просмотр</button>{asset.mime_type.startsWith("image/")?<img src={preview.url} alt={asset.original_name} className="max-h-[60dvh] w-full rounded-lg object-contain"/>:<a href={preview.url} target="_blank" rel="noopener noreferrer" className="block break-words text-xs underline">Открыть оригинал</a>}</div>}
       <button type="button" className={button} disabled={busy || selected.includes(asset.id)} onClick={() => choose(asset)}>
         {selected.includes(asset.id) ? t.selected : t.select}
       </button>
