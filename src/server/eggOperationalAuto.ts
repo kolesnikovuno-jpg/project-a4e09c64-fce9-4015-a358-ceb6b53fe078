@@ -196,6 +196,7 @@ export default async function handler(req:Request,res:ServerResponse){
       .eq("id",run.id);
     json(res,409,{ok:false,error:"task_claim_conflict",paidAiCalls:0});return;
   }
+  let stage="load_shared_context";
   try{
     const {data:shared,error:sharedErr}=await db.from("egg_operational_events")
       .select("id,kind,observed_at,evidence_status,summary,facts")
