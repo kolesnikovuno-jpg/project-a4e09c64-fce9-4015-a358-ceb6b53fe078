@@ -256,7 +256,7 @@ export default async function handler(req:Request,res:ServerResponse){
     const parsed=analysisSchema.parse(JSON.parse(fenced?fenced[1]:trimmed));
     const gaps=parsed.evidenceGaps.map((gap,index)=>{
       const item={...gap,id:picked.task.id+":"+index,sphere:picked.task.sphere,
-        status:gap.sourceType==="authorial"?"awaiting_author":gap.sourceType==="external"?"awaiting_external":"open",
+        status:(gap.sourceType==="authorial"?"awaiting_author":gap.sourceType==="external"?"awaiting_external":"open") as "awaiting_author"|"awaiting_external"|"open",
         evidenceRefs:[picked.event.id],authorActionRequired:gap.sourceType==="authorial"};
       return {...item,routing:routeEggEvidenceGap(item)};
     });
