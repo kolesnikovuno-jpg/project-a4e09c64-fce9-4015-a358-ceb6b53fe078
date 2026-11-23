@@ -276,3 +276,43 @@ export function decideEggBalanceTension(p:EggProject,input:{
       detail:current.id+" / "+action+" / "+reason.slice(0,200)}],
   };
 }
+
+
+/**
+ * ADR-034/035 — experience feedback for the albumen/yolk boundary.
+ * A resolved tension is a recorded decision, NOT proof of effectiveness.
+ * Reopened tensions make the next iteration's learning opportunity visible.
+ * Pure read projection: no automatic goal, DNA, status or permission changes.
+ */
+export type EggBalanceExperience={
+  tensionId:string;
+  key:string;
+  status:EggBalanceStatus;
+  sourceRefs:string[];
+  decisionCount:number;
+  verificationRefs:string[];
+  reopenedCount:number;
+  learningStatus:"requires_validation"|"decision_recorded"|"reopened_for_review";
+  nextReview:string;
+};
+export function projectEggBalanceExperience(p:EggProject):EggBalanceExperience[]{
+  return (p.balanceTensions??[]).map(t=>{
+    const verificationRefs=unique(t.history.flatMap(h=>h.verificationRefs));
+    const reopenedCount=t.history.filter(h=>h.action==="reopened").length;
+    const learningStatus:EggBalanceExperience["learningStatus"]=
+      t.status==="resolved"&&reopenedCount===0?"decision_recorded":
+      t.status==="tracked"&&reopenedCount>0?"reopened_for_review":
+      "requires_validation";
+    return {
+      tensionId:t.id,key:t.key,status:t.status,
+      sourceRefs:[...t.sourceRefs],
+      decisionCount:t.history.filter(h=>h.action!=="registered").length,
+      verificationRefs,reopenedCount,learningStatus,
+      nextReview:t.status==="resolved"
+        ?"Проверить устойчивость решения на новых данных другого цикла; не считать закрытие доказательством эффективности."
+        :t.status==="dismissed"
+        ?"Сохранить основание отклонения и вернуться только при новых данных."
+        :"Собрать более поздние наблюдения заинтересованных сфер и предложить Автору проверяемый вариант согласования.",
+    };
+  });
+}
