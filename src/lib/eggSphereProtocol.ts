@@ -198,3 +198,37 @@ export function buildEggSphereRoleInstruction(sphere:SphereId):string{
   "Формируй один вклад; не обрабатывай его повторно только ради второй передачи в Желток."
  ].join("\n");
 }
+
+
+/** ADR-030: classify missing evidence before a sphere asks the author.
+ * Internal = existing project/other sphere; external = verifiable outside source;
+ * authorial = intention, approval, constraints or non-delegated decision.
+ * A question is a signal, not a command or permission to spend.
+ */
+export const EGG_INFORMATION_SOURCES=["internal","external","authorial"] as const;
+export type EggInformationSource=typeof EGG_INFORMATION_SOURCES[number];
+export type EggEvidenceGap={
+  id:string;
+  sphere:SphereId;
+  missingFact:string;
+  whyNeeded:string;
+  sourceType:EggInformationSource;
+  affectedDecision:string;
+  priority:"critical"|"important"|"optional";
+  status:"open"|"searching"|"awaiting_author"|"awaiting_external"|"resolved"|"blocked";
+  evidenceRefs:readonly string[];
+  authorActionRequired:boolean;
+};
+export function routeEggEvidenceGap(gap:EggEvidenceGap):{
+  destination:"shared_field"|"external_research"|"author_dialogue";
+  canActWithoutAuthor:boolean;
+}{
+  if(gap.sourceType==="authorial")return {destination:"author_dialogue",canActWithoutAuthor:false};
+  if(gap.sourceType==="external")return {destination:"external_research",canActWithoutAuthor:!gap.authorActionRequired};
+  return {destination:"shared_field",canActWithoutAuthor:!gap.authorActionRequired};
+}
+export function prioritizeEggAuthorQuestions(gaps:readonly EggEvidenceGap[]):EggEvidenceGap[]{
+  const order={critical:0,important:1,optional:2};
+  return gaps.filter(g=>g.sourceType==="authorial"&&g.status!=="resolved")
+    .sort((a,b)=>order[a.priority]-order[b.priority]||a.id.localeCompare(b.id));
+}
