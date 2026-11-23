@@ -14,6 +14,7 @@ import {z} from "zod";
 import {getEggStorageConfig} from "./eggStorageConfig.js";
 import {executeEggAction} from "./eggActionExecutor.js";
 import {assessEggInformation, type EggInformationItem} from "../lib/eggInformationSufficiency.js";
+import {diagnoseEggAdsDelivery, type EggAdsSnapshot} from "../lib/eggAdsDeliveryDiagnostic.js";
 import {EGG_SPHERE_MANIFESTS,routeEggEvidenceGap,type EggEvidenceGap} from "../lib/eggSphereProtocol.js";
 import type {SphereId} from "../lib/eggEngine.js";
 import {providerFromEnv,generate} from "../../api/egg-flow-ai.js";
@@ -218,6 +219,21 @@ export default async function handler(req:Request,res:ServerResponse){
       .eq("operational_project_id",project.id)
       .order("recorded_at",{ascending:false}).limit(14);
     if(sharedErr)throw Error("source_unavailable");
+    // Only run Ads diagnosis on explicitly verified Google Ads snapshots.
+    // Website analytics and empty connector rows must never be treated as Ads zeros.
+    const adsSnapshots=(shared??[]).filter(e=>e.kind==="google_ads_snapshot"&&
+      e.evidence_status==="verified_source"&&e.facts&&typeof e.facts==="object");
+    const latestAds=adsSnapshots[0]?.facts as Record<string,unknown>|undefined;
+    const adsSnapshot:EggAdsSnapshot|null=latestAds?{
+      campaignEnabled:typeof latestAds.campaignEnabled==="boolean"?latestAds.campaignEnabled:null,
+      adsApproved:typeof latestAds.adsApproved==="boolean"?latestAds.adsApproved:null,
+      enabledKeywords:typeof latestAds.enabledKeywords==="number"?latestAds.enabledKeywords:null,
+      impressions:typeof latestAds.impressions==="number"?latestAds.impressions:null,
+      clicks:typeof latestAds.clicks==="number"?latestAds.clicks:null,
+      metricsVerified:latestAds.metricsVerified===true,
+      hoursSinceChange:typeof latestAds.hoursSinceChange==="number"?latestAds.hoursSinceChange:null,
+    }:null;
+    const adsDiagnosis=adsSnapshot?diagnoseEggAdsDelivery(adsSnapshot):null;
     const manifest=EGG_SPHERE_MANIFESTS[picked.task.sphere];
     const prompt={
       instructions:[
@@ -241,6 +257,7 @@ export default async function handler(req:Request,res:ServerResponse){
         goal:{metric:"confirmed_orders_per_month",target:project.goal_target},
         economics:{advertising:{dailyLimitUAH:project.ads_daily_limit_uah,
           rolling30DaysLimitUAH:project.ads_rolling_30d_limit_uah,operationsEnabled:false}},
+        marketingDeliveryDiagnosis:picked.task.sphere==="marketing"?adsDiagnosis:null,
         commonField:(shared??[]).map(e=>({
           kind:e.kind,at:e.observed_at,status:e.evidence_status,
           summary:e.summary,facts:e.facts,
@@ -272,6 +289,7 @@ export default async function handler(req:Request,res:ServerResponse){
     const finding={
       kind:"ai_research_proposal",...parsed,evidenceGaps:gaps,
       informationReadiness,informationModelVersion:"0.1",
+      marketingDeliveryDiagnosis:picked.task.sphere==="marketing"?adsDiagnosis:null,
       sourceEventIds:[picked.event.id],runMode:"autonomous",
       aiProvider:model.kind,model:model.model,
       generatedAt:new Date().toISOString(),
