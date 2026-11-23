@@ -12,6 +12,7 @@ import {timingSafeEqual} from "node:crypto";
 import {createClient} from "@supabase/supabase-js";
 import {z} from "zod";
 import {getEggStorageConfig} from "./eggStorageConfig.js";
+import {executeEggAction} from "./eggActionExecutor.js";
 import {EGG_SPHERE_MANIFESTS} from "../lib/eggSphereProtocol.js";
 import type {SphereId} from "../lib/eggEngine.js";
 import {providerFromEnv,generate} from "../../api/egg-flow-ai.js";
@@ -171,6 +172,8 @@ export default async function handler(req:Request,res:ServerResponse){
     .eq("source","lyra_supabase_daily_v1").in("status",["ok","no_activity"])
     .order("source_day",{ascending:false}).limit(1).maybeSingle();
   if(checkErr){json(res,503,{ok:false,error:"source_check_unavailable"});return;}
+  const evidence=executeEggAction({type:"verify_source_evidence",source:"lyra_supabase_daily_v1",sourceDay:check?.source_day??"",status:"ok"});
+  if(!evidence.ok){json(res,503,{ok:false,error:"verified_source_check_required",paidAiCalls:0});return;}
   const baselineDay=isDate(check?.source_day)&&check.source_day>sourceDay?check.source_day:sourceDay;
   const model=providerFromEnv(process.env,req.headers["x-vercel-oidc-token"]);
   if(!model){json(res,503,{ok:false,error:"ai_provider_unavailable"});return;}
