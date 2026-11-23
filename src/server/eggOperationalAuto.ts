@@ -96,7 +96,7 @@ function pickTask(events:EventRow[],tasks:TaskRow[]):{task:TaskRow;event:EventRo
   const candidates=tasks.map(task=>({task,event:indexed.get(task.event_id)}))
     .filter((x):x is {task:TaskRow;event:EventRow}=>!!x.event&&x.task.status==="pending");
   candidates.sort((a,b)=>{
-    const inquiry=x=>x.event.kind==="inquiry_received"?0:1;
+    const inquiry=(x:typeof a)=>x.event.kind==="inquiry_received"?0:1;
     const eventDay=x=>isDate(x.event.facts?.day)?x.event.facts.day:"";
     const d=eventDay(b).localeCompare(eventDay(a));
     if(d)return d;
