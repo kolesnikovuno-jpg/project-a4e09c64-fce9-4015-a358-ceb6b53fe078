@@ -12,7 +12,7 @@ export type EggActionResult =
   | {ok:true;type:string;verified:true;result:Record<string,unknown>;externalActionsExecuted:0}
   | {ok:false;type:string;verified:false;reason:string;externalActionsExecuted:0};
 
-const datePattern=/^\\d{4}-\\d{2}-\\d{2}$/;
+const datePattern=/^\d{4}-\d{2}-\d{2}$/;
 const nonnegativeInteger=(n:number)=>Number.isSafeInteger(n)&&n>=0;
 export function executeEggAction(action:EggAction):EggActionResult{
   if(action.type==="verify_source_evidence"){
