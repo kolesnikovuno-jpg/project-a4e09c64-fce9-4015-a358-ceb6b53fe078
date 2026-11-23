@@ -35,6 +35,15 @@ const analysisSchema=z.object({
   confidence:z.enum(["low","medium"]),
   limitations:z.array(z.string().trim().min(8).max(360)).min(1).max(4),
   evidenceGaps:z.array(evidenceGapSchema).max(5).default([]),
+  scenarios:z.array(z.object({
+    id:z.string().trim().min(1).max(48),
+    approach:z.string().trim().min(8).max(300),
+    prerequisite:z.string().trim().min(8).max(300),
+    costUah:z.number().finite().nonnegative().nullable(),
+    costEvidence:z.enum(["verified","estimate","unknown"]),
+    sourceRef:z.string().max(300).nullable(),
+    nextValidation:z.string().trim().min(8).max(300),
+  })).max(3).default([]),
 });
 const responseSchema={
   type:"object",additionalProperties:false,
@@ -50,7 +59,12 @@ const responseSchema={
       priority:{type:"string",enum:["critical","important","optional"]},
       affectedDecision:{type:"string"},
     },required:["missingFact","whyNeeded","sourceType","priority","affectedDecision"]}},
-  },required:["observation","hypothesis","nextStep","confidence","limitations","evidenceGaps"],
+    scenarios:{type:"array",items:{type:"object",additionalProperties:false,properties:{
+      id:{type:"string"},approach:{type:"string"},prerequisite:{type:"string"},
+      costUah:{type:["number","null"]},costEvidence:{type:"string",enum:["verified","estimate","unknown"]},
+      sourceRef:{type:["string","null"]},nextValidation:{type:"string"}
+    },required:["id","approach","prerequisite","costUah","costEvidence","sourceRef","nextValidation"]}},
+  },required:["observation","hypothesis","nextStep","confidence","limitations","evidenceGaps","scenarios"],
 };
 type EventRow={
   id:string;kind:string;source:string;recorded_at:string;
@@ -253,7 +267,7 @@ export default async function handler(req:Request,res:ServerResponse){
         "Укажи до пяти недостающих фактов: internal — общее поле и другие сферы; external — внешние источники; authorial — намерения, лимиты и решения автора.",
         "Не задавай автору вопрос, если ответ доступен внутри или извне. Укажи, какое решение блокирует каждый пробел.",
         "Никаких внешних действий, заявлений о выполнении рекомендаций, рекламе, закупках или контактах с клиентами.",
-        'Верни только JSON {"observation":"...","hypothesis":"...","nextStep":"...","confidence":"low|medium","limitations":["..."],"evidenceGaps":[{"missingFact":"...","whyNeeded":"...","sourceType":"internal|external|authorial","priority":"critical|important|optional","affectedDecision":"..."}]}.',
+        'Верни только JSON {"observation":"...","hypothesis":"...","nextStep":"...","confidence":"low|medium","limitations":["..."],"evidenceGaps":[{"missingFact":"...","whyNeeded":"...","sourceType":"internal|external|authorial","priority":"critical|important|optional","affectedDecision":"..."}],"scenarios":[{"id":"minimum","approach":"...","prerequisite":"...","costUah":null,"costEvidence":"unknown","sourceRef":null,"nextValidation":"..."}]}. Для 1–3 альтернативных сценариев, если данных достаточно; неизвестную цену передавай null. Число допустимо только при подтверждённом источнике или явно названном допущении. Никакой сценарий не разрешает расход.',
       ].join("\n"),
       input:JSON.stringify({
         task:{sphere:picked.task.sphere,description:picked.task.task,
@@ -292,6 +306,11 @@ export default async function handler(req:Request,res:ServerResponse){
     const informationReadiness=affectedActions.map(action=>assessEggInformation(action,informationItems));
     const finding={
       kind:"ai_research_proposal",...parsed,evidenceGaps:gaps,
+      scenarios:parsed.scenarios.map(x=>({...x,
+        costUah:x.costEvidence==="unknown"?null:x.costUah,
+        costEvidence:x.costEvidence==="verified"&&!x.sourceRef?"unknown":x.costEvidence,
+        spendingAuthorized:false,goalAchievability:"unverified"
+      })),
       informationReadiness,informationModelVersion:"0.1",goalFeasibilityProtocol:"ADR-033",
       marketingDeliveryDiagnosis:picked.task.sphere==="marketing"?adsDiagnosis:null,
       sourceEventIds:[picked.event.id],runMode:"autonomous",
