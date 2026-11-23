@@ -26,13 +26,14 @@ create table if not exists public.egg_material_selections (
   selected_by uuid not null references auth.users(id),
   annotations jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
+  unique (project_id,id),
   foreign key (project_id,asset_id) references public.egg_field_assets(project_id,id) on delete restrict
 );
 create table if not exists public.egg_albumen_facts (
   id uuid primary key default gen_random_uuid(),
   project_id uuid not null references public.egg_engine_projects(id) on delete cascade,
   source_asset_id uuid,
-  selection_id uuid references public.egg_material_selections(id) on delete set null,
+  selection_id uuid,
   sphere text not null,
   claim text not null,
   verification_status text not null default 'unverified'
@@ -40,7 +41,8 @@ create table if not exists public.egg_albumen_facts (
   created_by uuid not null references auth.users(id),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  foreign key (project_id,source_asset_id) references public.egg_field_assets(project_id,id) on delete restrict
+  foreign key (project_id,source_asset_id) references public.egg_field_assets(project_id,id) on delete restrict,
+  foreign key (project_id,selection_id) references public.egg_material_selections(project_id,id)
 );
 create index if not exists egg_assets_project_idx on public.egg_field_assets(project_id,created_at desc);
 create index if not exists egg_facts_project_idx on public.egg_albumen_facts(project_id,created_at desc);
