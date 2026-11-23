@@ -6,11 +6,20 @@ type OperationalProject = {
   id:string;slug:string;title:string;goal_metric:string;goal_target:number;
   ads_daily_limit_uah:number;ads_rolling_30d_limit_uah:number;
   ads_operation_allowed:boolean;ads_author_approved_at:string;
+  auto_research_enabled:boolean;auto_research_daily_limit:number;
 };
 type OperationalEvent = {
   id:string;kind:string;source:string;summary:string;
   evidence_status:"verified_source"|"hypothesis"|"incomplete";
   observed_at:string;facts:Record<string,unknown>;
+};
+type AutoRun={
+  run_day:string;slot:number;status:"claimed"|"proposed"|"blocked";
+  attempted_at:string;outcome_code:string|null;
+};
+type AutoFollowup={
+  status:"waiting"|"completed";baseline_day:string;resolved_day:string|null;
+  action_type:string;created_at:string;
 };
 type SourceCheck={
   source_day:string;status:"ok"|"no_activity"|"error";checked_at:string;
@@ -42,6 +51,8 @@ export default function EggOperations(){
   const [events,setEvents]=useState<OperationalEvent[]>([]);
   const [activations,setActivations]=useState<OperationalActivation[]>([]);
   const [sourceChecks,setSourceChecks]=useState<SourceCheck[]>([]);
+  const [autoRuns,setAutoRuns]=useState<AutoRun[]>([]);
+  const [followups,setFollowups]=useState<AutoFollowup[]>([]);
   useEffect(()=>{
     let live=true;
     void (async()=>{
@@ -55,7 +66,7 @@ export default function EggOperations(){
         if(!session)throw Error("Для доступа к данным войдите в аккаунт EGG.");
         const {data:projectRow,error:projectError}=await auth
           .from("egg_operational_projects")
-          .select("id,slug,title,goal_metric,goal_target,ads_daily_limit_uah,ads_rolling_30d_limit_uah,ads_operation_allowed,ads_author_approved_at")
+          .select("id,slug,title,goal_metric,goal_target,ads_daily_limit_uah,ads_rolling_30d_limit_uah,ads_operation_allowed,ads_author_approved_at,auto_research_enabled,auto_research_daily_limit")
           .eq("slug","lyra").maybeSingle();
         if(projectError)throw Error("Не удалось загрузить операционный проект.");
         if(!projectRow)throw Error("Операционный проект Lyra не найден в вашем аккаунте.");
@@ -82,9 +93,22 @@ export default function EggOperations(){
           .eq("operational_project_id",projectRow.id)
           .order("source_day",{ascending:false}).limit(14);
         if(checksError)throw Error("Не удалось прочитать состояние синхронизации.");
+        const [{data:runRows,error:runError},{data:followupRows,error:followupError}]=await Promise.all([
+          auth.from("egg_operational_auto_runs")
+            .select("run_day,slot,status,attempted_at,outcome_code")
+            .eq("operational_project_id",projectRow.id)
+            .order("attempted_at",{ascending:false}).limit(10),
+          auth.from("egg_operational_followups")
+            .select("status,baseline_day,resolved_day,action_type,created_at")
+            .eq("operational_project_id",projectRow.id)
+            .order("created_at",{ascending:false}).limit(10),
+        ]);
+        if(runError||followupError)throw Error("Не удалось загрузить историю автономной работы.");
         if(live){
           setProject(projectRow as OperationalProject);
           setEvents(rows);setActivations(tasks);setSourceChecks((checkRows??[]) as SourceCheck[]);
+          setAutoRuns((runRows??[]) as AutoRun[]);
+          setFollowups((followupRows??[]) as AutoFollowup[]);
         }
       }catch(e){if(live)setError(e instanceof Error?e.message:"Неизвестная ошибка");}
       finally{if(live)setBusy(false);}
@@ -185,6 +209,23 @@ export default function EggOperations(){
           {project.ads_operation_allowed?"Для расходов требуется отдельный подтверждённый механизм исполнения.":"Изменение рекламы и расходование средств движком отключены."}
         </p>
       </section>
+      <section aria-label="Автономное исследование" className="rounded-xl border border-border p-4 sm:p-5">
+        <h2 className="mb-2 text-sm font-semibold">Автономная работа сфер</h2>
+        <p className="text-sm">{project.auto_research_enabled?"Включена":"Выключена"} · до {project.auto_research_daily_limit} платных исследований ИИ в сутки</p>
+        <p className="mt-1 text-xs text-muted-foreground">Автоматические исследования по событиям Lyra. Внешние операции, реклама, расходы и изменения авторской цели запрещены. Единственное автоматическое действие — запросить проверку следующего закрытого дня.</p>
+        {autoRuns.length>0&&<div className="mt-3 space-y-1 border-t border-border pt-3 text-sm">
+          <p className="font-medium">Последний запуск: {readableDate(autoRuns[0].attempted_at)}</p>
+          <p className="text-muted-foreground">Статус: {autoRuns[0].status==="proposed"?"исследование сохранено":autoRuns[0].status==="blocked"?"исследование не завершено":"выполняется"}</p>
+          {autoRuns[0].status==="blocked"&&<p className="text-xs text-destructive">Код: {autoRuns[0].outcome_code??"unknown"}</p>}
+        </div>}
+        {followups.length>0&&<div className="mt-3 border-t border-border pt-3 text-sm">
+          <p className="font-medium">Внутренний следующий шаг</p>
+          <p className="text-muted-foreground">{followups[0].status==="waiting"?
+            "Ожидается проверенный следующий день после "+followups[0].baseline_day:
+            "Данные следующего дня получены: "+followups[0].resolved_day}</p>
+        </div>}
+        {!autoRuns.length&&<p className="mt-3 text-xs text-muted-foreground">Автоматических исследований ещё нет.</p>}
+      </section>
       <section aria-label="Синхронизация источника" className="rounded-xl border border-border p-4 sm:p-5">
         <h2 className="mb-2 text-sm font-semibold">Источник Lyra · ежедневные агрегаты</h2>
         <p className="mb-3 text-sm text-muted-foreground">Передаются только количества событий и заявок за закрытые дни по Киеву. Контакты клиентов не копируются. Google Ads — отдельный пока не подключённый источник.</p>
@@ -228,7 +269,7 @@ export default function EggOperations(){
             <p><strong>Наблюдение:</strong> {a.finding.observation}</p>
             <p><strong>Гипотеза:</strong> {a.finding.hypothesis}</p>
             <p><strong>Следующий шаг:</strong> {a.finding.nextStep}</p>
-            <p className="text-xs text-muted-foreground">Вывод ИИ — предложение, не выполненное действие. Требует проверки.</p>
+            <p className="text-xs text-muted-foreground">Вывод ИИ — исследовательское предложение. Внешние действия не выполнялись; внутренний шаг при автономном режиме фиксируется отдельно.</p>
           </div>}
           {a.finding?.kind==="worker_error"&&<p className="mt-2 text-xs text-destructive">
             {a.finding.code==="ai_model_not_authorized"?"ИИ не авторизован у провайдера.":
@@ -246,7 +287,7 @@ export default function EggOperations(){
             {running===a.id?"ИИ исследует…":a.status==="blocked"?"Повторить исследование":"Исследовать через ИИ"}
           </button>}
         </div>)}
-        <p className="mt-2 text-xs text-muted-foreground">Каждая кнопка исследования запускает один отдельный платный запрос подключённой модели. Вывод сохраняется в EGG; внешние действия, траты и авторские утверждения не выполняются. Автоматический исполнитель пока не включён.</p>
+        <p className="mt-2 text-xs text-muted-foreground">Каждая кнопка исследования запускает один отдельный платный запрос подключённой модели. Вывод сохраняется в EGG; внешние действия, траты и авторские утверждения не выполняются. Автономные исследования выполняются по расписанию только при активном режиме, без расходов на рекламу.</p>
       </section>
     </div>}
   </main>;
