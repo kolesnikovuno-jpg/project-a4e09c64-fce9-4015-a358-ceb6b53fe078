@@ -3,11 +3,11 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { FolderOpen } from "lucide-react";
 import { UnoEggSharedFieldPanel } from "../unocalc/UnoEggSharedFieldPanel";
 import { getEggAuthConfig } from "../../lib/eggRemoteApi";
-import { useLocale } from "../../i18n/useLocale";
+
 
 /** The actual EGG external Field: collapsed file explorer, no separate route. */
 export default function EggFieldStorageDrawer({ projectId }: { projectId: string }) {
-  const { locale } = useLocale();
+  const locale = "ru" as const;
   const [open, setOpen] = useState(false);
   const [client, setClient] = useState<SupabaseClient | null>(null);
   const [error, setError] = useState("");
