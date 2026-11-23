@@ -78,6 +78,7 @@ export default function EggProjectField({projectId,children,workspace="field",si
  const [openId,setOpenId]=useState<string|null>(null);
  const [focusedPhotoNoteId,setFocusedPhotoNoteId]=useState<string|null>(null);
  const [notice,setNotice]=useState("");
+ const [imageUpload,setImageUpload]=useState<{done:number;total:number}|null>(null);
  const [recentMaterialTransfer,setRecentMaterialTransfer]=useState(false);
  const [listening,setListening]=useState(false);
  const [videoUrls,setVideoUrls]=useState<Record<string,string>>({});
@@ -194,20 +195,38 @@ export default function EggProjectField({projectId,children,workspace="field",si
   setEntry("");setTool(null);
  };
  async function images(files:FileList|null){
-  if(!files)return;
-  for(const file of Array.from(files).slice(0,5)){
-   if(!file.type.startsWith("image/"))continue;
+  if(!files||files.length===0)return;
+  const accepted=Array.from(files).filter(file=>file.type.startsWith("image/"));
+  if(!accepted.length){setNotice("Выберите изображения.");return;}
+  setImageUpload({done:0,total:accepted.length});
+  const imported:Item[]=[];
+  let failed=0;
+  for(const file of accepted){
    let url="";
    try{
     const img=new Image();url=URL.createObjectURL(file);img.src=url;await img.decode();
-    const cv=document.createElement("canvas");const ratio=Math.min(1,1200/Math.max(img.width,img.height));
-    cv.width=Math.max(1,Math.round(img.width*ratio));cv.height=Math.max(1,Math.round(img.height*ratio));
-    cv.getContext("2d")?.drawImage(img,0,0,cv.width,cv.height);
-    add("image",file.name,cv.toDataURL("image/jpeg",.75));
-   }catch{setNotice("Изображение не удалось открыть.");}
-   finally{if(url)URL.revokeObjectURL(url);}
+    const cv=document.createElement("canvas");
+    const ratio=Math.min(1,960/Math.max(img.width,img.height));
+    cv.width=Math.max(1,Math.round(img.width*ratio));
+    cv.height=Math.max(1,Math.round(img.height*ratio));
+    const ctx=cv.getContext("2d");
+    if(!ctx)throw Error("canvas_unavailable");
+    ctx.drawImage(img,0,0,cv.width,cv.height);
+    const src=cv.toDataURL("image/jpeg",.64);
+    if(!src.startsWith("data:image/jpeg"))throw Error("image_conversion_failed");
+    imported.push({id:uid(),type:"image",location:workspace,x:310+((items.length+imported.length)%3)*38,
+     y:-210+((items.length+imported.length)%6)*75,text:file.name,src});
+   }catch{failed++;}
+   finally{
+    if(url)URL.revokeObjectURL(url);
+    setImageUpload({done:imported.length+failed,total:accepted.length});
+   }
   }
-  setTool(null);
+  if(imported.length)change(previous=>[...previous,...imported]);
+  setNotice(imported.length+" из "+accepted.length+" фото добавлено в поле"+
+   (failed?". Не удалось обработать: "+failed+".":"")+
+   ". Проверьте индикатор сохранения проекта.");
+  setImageUpload(null);setTool(null);
  }
  async function videos(files:FileList|null){
   if(!files)return;
@@ -433,8 +452,9 @@ export default function EggProjectField({projectId,children,workspace="field",si
       {tool==="thought"&&<button type="button" title={ui.fieldVoice} aria-label={ui.fieldVoice} className={"absolute right-2 top-2 rounded-full p-1.5 "+(listening?"bg-red-100 text-red-700":"text-foreground/65")} onClick={voice}><Mic size={18}/></button>}
      </div><div className="mt-2 flex justify-between gap-2"><button onClick={commit} disabled={!entry.trim()} className="rounded-full bg-foreground px-4 py-2 text-xs text-background disabled:opacity-40">{workspace==="matter"?ui.fieldAddToMatter:ui.fieldAddToField}</button><button className="px-2 text-xs text-foreground/60" onClick={()=>setTool(null)}>{ui.commonClose}</button></div></div>
   </div>}
-  <input ref={camera} type="file" accept="image/*" capture="environment" className="hidden" onChange={e=>{void images(e.target.files);e.target.value="";}}/>
-  <input ref={imageInput} type="file" accept="image/*" multiple className="hidden" onChange={e=>{void images(e.target.files);e.target.value="";}}/>
+  {imageUpload&&<p role="status" className="absolute bottom-20 left-4 z-50 rounded-lg bg-background px-3 py-2 text-xs shadow-lg">Обработка фотографий: {imageUpload.done}/{imageUpload.total}</p>}
+ <input ref={camera} type="file" accept="image/*" capture="environment" className="hidden" onChange={e=>{void images(e.target.files);e.target.value="";}}/>
+  <input ref={imageInput} type="file" accept="image/*" multiple aria-label="Выбрать несколько фотографий" className="hidden" onChange={e=>{void images(e.target.files);e.target.value="";}}/>
   <input ref={videoInput} type="file" accept="video/*" multiple className="hidden" onChange={e=>{void videos(e.target.files);e.target.value="";}}/>
   {notice&&<div role="status" data-testid="egg-field-transfer-feedback"
    className="absolute bottom-16 left-1/2 z-50 flex max-w-[94vw] -translate-x-1/2 items-center gap-3 rounded-2xl border border-foreground/10 bg-background/95 px-4 py-2.5 text-xs shadow-lg sm:bottom-5">
