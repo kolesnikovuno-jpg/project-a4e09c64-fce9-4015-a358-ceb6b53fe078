@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { UnoEggSharedFieldPanel } from "./UnoEggSharedFieldPanel";
 import { createClient, type Session, type SupabaseClient } from "@supabase/supabase-js";
 import type { EggProject } from "@/lib/eggEngine";
 import {
@@ -280,6 +281,7 @@ function ServerContent({ locale, seed, localProject }: Props) {
               </p>
               <button type="button" data-testid="egg-server-refresh" disabled={pending}
                 className={btnClass} onClick={refresh}>{t.refresh}</button>
+              {authClient && <UnoEggSharedFieldPanel client={authClient} projectId={remote.projectId} locale={locale} />}
               <p className="text-[12px] text-foreground/75">{t.files}: {remote.project.files.length}</p>
               {remote.project.files.length === 0 &&
                 <p className="text-[11px] text-foreground/55">{t.empty}</p>}
