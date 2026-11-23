@@ -8,6 +8,7 @@ import EggLinkWorkspace, { normalizeSiteUrl } from "./EggLinkWorkspace";
 import EggMatterDialogue, { type MatterCard } from "./EggMatterDialogue";
 import EggWorkspaceSync from "./EggWorkspaceSync";
 import EggRecoveredFieldMedia from "./EggRecoveredFieldMedia";
+import EggFieldStorageDrawer from "./EggFieldStorageDrawer";
 import {useEggUi} from "../../i18n/eggUi";
 
 type Point = { x:number; y:number };
@@ -405,6 +406,7 @@ export default function EggProjectField({projectId,children,workspace="field",si
     </div>)}
    </div>
   </div>
+  {contentActive && workspace==="field" && <EggFieldStorageDrawer projectId={projectId} />}
   <EggWorkspaceSync projectId={projectId} scope="field" ready={ready}
    value={items} onRestore={next=>{if(Array.isArray(next))setItems(next.filter(
     item=>item&&typeof item.id==="string"&&typeof item.type==="string").slice(0,500));}}
