@@ -20,7 +20,7 @@ import type {SphereId} from "../lib/eggEngine.js";
 import {providerFromEnv,generate} from "../../api/egg-flow-ai.js";
 
 type Request=IncomingMessage&{body?:unknown};
-const requestSchema=z.object({slot:z.union([z.literal(1),z.literal(2)])}).strict();
+const requestSchema=z.object({slot:z.number().int().min(1).max(24)}).strict();
 const evidenceGapSchema=z.object({
   missingFact:z.string().trim().min(8).max(320),
   whyNeeded:z.string().trim().min(8).max(320),
@@ -152,7 +152,7 @@ export default async function handler(req:Request,res:ServerResponse){
   }
   const cfg=getEggStorageConfig(process.env);
   if(!cfg){json(res,503,{ok:false,error:"storage_not_configured"});return;}
-  let slot:1|2;
+  let slot:number;
   try{slot=requestSchema.parse(await body(req)).slot;}
   catch{json(res,400,{ok:false,error:"invalid_request"});return;}
   const db=createClient(cfg.url,cfg.serviceKey,{auth:{persistSession:false,autoRefreshToken:false}});
@@ -180,7 +180,7 @@ export default async function handler(req:Request,res:ServerResponse){
     .select("id",{count:"exact",head:true})
     .gte("started_at",yesterday).in("status",["researching","proposed","blocked"]);
   if(countErr){json(res,503,{ok:false,error:"ai_usage_check_unavailable"});return;}
-  if((count??0)>=6){json(res,200,{ok:true,status:"pilot_daily_limit",paidAiCalls:0});return;}
+  if((count??0)>=24){json(res,200,{ok:true,status:"pilot_daily_limit",paidAiCalls:0});return;}
   const {data:eventsRaw,error:eventsErr}=await db.from("egg_operational_events")
     .select("id,kind,source,recorded_at,evidence_status,facts")
     .eq("operational_project_id",project.id)
@@ -339,6 +339,7 @@ export default async function handler(req:Request,res:ServerResponse){
     // Upper bound: up to 115 KB text, conservative one token per byte + overhead,
     // and 1800 generated tokens. Reserve 0.02 USD including headroom.
     if(model.kind!=="direct_openai"||model.model!=="gpt-6-luna")throw Error("ai_tariff_unverified");
+    if(Buffer.byteLength(prompt.input)+Buffer.byteLength(prompt.instructions)>115000)throw Error("ai_context_too_large");
     const {data:allowed,error:budgetError}=await db.rpc("egg_reserve_ai_budget",{p_run_id:run.id,p_max_usd:0.02});
     if(budgetError||allowed!==true){
       await db.from("egg_operational_activations").update({status:"blocked",finding:{kind:"worker_error",code:"ai_budget_reservation_denied",stage},completed_at:new Date().toISOString()}).eq("id",picked.task.id).eq("status","researching");
