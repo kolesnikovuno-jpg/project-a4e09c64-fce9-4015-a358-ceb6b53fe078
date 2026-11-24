@@ -13,6 +13,9 @@ type OperationalEvent = {
   evidence_status:"verified_source"|"hypothesis"|"incomplete";
   observed_at:string;facts:Record<string,unknown>;
 };
+type ResourceDay={run_day:string;reserved_slots:number;successful_runs:number;blocked_runs:number;recorded_elapsed_seconds:number;actual_tokens:number|null;measured_runs:number;daily_slot_limit:number};
+type DecisionState={internal_open:number;external_waiting:number;author_waiting:number;critical_unresolved:number};
+type ObjectState={node_id:string;parent_id:string|null;title:string;level:number;pending:number;researching:number;proposed:number;verified:number;blocked:number};
 type AutoRun={
   run_day:string;slot:number;status:"claimed"|"proposed"|"blocked";
   attempted_at:string;outcome_code:string|null;
@@ -53,6 +56,11 @@ export default function EggOperations(){
   const [sourceChecks,setSourceChecks]=useState<SourceCheck[]>([]);
   const [autoRuns,setAutoRuns]=useState<AutoRun[]>([]);
   const [followups,setFollowups]=useState<AutoFollowup[]>([]);
+  const [resources,setResources]=useState<ResourceDay[]>([]);
+  const [decisions,setDecisions]=useState<DecisionState|null>(null);
+  const [objects,setObjects]=useState<ObjectState[]>([]);
+  const [monitorError,setMonitorError]=useState("");
+  useEffect(()=>{const timer=window.setInterval(()=>setRevision(n=>n+1),60000);return()=>window.clearInterval(timer);},[]);
   useEffect(()=>{
     let live=true;
     void (async()=>{
@@ -104,7 +112,17 @@ export default function EggOperations(){
             .order("created_at",{ascending:false}).limit(10),
         ]);
         if(runError||followupError)throw Error("Не удалось загрузить историю автономной работы.");
+        const [resourceRows,decisionRow,registry]=await Promise.all([
+          auth.from("egg_operational_resource_state").select("*").eq("project_id",projectRow.id).order("run_day",{ascending:false}).limit(7),
+          auth.from("egg_operational_decision_state").select("*").eq("project_id",projectRow.id).maybeSingle(),
+          auth.from("egg_passport_registry").select("id").eq("source_kind","operational").eq("source_project_id",projectRow.id).maybeSingle()
+        ]);
+        const objectRows=registry.data?await auth.from("egg_object_work_state").select("*").eq("root_passport_id",registry.data.id):null;
         if(live){
+          setMonitorError(resourceRows.error||decisionRow.error||registry.error||objectRows?.error||!registry.data?"Часть показателей движка недоступна.":"");
+          setResources((resourceRows.data??[]) as ResourceDay[]);
+          setDecisions((decisionRow.data??null) as DecisionState|null);
+          setObjects((objectRows?.data??[]) as ObjectState[]);
           setProject(projectRow as OperationalProject);
           setEvents(rows);setActivations(tasks);setSourceChecks((checkRows??[]) as SourceCheck[]);
           setAutoRuns((runRows??[]) as AutoRun[]);
@@ -208,6 +226,24 @@ export default function EggOperations(){
         <p className="mt-2 text-sm">
           {project.ads_operation_allowed?"Для расходов требуется отдельный подтверждённый механизм исполнения.":"Изменение рекламы и расходование средств движком отключены."}
         </p>
+      </section>
+      <section aria-label="Состояние движка" className="rounded-xl border border-border p-4 sm:p-5">
+        <h2 className="mb-3 text-sm font-semibold">EGG · состояние исполнительного контура</h2>
+        {monitorError&&<p role="alert" className="mb-3 text-sm text-destructive">{monitorError}</p>}
+        {decisions&&<div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+          {[[ "Внутренние",decisions.internal_open],["Внешние",decisions.external_waiting],["Решение автора",decisions.author_waiting],["Критические",decisions.critical_unresolved]].map(([label,value])=><div key={label}><p className="text-xs text-muted-foreground">{label}</p><p className="text-xl">{value}</p></div>)}
+        </div>}
+        <h3 className="mt-4 text-sm font-medium">Объекты формирования</h3>
+        {objects.map(o=><div key={o.node_id} className="border-t border-border py-2 text-sm">
+          <p className="font-medium">{o.parent_id?"↳ ":""}{o.title}</p>
+          <p className="text-xs text-muted-foreground">Уровень {o.level} · очередь {o.pending} · выполняется {o.researching} · предложено {o.proposed} · проверено {o.verified} · блокировано {o.blocked}</p>
+        </div>)}
+        <h3 className="mt-4 text-sm font-medium">Коммерция · ресурс движка</h3>
+        {resources.map(r=><div key={r.run_day} className="border-t border-border py-2 text-sm">
+          <p>{r.run_day} · {r.reserved_slots}/{r.daily_slot_limit} слотов · успешно {r.successful_runs} · сбои {r.blocked_runs}</p>
+          <p className="text-xs text-muted-foreground">{Number(r.recorded_elapsed_seconds).toFixed(1)} с · токены: {r.actual_tokens===null?"нет измерений":r.actual_tokens+" ("+r.measured_runs+" измеренных запусков)"}</p>
+        </div>)}
+        <p className="mt-3 text-xs text-muted-foreground">Автообновление каждую минуту. Стоимость ИИ пока не измеряется; отсутствие данных не означает нулевые расходы.</p>
       </section>
       <section aria-label="Автономное исследование" className="rounded-xl border border-border p-4 sm:p-5">
         <h2 className="mb-2 text-sm font-semibold">Автономная работа сфер</h2>
