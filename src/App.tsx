@@ -14,6 +14,7 @@ import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import PixelTransition from "./pages/PixelTransition";
 import Lyra from "./pages/Lyra";
+import PassportPage from "./pages/PassportPage";
 import Nava from "./pages/Nava";
 import LyraConcept from "./pages/LyraConcept";
 import Garden from "./pages/Garden";
@@ -125,6 +126,8 @@ const App = () => (
             ))}
 
           {/* Non-localized utility routes. */}
+          <Route path="/passport/:id" element={<PassportPage />} />
+          {LOCALES.map(loc => <Route key={`passport-${loc}`} path={`/${loc}/passport/:id`} element={<PassportPage />} />)}
           <Route path="/doodle" element={<Canvas />} />
           <Route path="/pixels" element={<PixelTransition />} />
           <Route path="/lyra-concept" element={<LyraConcept />} />
