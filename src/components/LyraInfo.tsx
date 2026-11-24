@@ -211,6 +211,14 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
 
         <hr className="li-rule thick" />
 
+        <div className="li-section li-contact">
+          <div className="li-section-title">EGG / Passport</div>
+          <a href={`/${window.location.pathname.split("/")[1] === "uk" ? "uk/" : window.location.pathname.split("/")[1] === "ru" ? "ru/" : ""}passport/b23a2ff8-367d-43b5-962f-2650ebb66430`}>
+            <span>LYRA / Passport</span><span>↗</span>
+          </a>
+          <div className="li-qr"><img src="/passports/lyra.svg" alt="Lyra passport QR code" /></div>
+        </div>
+        <hr className="li-rule" />
         {/* 6. SHARE */}
         <div className="li-section">
           <div className="li-section-title">{T.sections.share}</div>
