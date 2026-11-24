@@ -129,6 +129,8 @@ function pickTask(events:EventRow[],tasks:TaskRow[]):{task:TaskRow;event:EventRo
   candidates.sort((a,b)=>{
     const inquiry=(x:typeof a)=>x.event.kind==="inquiry_received"?0:1;
     const eventDay=(x:typeof a)=>isDate(x.event.facts?.day)?x.event.facts.day:"";
+    const retry=(x:typeof a)=>typeof x.event.facts?.retry_number==="number"?0:1;
+    const retryOrder=retry(a)-retry(b);if(retryOrder)return retryOrder;
     const d=eventDay(b).localeCompare(eventDay(a));
     if(d)return d;
     const kind=inquiry(a)-inquiry(b);if(kind)return kind;
@@ -284,13 +286,13 @@ export default async function handler(req:Request,res:ServerResponse){
       ].join("\n"),
       input:JSON.stringify({
         task:{sphere:picked.task.sphere,description:picked.task.task,
-          eventId:picked.event.id,eventKind:picked.event.kind,sourceDay},
+          eventId:picked.event.id,eventKind:picked.event.kind,sourceDay,retryNumber:picked.task.retry_count,sourceEventId:picked.event.facts?.retry_source_event??picked.event.id},
         goal:{metric:"confirmed_orders_per_month",target:project.goal_target},
         economics:{advertising:{dailyLimitUAH:project.ads_daily_limit_uah,
           rolling30DaysLimitUAH:project.ads_rolling_30d_limit_uah,operationsEnabled:false}},
         marketingDeliveryDiagnosis:picked.task.sphere==="marketing"?adsDiagnosis:null,
         objectContext,
-        commonField:(shared??[]).map(e=>({
+        commonField:(shared??[]).filter(e=>!e.facts?.retry_of).map(e=>({
           kind:e.kind,at:e.observed_at,status:e.evidence_status,
           summary:e.summary,facts:e.facts,
         })),
@@ -336,7 +338,7 @@ export default async function handler(req:Request,res:ServerResponse){
       })),
       informationReadiness,informationModelVersion:"0.1",goalFeasibilityProtocol:"ADR-033",
       marketingDeliveryDiagnosis:picked.task.sphere==="marketing"?adsDiagnosis:null,
-      sourceEventIds:[picked.event.id],runMode:"autonomous",
+      sourceEventIds:[typeof picked.event.facts?.retry_source_event==="string"?picked.event.facts.retry_source_event:picked.event.id],runMode:"autonomous",
       aiProvider:model.kind,model:model.model,
       generatedAt:new Date().toISOString(),
       internalAction:"observe_next_closed_day",
