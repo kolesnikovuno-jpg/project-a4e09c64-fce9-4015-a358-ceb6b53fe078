@@ -230,6 +230,19 @@ export default async function handler(req:Request,res:ServerResponse){
   }
   let usage:{input:number|null;output:number|null;total:number|null}|undefined;
   let usageSaved=false;
+  let reserved=false;
+  let providerStarted=false;
+  const settleBudget=async()=>{
+    if(!reserved)return;
+    // Uncached standard rates, rounded UP to microdollars; no cache discount assumed.
+    const known=usage?.input!=null&&usage?.output!=null;
+    const actual=known?Math.ceil(usage!.input!*0.10+usage!.output!*0.50)/1000000:null;
+    const {error}=await db.from("egg_ai_reservations").update({
+      state:!providerStarted?"released":known?"settled":"uncertain",
+      actual_usd:providerStarted?actual:null,settled_at:new Date().toISOString()
+    }).eq("run_id",run.id).eq("state","reserved");
+    if(error)console.warn("egg_budget_settle_failed",{code:error.code});
+  };
   const saveUsage=async()=>{
     if(!usage||usageSaved)return;
     const {error}=await db.from("egg_operational_auto_runs")
@@ -321,11 +334,25 @@ export default async function handler(req:Request,res:ServerResponse){
         })),
       }),
     };
+    stage="budget_reservation";
+    // Only the verified direct Luna tariff is enabled. Unknown providers fail closed.
+    // Upper bound: up to 115 KB text, conservative one token per byte + overhead,
+    // and 1800 generated tokens. Reserve 0.02 USD including headroom.
+    if(model.kind!=="direct_openai"||model.model!=="gpt-6-luna")throw Error("ai_tariff_unverified");
+    const {data:allowed,error:budgetError}=await db.rpc("egg_reserve_ai_budget",{p_run_id:run.id,p_max_usd:0.02});
+    if(budgetError||allowed!==true){
+      await db.from("egg_operational_activations").update({status:"blocked",finding:{kind:"worker_error",code:"ai_budget_reservation_denied",stage},completed_at:new Date().toISOString()}).eq("id",picked.task.id).eq("status","researching");
+      await db.from("egg_operational_auto_runs").update({status:"blocked",outcome_code:"ai_budget_reservation_denied",completed_at:new Date().toISOString()}).eq("id",run.id).eq("status","claimed");
+      json(res,200,{ok:true,status:"budget_paused",paidAiCalls:0});return;
+    }
+    reserved=true;
     stage="model_call";
+    providerStarted=true;
     const raw=await generate(model,{
       ...prompt,...(model.kind==="direct_openai"?{responseJsonSchema:responseSchema}:{}),
     },1800,value=>{usage=value;});
     await saveUsage();
+    await settleBudget();
     stage="validate_response";
     const trimmed=raw.trim();
     const fenced=/^```(?:json)?\s*([\s\S]*?)\s*```$/i.exec(trimmed);
@@ -382,6 +409,7 @@ export default async function handler(req:Request,res:ServerResponse){
     });
   }catch(error){
     await saveUsage();
+    await settleBudget();
     const code=reason(error);
     console.warn("egg_auto_research_issue",{
       code,stage,provider:model.kind,model:model.model,
@@ -393,6 +421,6 @@ export default async function handler(req:Request,res:ServerResponse){
     await db.from("egg_operational_auto_runs")
       .update({status:"blocked",outcome_code:code,completed_at:new Date().toISOString()})
       .eq("id",run.id).eq("status","claimed");
-    json(res,502,{ok:false,error:code,paidAiCalls:1,externalActionsExecuted:0});
+    json(res,502,{ok:false,error:code,paidAiCalls:providerStarted?1:0,externalActionsExecuted:0});
   }
 }
