@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { lyraSupabase } from "@/integrations/supabase/lyraClient";
 
-type Passport = {id:string; slug:string; title:string; object_url:string; revision:number; updated_at:string; public_data:{author?:string; kind?:string; status?:string; dimensions_mm?:{height:number;width:number;length:number}; technical_document?:string}};
+type Passport = {id:string; slug:string; title:string; object_url:string; revision:number; updated_at:string; public_data:{author?:string; kind?:string; status?:string; dimensions_mm?:{height:number;width:number;length:number}; technical_document?:string; sphere_sections?:{sphere:string;public_text:string}[]}};
 export default function PassportPage(){
  const {id}=useParams(); const {pathname}=useLocation();
  const locale=pathname.split("/")[1]; const uk=locale==="uk", ru=locale==="ru";
@@ -21,6 +21,7 @@ export default function PassportPage(){
  {data.public_data.dimensions_mm&&<p>{uk?"Розміри":ru?"Размеры":"Dimensions"}: {data.public_data.dimensions_mm.length} × {data.public_data.dimensions_mm.width} × {data.public_data.dimensions_mm.height} mm</p>}
  <p>{uk?"Дані моделі; не сертифікат випробувань.":ru?"Данные модели; не сертификат испытаний.":"Model documentation; not a test certificate."}</p>
  <p><a href="/lyra-technical.pdf">{uk?"Технічний документ":ru?"Технический документ":"Technical document"}</a></p>
+ {data.public_data.sphere_sections?.map(section=><section key={section.sphere} style={{margin:"24px 0"}}><h3 style={{fontSize:15,fontWeight:600}}>{({marketing:uk?"Маркетинг":ru?"Маркетинг":"Marketing",design:uk?"Дизайн":ru?"Дизайн":"Design",testDrive:uk?"Випробування":ru?"Испытания":"Testing",commerce:uk?"Комерція":ru?"Коммерция":"Commerce",law:uk?"Право":ru?"Право":"Legal",production:uk?"Виробництво":ru?"Производство":"Production",assembly:uk?"Комплектація":ru?"Комплектация":"Assembly",retail:uk?"Ритейл":ru?"Ритейл":"Retail"} as Record<string,string>)[section.sphere]||section.sphere}</h3><p style={{whiteSpace:"pre-wrap"}}>{section.public_text}</p></section>)}
  <img src="/passports/lyra.svg" alt="Passport QR code" width={150} height={150}/><p><a href="/passports/lyra.svg" download="lyra-passport.svg">QR SVG</a></p>
  <hr/><a href={data.object_url}>{uk?"Сторінка об’єкта":ru?"Страница объекта":"Object page"} ↗</a></>}
  </main>;
