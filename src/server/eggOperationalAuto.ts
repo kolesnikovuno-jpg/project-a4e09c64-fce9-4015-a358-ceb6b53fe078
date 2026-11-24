@@ -228,6 +228,16 @@ export default async function handler(req:Request,res:ServerResponse){
       .eq("id",run.id);
     json(res,409,{ok:false,error:"task_claim_conflict",paidAiCalls:0});return;
   }
+  let usage:{input:number|null;output:number|null;total:number|null}|undefined;
+  let usageSaved=false;
+  const saveUsage=async()=>{
+    if(!usage||usageSaved)return;
+    const {error}=await db.from("egg_operational_auto_runs")
+      .update({ai_provider:model.kind,ai_model:model.model,input_tokens:usage.input,output_tokens:usage.output,total_tokens:usage.total})
+      .eq("id",run.id);
+    if(error){console.warn("egg_auto_usage_save_failed",{code:error.code});return;}
+    usageSaved=true;
+  };
   let stage="load_shared_context";
   try{
     const {data:shared,error:sharedErr}=await db.from("egg_operational_events")
@@ -314,7 +324,8 @@ export default async function handler(req:Request,res:ServerResponse){
     stage="model_call";
     const raw=await generate(model,{
       ...prompt,...(model.kind==="direct_openai"?{responseJsonSchema:responseSchema}:{}),
-    },1800);
+    },1800,value=>{usage=value;});
+    await saveUsage();
     stage="validate_response";
     const trimmed=raw.trim();
     const fenced=/^```(?:json)?\s*([\s\S]*?)\s*```$/i.exec(trimmed);
@@ -370,6 +381,7 @@ export default async function handler(req:Request,res:ServerResponse){
       followup:"observe_next_closed_day",paidAiCalls:1,externalActionsExecuted:0,
     });
   }catch(error){
+    await saveUsage();
     const code=reason(error);
     console.warn("egg_auto_research_issue",{
       code,stage,provider:model.kind,model:model.model,
