@@ -253,7 +253,12 @@ export function eggOpenAiJsonInput(input:string):string{
  return input+"\n\nReturn exactly one valid JSON object. Do not wrap it in Markdown.";
 }
 export async function generate(model:Provider,prompt:{instructions:string;input:string;imageData?:string;responseJsonSchema?:unknown},
-  maxTokens=2200):Promise<string>{
+  maxTokens=2200,onUsage?:(usage:{input:number|null;output:number|null;total:number|null})=>void):Promise<string>{
+  const tokenCount=(v:unknown):number|null=>typeof v==="number"&&Number.isSafeInteger(v)&&v>=0?v:null;
+  const reportUsage=(input:unknown,output:unknown,total:unknown)=>{
+    const i=tokenCount(input),o=tokenCount(output),t=tokenCount(total);
+    onUsage?.({input:i,output:o,total:t});
+  };
   if(Buffer.byteLength(prompt.instructions)+Buffer.byteLength(prompt.input)+(prompt.imageData?.length??0)>115000)
     throw Error("ai_context_too_large");
   const controller=new AbortController();
@@ -311,16 +316,19 @@ export async function generate(model:Provider,prompt:{instructions:string;input:
     throw Error("model_request_failed");
   }
   if(model.kind==="direct_gemini"){
-    let data:{candidates?:Array<{content?:{parts?:Array<{text?:string}>},finishReason?:string}>};
+    let data:{usageMetadata?:{promptTokenCount?:number;candidatesTokenCount?:number;totalTokenCount?:number};candidates?:Array<{content?:{parts?:Array<{text?:string}>},finishReason?:string}>};
     try{data=await response.json() as typeof data;}catch{throw Error("invalid_ai_output");}
+    reportUsage(data.usageMetadata?.promptTokenCount,data.usageMetadata?.candidatesTokenCount,data.usageMetadata?.totalTokenCount);
     const raw=data.candidates?.[0]?.content?.parts?.map(p=>p.text??"").join("")??"";
     if(!raw||raw.length>25000)throw Error("invalid_ai_output");
     return raw;
   }
   let data:{
+    usage?:{input_tokens?:number;output_tokens?:number;total_tokens?:number};
     status?:string;output?:Array<{type?:string;content?:Array<{type?:string;text?:string}>}>;
   };
   try{data=await response.json() as typeof data;}catch{throw Error("invalid_ai_output");}
+  reportUsage(data.usage?.input_tokens,data.usage?.output_tokens,data.usage?.total_tokens);
   if(data.status!=="completed")throw Error("model_incomplete");
   const raw=data.output?.flatMap(x=>x.type==="message"?(x.content??[]):[])
     .filter(x=>x.type==="output_text")
