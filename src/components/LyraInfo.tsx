@@ -14,7 +14,7 @@ const MODEL_DATA = {
 };
 
 const LyraInfo = ({ showTrigger = true }: Props) => {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const T = t.lyra_info;
   const [open, setOpen] = useState(false);
   const [copyLabel, setCopyLabel] = useState(T.copy_link);
@@ -376,6 +376,7 @@ const LyraInfo = ({ showTrigger = true }: Props) => {
           </div>
         </div>
 
+        <div className="li-section li-contact"><a href="https://lyra.kolesnikov.studio/passport"><span>{locale === "uk" ? "Паспорт виробу" : locale === "ru" ? "Паспорт изделия" : "Product passport"}</span><span>↗</span></a></div>
         <div className="li-foot">
           <span>{T.footer_left}</span>
           <span>{T.footer_right}</span>
