@@ -131,6 +131,8 @@ function pickTask(events:EventRow[],tasks:TaskRow[]):{task:TaskRow;event:EventRo
     const eventDay=(x:typeof a)=>isDate(x.event.facts?.day)?x.event.facts.day:"";
     const retry=(x:typeof a)=>typeof x.event.facts?.retry_number==="number"?0:1;
     const retryOrder=retry(a)-retry(b);if(retryOrder)return retryOrder;
+    const objectResearch=(x:typeof a)=>x.event.source==="egg_object_research_v1"?0:1;
+    const objectOrder=objectResearch(a)-objectResearch(b);if(objectOrder)return objectOrder;
     const d=eventDay(b).localeCompare(eventDay(a));
     if(d)return d;
     const kind=inquiry(a)-inquiry(b);if(kind)return kind;
@@ -184,13 +186,13 @@ export default async function handler(req:Request,res:ServerResponse){
   const {data:eventsRaw,error:eventsErr}=await db.from("egg_operational_events")
     .select("id,kind,source,recorded_at,evidence_status,facts")
     .eq("operational_project_id",project.id)
-    .eq("source","lyra_supabase_daily_v1")
+    .in("source",["lyra_supabase_daily_v1","egg_object_research_v1"])
     .eq("evidence_status","verified_source")
-    .order("recorded_at",{ascending:false}).limit(24);
+    .order("recorded_at",{ascending:false}).limit(80);
   if(eventsErr){json(res,503,{ok:false,error:"source_events_unavailable"});return;}
   const cutoff=Date.now()-8*86400000;
   const events=((eventsRaw??[]) as EventRow[]).filter(e=>
-    isDate(e.facts?.day)&&Date.parse(e.facts.day+"T00:00:00Z")>=cutoff);
+    e.source==="egg_object_research_v1" || (isDate(e.facts?.day)&&Date.parse(e.facts.day+"T00:00:00Z")>=cutoff));
   if(!events.length){json(res,200,{ok:true,status:"no_verified_events",paidAiCalls:0});return;}
   const {data:taskRaw,error:taskErr}=await db.from("egg_operational_activations")
     .select("id,event_id,sphere,task,status,retry_count")
@@ -312,7 +314,7 @@ export default async function handler(req:Request,res:ServerResponse){
         "Обращения не равны подтверждённым заказам, сессии не равны людям, метка источника сайта не равна статистике Google Ads.",
         "Поле confirmedOrders:null означает НЕИЗВЕСТНО. Не утверждай, что фактических заказов нет: подтверждения просто не получены.",
         "Пределы 100 грн/сутки, 3000 грн/скользящие 30 дней НЕ разрешают расходовать или менять рекламу.",
-        "Твоя автономная операция в этом пилоте: сформировать обоснованное исследование, сохранить его и поставить ожидание следующего проверенного закрытого дня.",
+        "Твоя автономная операция: сформировать обоснованное исследование и сохранить его. Для вложенного объекта исследуй его собственную цель и критерии, не подменяй их статистикой сайта. Не утверждай наличие внешних источников, которых нет во входных данных.",
         "Укажи до пяти недостающих фактов: internal — общее поле и другие сферы; external — внешние источники; authorial — намерения, лимиты и решения автора.",
         "Не задавай автору вопрос, если ответ доступен внутри или извне. Укажи, какое решение блокирует каждый пробел.",
         "Никаких внешних действий, заявлений о выполнении рекомендаций, рекламе, закупках или контактах с клиентами.",
