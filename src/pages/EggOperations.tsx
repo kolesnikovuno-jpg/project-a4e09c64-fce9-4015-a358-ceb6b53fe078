@@ -13,6 +13,7 @@ type OperationalEvent = {
   evidence_status:"verified_source"|"hypothesis"|"incomplete";
   observed_at:string;facts:Record<string,unknown>;
 };
+type YolkSynthesis={node_id:string;parent_id:string|null;title:string;level:number;covered_spheres:number;verified_spheres:number;critical_gaps:number;synthesis_state:string;next_iteration:string;semantic_conflict_status:string;goal:{target?:number;metric?:string;description?:string;actual?:number|null};sphere_matrix:Array<{sphere:string;status:string;observation?:string;hypothesis?:string;next_step?:string}>;information_gaps:Array<{gap_id:string;priority:string;source_type:string;detail?:{missingFact?:string;affectedDecision?:string}}> ;next_tasks:Array<{activation_id:string;sphere:string;task:string;status:string}>;resources?:{ai_budget_daily_usd:number;ai_budget_30d_usd:number;project_actual_cost_usd:number|null;project_actual_tokens:number|null}};
 type ResourceDay={run_day:string;reserved_slots:number;successful_runs:number;blocked_runs:number;recorded_elapsed_seconds:number;actual_tokens:number|null;measured_runs:number;daily_slot_limit:number};
 type DecisionState={internal_open:number;external_waiting:number;author_waiting:number;critical_unresolved:number};
 type ObjectState={node_id:string;parent_id:string|null;title:string;level:number;pending:number;researching:number;proposed:number;verified:number;blocked:number};
@@ -59,6 +60,7 @@ export default function EggOperations(){
   const [resources,setResources]=useState<ResourceDay[]>([]);
   const [decisions,setDecisions]=useState<DecisionState|null>(null);
   const [objects,setObjects]=useState<ObjectState[]>([]);
+  const [yolks,setYolks]=useState<YolkSynthesis[]>([]);
   const [monitorError,setMonitorError]=useState("");
   useEffect(()=>{const timer=window.setInterval(()=>setRevision(n=>n+1),60000);return()=>window.clearInterval(timer);},[]);
   useEffect(()=>{
@@ -118,8 +120,10 @@ export default function EggOperations(){
           auth.from("egg_passport_registry").select("id").eq("source_kind","operational").eq("source_project_id",projectRow.id).maybeSingle()
         ]);
         const objectRows=registry.data?await auth.from("egg_object_work_state").select("*").eq("root_passport_id",registry.data.id):null;
+        const synthesisRows=registry.data?await auth.from("egg_yolk_synthesis_v1").select("*").eq("root_passport_id",registry.data.id):null;
         if(live){
-          setMonitorError(resourceRows.error||decisionRow.error||registry.error||objectRows?.error||!registry.data?"Часть показателей движка недоступна.":"");
+          setYolks((synthesisRows?.data??[]) as YolkSynthesis[]);
+          setMonitorError(resourceRows.error||decisionRow.error||registry.error||objectRows?.error||synthesisRows?.error||!registry.data?"Часть показателей движка недоступна.":"");
           setResources((resourceRows.data??[]) as ResourceDay[]);
           setDecisions((decisionRow.data??null) as DecisionState|null);
           setObjects((objectRows?.data??[]) as ObjectState[]);
@@ -244,6 +248,22 @@ export default function EggOperations(){
           <p className="text-xs text-muted-foreground">{Number(r.recorded_elapsed_seconds).toFixed(1)} с · токены: {r.actual_tokens===null?"нет измерений":r.actual_tokens+" ("+r.measured_runs+" измеренных запусков)"}</p>
         </div>)}
         <p className="mt-3 text-xs text-muted-foreground">Автообновление каждую минуту. Стоимость ИИ пока не измеряется; отсутствие данных не означает нулевые расходы.</p>
+      </section>
+      <section aria-label="Синтез желтка" className="rounded-xl border border-border p-4 sm:p-5">
+        <h2 className="mb-3 text-sm font-semibold">Желток · синтез состояния</h2>
+        <p className="mb-3 text-xs text-muted-foreground">Живой диагностический срез. Предложения сфер не равны проверенным решениям. Смысловые противоречия пока не оценены.</p>
+        {[...yolks].sort((a,b)=>Number(Boolean(a.parent_id))-Number(Boolean(b.parent_id))||a.title.localeCompare(b.title)).map(y=><details key={y.node_id} open={!y.parent_id} className="border-t border-border py-3">
+          <summary className="cursor-pointer text-sm font-medium">{y.title} · {y.covered_spheres}/8 сфер · {y.critical_gaps} критических пробелов</summary>
+          <div className="mt-2 space-y-2 text-sm">
+            <p>{y.goal.target!=null?"Цель: "+y.goal.target+" подтверждённых заказа в месяц. Факт: "+(y.goal.actual??"не подтверждён"):y.goal.description??"Цель объекта не сформулирована"}</p>
+            <p>Следующая итерация: {({resolve_critical_evidence:"Закрыть критические пробелы",review_pending_tasks:"Обработать очередь задач",review_missing_spheres:"Исследовать недостающие сферы",review_synthesis:"Рассмотреть синтез"} as Record<string,string>)[y.next_iteration]??y.next_iteration}</p>
+            <p className="text-xs text-muted-foreground">Проверенных сфер: {y.verified_spheres}/8 · открытых задач: {y.next_tasks.length}</p>
+            {y.resources&&<p className="text-xs text-muted-foreground">Бюджет ИИ владельца: ${y.resources.ai_budget_daily_usd}/сутки · ${y.resources.ai_budget_30d_usd}/30 дней. Измеренная стоимость проекта: {y.resources.project_actual_cost_usd==null?"нет данных":"$"+y.resources.project_actual_cost_usd}</p>}
+            {y.information_gaps.filter(g=>g.priority==="critical").map(g=><div key={g.gap_id} className="rounded border border-border p-2"><p>{g.detail?.missingFact??"Критический пробел"}</p><p className="text-xs text-muted-foreground">{g.detail?.affectedDecision}</p></div>)}
+            <div className="grid grid-cols-2 gap-2">{y.sphere_matrix.map(sp=><div key={sp.sphere} className="text-xs"><span className="font-medium">{sphereNames[sp.sphere]??({law:"Право",assembly:"Комплектация"} as Record<string,string>)[sp.sphere]??sp.sphere}</span> · {sp.status==="missing"?"нет результата":sp.status==="proposed"?"предложение":sp.status==="verified"?"проверено":sp.status}</div>)}</div>
+          </div>
+        </details>)}
+        {!yolks.length&&<p className="text-sm text-muted-foreground">Данные синтеза недоступны.</p>}
       </section>
       <section aria-label="Автономное исследование" className="rounded-xl border border-border p-4 sm:p-5">
         <h2 className="mb-2 text-sm font-semibold">Автономная работа сфер</h2>
