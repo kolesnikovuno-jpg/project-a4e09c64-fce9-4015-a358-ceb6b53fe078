@@ -13,9 +13,59 @@
       "source": "/:legacy(lyra|lyra-request)",
       "destination": "https://lyra.kolesnikov.studio/",
       "permanent": false
+    },
+    {
+      "source": "/:locale(uk|ru|en)/nava",
+      "destination": "https://nava.kolesnikov.studio/:locale",
+      "permanent": false
+    },
+    {
+      "source": "/nava",
+      "destination": "https://nava.kolesnikov.studio/",
+      "permanent": false
     }
   ],
   "rewrites": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "nava.kolesnikov.studio"
+        }
+      ],
+      "destination": "/og/nava-root.html"
+    },
+    {
+      "source": "/uk",
+      "has": [
+        {
+          "type": "host",
+          "value": "nava.kolesnikov.studio"
+        }
+      ],
+      "destination": "/og/nava-uk.html"
+    },
+    {
+      "source": "/ru",
+      "has": [
+        {
+          "type": "host",
+          "value": "nava.kolesnikov.studio"
+        }
+      ],
+      "destination": "/og/nava-ru.html"
+    },
+    {
+      "source": "/en",
+      "has": [
+        {
+          "type": "host",
+          "value": "nava.kolesnikov.studio"
+        }
+      ],
+      "destination": "/og/nava-en.html"
+    },
     {
       "source": "/",
       "has": [

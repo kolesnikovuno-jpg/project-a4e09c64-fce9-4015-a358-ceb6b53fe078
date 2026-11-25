@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import lyraHero from "@/assets/nava-hero.png";
 import NavaInfo from "@/components/NavaInfo";
-import Participation from "@/components/Participation";
 import ModelSEO from "@/components/ModelSEO";
 import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
@@ -47,8 +45,7 @@ const NAVA_FIELD_OF_VIEW = "28deg";
 const NAVA_CAMERA_DISTANCE_LOCK = "auto auto 4m";
 
 const Nava = () => {
-  const navigate = useNavigate();
-  const { t, locale, localePath } = useLocale();
+  const { t, locale } = useLocale();
   const modelRef = useRef<HTMLElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
@@ -65,7 +62,6 @@ const Nava = () => {
   const [captionLoaded, setCaptionLoaded] = useState(false);
   // Switcher visibility — hidden while the hero screen is the dominant layer.
   const [switcherVisible, setSwitcherVisible] = useState(false);
-  const [participationOpen, setParticipationOpen] = useState(false);
 
   // Smooth fade-in on mount.
   useEffect(() => {
@@ -645,6 +641,7 @@ const Nava = () => {
         @media(max-width:768px){
           .uno-scroll-indicator{ right:29px; bottom:40px; }
         }
+        @media(max-width:768px){ .hero-caption{font-size:14px!important;letter-spacing:.12em!important;line-height:1.5!important;} .nava-description-screen p{font-size:16px!important;line-height:1.6!important;} }
         model-viewer::part(default-ar-button){ display:none !important; }
         model-viewer [slot="ar-button"]{ display:none !important; }
       `}</style>
@@ -685,7 +682,7 @@ const Nava = () => {
             <model-viewer
               ref={modelRef as any}
               src={GLB_URL}
-              alt="Nava — Kolesnikov.UNO"
+              alt="Nava — Kolesnikov Studio"
               camera-controls
               disable-zoom
               interaction-prompt="none"
@@ -744,7 +741,7 @@ const Nava = () => {
           {/* Layer 3: text */}
           <div
             ref={textBlockRef}
-            className="absolute inset-0 w-full h-full bg-background"
+            className="absolute inset-0 w-full h-full bg-background nava-description-screen"
             style={{
               padding: "0 clamp(20px, 6vw, 96px)",
               boxSizing: "border-box",
@@ -772,33 +769,12 @@ const Nava = () => {
               >
                 {t.nava.description}
               </p>
-              <button
-                type="button"
-                onClick={() => setParticipationOpen(true)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  padding: 0,
-                  margin: 0,
-                  cursor: "pointer",
-                  fontFamily: "var(--font-body)",
-                  fontSize: "13px",
-                  fontWeight: 300,
-                  letterSpacing: "0.04em",
-                  color: "hsl(0 0% 45%)",
-                  transition: "color .25s ease",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "#C97A63")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "hsl(0 0% 45%)")}
-              >
-                {t.participation.link} <span style={{ marginLeft: 4, opacity: 0.7 }}>↗</span>
-              </button>
             </div>
           </div>
         </div>
       </div>
       <button
-        onClick={() => navigate("/garden")}
+        onClick={() => window.location.assign(`https://www.kolesnikov.studio/${locale}`)}
         className="fixed top-4 left-4 md:top-5 md:left-5 px-2 py-1 text-[hsl(203_24%_40%)] hover:text-[#C97A63] transition-colors duration-300 z-[60]"
         aria-label={t.nav.back}
       >
@@ -838,11 +814,6 @@ const Nava = () => {
           </button>
       </div>
       <NavaInfo showTrigger={false} />
-      <Participation
-        model="nava"
-        open={participationOpen}
-        onClose={() => setParticipationOpen(false)}
-      />
       {/* Vertical scroll indicator above the info button */}
       <div className="uno-scroll-indicator" aria-hidden>
         <div className="uno-scroll-fill" ref={scrollFillRef} />

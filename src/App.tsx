@@ -65,6 +65,15 @@ const RedirectToDefaultLocale = () => {
 };
 
 const isLyraHost = () => window.location.hostname === "lyra.kolesnikov.studio";
+const isNavaHost = () => window.location.hostname === "nava.kolesnikov.studio";
+const RedirectToNavaDomain = () => {
+  const { pathname, search, hash } = useLocation();
+  const loc = pathname.split("/").filter(Boolean)[0];
+  const target = isLocale(loc) ? loc : initialLocale();
+  if (isNavaHost()) return <Navigate to={`/${target}${search}${hash}`} replace />;
+  window.location.replace(`https://nava.kolesnikov.studio/${target}${search}${hash}`);
+  return null;
+};
 const RedirectToLyra = () => {
   const { search, hash } = useLocation();
   return <Navigate to={`/${initialLocale()}${search}${hash}`} replace />;
@@ -81,7 +90,7 @@ const RedirectToLyraDomain = () => {
 // Pages that exist under each locale prefix.
 const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   // Kolesnikov.studio — new information architecture
-  { path: "", element: isLyraHost() ? <Lyra commercial /> : <Landing /> },
+  { path: "", element: isLyraHost() ? <Lyra commercial /> : isNavaHost() ? <Nava /> : <Landing /> },
   { path: "color", element: <ColorTool /> },
   { path: "method", element: <StudioMethod /> },
   { path: "cases", element: <StudioCases /> },
@@ -97,7 +106,7 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   { path: "unocalc/lab", element: <UnoLab /> },
   { path: "lyra", element: <RedirectToLyraDomain /> },
   { path: "lyra-request", element: <RedirectToLyraDomain /> },
-  { path: "nava", element: <Nava /> },
+  { path: "nava", element: <RedirectToNavaDomain /> },
   { path: "about", element: <About /> },
   { path: "pricing", element: <Pricing /> },
   { path: "garden", element: <Garden /> },

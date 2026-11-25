@@ -1,0 +1,24 @@
+{
+  "origin": "https://nava.kolesnikov.studio",
+  "image": "/og/nava-social-v1.png",
+  "copy": {
+    "en": {
+      "title": "NAVA — Lounge chair prototype | Kolesnikov",
+      "description": "NAVA combines a continuous metal frame with a suspended soft seat. Explore the design in 3D and AR as it moves toward a physical prototype.",
+      "locale": "en_US",
+      "alt": "NAVA lounge chair — Kolesnikov Studio"
+    },
+    "ru": {
+      "title": "NAVA — прототип кресла | Kolesnikov",
+      "description": "NAVA — непрерывный металлический каркас и подвешенный мягкий объём. Исследуйте форму в 3D и AR. Стадия прототипирования.",
+      "locale": "ru_RU",
+      "alt": "Кресло NAVA — Kolesnikov Studio"
+    },
+    "uk": {
+      "title": "NAVA — прототип крісла | Kolesnikov",
+      "description": "NAVA — безперервний металевий каркас і підвішений м’який об’єм. Дослідіть форму в 3D та AR. Стадія прототипування.",
+      "locale": "uk_UA",
+      "alt": "Крісло NAVA — Kolesnikov Studio"
+    }
+  }
+}

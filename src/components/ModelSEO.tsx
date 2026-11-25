@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import SEO from "./SEO";
 import lyraSocial from "@/lib/lyra-social.json";
+import navaSocial from "@/lib/nava-social.json";
 import { LOCALES } from "@/i18n/config";
 import { useLocale } from "@/i18n/useLocale";
 import {
@@ -43,12 +44,13 @@ const ModelSEO = ({ slug }: Props) => {
   const model = getModel(slug);
   if (!model) return null;
 
-  const { title, description } = slug === "lyra" ? lyraSocial.copy[locale] : modelMeta(model, locale);
+  const social = slug === "lyra" ? lyraSocial : slug === "nava" ? navaSocial : null;
+  const { title, description } = social ? social.copy[locale] : modelMeta(model, locale);
   const hidden = modelHiddenText(model, locale);
   const others = MODELS.filter((m) => m.slug !== slug);
 
   const alternates = LOCALES.reduce<Record<string, string>>((acc, l) => {
-    acc[l] = slug === "lyra" ? `${lyraSocial.origin}/${l}` : `/${l}/${slug}`;
+    acc[l] = social ? `${social.origin}/${l}` : `/${l}/${slug}`;
     return acc;
   }, {});
 
@@ -57,10 +59,10 @@ const ModelSEO = ({ slug }: Props) => {
       <SEO
         title={title}
         description={description}
-        image={slug === "lyra" ? lyraSocial.origin + lyraSocial.image : model.ogImage}
-        type={slug === "lyra" ? "website" : "product"}
-        url={slug === "lyra" ? `${lyraSocial.origin}/${locale}` : undefined}
-        alternates={slug === "lyra" ? { ...alternates, "x-default": lyraSocial.origin + "/" } : alternates}
+        image={social ? social.origin + social.image : model.ogImage}
+        type={social ? "website" : "product"}
+        url={social ? `${social.origin}/${locale}` : undefined}
+        alternates={social ? { ...alternates, "x-default": social.origin + "/" } : alternates}
       />
       <div style={srOnly} aria-hidden={false}>
         <h1>{model.name}</h1>
@@ -68,13 +70,13 @@ const ModelSEO = ({ slug }: Props) => {
         <nav aria-label={relatedLinksLabel(locale)}>
           <ul>
             <li>
-              <Link to={localePath("/garden")}>{gardenLinkLabel(locale)}</Link>
+              <a href={`https://www.kolesnikov.studio/${locale}`}>Kolesnikov Studio</a>
             </li>
             {others.map((m) => (
               <li key={m.slug}>
-                <Link to={localePath(`/${m.slug}`)}>
+                <a href={`https://${m.slug}.kolesnikov.studio/${locale}`}>
                   {m.name}
-                </Link>
+                </a>
               </li>
             ))}
           </ul>

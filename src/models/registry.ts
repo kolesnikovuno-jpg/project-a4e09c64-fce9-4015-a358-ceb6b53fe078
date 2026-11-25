@@ -17,7 +17,7 @@ export interface ModelEntry {
  */
 export const MODELS: ModelEntry[] = [
   { slug: "lyra", name: "LYRA", stage: "prototype", ogImage: "/og/lyra-social-v2.png" },
-  { slug: "nava", name: "NAVA", stage: "prototype", ogImage: "/og/nava-preview.png" },
+  { slug: "nava", name: "NAVA", stage: "prototype", ogImage: "/og/nava-social-v1.png" },
 ];
 
 export const getModel = (slug: string): ModelEntry | undefined =>

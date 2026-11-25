@@ -7,15 +7,11 @@ type Props = { showTrigger?: boolean };
 // Numeric / contact values are language-independent.
 const MODEL_DATA = {
   dimensions: { height: "654 mm", width: "656 mm", length: "917 mm" },
-  contact: {
-    telegram:
-      "https://t.me/kolesnikov_uno?text=Hello,%20I'm%20interested%20in%20Nava.%0A%0AColor:%20%0ALocation:%20%0ANotes:%20",
-    email: "kolesnikov.uno@gmail.com",
-  },
 };
 
 const NavaInfo = ({ showTrigger = true }: Props) => {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const canonical = `https://nava.kolesnikov.studio/${locale}`;
   const T = t.nava_info;
   const [open, setOpen] = useState(false);
   const [copyLabel, setCopyLabel] = useState(T.copy_link);
@@ -23,8 +19,8 @@ const NavaInfo = ({ showTrigger = true }: Props) => {
   const [pageUrl, setPageUrl] = useState("");
 
   useEffect(() => {
-    setPageUrl(window.location.href);
-  }, [open]);
+    setPageUrl(canonical);
+  }, [open, canonical]);
 
   // Reset transient labels whenever the active locale changes so we don't
   // leave stale strings from the previous language on screen.
@@ -35,7 +31,7 @@ const NavaInfo = ({ showTrigger = true }: Props) => {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(canonical);
       setCopyLabel(T.copy_done);
       setTimeout(() => setCopyLabel(T.copy_link), 1400);
     } catch {
@@ -45,7 +41,7 @@ const NavaInfo = ({ showTrigger = true }: Props) => {
   };
 
   const handleShare = async () => {
-    const url = window.location.href;
+    const url = canonical;
     const text = T.overview.join(" · ");
     if (navigator.share) {
       try {
@@ -112,7 +108,7 @@ const NavaInfo = ({ showTrigger = true }: Props) => {
       />
 
       <aside className={`lyra-info-panel ${open ? "open" : ""}`} aria-hidden={!open}>
-        <button className="lyra-info-close" aria-label="close" onClick={() => setOpen(false)}>×</button>
+        <button className="lyra-info-close" aria-label={T.close_aria} onClick={() => setOpen(false)}>×</button>
 
         {/* document meta */}
         <div className="li-doc-meta">
@@ -171,7 +167,6 @@ const NavaInfo = ({ showTrigger = true }: Props) => {
           <div className="li-section-title">{T.sections.material}</div>
           <div className="li-row"><span className="k">{T.material_keys.textile}</span><span className="v">{T.material_values.textile}</span></div>
           <div className="li-row"><span className="k">{T.material_keys.frame}</span><span className="v">{T.material_values.frame}</span></div>
-          <div className="li-row"><span className="k">{T.material_keys.color}</span><span className="v">{T.material_values.color}</span></div>
         </div>
 
         <hr className="li-rule thick" />
@@ -193,19 +188,6 @@ const NavaInfo = ({ showTrigger = true }: Props) => {
         </div>
 
         <hr className="li-rule" />
-
-        {/* CONTACT */}
-        <div className="li-section li-contact">
-          <div className="li-row"><span className="v">{T.inquiry_label}</span></div>
-          <a href={MODEL_DATA.contact.telegram} target="_blank" rel="noreferrer">
-            <span>{T.contact_telegram}</span><span>↗</span>
-          </a>
-          <a href={`mailto:${MODEL_DATA.contact.email}`}>
-            <span>{T.contact_email}</span><span>↗</span>
-          </a>
-        </div>
-
-        <hr className="li-rule thick" />
 
         {/* 6. SHARE */}
         <div className="li-section">
