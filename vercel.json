@@ -5,37 +5,50 @@
   "framework": "vite",
   "rewrites": [
     {
-      "source": "/uk/lyra-request",
+      "source": "/",
       "has": [
         {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(facebookexternalhit|Facebot|Twitterbot|TelegramBot|WhatsApp|LinkedInBot|Slackbot|Discordbot|Pinterest).*"
+          "type": "host",
+          "value": "lyra.kolesnikov.studio"
         }
       ],
-      "destination": "/og/lyra-uk.html"
+      "destination": "/og/lyra-root.html"
+    },
+    {
+      "source": "/uk/lyra-request",
+      "destination": "/og/lyra-uk-lyra-request.html"
+    },
+    {
+      "source": "/uk/lyra",
+      "destination": "/og/lyra-uk-lyra.html"
     },
     {
       "source": "/ru/lyra-request",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(facebookexternalhit|Facebot|Twitterbot|TelegramBot|WhatsApp|LinkedInBot|Slackbot|Discordbot|Pinterest).*"
-        }
-      ],
-      "destination": "/og/lyra-ru.html"
+      "destination": "/og/lyra-ru-lyra-request.html"
+    },
+    {
+      "source": "/ru/lyra",
+      "destination": "/og/lyra-ru-lyra.html"
     },
     {
       "source": "/en/lyra-request",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*(facebookexternalhit|Facebot|Twitterbot|TelegramBot|WhatsApp|LinkedInBot|Slackbot|Discordbot|Pinterest).*"
-        }
-      ],
-      "destination": "/og/lyra-en.html"
+      "destination": "/og/lyra-en-lyra-request.html"
+    },
+    {
+      "source": "/en/lyra",
+      "destination": "/og/lyra-en-lyra.html"
+    },
+    {
+      "source": "/lyra",
+      "destination": "/og/lyra-en-lyra.html"
+    },
+    {
+      "source": "/lyra-request",
+      "destination": "/og/lyra-en-lyra-request.html"
+    },
+    {
+      "source": "/lyra-concept",
+      "destination": "/og/lyra-en-lyra-concept.html"
     },
     {
       "source": "/((?!og/|assets/|.*\\..*).*)",

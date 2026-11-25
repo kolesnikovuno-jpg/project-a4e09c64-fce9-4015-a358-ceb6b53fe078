@@ -5,7 +5,7 @@ import { componentTagger } from "lovable-tagger";
 import ogPages from "./vite-plugin-og-pages";
 import sitemap from "./vite-plugin-sitemap";
 
-const SITE_URL = "https://kolesnikov.uno";
+const SITE_URL = "https://www.kolesnikov.studio";
 
 // Build-time mirror of src/models/registry.ts. Keep entries in sync — adding a
 // new model here automatically generates pre-rendered OG HTML, hreflang
