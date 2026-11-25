@@ -3,59 +3,66 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "routes": [
+  "redirects": [
     {
-      "src": "^/$",
+      "source": "/:locale(uk|ru|en)/:legacy(lyra|lyra-request)",
+      "destination": "https://lyra.kolesnikov.studio/:locale",
+      "permanent": false
+    },
+    {
+      "source": "/:legacy(lyra|lyra-request)",
+      "destination": "https://lyra.kolesnikov.studio/",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/",
       "has": [
         {
           "type": "host",
           "value": "lyra.kolesnikov.studio"
         }
       ],
-      "dest": "/og/lyra-root.html"
+      "destination": "/og/lyra-root.html"
     },
     {
-      "src": "^/uk/lyra-request/?$",
-      "dest": "/og/lyra-uk-lyra-request.html"
+      "source": "/uk",
+      "has": [
+        {
+          "type": "host",
+          "value": "lyra.kolesnikov.studio"
+        }
+      ],
+      "destination": "/og/lyra-uk.html"
     },
     {
-      "src": "^/uk/lyra/?$",
-      "dest": "/og/lyra-uk-lyra.html"
+      "source": "/ru",
+      "has": [
+        {
+          "type": "host",
+          "value": "lyra.kolesnikov.studio"
+        }
+      ],
+      "destination": "/og/lyra-ru.html"
     },
     {
-      "src": "^/ru/lyra-request/?$",
-      "dest": "/og/lyra-ru-lyra-request.html"
+      "source": "/en",
+      "has": [
+        {
+          "type": "host",
+          "value": "lyra.kolesnikov.studio"
+        }
+      ],
+      "destination": "/og/lyra-en.html"
     },
     {
-      "src": "^/ru/lyra/?$",
-      "dest": "/og/lyra-ru-lyra.html"
+      "source": "/lyra-concept",
+      "destination": "/og/lyra-en-lyra-concept.html"
     },
     {
-      "src": "^/en/lyra-request/?$",
-      "dest": "/og/lyra-en-lyra-request.html"
-    },
-    {
-      "src": "^/en/lyra/?$",
-      "dest": "/og/lyra-en-lyra.html"
-    },
-    {
-      "src": "^/lyra/?$",
-      "dest": "/og/lyra-en-lyra.html"
-    },
-    {
-      "src": "^/lyra-request/?$",
-      "dest": "/og/lyra-en-lyra-request.html"
-    },
-    {
-      "src": "^/lyra-concept/?$",
-      "dest": "/og/lyra-en-lyra-concept.html"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "^/((?!og/|assets/|.*\\..*).*)$",
-      "dest": "/index.html"
+      "source": "/:path((?!og/|assets/|.*\\..*).*)",
+      "destination": "/index.html"
     }
   ]
 }

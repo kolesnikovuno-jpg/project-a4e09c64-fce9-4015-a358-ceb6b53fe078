@@ -64,12 +64,24 @@ const RedirectToDefaultLocale = () => {
   return <Navigate to={target + search + hash} replace />;
 };
 
-const RedirectToLyra = () => <Navigate to={`/${initialLocale()}/lyra-request`} replace />;
+const isLyraHost = () => window.location.hostname === "lyra.kolesnikov.studio";
+const RedirectToLyra = () => {
+  const { search, hash } = useLocation();
+  return <Navigate to={`/${initialLocale()}${search}${hash}`} replace />;
+};
+const RedirectToLyraDomain = () => {
+  const { pathname, search, hash } = useLocation();
+  const loc = pathname.split("/").filter(Boolean)[0];
+  const target = isLocale(loc) ? loc : initialLocale();
+  const url = `https://lyra.kolesnikov.studio/${target}${search}${hash}`;
+  window.location.replace(url);
+  return null;
+};
 
 // Pages that exist under each locale prefix.
 const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   // Kolesnikov.studio — new information architecture
-  { path: "", element: <Landing /> },
+  { path: "", element: isLyraHost() ? <Lyra commercial /> : <Landing /> },
   { path: "color", element: <ColorTool /> },
   { path: "method", element: <StudioMethod /> },
   { path: "cases", element: <StudioCases /> },
@@ -83,8 +95,8 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   { path: "egg", element: <EggGate /> },
   { path: "unocalc/about", element: <UnoCalcAbout /> },
   { path: "unocalc/lab", element: <UnoLab /> },
-  { path: "lyra", element: <Lyra /> },
-  { path: "lyra-request", element: <Lyra commercial /> },
+  { path: "lyra", element: <RedirectToLyraDomain /> },
+  { path: "lyra-request", element: <RedirectToLyraDomain /> },
   { path: "nava", element: <Nava /> },
   { path: "about", element: <About /> },
   { path: "pricing", element: <Pricing /> },

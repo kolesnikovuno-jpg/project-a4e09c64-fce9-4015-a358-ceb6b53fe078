@@ -883,7 +883,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
         </div>
       </div>
       <button
-        onClick={() => navigate(commercial ? `/${locale}` : "/garden")}
+        onClick={() => commercial ? window.location.assign(`https://www.kolesnikov.studio/${locale}`) : navigate("/garden")}
         className="fixed top-4 left-4 md:top-5 md:left-5 px-2 py-1 text-[hsl(203_24%_40%)] hover:text-[#C97A63] transition-colors duration-300 z-[60]"
         aria-label={t.nav.back}
       >
@@ -946,8 +946,8 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
           description={lyraSocial.copy[locale].description}
           image={lyraSocial.origin + lyraSocial.image}
           type="website"
-          url={lyraSocial.origin + "/" + locale + "/lyra-request"}
-          alternates={{ en: lyraSocial.origin + "/en/lyra-request", ru: lyraSocial.origin + "/ru/lyra-request", uk: lyraSocial.origin + "/uk/lyra-request", "x-default": lyraSocial.origin + "/" }}
+          url={lyraSocial.origin + "/" + locale}
+          alternates={{ en: lyraSocial.origin + "/en", ru: lyraSocial.origin + "/ru", uk: lyraSocial.origin + "/uk", "x-default": lyraSocial.origin + "/" }}
         />
       ) : <ModelSEO slug="lyra" />}
       {/* Language switcher — hidden on hero, fades in once user scrolls past it. */}

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { isLocale } from "./config";
-import { getStoredLocale } from "./storage";
+import { getStoredLocale, setStoredLocale } from "./storage";
 
 /**
  * Watches every URL change and, if the URL's locale segment doesn't match
@@ -19,6 +19,11 @@ const LocalePersistenceGuard = () => {
   const { pathname, search, hash } = useLocation();
 
   useEffect(() => {
+    if (window.location.hostname === "lyra.kolesnikov.studio") {
+      const first = pathname.split("/").filter(Boolean)[0];
+      if (isLocale(first)) setStoredLocale(first);
+      return;
+    }
     const stored = getStoredLocale();
     if (!stored) return;
 

@@ -57,7 +57,7 @@ function shell(lang, canonical) {
     ...Object.entries({'og:type':'website','og:site_name':'Kolesnikov Studio','og:title':m.title,'og:description':m.description,'og:url':canonical,'og:locale':m.locale,'og:image':imageUrl,'og:image:secure_url':imageUrl,'og:image:type':'image/png','og:image:width':width,'og:image:height':height,'og:image:alt':m.alt}).map(([k,v])=>meta('property',k,v)),
     ...Object.entries(copy).filter(([l])=>l!==lang).map(([,v])=>meta('property','og:locale:alternate',v.locale)),
     ...Object.entries({'twitter:card':'summary_large_image','twitter:title':m.title,'twitter:description':m.description,'twitter:image':imageUrl,'twitter:image:alt':m.alt}).map(([k,v])=>meta('name',k,v)),
-    ...Object.keys(copy).map(l=>'<link rel="alternate" hreflang="'+l+'" href="'+origin+'/'+l+'/lyra-request">'),
+    ...Object.keys(copy).map(l=>'<link rel="alternate" hreflang="'+l+'" href="'+origin+'/'+l+'">'),
     '<link rel="alternate" hreflang="x-default" href="'+origin+'/">'
   ];
   const html = base.replace(/<html\b[^>]*>/i,'<html lang="'+lang+'">')
@@ -73,7 +73,7 @@ function write(name,lang,canonical) {
 }
 write('lyra-root','en',origin+'/');
 for (const lang of Object.keys(copy)) {
-  const canonical = origin+'/'+lang+'/lyra-request';
+  const canonical = origin+'/'+lang;
   for (const route of ['lyra','lyra-request']) {
     write('lyra-'+lang+'-'+route,lang,canonical);
     const routeDir=path.join(dist,lang,route);
@@ -82,5 +82,5 @@ for (const lang of Object.keys(copy)) {
   }
   write('lyra-'+lang,lang,canonical);
 }
-write('lyra-en-lyra-concept','en',origin+'/en/lyra-request');
+write('lyra-en-lyra-concept','en',origin+'/en');
 console.log('Lyra social preview: '+src.width+'x'+src.height+' → '+width+'x'+height+'; '+bytes.length+' bytes; HTML shells generated.');

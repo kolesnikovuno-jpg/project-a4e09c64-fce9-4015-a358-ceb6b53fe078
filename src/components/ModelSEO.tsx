@@ -48,7 +48,7 @@ const ModelSEO = ({ slug }: Props) => {
   const others = MODELS.filter((m) => m.slug !== slug);
 
   const alternates = LOCALES.reduce<Record<string, string>>((acc, l) => {
-    acc[l] = slug === "lyra" ? `${lyraSocial.origin}/${l}/lyra-request` : `/${l}/${slug}`;
+    acc[l] = slug === "lyra" ? `${lyraSocial.origin}/${l}` : `/${l}/${slug}`;
     return acc;
   }, {});
 
@@ -59,7 +59,7 @@ const ModelSEO = ({ slug }: Props) => {
         description={description}
         image={slug === "lyra" ? lyraSocial.origin + lyraSocial.image : model.ogImage}
         type={slug === "lyra" ? "website" : "product"}
-        url={slug === "lyra" ? `${lyraSocial.origin}/${locale}/lyra-request` : undefined}
+        url={slug === "lyra" ? `${lyraSocial.origin}/${locale}` : undefined}
         alternates={slug === "lyra" ? { ...alternates, "x-default": lyraSocial.origin + "/" } : alternates}
       />
       <div style={srOnly} aria-hidden={false}>
