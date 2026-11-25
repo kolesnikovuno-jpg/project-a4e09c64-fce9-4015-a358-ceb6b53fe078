@@ -3,56 +3,59 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "rewrites": [
+  "routes": [
     {
-      "source": "/",
+      "src": "^/$",
       "has": [
         {
           "type": "host",
           "value": "lyra.kolesnikov.studio"
         }
       ],
-      "destination": "/og/lyra-root.html"
+      "dest": "/og/lyra-root.html"
     },
     {
-      "source": "/uk/lyra-request",
-      "destination": "/og/lyra-uk-lyra-request.html"
+      "src": "^/uk/lyra-request/?$",
+      "dest": "/og/lyra-uk-lyra-request.html"
     },
     {
-      "source": "/uk/lyra",
-      "destination": "/og/lyra-uk-lyra.html"
+      "src": "^/uk/lyra/?$",
+      "dest": "/og/lyra-uk-lyra.html"
     },
     {
-      "source": "/ru/lyra-request",
-      "destination": "/og/lyra-ru-lyra-request.html"
+      "src": "^/ru/lyra-request/?$",
+      "dest": "/og/lyra-ru-lyra-request.html"
     },
     {
-      "source": "/ru/lyra",
-      "destination": "/og/lyra-ru-lyra.html"
+      "src": "^/ru/lyra/?$",
+      "dest": "/og/lyra-ru-lyra.html"
     },
     {
-      "source": "/en/lyra-request",
-      "destination": "/og/lyra-en-lyra-request.html"
+      "src": "^/en/lyra-request/?$",
+      "dest": "/og/lyra-en-lyra-request.html"
     },
     {
-      "source": "/en/lyra",
-      "destination": "/og/lyra-en-lyra.html"
+      "src": "^/en/lyra/?$",
+      "dest": "/og/lyra-en-lyra.html"
     },
     {
-      "source": "/lyra",
-      "destination": "/og/lyra-en-lyra.html"
+      "src": "^/lyra/?$",
+      "dest": "/og/lyra-en-lyra.html"
     },
     {
-      "source": "/lyra-request",
-      "destination": "/og/lyra-en-lyra-request.html"
+      "src": "^/lyra-request/?$",
+      "dest": "/og/lyra-en-lyra-request.html"
     },
     {
-      "source": "/lyra-concept",
-      "destination": "/og/lyra-en-lyra-concept.html"
+      "src": "^/lyra-concept/?$",
+      "dest": "/og/lyra-en-lyra-concept.html"
     },
     {
-      "source": "/((?!og/|assets/|.*\\..*).*)",
-      "destination": "/index.html"
+      "handle": "filesystem"
+    },
+    {
+      "src": "^/((?!og/|assets/|.*\\..*).*)$",
+      "dest": "/index.html"
     }
   ]
 }

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import SEO from "./SEO";
+import lyraSocial from "@/lib/lyra-social.json";
 import { LOCALES } from "@/i18n/config";
 import { useLocale } from "@/i18n/useLocale";
 import {
@@ -42,12 +43,12 @@ const ModelSEO = ({ slug }: Props) => {
   const model = getModel(slug);
   if (!model) return null;
 
-  const { title, description } = modelMeta(model, locale);
+  const { title, description } = slug === "lyra" ? lyraSocial.copy[locale] : modelMeta(model, locale);
   const hidden = modelHiddenText(model, locale);
   const others = MODELS.filter((m) => m.slug !== slug);
 
   const alternates = LOCALES.reduce<Record<string, string>>((acc, l) => {
-    acc[l] = `/${l}/${slug}`;
+    acc[l] = slug === "lyra" ? `${lyraSocial.origin}/${l}/lyra-request` : `/${l}/${slug}`;
     return acc;
   }, {});
 
@@ -56,9 +57,10 @@ const ModelSEO = ({ slug }: Props) => {
       <SEO
         title={title}
         description={description}
-        image={model.ogImage}
-        type="product"
-        alternates={alternates}
+        image={slug === "lyra" ? lyraSocial.origin + lyraSocial.image : model.ogImage}
+        type={slug === "lyra" ? "website" : "product"}
+        url={slug === "lyra" ? `${lyraSocial.origin}/${locale}/lyra-request` : undefined}
+        alternates={slug === "lyra" ? { ...alternates, "x-default": lyraSocial.origin + "/" } : alternates}
       />
       <div style={srOnly} aria-hidden={false}>
         <h1>{model.name}</h1>

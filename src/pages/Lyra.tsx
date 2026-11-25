@@ -11,6 +11,7 @@ import { trackLyra } from "@/lib/lyraAnalytics";
 import Participation from "@/components/Participation";
 import ModelSEO from "@/components/ModelSEO";
 import SEO from "@/components/SEO";
+import lyraSocial from "@/lib/lyra-social.json";
 import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 
@@ -941,11 +942,12 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
       </div>
       {commercial ? (
         <SEO
-          title={locale === "uk" ? "LYRA — дизайнерське крісло | Kolesnikov" : locale === "ru" ? "LYRA — дизайнерское кресло | Kolesnikov" : "LYRA — Designer Chair | Kolesnikov"}
-          description={locale === "uk" ? "LYRA — авторське крісло як виразний акцент інтер’єру. Розгляньте форму в 3D та залиште запит на виготовлення в Україні." : locale === "ru" ? "LYRA — авторское кресло как выразительный акцент интерьера. Рассмотрите форму в 3D и оставьте запрос на изготовление в Украине." : "LYRA is a sculptural designer chair and a distinctive interior accent. Explore it in 3D and inquire about production in Ukraine."}
-          image="/og/lyra-preview.png"
-          type="product"
-          alternates={{ en: "/en/lyra-request", ru: "/ru/lyra-request", uk: "/uk/lyra-request" }}
+          title={lyraSocial.copy[locale].title}
+          description={lyraSocial.copy[locale].description}
+          image={lyraSocial.origin + lyraSocial.image}
+          type="website"
+          url={lyraSocial.origin + "/" + locale + "/lyra-request"}
+          alternates={{ en: lyraSocial.origin + "/en/lyra-request", ru: lyraSocial.origin + "/ru/lyra-request", uk: lyraSocial.origin + "/uk/lyra-request", "x-default": lyraSocial.origin + "/" }}
         />
       ) : <ModelSEO slug="lyra" />}
       {/* Language switcher — hidden on hero, fades in once user scrolls past it. */}

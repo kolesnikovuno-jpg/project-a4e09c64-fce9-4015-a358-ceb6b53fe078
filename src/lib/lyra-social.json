@@ -1,0 +1,24 @@
+{
+  "origin": "https://lyra.kolesnikov.studio",
+  "image": "/og/lyra-social-v2.png",
+  "copy": {
+    "uk": {
+      "title": "LYRA — дизайнерське крісло | Kolesnikov",
+      "description": "LYRA — авторське крісло як виразний акцент інтер’єру. Дослідіть форму в 3D та залиште запит на виготовлення в Україні.",
+      "locale": "uk_UA",
+      "alt": "Авторське крісло LYRA"
+    },
+    "ru": {
+      "title": "LYRA — дизайнерское кресло | Kolesnikov",
+      "description": "LYRA — авторское кресло как выразительный акцент интерьера. Рассмотрите форму в 3D и оставьте запрос на изготовление в Украине.",
+      "locale": "ru_RU",
+      "alt": "Авторское кресло LYRA"
+    },
+    "en": {
+      "title": "LYRA — Designer Chair | Kolesnikov",
+      "description": "LYRA is a sculptural designer chair and a distinctive interior accent. Explore it in 3D and inquire about production in Ukraine.",
+      "locale": "en_US",
+      "alt": "LYRA designer chair"
+    }
+  }
+}

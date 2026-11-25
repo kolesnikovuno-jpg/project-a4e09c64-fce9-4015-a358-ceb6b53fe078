@@ -16,7 +16,7 @@ export interface ModelEntry {
  * sitemap.xml emission.
  */
 export const MODELS: ModelEntry[] = [
-  { slug: "lyra", name: "LYRA", stage: "prototype", ogImage: "/og/lyra-preview.png" },
+  { slug: "lyra", name: "LYRA", stage: "prototype", ogImage: "/og/lyra-social-v2.png" },
   { slug: "nava", name: "NAVA", stage: "prototype", ogImage: "/og/nava-preview.png" },
 ];
 

@@ -7,9 +7,9 @@ import { PNG } from 'pngjs';
 const dist = path.resolve('dist');
 const dir = path.join(dist, 'og');
 fs.mkdirSync(dir, { recursive: true });
-const origin = 'https://lyra.kolesnikov.studio';
-const imageName = 'lyra-social-v2.png';
-const imageUrl = origin + '/og/' + imageName;
+const { origin, image, copy } = JSON.parse(fs.readFileSync('src/lib/lyra-social.json', 'utf8'));
+const imageName = path.basename(image);
+const imageUrl = origin + image;
 const src = PNG.sync.read(fs.readFileSync('src/assets/lyra-hero.png'));
 const width = 1200, height = 630;
 const out = new PNG({ width, height });
@@ -46,11 +46,6 @@ for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
 const bytes = PNG.sync.write(out, {colorType: 2});
 fs.writeFileSync(path.join(dir, imageName), bytes);
 if (bytes.readUInt32BE(16) !== width || bytes.readUInt32BE(20) !== height) throw new Error('Invalid Lyra social image dimensions');
-const copy = {
-  uk: { title: 'LYRA — дизайнерське крісло | Kolesnikov', description: 'LYRA — авторське крісло як виразний акцент інтер’єру. Дослідіть форму в 3D та залиште запит на виготовлення в Україні.', locale: 'uk_UA', alt: 'Авторське крісло LYRA' },
-  ru: { title: 'LYRA — дизайнерское кресло | Kolesnikov', description: 'LYRA — авторское кресло как выразительный акцент интерьера. Рассмотрите форму в 3D и оставьте запрос на изготовление в Украине.', locale: 'ru_RU', alt: 'Авторское кресло LYRA' },
-  en: { title: 'LYRA — Designer Chair | Kolesnikov', description: 'LYRA is a sculptural designer chair and a distinctive interior accent. Explore it in 3D and inquire about production in Ukraine.', locale: 'en_US', alt: 'LYRA designer chair' },
-};
 const escape = s => s.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 const meta = (attribute, key, value) => '<meta '+attribute+'="'+key+'" content="'+escape(String(value))+'">';
 const base = fs.readFileSync(path.join(dist,'index.html'),'utf8');
