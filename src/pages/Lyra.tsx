@@ -1,3 +1,5 @@
+import ColorTool from "@/components/Color";
+import type {ColorData} from "@/lib/color";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
@@ -67,6 +69,17 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
   const [switcherVisible, setSwitcherVisible] = useState(false);
   const [participationOpen, setParticipationOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
+  const [colorOpen,setColorOpen]=useState(false);
+  const [frameColor,setFrameColor]=useState<string>();
+  const [colorError,setColorError]=useState("");
+  function applyFrameColor(data:ColorData){
+    const materials=(modelRef.current as any)?.model?.materials || [];
+    const frames=materials.filter((m:any)=>/frame|plywood|wood|carcass|каркас/i.test(m.name)&&!/cord|rope|string|шнур/i.test(m.name));
+    if(!frames.length){setColorError("Frame material not identified; model unchanged.");return;}
+    const linear=data.rgb.map(v=>{const s=v/255;return s<=.04045?s/12.92:((s+.055)/1.055)**2.4;});
+    frames.forEach((m:any)=>m.pbrMetallicRoughness.setBaseColorFactor([...linear,1]));
+    setFrameColor(data.hex);setColorError("");
+  }
 
   // Anonymous demand funnel: no cookies, IPs or personal data stored in event rows.
   useEffect(() => {
@@ -863,6 +876,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
         </span>
       </button>
       <div className="uno-actions">
+        {modelFullyVisible && modelLoaded && <button type="button" onClick={()=>setColorOpen(true)}>color</button>}
         {commercial && <button type="button" className={`uno-action-conditional ${switcherVisible ? "is-hidden" : ""}`} tabIndex={switcherVisible ? -1 : 0} aria-hidden={switcherVisible} onClick={() => setRequestOpen(true)}>{locale === "ru" ? "запрос" : locale === "uk" ? "запит" : "request"}</button>}
         {(
           <button
@@ -889,8 +903,9 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
             {t.nav.info}
           </button>
       </div>
+      {colorOpen && <div role="dialog" aria-label="Frame color" className="fixed inset-0 z-[80] overflow-y-auto bg-[#F5EFEB]"><div className="p-4 flex justify-between"><button type="button" onClick={()=>setColorOpen(false)}>Close ×</button><span>{frameColor}</span></div><ColorTool onChange={applyFrameColor}/>{colorError&&<p role="alert" className="p-4">{colorError}</p>}<button className="p-4" type="button" onClick={()=>setColorOpen(false)}>View chair →</button></div>}
       <LyraInfo showTrigger={false} />
-      {commercial && <LyraRequestPanel open={requestOpen} onClose={() => setRequestOpen(false)} />}
+      {commercial && <LyraRequestPanel frameColor={frameColor} open={requestOpen} onClose={() => setRequestOpen(false)} />}
       {!commercial && <Participation
         model="lyra"
         open={participationOpen}
