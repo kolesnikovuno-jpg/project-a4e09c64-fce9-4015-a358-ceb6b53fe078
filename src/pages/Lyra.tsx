@@ -72,13 +72,16 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
   const [colorOpen,setColorOpen]=useState(false);
   const [frameColor,setFrameColor]=useState<string>();
   const [colorError,setColorError]=useState("");
-  const [materialNames,setMaterialNames]=useState<string[]>([]);
-  const [frameIndex,setFrameIndex]=useState<number|null>(null);
-  function openColors(){const materials=(modelRef.current as any)?.model?.materials||[];setMaterialNames(materials.map((m:any,i:number)=>m.name||`Material ${i}`));setColorOpen(true);}
-  function pickFrame(e:React.MouseEvent<HTMLElement>){if(!colorOpen)return;const mv=modelRef.current as any;const material=mv?.materialFromPoint?.(e.clientX,e.clientY);if(material){const index=mv.model.materials.indexOf(material);if(index>=0){setFrameIndex(index);setColorError("");}}}
+  const originalMaterials=useRef<any[]>([]);
+  function openColors(){setColorOpen(true);}
   function applyFrameColor(data:ColorData,match?:CatalogMatch){
     const materials=(modelRef.current as any)?.model?.materials || [];
-    const frames=frameIndex!==null ? materials.filter((_:any,i:number)=>i===frameIndex) : materials.filter((m:any)=>/frame|plywood|wood|carcass|каркас/i.test(m.name)&&!/cord|rope|string|шнур/i.test(m.name));
+    if(!originalMaterials.current.length)originalMaterials.current=materials.map((m:any)=>({material:m,name:m.name||"",rgb:Array.from(m.pbrMetallicRoughness.baseColorFactor||[]).slice(0,3)}));
+    const originals=originalMaterials.current;
+    const cord=/cord|rope|string|thread|paracord|шнур/i;
+    const named=/frame|plywood|wood|carcass|каркас/i;
+    const red=(rgb:number[])=>rgb.length===3&&rgb[0]>rgb[1]*1.35&&rgb[0]>rgb[2]*1.35&&rgb[0]>.08;
+    const frames=originals.filter(m=>!cord.test(m.name)&&(named.test(m.name)||red(m.rgb))).map(m=>m.material);
     if(!frames.length){setColorError("Frame material not identified; model unchanged.");return;}
     const linear=data.rgb.map(v=>{const s=v/255;return s<=.04045?s/12.92:((s+.055)/1.055)**2.4;});
     frames.forEach((m:any)=>m.pbrMetallicRoughness.setBaseColorFactor([...linear,1]));
@@ -744,7 +747,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
             </div>
 
             <model-viewer
- onClick={pickFrame}               ref={modelRef as any}
+               ref={modelRef as any}
               src={GLB_URL}
               alt="Lyra — Kolesnikov.UNO"
               camera-controls
@@ -907,7 +910,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
             {t.nav.info}
           </button>
       </div>
-      {colorOpen && <div role="dialog" aria-label="Frame color" className="fixed right-0 top-0 bottom-16 z-[80] w-[min(44vw,420px)] max-sm:w-full max-sm:top-auto max-sm:max-h-[48dvh] overflow-y-auto bg-[#F5EFEB] shadow-lg"><div className="p-4 flex justify-between"><button type="button" onClick={()=>setColorOpen(false)}>Close ×</button><span>{frameColor}</span></div><div className="px-4"><label>Frame material <select value={frameIndex??""} onChange={e=>setFrameIndex(e.target.value===""?null:Number(e.target.value))}><option value="">Automatic</option>{materialNames.map((name,i)=><option key={i} value={i}>{i}: {name}</option>)}</select></label><p className="text-xs">Select the frame material, or tap the frame in the 3D view, then choose a color.</p></div><ColorTool onChange={applyFrameColor}/>{colorError&&<p role="alert" className="p-4">{colorError}</p>}<button className="p-4" type="button" onClick={()=>setColorOpen(false)}>View chair →</button></div>}
+      {colorOpen && <div role="dialog" aria-label="Frame color" className="fixed right-0 top-0 bottom-16 z-[80] w-[min(44vw,420px)] max-sm:w-full max-sm:top-auto max-sm:max-h-[48dvh] overflow-y-auto bg-[#F5EFEB] shadow-lg"><div className="p-4 flex justify-between"><button type="button" onClick={()=>setColorOpen(false)}>Close ×</button><span>{frameColor}</span></div><ColorTool onChange={applyFrameColor}/>{colorError&&<p role="alert" className="p-4">{colorError}</p>}<button className="p-4" type="button" onClick={()=>setColorOpen(false)}>View chair →</button></div>}
       <LyraInfo showTrigger={false} />
       {commercial && <LyraRequestPanel frameColor={frameColor} open={requestOpen} onClose={() => setRequestOpen(false)} />}
       {!commercial && <Participation
