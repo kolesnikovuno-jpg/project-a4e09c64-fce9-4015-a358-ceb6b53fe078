@@ -35,3 +35,16 @@ export type CatalogMatch=ReturnType<typeof catalogMatches>[number];
 
 export type ColorSelection = ColorData & {schemaVersion:1; selectedAt:string; reference?:{catalog:string;catalogId:string;code:string;deltaE:number;hex:string}};
 export function colorSelection(data:ColorData,match?:CatalogMatch):ColorSelection{return {...data,schemaVersion:1,selectedAt:new Date().toISOString(),reference:match?{catalog:match.catalog,catalogId:match.catalogId,code:match.code,deltaE:match.deltaE,hex:match.data.hex}:undefined};}
+
+/** Display-only adaptation. Never changes catalog or order data. */
+export type DisplayGamut="srgb"|"p3"|"rec2020";
+export function displayGamut():DisplayGamut{
+ if(typeof window==="undefined"||typeof CSS==="undefined"||!CSS.supports("color","oklch(0.5 0.1 30)"))return "srgb";
+ return window.matchMedia("(color-gamut: rec2020)").matches?"rec2020":window.matchMedia("(color-gamut: p3)").matches?"p3":"srgb";
+}
+export function displayColor(input:Color,gamut:DisplayGamut):string{
+ if(gamut==="srgb")return describe(input).hex;
+ // Let the browser's color management convert the device-independent color
+ // into its actual display profile, including gamut mapping.
+ return `oklch(${input.l} ${input.c} ${input.h})`;
+}
