@@ -3,116 +3,125 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "redirects": [
+  "routes": [
     {
-      "source": "/:locale(uk|ru|en)/:legacy(lyra|lyra-request)",
-      "destination": "https://lyra.kolesnikov.studio/:locale",
-      "permanent": false
+      "src": "^/(uk|ru|en)/(lyra|lyra-request)/?$",
+      "status": 307,
+      "headers": {
+        "Location": "https://lyra.kolesnikov.studio/$1"
+      }
     },
     {
-      "source": "/:legacy(lyra|lyra-request)",
-      "destination": "https://lyra.kolesnikov.studio/",
-      "permanent": false
+      "src": "^/(lyra|lyra-request)/?$",
+      "status": 307,
+      "headers": {
+        "Location": "https://lyra.kolesnikov.studio/"
+      }
     },
     {
-      "source": "/:locale(uk|ru|en)/nava",
-      "destination": "https://nava.kolesnikov.studio/:locale",
-      "permanent": false
+      "src": "^/(uk|ru|en)/nava/?$",
+      "status": 307,
+      "headers": {
+        "Location": "https://nava.kolesnikov.studio/$1"
+      }
     },
     {
-      "source": "/nava",
-      "destination": "https://nava.kolesnikov.studio/",
-      "permanent": false
-    }
-  ],
-  "rewrites": [
+      "src": "^/nava/?$",
+      "status": 307,
+      "headers": {
+        "Location": "https://nava.kolesnikov.studio/"
+      }
+    },
     {
-      "source": "/",
+      "src": "^/$",
       "has": [
         {
           "type": "host",
           "value": "nava.kolesnikov.studio"
         }
       ],
-      "destination": "/og/nava-root.html"
+      "dest": "/og/nava-root.html"
     },
     {
-      "source": "/uk",
+      "src": "^/uk/?$",
       "has": [
         {
           "type": "host",
           "value": "nava.kolesnikov.studio"
         }
       ],
-      "destination": "/og/nava-uk.html"
+      "dest": "/og/nava-uk.html"
     },
     {
-      "source": "/ru",
+      "src": "^/ru/?$",
       "has": [
         {
           "type": "host",
           "value": "nava.kolesnikov.studio"
         }
       ],
-      "destination": "/og/nava-ru.html"
+      "dest": "/og/nava-ru.html"
     },
     {
-      "source": "/en",
+      "src": "^/en/?$",
       "has": [
         {
           "type": "host",
           "value": "nava.kolesnikov.studio"
         }
       ],
-      "destination": "/og/nava-en.html"
+      "dest": "/og/nava-en.html"
     },
     {
-      "source": "/",
+      "src": "^/$",
       "has": [
         {
           "type": "host",
           "value": "lyra.kolesnikov.studio"
         }
       ],
-      "destination": "/og/lyra-root.html"
+      "dest": "/og/lyra-root.html"
     },
     {
-      "source": "/uk",
+      "src": "^/uk/?$",
       "has": [
         {
           "type": "host",
           "value": "lyra.kolesnikov.studio"
         }
       ],
-      "destination": "/og/lyra-uk.html"
+      "dest": "/og/lyra-uk.html"
     },
     {
-      "source": "/ru",
+      "src": "^/ru/?$",
       "has": [
         {
           "type": "host",
           "value": "lyra.kolesnikov.studio"
         }
       ],
-      "destination": "/og/lyra-ru.html"
+      "dest": "/og/lyra-ru.html"
     },
     {
-      "source": "/en",
+      "src": "^/en/?$",
       "has": [
         {
           "type": "host",
           "value": "lyra.kolesnikov.studio"
         }
       ],
-      "destination": "/og/lyra-en.html"
+      "dest": "/og/lyra-en.html"
     },
     {
-      "source": "/lyra-concept",
-      "destination": "/og/lyra-en-lyra-concept.html"
+      "src": "^/lyra-concept/?$",
+      "dest": "/og/lyra-en-lyra-concept.html"
     },
     {
-      "source": "/:path((?!og/|assets/|.*\\..*).*)",
-      "destination": "/index.html"
+      "handle": "filesystem"
+    },
+    {
+      "src": "^/(?!og/|assets/|.*\\..*).*$",
+      "dest": "/index.html"
     }
   ]
 }
