@@ -1,3 +1,4 @@
+import type {ColorSelection} from "@/lib/color";
 import "@/styles/uno-document.css";
 import { useEffect, useState } from "react";
 import { useLocale } from "@/i18n/useLocale";
@@ -10,7 +11,7 @@ declare global {
 
 type Intent = "purchase" | "custom" | "production";
 type ContactChannel = "email" | "telegram" | "viber";
-type Props = { open: boolean; onClose: () => void; frameColor?: string };
+type Props = { open: boolean; onClose: () => void; frameColor?: string; colorSelection?:ColorSelection };
 
 const labels = {
   en: { title: "LYRA / Request", intro: "Lyra is made to order in its original form, with a choice of color. Send a request to discuss the color, price and production timeframe. We will contact you using your selected channel.", purchase: "Acquire Lyra", custom: "Discuss color", production: "Production / collaboration", name: "Name", email: "Email", location: "Country / city", note: "Message (optional)", send: "Send request", sending: "Sending…", success: "Your request has been received. We will contact you using your selected channel.", error: "The request could not be sent. Please try again.", close: "Close" },
@@ -18,7 +19,7 @@ const labels = {
   uk: { title: "LYRA / Запит", intro: "Lyra виготовляється на замовлення в авторській формі, з можливістю вибору кольору. Надішліть запит, щоб обговорити колір, вартість і терміни. Ми зв’яжемося з вами обраним способом.", purchase: "Придбання Lyra", custom: "Вибір кольору", production: "Виробництво / співпраця", name: "Ім’я", email: "Email", location: "Країна / місто", note: "Повідомлення (необов’язково)", send: "Надіслати запит", sending: "Надсилання…", success: "Запит отримано. Ми зв’яжемося з вами обраним способом.", error: "Не вдалося надіслати запит. Спробуйте ще раз.", close: "Закрити" },
 };
 
-export default function LyraRequestPanel({ open, onClose, frameColor }: Props) {
+export default function LyraRequestPanel({ open, onClose, frameColor, colorSelection }: Props) {
   const { locale } = useLocale();
   const T = labels[locale];
   const [intent, setIntent] = useState<Intent>("purchase");
@@ -57,6 +58,7 @@ export default function LyraRequestPanel({ open, onClose, frameColor }: Props) {
         location: location.trim().slice(0, 200),
         intent,
         message: [frameColor ? "Frame color (digital reference): " + frameColor : "", note.trim()].filter(Boolean).join("\n").slice(0,1500) || null,
+        color_selected: colorSelection ?? null,
         locale,
       } as never);
       if (dbError) throw dbError;
