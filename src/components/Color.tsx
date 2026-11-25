@@ -1,6 +1,7 @@
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
 import {useLocale} from "@/i18n/useLocale";
-import {useState} from "react";
+import {useState,useEffect} from "react";
+import {createPortal} from "react-dom";
 import "../pages/site/Landing.css";
 import {catalogs,describe,catalogMatches,type CatalogMatch,type Color,type ColorData} from "../lib/color";
 export default function ColorTool({onChange,initialColor,initialCatalog}:{onChange?:(data:ColorData,match?:CatalogMatch)=>void;initialColor?:Color;initialCatalog?:string}={}){
@@ -15,6 +16,8 @@ export default function ColorTool({onChange,initialColor,initialCatalog}:{onChan
  const [catalog,setCatalog]=useState(initialCatalog??"open");
  const [palette,setPalette]=useState<Color[]>(()=>{try{const p=JSON.parse(localStorage.getItem("studio.color.v1")||"[]");return Array.isArray(p)?p.filter(x=>x&&Number.isFinite(x.l)&&x.l>=0&&x.l<=1&&Number.isFinite(x.c)&&x.c>=0&&x.c<=.4&&Number.isFinite(x.h)):[];}catch{return [];}});
  const [notice,setNotice]=useState("");
+ const [fullColor,setFullColor]=useState(false);
+ useEffect(()=>{if(!fullColor)return;const previous=document.body.style.overflow;document.body.style.overflow="hidden";const close=(e:KeyboardEvent)=>{if(e.key==="Escape")setFullColor(false);};window.addEventListener("keydown",close);return()=>{document.body.style.overflow=previous;window.removeEventListener("keydown",close);};},[fullColor]);
  const data=describe(color);
  const matches=catalogMatches(color,catalog);
  function choose(v:Color){setColor(v);onChange?.(describe(v),catalogMatches(v,catalog)[0]);}
@@ -25,7 +28,8 @@ export default function ColorTool({onChange,initialColor,initialCatalog}:{onChan
  <style>{` .studio-color-tool {min-width:0;} @media(max-width:640px){.studio-color-tool{font-size:16px;padding-inline:16px!important;padding-bottom:16px!important;gap:14px!important;} .studio-color-tool small{font-size:13px;} .studio-color-tool input[type=range]{width:100%;min-height:44px;} .studio-color-tool select{font-size:16px;min-height:44px;max-width:100%;} .studio-color-tool button{min-height:44px;text-align:left;} .studio-color-tool a{font-size:14px;} } `}</style>
  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><h1 style={{fontSize:24,letterSpacing:4}}>COLOR</h1>{!onChange&&<a href="https://kolesnikov.studio">kolesnikov.studio</a>}</div>
  {!onChange&&<LanguageSwitcher background="hsl(24 26% 94%)" topOffset={0} />}
- <div style={{background:data.hex,minHeight:120,borderRadius:4}} aria-label={data.hex}/>
+ <button type="button" onClick={()=>setFullColor(true)} style={{background:data.hex,minHeight:120,borderRadius:4,width:"100%",cursor:"zoom-in",border:0}} aria-label={locale==="ru"?"Развернуть цвет":locale==="uk"?"Розгорнути колір":"Expand color"} />
+ {fullColor&&createPortal(<button type="button" autoFocus onClick={()=>setFullColor(false)} aria-label={locale==="ru"?"Свернуть цвет":locale==="uk"?"Згорнути колір":"Close full-screen color"} style={{position:"fixed",inset:0,width:"100vw",height:"100dvh",zIndex:2147483647,background:data.hex,border:0,padding:0,margin:0,cursor:"zoom-out",touchAction:"manipulation"}}/>,document.body)}
  {([["h","Hue",360,1],["l","Lightness",1,.01],["c","Chroma",.4,.001]] as const).map(([key,_label,max,step])=><label key={key} style={{display:"grid",gap:5}}>{T[key]} · {color[key].toFixed(key==="h"?0:3)}<input type="range" min={0} max={max} step={step} value={color[key]} onChange={e=>choose({...color,[key]:Number(e.target.value)})}/></label>)}
  <div style={{fontSize:14,overflowWrap:"anywhere"}}>{data.hex} · RGB {data.rgb.join(", ")}<br/>OKLCH {Object.values(data.oklch).map(v=>v.toFixed(3)).join(" ")}<br/>CIELAB D65 {data.lab.map(v=>v.toFixed(2)).join(" ")}{data.mapped&&<p>{T.mapped}</p>}</div>
  <div>{T.variations}<div style={{display:"grid",gridTemplateColumns:"repeat(7,minmax(0,1fr))",gap:4}}>{Array.from({length:7},(_,i)=>({...color,l:Math.max(0,Math.min(1,color.l+(i-3)*.09))})).map(swatch)}</div></div>
