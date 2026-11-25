@@ -1,12 +1,13 @@
 import {useState} from "react";
-import {catalogs,describe,type Color,type ColorData} from "../lib/color";
-export default function ColorTool({onChange}:{onChange?:(data:ColorData)=>void}={}){
+import {catalogs,describe,catalogMatches,type CatalogMatch,type Color,type ColorData} from "../lib/color";
+export default function ColorTool({onChange}:{onChange?:(data:ColorData,match?:CatalogMatch)=>void}={}){
  const [color,setColor]=useState<Color>({l:.65,c:.18,h:30});
  const [catalog,setCatalog]=useState("open");
  const [palette,setPalette]=useState<Color[]>(()=>{try{const p=JSON.parse(localStorage.getItem("studio.color.v1")||"[]");return Array.isArray(p)?p.filter(x=>x&&Number.isFinite(x.l)&&x.l>=0&&x.l<=1&&Number.isFinite(x.c)&&x.c>=0&&x.c<=.4&&Number.isFinite(x.h)):[];}catch{return [];}});
  const [notice,setNotice]=useState("");
  const data=describe(color);
- function choose(v:Color){setColor(v);onChange?.(describe(v));}
+ const matches=catalogMatches(color,catalog);
+ function choose(v:Color){setColor(v);onChange?.(describe(v),catalogMatches(v,catalog)[0]);}
  function save(p:Color[]){setPalette(p);try{localStorage.setItem("studio.color.v1",JSON.stringify(p));setNotice("Saved on this device");}catch{setNotice("Storage unavailable; export your palette");}}
  function exportPalette(){const url=URL.createObjectURL(new Blob([JSON.stringify(palette.map(describe),null,2)],{type:"application/json"}));const a=document.createElement("a");a.href=url;a.download="studio-palette.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
  const swatch=(v:Color,i:number)=><button key={i} type="button" title={describe(v).hex} aria-label={describe(v).hex} onClick={()=>choose(v)} style={{background:describe(v).hex,minHeight:44,minWidth:38,flex:1,border:"1px solid #8885",borderRadius:4}}/>;
@@ -18,6 +19,7 @@ export default function ColorTool({onChange}:{onChange?:(data:ColorData)=>void}=
  <div>Variations<div style={{display:"flex",gap:4}}>{Array.from({length:7},(_,i)=>({...color,l:Math.max(0,Math.min(1,color.l+(i-3)*.09))})).map(swatch)}</div></div>
  <label>Catalog <select value={catalog} onChange={e=>setCatalog(e.target.value)}>{catalogs.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}<option value="own">My palette</option></select></label>
  <div style={{display:"flex",flexWrap:"wrap",gap:4}}>{(catalog==="own"?palette:catalogs.find(c=>c.id===catalog)?.colors||[]).map(swatch)}</div>
+ <div><small>Nearest catalog references · ΔE76 (D65)</small>{matches.slice(0,3).map(m=><button key={m.code} type="button" onClick={()=>choose(m.color)} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",width:"100%"}}><span style={{background:m.data.hex,width:30,height:30,borderRadius:3}}/>{m.catalog} / {m.code} · ΔE {m.deltaE.toFixed(2)}</button>)}</div>
  <div style={{display:"flex",gap:16,flexWrap:"wrap"}}><button type="button" onClick={()=>save([...palette,color])}>Save color +</button><button type="button" onClick={exportPalette} disabled={!palette.length}>Export JSON</button><button type="button" onClick={()=>save([])}>Clear palette</button></div>
  <small role="status">{notice} · Digital preview, not a physical paint specification.</small>
  </section>;
