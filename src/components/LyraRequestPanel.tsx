@@ -56,7 +56,7 @@ export default function LyraRequestPanel({ open, onClose, frameColor }: Props) {
         contact_value: cleanContact,
         location: location.trim().slice(0, 200),
         intent,
-        message: [frameColor ? "Frame color (digital reference): " + frameColor : "", note.trim()].filter(Boolean).join("\\n").slice(0,1500) || null,
+        message: [frameColor ? "Frame color (digital reference): " + frameColor : "", note.trim()].filter(Boolean).join("\n").slice(0,1500) || null,
         locale,
       } as never);
       if (dbError) throw dbError;
@@ -84,7 +84,7 @@ export default function LyraRequestPanel({ open, onClose, frameColor }: Props) {
         {success ? <p className="text-[12px] leading-[1.7]">{T.success}</p> : (
           <form onSubmit={submit} className="flex flex-col text-[12px]">
             <p className="lr-intro">{T.intro}</p>
-            {frameColor && <p>Frame color · {frameColor} <span style={{display:"inline-block",width:18,height:18,background:frameColor}} /></p>}
+            {frameColor && <p>Frame color · {frameColor.slice(0,7)} <span style={{display:"inline-block",width:18,height:18,background:frameColor.slice(0,7)}} /></p>}
             <hr className="lr-rule" />
             <fieldset className="lr-options"><legend className="lr-heading">{locale === "en" ? "Purpose" : locale === "uk" ? "Мета запиту" : "Цель запроса"}</legend>
               {(["purchase", "custom", "production"] as const).map((value) => (
