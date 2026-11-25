@@ -126,7 +126,7 @@ const Landing = () => {
               <nav className="landing-popup__projects" aria-label="Projects">
                 <a tabIndex={menuOpen ? 0 : -1} href={`/${locale}/egg`} style={{ animationDelay: "3.3s" }}>EGG ↗</a>
                 <a tabIndex={menuOpen ? 0 : -1} href={`/${locale}/lyra-request`} style={{ animationDelay: "3.55s" }}>LYRA ↗</a>
-                <a tabIndex={menuOpen ? 0 : -1} href="https://color.kolesnikov.studio" style={{ animationDelay: "3.8s" }}>COLOR ↗</a>
+                <a tabIndex={menuOpen ? 0 : -1} href={`https://color.kolesnikov.studio/${locale}/color`} style={{ animationDelay: "3.8s" }}>COLOR ↗</a>
               </nav>
             </div>
         </div>
