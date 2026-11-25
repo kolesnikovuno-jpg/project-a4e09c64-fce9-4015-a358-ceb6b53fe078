@@ -14,6 +14,7 @@ import SEO from "@/components/SEO";
 import lyraSocial from "@/lib/lyra-social.json";
 import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
+import { usePublicProjection } from "@/lib/publicProjection";
 
 declare global {
   namespace JSX {
@@ -53,6 +54,9 @@ const USDZ_URL = "https://mpmftrhzuldtasfelrgz.supabase.co/storage/v1/object/pub
 const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
   const navigate = useNavigate();
   const { t, locale, localePath } = useLocale();
+  const publication = usePublicProjection("lyra", commercial);
+  const publicCopy = publication?.copy[locale];
+  const interaction = publication?.interaction ?? (commercial ? "request" : "collaboration");
   const modelRef = useRef<HTMLElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
@@ -71,6 +75,10 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
   const [switcherVisible, setSwitcherVisible] = useState(false);
   const [participationOpen, setParticipationOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
+  useEffect(() => {
+    if (interaction !== "request") setRequestOpen(false);
+    if (interaction !== "collaboration") setParticipationOpen(false);
+  }, [interaction]);
   const [colorOpen,setColorOpen]=useState(false);
   const colorPanelRef=useRef<HTMLDivElement>(null);
   useEffect(()=>{if(!colorOpen)return;const outside=(e:PointerEvent)=>{if(colorPanelRef.current&&!colorPanelRef.current.contains(e.target as Node))setColorOpen(false);};const escape=(e:KeyboardEvent)=>{if(e.key==="Escape")setColorOpen(false);};document.addEventListener("pointerdown",outside);document.addEventListener("keydown",escape);return()=>{document.removeEventListener("pointerdown",outside);document.removeEventListener("keydown",escape);};},[colorOpen]);
@@ -527,7 +535,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
                   transition: "opacity 0.8s ease-out, transform 0.8s ease-out",
                 }}
               >
-                {t.lyra.hero_caption}
+                {publicCopy?.caption ?? t.lyra.hero_caption}
               </div>
             </div>
           </section>
@@ -812,7 +820,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
                 zIndex: 4,
               }}
             >
-              <p>{t.lyra.rotated_line}</p>
+              <p>{publicCopy?.detail ?? t.lyra.rotated_line}</p>
             </div>
             {/* Side touch-scroll safe zones around the model */}
             <div className="uno-side-gutter left" aria-hidden />
@@ -849,17 +857,17 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
                   whiteSpace: "pre-line",
                 }}
               >
-                {commercial
+                {publicCopy?.description ?? (commercial
                   ? (locale === "ru"
                     ? "Не просто кресло. Присутствие в пространстве.\n\nLyra не растворяется в интерьере. Её силуэт создаёт собственный ритм и становится выразительным акцентом пространства.\n\nАвторская форма остаётся неизменной. Каждое кресло изготавливается под заказ с возможностью выбора цвета."
                     : locale === "uk"
                       ? "Не просто крісло. Присутність у просторі.\n\nLyra не розчиняється в інтер’єрі. Її силует створює власний ритм і стає виразним акцентом простору.\n\nАвторська форма залишається незмінною. Колір можна обрати під час замовлення. Кожне крісло виготовляється індивідуально."
                       : "More than a chair. A presence in space.\n\nLyra does not disappear into an interior. Its silhouette creates its own rhythm and becomes a distinctive accent in the space.\n\nThe original form stays the same. You can choose the color when ordering. Each chair is made to order.")
-                  : t.lyra.description}
+                  : t.lyra.description)}
               </p>
-              <button
+              {interaction !== "none" && <button
                 type="button"
-                onClick={() => commercial ? setRequestOpen(true) : setParticipationOpen(true)}
+                onClick={() => interaction === "request" ? setRequestOpen(true) : setParticipationOpen(true)}
                 style={{
                   background: "transparent",
                   border: "none",
@@ -876,8 +884,8 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
                 onMouseEnter={(e) => (e.currentTarget.style.color = "#C97A63")}
                 onMouseLeave={(e) => (e.currentTarget.style.color = "hsl(0 0% 45%)")}
               >
-                {commercial ? (locale === "ru" ? "Запросить Lyra" : locale === "uk" ? "Запит на Lyra" : "Request Lyra") : t.participation.link} <span style={{ marginLeft: 4, opacity: 0.7 }}>↗</span>
-              </button>
+                {publicCopy?.actionLabel ?? (interaction === "request" ? (locale === "ru" ? "Запросить Lyra" : locale === "uk" ? "Запит на Lyra" : "Request Lyra") : t.participation.link)} <span style={{ marginLeft: 4, opacity: 0.7 }}>↗</span>
+              </button>}
             </div>
           </div>
         </div>
@@ -901,7 +909,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
       </button>
       <div className="uno-actions">
         {modelFullyVisible && modelLoaded && <button type="button" onClick={openColors}>{locale==="ru"?"цвет":locale==="uk"?"колір":"color"}</button>}
-        {commercial && <button type="button" className={`uno-action-conditional ${switcherVisible ? "is-hidden" : ""}`} tabIndex={switcherVisible ? -1 : 0} aria-hidden={switcherVisible} onClick={() => setRequestOpen(true)}>{locale === "ru" ? "запрос" : locale === "uk" ? "запит" : "request"}</button>}
+        {commercial && interaction === "request" && <button type="button" className={`uno-action-conditional ${switcherVisible ? "is-hidden" : ""}`} tabIndex={switcherVisible ? -1 : 0} aria-hidden={switcherVisible} onClick={() => setRequestOpen(true)}>{locale === "ru" ? "запрос" : locale === "uk" ? "запит" : "request"}</button>}
         {(
           <button
             type="button"
@@ -930,8 +938,8 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
       </div>
       {colorOpen && <div ref={colorPanelRef} role="dialog" aria-label={locale==="ru"?"Цвет каркаса":locale==="uk"?"Колір каркаса":"Frame color"} className="fixed right-0 top-0 bottom-16 z-[80] w-[min(44vw,420px)] max-sm:w-full max-sm:top-auto max-sm:max-h-[48dvh] overflow-y-auto bg-[#F5EFEB] shadow-lg"><div className="p-4 flex justify-between"><button type="button" onClick={()=>setColorOpen(false)}>{locale==="ru"?"Закрыть":locale==="uk"?"Закрити":"Close"} ×</button><span>{selectedColor?.hex}</span></div><ColorTool onChange={applyFrameColor} initialColor={selectedColor?.oklch} initialCatalog={selectedCatalog}/>{colorError&&<p role="alert" className="p-4">{colorError}</p>}<button className="p-4" type="button" onClick={()=>setColorOpen(false)}>{locale==="ru"?"Посмотреть кресло":locale==="uk"?"Переглянути крісло":"View chair"} →</button></div>}
       <LyraInfo showTrigger={false} />
-      {commercial && <LyraRequestPanel colorSelection={selectedColor} frameColor={frameColor} open={requestOpen} onClose={() => setRequestOpen(false)} />}
-      {!commercial && <Participation
+      {commercial && interaction === "request" && <LyraRequestPanel colorSelection={selectedColor} frameColor={frameColor} open={requestOpen} onClose={() => setRequestOpen(false)} />}
+      {interaction === "collaboration" && <Participation
         model="lyra"
         open={participationOpen}
         onClose={() => setParticipationOpen(false)}
