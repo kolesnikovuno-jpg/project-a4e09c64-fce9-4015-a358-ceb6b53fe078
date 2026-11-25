@@ -94,7 +94,7 @@ const Landing = () => {
       <main className="landing-composition">
         <div className="landing-identity">
         <p className="landing-toprail" aria-label={[...copy.sequence, ...copy.disciplines].filter(word => word !== ":").join(" · ")}>
-          {Array.from([...copy.sequence, ...copy.disciplines].filter(word => word !== ":").join("")).map((letter, index) => (
+          {Array.from([...copy.sequence, ...copy.disciplines].filter(word => word !== ":").join(" · ")).map((letter, index) => (
             <span key={index} className="landing-toprail__letter" aria-hidden="true">{letter}</span>
           ))}
         </p>
