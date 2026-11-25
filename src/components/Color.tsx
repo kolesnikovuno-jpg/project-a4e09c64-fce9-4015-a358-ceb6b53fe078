@@ -3,7 +3,7 @@ import {useLocale} from "@/i18n/useLocale";
 import {useState,useEffect} from "react";
 import {createPortal} from "react-dom";
 import "../pages/site/Landing.css";
-import {catalogs,describe,catalogMatches,type CatalogMatch,type Color,type ColorData} from "../lib/color";
+import {catalogs,describe,catalogMatches,displayGamut,displayColor,type CatalogMatch,type Color,type ColorData} from "../lib/color";
 export default function ColorTool({onChange,initialColor,initialCatalog}:{onChange?:(data:ColorData,match?:CatalogMatch)=>void;initialColor?:Color;initialCatalog?:string}={}){
  const {locale}=useLocale();
  const T=({
@@ -18,25 +18,30 @@ export default function ColorTool({onChange,initialColor,initialCatalog}:{onChan
  const [notice,setNotice]=useState("");
  const [fullColor,setFullColor]=useState(false);
  useEffect(()=>{if(!fullColor)return;const previous=document.body.style.overflow;document.body.style.overflow="hidden";const close=(e:KeyboardEvent)=>{if(e.key==="Escape")setFullColor(false);};window.addEventListener("keydown",close);return()=>{document.body.style.overflow=previous;window.removeEventListener("keydown",close);};},[fullColor]);
+ const [gamut,setGamut]=useState(displayGamut);
+ useEffect(()=>{const queries=["(color-gamut: p3)","(color-gamut: rec2020)"].map(q=>window.matchMedia(q));const refresh=()=>setGamut(displayGamut());queries.forEach(q=>q.addEventListener?.("change",refresh));return()=>queries.forEach(q=>q.removeEventListener?.("change",refresh));},[]);
  const data=describe(color);
+ // Embedded product previews must match the sRGB order and 3D material reference.
+ const preview=(v:Color)=>displayColor(onChange?describe(v).oklch:v,gamut);
+ const wide=!onChange&&gamut!=="srgb";
  const matches=catalogMatches(color,catalog);
  function choose(v:Color){setColor(v);onChange?.(describe(v),catalogMatches(v,catalog)[0]);}
  function save(p:Color[]){setPalette(p);try{localStorage.setItem("studio.color.v1",JSON.stringify(p));setNotice("saved");}catch{setNotice("failed");}}
  function exportPalette(){const url=URL.createObjectURL(new Blob([JSON.stringify(palette.map(describe),null,2)],{type:"application/json"}));const a=document.createElement("a");a.href=url;a.download="studio-palette.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
- const swatch=(v:Color,i:number)=><button key={i} type="button" title={describe(v).hex} aria-label={describe(v).hex} onClick={()=>choose(v)} style={{background:describe(v).hex,minHeight:44,minWidth:0,flex:1,border:"1px solid #8885",borderRadius:4}}/>;
+ const swatch=(v:Color,i:number)=><button key={i} type="button" title={describe(v).hex} aria-label={describe(v).hex} onClick={()=>choose(v)} style={{background:preview(v),minHeight:44,minWidth:0,flex:1,border:"1px solid #8885",borderRadius:4}}/>;
  return <div className={onChange?undefined:"landing-field"} style={{background:"hsl(var(--background))",width:"100%",cursor:"auto"}}><section className="studio-color-tool" style={{position:"relative",zIndex:1,fontFamily:"var(--font-body, sans-serif)",color:"#50636b",background:"transparent",padding:20,paddingTop:onChange?20:64,maxWidth:760,margin:"auto",display:"grid",gap:16}}>
  <style>{` .studio-color-tool {min-width:0;} @media(max-width:640px){.studio-color-tool{font-size:16px;padding-inline:16px!important;padding-bottom:16px!important;gap:14px!important;} .studio-color-tool small{font-size:13px;} .studio-color-tool input[type=range]{width:100%;min-height:44px;} .studio-color-tool select{font-size:16px;min-height:44px;max-width:100%;} .studio-color-tool button{min-height:44px;text-align:left;} .studio-color-tool a{font-size:14px;} } `}</style>
  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><h1 style={{fontSize:24,letterSpacing:4}}>COLOR</h1>{!onChange&&<a href="https://kolesnikov.studio">kolesnikov.studio</a>}</div>
  {!onChange&&<LanguageSwitcher background="hsl(24 26% 94%)" topOffset={0} />}
- <button type="button" onClick={()=>setFullColor(true)} style={{background:data.hex,minHeight:120,borderRadius:4,width:"100%",cursor:"zoom-in",border:0}} aria-label={locale==="ru"?"Развернуть цвет":locale==="uk"?"Розгорнути колір":"Expand color"} />
- {fullColor&&createPortal(<button type="button" autoFocus onClick={()=>setFullColor(false)} aria-label={locale==="ru"?"Свернуть цвет":locale==="uk"?"Згорнути колір":"Close full-screen color"} style={{position:"fixed",inset:0,width:"100vw",height:"100dvh",zIndex:2147483647,background:data.hex,border:0,padding:0,margin:0,cursor:"zoom-out",touchAction:"manipulation"}}/>,document.body)}
+ <button type="button" onClick={()=>setFullColor(true)} style={{background:preview(color),minHeight:120,borderRadius:4,width:"100%",cursor:"zoom-in",border:0}} aria-label={locale==="ru"?"Развернуть цвет":locale==="uk"?"Розгорнути колір":"Expand color"} />
+ {fullColor&&createPortal(<button type="button" autoFocus onClick={()=>setFullColor(false)} aria-label={locale==="ru"?"Свернуть цвет":locale==="uk"?"Згорнути колір":"Close full-screen color"} style={{position:"fixed",inset:0,width:"100vw",height:"100dvh",zIndex:2147483647,background:preview(color),border:0,padding:0,margin:0,cursor:"zoom-out",touchAction:"manipulation"}}/>,document.body)}
  {([["h","Hue",360,1],["l","Lightness",1,.01],["c","Chroma",.4,.001]] as const).map(([key,_label,max,step])=><label key={key} style={{display:"grid",gap:5}}>{T[key]} · {color[key].toFixed(key==="h"?0:3)}<input type="range" min={0} max={max} step={step} value={color[key]} onChange={e=>choose({...color,[key]:Number(e.target.value)})}/></label>)}
- <div style={{fontSize:14,overflowWrap:"anywhere"}}>{data.hex} · RGB {data.rgb.join(", ")}<br/>OKLCH {Object.values(data.oklch).map(v=>v.toFixed(3)).join(" ")}<br/>CIELAB D65 {data.lab.map(v=>v.toFixed(2)).join(" ")}{data.mapped&&<p>{T.mapped}</p>}</div>
+ <div style={{fontSize:14,overflowWrap:"anywhere"}}>{data.hex} · RGB {data.rgb.join(", ")}<br/>OKLCH {Object.values(data.oklch).map(v=>v.toFixed(3)).join(" ")}<br/>CIELAB D65 {data.lab.map(v=>v.toFixed(2)).join(" ")}{data.mapped&&<p>{wide?(locale==="ru"?"Экран показывает расширенный диапазон; HEX, Lab и каталожные совпадения рассчитаны для sRGB.":locale==="uk"?"Екран показує розширений діапазон; HEX, Lab і збіги каталогу розраховані для sRGB.":"Wide-gamut preview; HEX, Lab and catalog matches use sRGB."):T.mapped}</p>}</div>
  <div>{T.variations}<div style={{display:"grid",gridTemplateColumns:"repeat(7,minmax(0,1fr))",gap:4}}>{Array.from({length:7},(_,i)=>({...color,l:Math.max(0,Math.min(1,color.l+(i-3)*.09))})).map(swatch)}</div></div>
  <label>{T.catalog} <select value={catalog} onChange={e=>{const id=e.target.value;setCatalog(id);if(initialColor||onChange)onChange?.(describe(color),catalogMatches(color,id)[0]);}}>{catalogs.map(c=><option key={c.id} value={c.id}>{catalogName(c.id,c.name)}</option>)}<option value="own">{T.own}</option></select></label>
  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(44px,1fr))",gap:4}}>{(catalog==="own"?palette:catalogs.find(c=>c.id===catalog)?.colors||[]).map(swatch)}</div>
- <div><small>{T.nearest} · ΔE76 (D65)</small>{matches.slice(0,3).map(m=><button key={m.code} type="button" onClick={()=>choose(m.color)} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",width:"100%"}}><span style={{background:m.data.hex,width:30,height:30,borderRadius:3}}/>{catalogName(m.catalogId,m.catalog)} / {m.code} · ΔE {m.deltaE.toFixed(2)}</button>)}</div>
+ <div><small>{T.nearest} · ΔE76 (D65)</small>{matches.slice(0,3).map(m=><button key={m.code} type="button" onClick={()=>choose(m.color)} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",width:"100%"}}><span style={{background:preview(m.color),width:30,height:30,borderRadius:3}}/>{catalogName(m.catalogId,m.catalog)} / {m.code} · ΔE {m.deltaE.toFixed(2)}</button>)}</div>
  <div style={{display:"flex",gap:16,flexWrap:"wrap"}}><button type="button" onClick={()=>save([...palette,color])}>{T.save}</button><button type="button" onClick={exportPalette} disabled={!palette.length}>{T.export}</button><button type="button" onClick={()=>save([])}>{T.clear}</button></div>
- <small role="status">{notice==="saved"?T.saved:notice==="failed"?T.failed:""} {T.preview}</small>
+ <small role="status">{notice==="saved"?T.saved:notice==="failed"?T.failed:""} {T.preview} · {gamut==="p3"?"Display P3":gamut==="rec2020"?"Rec.2020":"sRGB"}</small>
  </section></div>;
 }
