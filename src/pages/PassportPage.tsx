@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { lyraSupabase } from "@/integrations/supabase/lyraClient";
 
-type Passport = {id:string; slug:string; title:string; object_url:string; revision:number; updated_at:string; public_data:{author?:string; kind?:string; status?:string; dimensions_mm?:{height:number;width:number;length:number}; technical_document?:string; sphere_sections?:{sphere:string;public_text:string}[]}};
+type Passport = {id:string; slug:string; title:string; object_url:string; revision:number; updated_at:string; public_data:{color_specification?:{selected?:{hex:string};approved?:{hex?:string;manufacturer?:string;product?:string;code?:string;finish?:string};applied?:{hex?:string;manufacturer?:string;product?:string;code?:string;batch?:string;finish?:string;process?:string}};author?:string; kind?:string; status?:string; dimensions_mm?:{height:number;width:number;length:number}; technical_document?:string; sphere_sections?:{sphere:string;public_text:string}[]}};
 export default function PassportPage(){
  const {id}=useParams(); const {pathname}=useLocation();
  const locale=pathname.split("/")[1]; const uk=locale==="uk", ru=locale==="ru";
@@ -18,6 +18,7 @@ export default function PassportPage(){
  <h2 style={{fontSize:28}}>{data.title}</h2><p>{uk?"Паспорт моделі":ru?"Паспорт модели":"Model passport"}</p>
  <hr/><p>ID: {data.id}</p><p>{uk?"Версія":ru?"Версия":"Revision"}: {data.revision}</p><p>{new Date(data.updated_at).toLocaleDateString(uk?"uk-UA":ru?"ru-RU":"en-GB")}</p>
  <p>{data.public_data.author}</p>
+ {data.public_data.color_specification&&<section><h3>{uk?"Колір покриття":ru?"Цвет покрытия":"Finish specification"}</h3>{(["selected","approved","applied"] as const).map(stage=>{const v=data.public_data.color_specification?.[stage];return v&&<div key={stage} style={{margin:"12px 0"}}><strong>{({selected:ru?"Выбранный":uk?"Обраний":"Selected",approved:ru?"Согласованный":uk?"Погоджений":"Approved",applied:ru?"Фактический":uk?"Фактичний":"Applied"})[stage]}</strong>{v.hex&&<span style={{display:"inline-block",background:v.hex,width:24,height:24,marginLeft:8,verticalAlign:"middle"}}/>}<p>{Object.entries(v).filter(([k,val])=>typeof val==="string").map(([k,val])=>`${k}: ${val}`).join(" · ")}</p></div>;})}</section>}
  {data.public_data.dimensions_mm&&<p>{uk?"Розміри":ru?"Размеры":"Dimensions"}: {data.public_data.dimensions_mm.length} × {data.public_data.dimensions_mm.width} × {data.public_data.dimensions_mm.height} mm</p>}
  <p>{uk?"Дані моделі; не сертифікат випробувань.":ru?"Данные модели; не сертификат испытаний.":"Model documentation; not a test certificate."}</p>
  <p><a href="/lyra-technical.pdf">{uk?"Технічний документ":ru?"Технический документ":"Technical document"}</a></p>
