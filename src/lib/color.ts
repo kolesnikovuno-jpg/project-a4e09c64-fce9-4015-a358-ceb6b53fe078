@@ -32,3 +32,6 @@ export function catalogMatches(color:Color, catalogId:string){
  }).sort((a,b)=>a.deltaE-b.deltaE);
 }
 export type CatalogMatch=ReturnType<typeof catalogMatches>[number];
+
+export type ColorSelection = ColorData & {schemaVersion:1; selectedAt:string; reference?:{catalog:string;catalogId:string;code:string;deltaE:number;hex:string}};
+export function colorSelection(data:ColorData,match?:CatalogMatch):ColorSelection{return {...data,schemaVersion:1,selectedAt:new Date().toISOString(),reference:match?{catalog:match.catalog,catalogId:match.catalogId,code:match.code,deltaE:match.deltaE,hex:match.data.hex}:undefined};}
