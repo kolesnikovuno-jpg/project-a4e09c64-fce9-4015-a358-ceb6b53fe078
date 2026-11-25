@@ -87,7 +87,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
     const named=/frame|plywood|wood|carcass|каркас/i;
     const red=(rgb:number[])=>rgb.length===3&&rgb[0]>rgb[1]*1.35&&rgb[0]>rgb[2]*1.35&&rgb[0]>.08;
     const frames=originals.filter(m=>!cord.test(m.name)&&(named.test(m.name)||red(m.rgb))).map(m=>m.material);
-    if(!frames.length){setColorError("Frame material not identified; model unchanged.");return;}
+    if(!frames.length){setColorError(locale==="ru"?"Материал каркаса не определён; модель не изменена.":locale==="uk"?"Матеріал каркаса не визначено; модель не змінено.":"Frame material not identified; model unchanged.");return;}
     const linear=data.rgb.map(v=>{const s=v/255;return s<=.04045?s/12.92:((s+.055)/1.055)**2.4;});
     frames.forEach((m:any)=>m.pbrMetallicRoughness.setBaseColorFactor([...linear,1]));
     setSelectedColor(colorSelection(data,match));setSelectedCatalog(match?.catalogId??"own");
@@ -899,7 +899,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
         </span>
       </button>
       <div className="uno-actions">
-        {modelFullyVisible && modelLoaded && <button type="button" onClick={openColors}>color</button>}
+        {modelFullyVisible && modelLoaded && <button type="button" onClick={openColors}>{locale==="ru"?"цвет":locale==="uk"?"колір":"color"}</button>}
         {commercial && <button type="button" className={`uno-action-conditional ${switcherVisible ? "is-hidden" : ""}`} tabIndex={switcherVisible ? -1 : 0} aria-hidden={switcherVisible} onClick={() => setRequestOpen(true)}>{locale === "ru" ? "запрос" : locale === "uk" ? "запит" : "request"}</button>}
         {(
           <button
@@ -927,7 +927,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
             {t.nav.info}
           </button>
       </div>
-      {colorOpen && <div ref={colorPanelRef} role="dialog" aria-label="Frame color" className="fixed right-0 top-0 bottom-16 z-[80] w-[min(44vw,420px)] max-sm:w-full max-sm:top-auto max-sm:max-h-[48dvh] overflow-y-auto bg-[#F5EFEB] shadow-lg"><div className="p-4 flex justify-between"><button type="button" onClick={()=>setColorOpen(false)}>Close ×</button><span>{selectedColor?.hex}</span></div><ColorTool onChange={applyFrameColor} initialColor={selectedColor?.oklch} initialCatalog={selectedCatalog}/>{colorError&&<p role="alert" className="p-4">{colorError}</p>}<button className="p-4" type="button" onClick={()=>setColorOpen(false)}>View chair →</button></div>}
+      {colorOpen && <div ref={colorPanelRef} role="dialog" aria-label={locale==="ru"?"Цвет каркаса":locale==="uk"?"Колір каркаса":"Frame color"} className="fixed right-0 top-0 bottom-16 z-[80] w-[min(44vw,420px)] max-sm:w-full max-sm:top-auto max-sm:max-h-[48dvh] overflow-y-auto bg-[#F5EFEB] shadow-lg"><div className="p-4 flex justify-between"><button type="button" onClick={()=>setColorOpen(false)}>{locale==="ru"?"Закрыть":locale==="uk"?"Закрити":"Close"} ×</button><span>{selectedColor?.hex}</span></div><ColorTool onChange={applyFrameColor} initialColor={selectedColor?.oklch} initialCatalog={selectedCatalog}/>{colorError&&<p role="alert" className="p-4">{colorError}</p>}<button className="p-4" type="button" onClick={()=>setColorOpen(false)}>{locale==="ru"?"Посмотреть кресло":locale==="uk"?"Переглянути крісло":"View chair"} →</button></div>}
       <LyraInfo showTrigger={false} />
       {commercial && <LyraRequestPanel colorSelection={selectedColor} frameColor={frameColor} open={requestOpen} onClose={() => setRequestOpen(false)} />}
       {!commercial && <Participation
