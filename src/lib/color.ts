@@ -20,3 +20,15 @@ export function describe(input:Color){
 export type ColorData=ReturnType<typeof describe>;
 export type Catalog={id:string;name:string;colors:Color[];license:string};
 export const catalogs:Catalog[]=[{id:"open",name:"Open spectrum",license:"Generated",colors:Array.from({length:12},(_,i)=>({l:.65,c:.18,h:i*30}))},{id:"studio",name:"Studio neutrals",license:"Original",colors:Array.from({length:8},(_,i)=>({l:.25+i*.095,c:.025,h:65}))}];
+
+export function catalogMatches(color:Color, catalogId:string){
+ const target=describe(color);
+ const catalog=catalogs.find(c=>c.id===catalogId);
+ if(!catalog)return [];
+ return catalog.colors.map((entry,index)=>{
+ const data=describe(entry);
+ const deltaE=Math.hypot(...data.lab.map((v,i)=>v-target.lab[i]));
+ return {catalog:catalog.name,catalogId:catalog.id,code:catalog.id.toUpperCase()+"-"+String(index+1).padStart(3,"0"),color:entry,data,deltaE};
+ }).sort((a,b)=>a.deltaE-b.deltaE);
+}
+export type CatalogMatch=ReturnType<typeof catalogMatches>[number];
