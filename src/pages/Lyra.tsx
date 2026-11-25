@@ -70,6 +70,8 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
   const [participationOpen, setParticipationOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
   const [colorOpen,setColorOpen]=useState(false);
+  const colorPanelRef=useRef<HTMLDivElement>(null);
+  useEffect(()=>{if(!colorOpen)return;const outside=(e:PointerEvent)=>{if(colorPanelRef.current&&!colorPanelRef.current.contains(e.target as Node))setColorOpen(false);};const escape=(e:KeyboardEvent)=>{if(e.key==="Escape")setColorOpen(false);};document.addEventListener("pointerdown",outside);document.addEventListener("keydown",escape);return()=>{document.removeEventListener("pointerdown",outside);document.removeEventListener("keydown",escape);};},[colorOpen]);
   const [frameColor,setFrameColor]=useState<string>();
   const [colorError,setColorError]=useState("");
   const originalMaterials=useRef<any[]>([]);
@@ -771,9 +773,9 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
                 background: "hsl(24 26% 94%)",
               }}
               ar
-              ar-modes="webxr scene-viewer quick-look"
+              ar-modes={frameColor?"webxr quick-look":"webxr scene-viewer quick-look"}
               ar-scale="auto"
-              ios-src={USDZ_URL}
+              ios-src={frameColor?undefined:USDZ_URL}
             >
               <img
                 slot="poster"
@@ -895,6 +897,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
             onClick={() => {
               const mv: any = modelRef.current;
               if (mv && typeof mv.activateAR === "function") {
+                setColorOpen(false);
                 try { if (commercial) trackLyra("ar_click", locale); mv.activateAR(); } catch (e) { /* no-op */ }
               }
             }}
@@ -910,7 +913,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
             {t.nav.info}
           </button>
       </div>
-      {colorOpen && <div role="dialog" aria-label="Frame color" className="fixed right-0 top-0 bottom-16 z-[80] w-[min(44vw,420px)] max-sm:w-full max-sm:top-auto max-sm:max-h-[48dvh] overflow-y-auto bg-[#F5EFEB] shadow-lg"><div className="p-4 flex justify-between"><button type="button" onClick={()=>setColorOpen(false)}>Close ×</button><span>{frameColor}</span></div><ColorTool onChange={applyFrameColor}/>{colorError&&<p role="alert" className="p-4">{colorError}</p>}<button className="p-4" type="button" onClick={()=>setColorOpen(false)}>View chair →</button></div>}
+      {colorOpen && <div ref={colorPanelRef} role="dialog" aria-label="Frame color" className="fixed right-0 top-0 bottom-16 z-[80] w-[min(44vw,420px)] max-sm:w-full max-sm:top-auto max-sm:max-h-[48dvh] overflow-y-auto bg-[#F5EFEB] shadow-lg"><div className="p-4 flex justify-between"><button type="button" onClick={()=>setColorOpen(false)}>Close ×</button><span>{frameColor}</span></div><ColorTool onChange={applyFrameColor}/>{colorError&&<p role="alert" className="p-4">{colorError}</p>}<button className="p-4" type="button" onClick={()=>setColorOpen(false)}>View chair →</button></div>}
       <LyraInfo showTrigger={false} />
       {commercial && <LyraRequestPanel frameColor={frameColor} open={requestOpen} onClose={() => setRequestOpen(false)} />}
       {!commercial && <Participation
