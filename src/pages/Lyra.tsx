@@ -1,6 +1,6 @@
 import "./site/Landing.css";
 import ColorTool from "@/components/Color";
-import type {ColorData,CatalogMatch} from "@/lib/color";
+import {colorSelection,type ColorSelection,type ColorData,type CatalogMatch} from "@/lib/color";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
@@ -74,7 +74,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
   const colorPanelRef=useRef<HTMLDivElement>(null);
   useEffect(()=>{if(!colorOpen)return;const outside=(e:PointerEvent)=>{if(colorPanelRef.current&&!colorPanelRef.current.contains(e.target as Node))setColorOpen(false);};const escape=(e:KeyboardEvent)=>{if(e.key==="Escape")setColorOpen(false);};document.addEventListener("pointerdown",outside);document.addEventListener("keydown",escape);return()=>{document.removeEventListener("pointerdown",outside);document.removeEventListener("keydown",escape);};},[colorOpen]);
   const [frameColor,setFrameColor]=useState<string>();
-  const [selectedColor,setSelectedColor]=useState<ColorData>();
+  const [selectedColor,setSelectedColor]=useState<ColorSelection>();
   const [selectedCatalog,setSelectedCatalog]=useState<string>();
   const [colorError,setColorError]=useState("");
   const originalMaterials=useRef<any[]>([]);
@@ -90,7 +90,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
     if(!frames.length){setColorError("Frame material not identified; model unchanged.");return;}
     const linear=data.rgb.map(v=>{const s=v/255;return s<=.04045?s/12.92:((s+.055)/1.055)**2.4;});
     frames.forEach((m:any)=>m.pbrMetallicRoughness.setBaseColorFactor([...linear,1]));
-    setSelectedColor(data);setSelectedCatalog(match?.catalogId??"own");
+    setSelectedColor(colorSelection(data,match));setSelectedCatalog(match?.catalogId??"own");
     setFrameColor(data.hex + " | RGB " + data.rgb.join(", ") + " | OKLCH " + Object.values(data.oklch).map(v=>v.toFixed(4)).join(" ") + " | Lab D65 " + data.lab.map(v=>v.toFixed(2)).join(" ") + (match ? " | " + (match.deltaE<.01?"Catalog match: ":"Nearest catalog reference: ") + match.catalog + " " + match.code + " (ΔE76 " + match.deltaE.toFixed(2) + ")" : ""));setColorError("");
   }
 
@@ -929,7 +929,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
       </div>
       {colorOpen && <div ref={colorPanelRef} role="dialog" aria-label="Frame color" className="fixed right-0 top-0 bottom-16 z-[80] w-[min(44vw,420px)] max-sm:w-full max-sm:top-auto max-sm:max-h-[48dvh] overflow-y-auto bg-[#F5EFEB] shadow-lg"><div className="p-4 flex justify-between"><button type="button" onClick={()=>setColorOpen(false)}>Close ×</button><span>{selectedColor?.hex}</span></div><ColorTool onChange={applyFrameColor} initialColor={selectedColor?.oklch} initialCatalog={selectedCatalog}/>{colorError&&<p role="alert" className="p-4">{colorError}</p>}<button className="p-4" type="button" onClick={()=>setColorOpen(false)}>View chair →</button></div>}
       <LyraInfo showTrigger={false} />
-      {commercial && <LyraRequestPanel frameColor={frameColor} open={requestOpen} onClose={() => setRequestOpen(false)} />}
+      {commercial && <LyraRequestPanel colorSelection={selectedColor} frameColor={frameColor} open={requestOpen} onClose={() => setRequestOpen(false)} />}
       {!commercial && <Participation
         model="lyra"
         open={participationOpen}
