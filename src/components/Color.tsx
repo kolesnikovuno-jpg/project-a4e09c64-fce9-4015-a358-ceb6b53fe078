@@ -1,9 +1,9 @@
 import {useState} from "react";
 import "../pages/site/Landing.css";
 import {catalogs,describe,catalogMatches,type CatalogMatch,type Color,type ColorData} from "../lib/color";
-export default function ColorTool({onChange}:{onChange?:(data:ColorData,match?:CatalogMatch)=>void}={}){
- const [color,setColor]=useState<Color>({l:.65,c:.18,h:30});
- const [catalog,setCatalog]=useState("open");
+export default function ColorTool({onChange,initialColor,initialCatalog}:{onChange?:(data:ColorData,match?:CatalogMatch)=>void;initialColor?:Color;initialCatalog?:string}={}){
+ const [color,setColor]=useState<Color>(initialColor??{l:.65,c:.18,h:30});
+ const [catalog,setCatalog]=useState(initialCatalog??"open");
  const [palette,setPalette]=useState<Color[]>(()=>{try{const p=JSON.parse(localStorage.getItem("studio.color.v1")||"[]");return Array.isArray(p)?p.filter(x=>x&&Number.isFinite(x.l)&&x.l>=0&&x.l<=1&&Number.isFinite(x.c)&&x.c>=0&&x.c<=.4&&Number.isFinite(x.h)):[];}catch{return [];}});
  const [notice,setNotice]=useState("");
  const data=describe(color);
@@ -19,7 +19,7 @@ export default function ColorTool({onChange}:{onChange?:(data:ColorData,match?:C
  {([["h","Hue",360,1],["l","Lightness",1,.01],["c","Chroma",.4,.001]] as const).map(([key,label,max,step])=><label key={key} style={{display:"grid",gap:5}}>{label} · {color[key].toFixed(key==="h"?0:3)}<input type="range" min={0} max={max} step={step} value={color[key]} onChange={e=>choose({...color,[key]:Number(e.target.value)})}/></label>)}
  <div style={{fontSize:14,overflowWrap:"anywhere"}}>{data.hex} · RGB {data.rgb.join(", ")}<br/>OKLCH {Object.values(data.oklch).map(v=>v.toFixed(3)).join(" ")}<br/>CIELAB D65 {data.lab.map(v=>v.toFixed(2)).join(" ")}{data.mapped&&<p>Chroma reduced to fit sRGB.</p>}</div>
  <div>Variations<div style={{display:"grid",gridTemplateColumns:"repeat(7,minmax(0,1fr))",gap:4}}>{Array.from({length:7},(_,i)=>({...color,l:Math.max(0,Math.min(1,color.l+(i-3)*.09))})).map(swatch)}</div></div>
- <label>Catalog <select value={catalog} onChange={e=>setCatalog(e.target.value)}>{catalogs.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}<option value="own">My palette</option></select></label>
+ <label>Catalog <select value={catalog} onChange={e=>{const id=e.target.value;setCatalog(id);if(initialColor||onChange)onChange?.(describe(color),catalogMatches(color,id)[0]);}}>{catalogs.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}<option value="own">My palette</option></select></label>
  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(44px,1fr))",gap:4}}>{(catalog==="own"?palette:catalogs.find(c=>c.id===catalog)?.colors||[]).map(swatch)}</div>
  <div><small>Nearest catalog references · ΔE76 (D65)</small>{matches.slice(0,3).map(m=><button key={m.code} type="button" onClick={()=>choose(m.color)} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",width:"100%"}}><span style={{background:m.data.hex,width:30,height:30,borderRadius:3}}/>{m.catalog} / {m.code} · ΔE {m.deltaE.toFixed(2)}</button>)}</div>
  <div style={{display:"flex",gap:16,flexWrap:"wrap"}}><button type="button" onClick={()=>save([...palette,color])}>Save color +</button><button type="button" onClick={exportPalette} disabled={!palette.length}>Export JSON</button><button type="button" onClick={()=>save([])}>Clear palette</button></div>
