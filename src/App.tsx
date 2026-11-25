@@ -107,7 +107,7 @@ const App = () => (
         <LocalePersistenceGuard />
         <Routes>
           {/* Root → default locale */}
-          <Route path="/" element={window.location.hostname === "color.kolesnikov.studio" ? <ColorTool /> : window.location.hostname === "lyra.kolesnikov.studio" ? <RedirectToLyra /> : <RedirectToDefaultLocale />} />
+          <Route path="/" element={window.location.hostname === "color.kolesnikov.studio" ? <Navigate to={`/${initialLocale()}/color`} replace /> : window.location.hostname === "lyra.kolesnikov.studio" ? <RedirectToLyra /> : <RedirectToDefaultLocale />} />
 
           {/* Localized routes — generated for each supported locale. */}
           {LOCALES.map((loc) =>
