@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import PageTransition from "@/components/PageTransition";
 import lyraHero from "@/assets/nava-hero.png";
 import NavaInfo from "@/components/NavaInfo";
+import NavaCollaborationPanel, { collaborationLabels } from "@/components/NavaCollaborationPanel";
 import ModelSEO from "@/components/ModelSEO";
 import { useLocale } from "@/i18n/useLocale";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
@@ -641,7 +642,8 @@ const Nava = () => {
         @media(max-width:768px){
           .uno-scroll-indicator{ right:29px; bottom:40px; }
         }
-        @media(max-width:768px){ .hero-caption{font-size:14px!important;letter-spacing:.12em!important;line-height:1.5!important;} .nava-description-screen p{font-size:16px!important;line-height:1.6!important;} }
+        @media(max-width:768px){ .hero-caption{font-size:14px!important;letter-spacing:.12em!important;line-height:1.5!important;} .nava-description-screen p,.nava-collaboration-link{font-size:16px!important;line-height:1.6!important;} .nava-description-screen p{margin-bottom:20px!important;} }
+        .nava-collaboration-link:hover,.nava-collaboration-link:focus-visible{color:#C97A63!important;}
         model-viewer::part(default-ar-button){ display:none !important; }
         model-viewer [slot="ar-button"]{ display:none !important; }
       `}</style>
@@ -768,7 +770,9 @@ const Nava = () => {
                 }}
               >
                 {t.nava.description}
+                {"\n\n"}{collaborationLabels[locale].invitation}
               </p>
+              <NavaCollaborationPanel />
             </div>
           </div>
         </div>
