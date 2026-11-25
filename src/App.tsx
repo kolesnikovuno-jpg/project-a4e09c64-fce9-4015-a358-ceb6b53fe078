@@ -1,3 +1,4 @@
+import ColorTool from "./components/Color";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -69,6 +70,7 @@ const RedirectToLyra = () => <Navigate to={`/${initialLocale()}/lyra-request`} r
 const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   // Kolesnikov.studio — new information architecture
   { path: "", element: <Landing /> },
+  { path: "color", element: <ColorTool /> },
   { path: "method", element: <StudioMethod /> },
   { path: "cases", element: <StudioCases /> },
   { path: "exchange", element: <StudioExchange /> },
@@ -105,7 +107,7 @@ const App = () => (
         <LocalePersistenceGuard />
         <Routes>
           {/* Root → default locale */}
-          <Route path="/" element={window.location.hostname === "lyra.kolesnikov.studio" ? <RedirectToLyra /> : <RedirectToDefaultLocale />} />
+          <Route path="/" element={window.location.hostname === "color.kolesnikov.studio" ? <ColorTool /> : window.location.hostname === "lyra.kolesnikov.studio" ? <RedirectToLyra /> : <RedirectToDefaultLocale />} />
 
           {/* Localized routes — generated for each supported locale. */}
           {LOCALES.map((loc) =>
