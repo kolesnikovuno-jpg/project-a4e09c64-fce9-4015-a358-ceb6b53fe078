@@ -712,6 +712,16 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
         @media(max-width:768px){
           .uno-scroll-indicator{ right:29px; bottom:40px; }
         }
+        @media(max-width:640px){
+          .hero-caption{font-size:14px!important;letter-spacing:.12em!important;line-height:1.5!important;}
+          .uno-overlay-below p{font-size:12px;letter-spacing:.18em;}
+          .uno-actions button{font-size:14px;min-height:44px;letter-spacing:.06em;}
+          .uno-actions button + button{margin-left:14px;}
+          .uno-scroll-indicator{bottom:70px;}
+          .lyra-description-screen p,.lyra-description-screen button{font-size:16px!important;line-height:1.6!important;}
+          .lyra-description-screen p{margin-bottom:20px!important;}
+          .uno-3d-stage{height:min(65dvh,620px);}
+        }
         model-viewer::part(default-ar-button){ display:none !important; }
         model-viewer [slot="ar-button"]{ display:none !important; }
       `}</style>
@@ -809,7 +819,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
           {/* Layer 3: text */}
           <div
             ref={textBlockRef}
-            className="absolute inset-0 w-full h-full z-[1]"
+            className="absolute inset-0 w-full h-full z-[1] lyra-description-screen"
             style={{
               padding: "0 clamp(20px, 6vw, 96px)",
               boxSizing: "border-box",
