@@ -105,7 +105,7 @@ export default function NavaCollaborationPanel() {
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
-        <button type="button" className="nava-collaboration-link" style={{background:"transparent",border:0,padding:0,cursor:"pointer",fontFamily:"var(--font-body)",fontSize:13,fontWeight:300,letterSpacing:".04em",color:"hsl(0 0% 38%)"}}>{T.link} <span aria-hidden="true">↗</span></button>
+        <button type="button" className="nava-collaboration-link studio-object-panel-trigger" style={{background:"transparent",border:0,padding:0,cursor:"pointer",fontFamily:"var(--font-body)",fontSize:13,fontWeight:300,letterSpacing:".04em",color:"hsl(0 0% 38%)"}}>{T.link} <span aria-hidden="true">↗</span></button>
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[10000] bg-[rgba(20,20,20,0.22)]" />

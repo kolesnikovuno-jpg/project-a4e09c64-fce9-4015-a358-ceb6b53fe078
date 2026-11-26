@@ -31,11 +31,20 @@ const Landing = () => {
   const { locale } = useLocale();
   const page = getSiteContent(locale);
   const copy = landingCopy[locale];
+  const topRailRows = [copy.sequence, copy.disciplines].map((row) => row.filter((word) => word !== ":"));
+  const topRailLabel = topRailRows.flat().join(" · ");
+  const panelLabel = locale === "en" ? "Process and projects" : locale === "uk" ? "Процес і проєкти" : "Процесс и проекты";
+  const mobileMenuToggle = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   useEffect(() => {
     if (!menuOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
+      if (event.key !== "Escape") return;
+      setMenuOpen(false);
+      const toggle = mobileMenuToggle.current;
+      if (toggle?.getClientRects().length && document.getElementById("landing-detail-panel")?.contains(document.activeElement)) {
+        toggle.focus();
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -93,17 +102,37 @@ const Landing = () => {
 
       <main className="landing-composition">
         <div className="landing-identity">
-        <p className="landing-toprail" aria-label={[...copy.sequence, ...copy.disciplines].filter(word => word !== ":").join(" · ")}>
-          {Array.from([...copy.sequence, ...copy.disciplines].filter(word => word !== ":").join(" · ")).map((letter, index) => (
+        <p className="landing-toprail landing-toprail--desktop" aria-label={topRailLabel}>
+          {Array.from(topRailLabel).map((letter, index) => (
             <span key={index} className="landing-toprail__letter" aria-hidden="true">{letter}</span>
+          ))}
+        </p>
+        <p className="landing-toprail landing-toprail--mobile">
+          <span className="sr-only">{topRailLabel}</span>
+          {topRailRows.map((row) => (
+            <span key={row[0]} className="landing-toprail__row" aria-hidden="true">
+              {Array.from(row.join("·")).map((letter, index) => (
+                <span key={index} className="landing-toprail__letter">{letter}</span>
+              ))}
+            </span>
           ))}
         </p>
 
         <h1 className="landing-wordmark">kolesnikov.studio</h1>
         </div>
 
+        <button
+          ref={mobileMenuToggle}
+          type="button"
+          className="landing-mobile-menu-toggle"
+          aria-controls="landing-detail-panel"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          {panelLabel}
+        </button>
         <div className="landing-interaction">
-          <div className={`landing-popup ${menuOpen ? "landing-popup--open" : ""}`} id="landing-detail-panel" aria-hidden={!menuOpen} role="region" aria-label={locale === "en" ? "Process and projects" : locale === "uk" ? "Процес і проєкти" : "Процесс и проекты"}>
+          <div className={`landing-popup ${menuOpen ? "landing-popup--open" : ""}`} id="landing-detail-panel" aria-hidden={!menuOpen} role="region" aria-label={panelLabel}>
               <div className="landing-popup__stages">
                 {(locale === "en"
                   ? ["idea formation", "concept creation", "projection development", "rights transfer", "conformity control"]

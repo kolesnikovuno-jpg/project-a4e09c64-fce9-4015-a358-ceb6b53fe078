@@ -1,3 +1,4 @@
+import "./studio-object-controls.css";
 import "./site/Landing.css";
 import ColorTool from "@/components/Color";
 import {colorSelection,type ColorSelection,type ColorData,type CatalogMatch} from "@/lib/color";
@@ -859,6 +860,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
               </p>
               <button
                 type="button"
+                className="studio-object-panel-trigger"
                 onClick={() => commercial ? setRequestOpen(true) : setParticipationOpen(true)}
                 style={{
                   background: "transparent",
@@ -899,7 +901,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
           {t.nav.back}
         </span>
       </button>
-      <div className="uno-actions">
+      <div className="uno-actions studio-object-actions">
         {modelFullyVisible && modelLoaded && <button type="button" onClick={openColors}>{locale==="ru"?"цвет":locale==="uk"?"колір":"color"}</button>}
         {commercial && <button type="button" className={`uno-action-conditional ${switcherVisible ? "is-hidden" : ""}`} tabIndex={switcherVisible ? -1 : 0} aria-hidden={switcherVisible} onClick={() => setRequestOpen(true)}>{locale === "ru" ? "запрос" : locale === "uk" ? "запит" : "request"}</button>}
         {(
@@ -937,7 +939,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
         onClose={() => setParticipationOpen(false)}
       />}
       {/* Vertical scroll indicator above the info button */}
-      <div className="uno-scroll-indicator" aria-hidden>
+      <div className="uno-scroll-indicator studio-object-scroll-indicator" aria-hidden>
         <div className="uno-scroll-fill" ref={scrollFillRef} />
       </div>
       {commercial ? (

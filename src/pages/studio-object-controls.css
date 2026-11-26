@@ -1,0 +1,65 @@
+/* Project page panel controls: the mobile plate is smaller than the hit area. */
+@media (max-width: 640px) {
+  .uno-actions.studio-object-actions {
+    isolation: isolate;
+    gap: 0;
+    padding: 0 5px;
+    min-block-size: 44px;
+    background: transparent;
+  }
+
+  .studio-object-actions::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 11px 0;
+    border-radius: 2px 0 0 2px;
+    background: hsl(var(--background));
+    pointer-events: none;
+  }
+
+  .uno-actions.studio-object-actions > button {
+    flex: 0 0 auto;
+    min-block-size: 44px;
+    min-inline-size: 44px;
+    padding-inline: 5px;
+    line-height: 1.2;
+  }
+
+  .uno-actions.studio-object-actions > button + button {
+    margin-left: 0;
+  }
+
+  .uno-actions.studio-object-actions > button.uno-action-conditional.is-hidden {
+    min-inline-size: 0;
+    padding-inline: 0;
+  }
+
+  .uno-actions.studio-object-actions > button:focus-visible {
+    outline: 1px solid currentColor;
+    outline-offset: -2px;
+  }
+
+  .uno-scroll-indicator.studio-object-scroll-indicator {
+    right: 27px;
+    bottom: 62px;
+  }
+
+  .lyra-description-screen .studio-object-panel-trigger,
+  .nava-description-screen .studio-object-panel-trigger {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 44px;
+    line-height: 1.2 !important;
+  }
+
+  .nava-description-screen .studio-object-panel-trigger {
+    gap: 4px;
+  }
+}
+
+@media (max-width: 640px) and (prefers-reduced-motion: reduce) {
+  .uno-actions.studio-object-actions > button {
+    transition: none;
+  }
+}

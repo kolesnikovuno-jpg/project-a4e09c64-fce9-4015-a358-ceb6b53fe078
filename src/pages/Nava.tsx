@@ -1,3 +1,4 @@
+import "./studio-object-controls.css";
 import { useEffect, useRef, useState } from "react";
 import PageTransition from "@/components/PageTransition";
 import lyraHero from "@/assets/nava-hero.png";
@@ -794,7 +795,7 @@ const Nava = () => {
           {t.nav.back}
         </span>
       </button>
-      <div className="uno-actions">
+      <div className="uno-actions studio-object-actions">
         {modelFullyVisible && (
           <button
             type="button"
@@ -819,7 +820,7 @@ const Nava = () => {
       </div>
       <NavaInfo showTrigger={false} />
       {/* Vertical scroll indicator above the info button */}
-      <div className="uno-scroll-indicator" aria-hidden>
+      <div className="uno-scroll-indicator studio-object-scroll-indicator" aria-hidden>
         <div className="uno-scroll-fill" ref={scrollFillRef} />
       </div>
       <ModelSEO slug="nava" />
