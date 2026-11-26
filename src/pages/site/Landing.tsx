@@ -103,7 +103,7 @@ const Landing = () => {
       <main className="landing-composition">
         <div className="landing-identity">
         <p className="landing-toprail landing-toprail--desktop" aria-label={topRailLabel}>
-          {Array.from(topRailLabel).map((letter, index) => (
+          {Array.from(topRailRows.flat().join("")).map((letter, index) => (
             <span key={index} className="landing-toprail__letter" aria-hidden="true">{letter}</span>
           ))}
         </p>
@@ -111,7 +111,7 @@ const Landing = () => {
           <span className="sr-only">{topRailLabel}</span>
           {topRailRows.map((row) => (
             <span key={row[0]} className="landing-toprail__row" aria-hidden="true">
-              {Array.from(row.join("·")).map((letter, index) => (
+              {Array.from(row.join("")).map((letter, index) => (
                 <span key={index} className="landing-toprail__letter">{letter}</span>
               ))}
             </span>
