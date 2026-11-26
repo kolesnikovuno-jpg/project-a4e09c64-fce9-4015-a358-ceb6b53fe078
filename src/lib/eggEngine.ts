@@ -10,6 +10,7 @@ import type { EggFlowCycle } from "./eggFlowCycle.js";
 import type { EggBalanceTension } from "./eggDynamicBalance.js";
 import type { EggEvolutionAssessment } from "./eggEvolution.js";
 import type { EggVisualSnapshot } from "./eggVisualHistory.js";
+import type { SphereMemory } from "./eggSphereMemory.js";
 
 export const EGG_SPHERES = {
   marketing: {
@@ -171,6 +172,8 @@ export type EggProject = {
   evolutionAssessments?: EggEvolutionAssessment[];
   /** Author-selected snapshots of actual pre-existing visual references. */
   visualVersions?: EggVisualSnapshot[];
+  /** Optional versioned sphere genomes and iteration diagnostics; legacy projects remain valid. */
+  sphereMemory?: SphereMemory;
   events: EggEvent[];
   nextSequence: number;
 };
