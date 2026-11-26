@@ -13,6 +13,7 @@ import {createClient} from "@supabase/supabase-js";
 import {z} from "zod";
 import {getEggStorageConfig} from "./eggStorageConfig.js";
 import {executeEggAction} from "./eggActionExecutor.js";
+import {eggOperationalAnalysisRules, parseEggOperationalAnalysis, type EggOperationalAnalysisIssue} from "./eggOperationalAnalysis.js";
 import {assessEggInformation, type EggInformationItem} from "../lib/eggInformationSufficiency.js";
 import {diagnoseEggAdsDelivery, type EggAdsSnapshot} from "../lib/eggAdsDeliveryDiagnostic.js";
 import {EGG_SPHERE_MANIFESTS,routeEggEvidenceGap,type EggEvidenceGap} from "../lib/eggSphereProtocol.js";
@@ -21,30 +22,6 @@ import {providerFromEnv,generate} from "../../api/egg-flow-ai.js";
 
 type Request=IncomingMessage&{body?:unknown};
 const requestSchema=z.object({slot:z.number().int().min(1).max(24)}).strict();
-const evidenceGapSchema=z.object({
-  missingFact:z.string().trim().min(8).max(320),
-  whyNeeded:z.string().trim().min(8).max(320),
-  sourceType:z.enum(["internal","external","authorial"]),
-  priority:z.enum(["critical","important","optional"]),
-  affectedDecision:z.string().trim().min(8).max(320),
-});
-const analysisSchema=z.object({
-  observation:z.string().trim().min(12).max(1200),
-  hypothesis:z.string().trim().min(12).max(1200),
-  nextStep:z.string().trim().min(12).max(1200),
-  confidence:z.enum(["low","medium"]),
-  limitations:z.array(z.string().trim().min(8).max(360)).min(1).max(4),
-  evidenceGaps:z.array(evidenceGapSchema).max(5).default([]),
-  scenarios:z.array(z.object({
-    id:z.string().trim().min(1).max(48),
-    approach:z.string().trim().min(8).max(300),
-    prerequisite:z.string().trim().min(8).max(300),
-    costUah:z.number().finite().nonnegative().nullable(),
-    costEvidence:z.enum(["verified","estimate","unknown"]),
-    sourceRef:z.string().max(300).nullable(),
-    nextValidation:z.string().trim().min(8).max(300),
-  })).max(3).default([]),
-});
 const responseSchema={
   type:"object",additionalProperties:false,
   properties:{
@@ -253,6 +230,7 @@ export default async function handler(req:Request,res:ServerResponse){
     if(error){console.warn("egg_auto_usage_save_failed",{code:error.code});return;}
     usageSaved=true;
   };
+  let analysisIssues:EggOperationalAnalysisIssue[]|undefined;
   let stage="load_shared_context";
   try{
     const {data:shared,error:sharedErr}=await db.from("egg_operational_events")
@@ -323,6 +301,7 @@ export default async function handler(req:Request,res:ServerResponse){
         "Укажи до пяти недостающих фактов: internal — общее поле и другие сферы; external — внешние источники; authorial — намерения, лимиты и решения автора.",
         "Не задавай автору вопрос, если ответ доступен внутри или извне. Укажи, какое решение блокирует каждый пробел.",
         "Никаких внешних действий, заявлений о выполнении рекомендаций, рекламе, закупках или контактах с клиентами.",
+        eggOperationalAnalysisRules,
         'Верни только JSON {"observation":"...","hypothesis":"...","nextStep":"...","confidence":"low|medium","limitations":["..."],"evidenceGaps":[{"missingFact":"...","whyNeeded":"...","sourceType":"internal|external|authorial","priority":"critical|important|optional","affectedDecision":"..."}],"scenarios":[{"id":"minimum","approach":"...","prerequisite":"...","costUah":null,"costEvidence":"unknown","sourceRef":null,"nextValidation":"..."}]}. Для 1–3 альтернативных сценариев, если данных достаточно; неизвестную цену передавай null. Число допустимо только при подтверждённом источнике или явно названном допущении. Никакой сценарий не разрешает расход.',
       ].join("\n"),
       input:JSON.stringify({
@@ -362,15 +341,10 @@ export default async function handler(req:Request,res:ServerResponse){
     await saveUsage();
     await settleBudget();
     stage="validate_response";
-    const trimmed=raw.trim();
-    const fenced=/^```(?:json)?\s*([\s\S]*?)\s*```$/i.exec(trimmed);
-    const decoded:unknown=JSON.parse(fenced?fenced[1]:trimmed);
-    // Log validation paths, not sensitive model output; never invent missing facts.
-    const validated=analysisSchema.safeParse(decoded);
-    if(!validated.success){
-      console.warn("egg_auto_response_schema",{
-        issues:validated.error.issues.slice(0,12).map(issue=>({path:issue.path.join("."),code:issue.code}))
-      });
+    const validated=parseEggOperationalAnalysis(raw);
+    if(validated.ok===false){
+      analysisIssues=validated.issues;
+      console.warn("egg_auto_response_schema",{issues:analysisIssues});
       throw Error("invalid_ai_response");
     }
     const parsed=validated.data;
@@ -423,7 +397,7 @@ export default async function handler(req:Request,res:ServerResponse){
       code,stage,provider:model.kind,model:model.model,
     });
     await db.from("egg_operational_activations")
-      .update({status:"blocked",finding:{kind:"worker_error",code,stage,mode:"autonomous"},
+      .update({status:"blocked",finding:{kind:"worker_error",code,stage,mode:"autonomous",...(analysisIssues?{analysisIssues}:{})},
         completed_at:new Date().toISOString()})
       .eq("id",picked.task.id).eq("status","researching");
     await db.from("egg_operational_auto_runs")
