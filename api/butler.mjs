@@ -8,7 +8,7 @@ export default async function handler(req,res){
  try{
  const dialogue=createStudioButler({env:process.env,authorizeBudget:async()=>{
  const endpoint=new URL("/rest/v1/rpc/butler_reserve_request",process.env.SUPABASE_URL);
- const response=await fetch(endpoint,{method:"POST",headers:{apikey:process.env.BUTLER_SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"},body:"{}",signal:AbortSignal.timeout(5000)});
+ const response=await fetch(endpoint,{method:"POST",headers:{apikey:process.env.BUTLER_SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({p_secret:process.env.BUTLER_BUDGET_SECRET}),signal:AbortSignal.timeout(5000)});
  return response.ok && (await response.json())===true;
  }});
  const result=await dialogue(req.body);
