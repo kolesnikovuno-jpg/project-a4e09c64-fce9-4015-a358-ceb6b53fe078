@@ -1,3 +1,4 @@
+import {startButlerRealtime} from "../lib/butlerRealtime";
 import {useState,useRef,useEffect} from "react";
 import {Mic,AudioLines,ArrowUp,Square,Maximize2,Minimize2,Minus} from "lucide-react";
 import {useLocation} from "react-router-dom";
@@ -13,8 +14,9 @@ export default function Butler(){
  const recognition=useRef<any>(null),active=useRef(false),generation=useRef(0),sendRef=useRef<(message:string)=>Promise<void>>(async()=>{});
  const [voiceLang,setVoiceLang]=useState(()=>{const l=navigator.language.toLowerCase();return l.startsWith("uk")?"uk-UA":l.startsWith("ru")?"ru-RU":{ru:"ru-RU",uk:"uk-UA",en:"en-US"}[lang];});
  const speechLang=voiceLang;
- function stopVoice(){active.current=false;generation.current++;setVoice(false);recognition.current?.abort();window.speechSynthesis?.cancel();setListening(false);}
- useEffect(()=>()=>{active.current=false;generation.current++;recognition.current?.abort();window.speechSynthesis?.cancel();},[]);
+ const realtime=useRef<AbortController|null>(null);const voiceTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
+ function stopVoice(){realtime.current?.abort();realtime.current=null;if(voiceTimer.current)clearTimeout(voiceTimer.current);active.current=false;generation.current++;setVoice(false);recognition.current?.abort();window.speechSynthesis?.cancel();setListening(false);}
+ useEffect(()=>()=>{realtime.current?.abort();if(voiceTimer.current)clearTimeout(voiceTimer.current);active.current=false;generation.current++;recognition.current?.abort();window.speechSynthesis?.cancel();},[]);
  function listen(conversation:boolean){
  const C=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
  if(!C){setError(lang==="ru"?"Голосовой ввод не поддерживается этим браузером":lang==="uk"?"Голосове введення не підтримується":"Speech recognition is not supported");return;}
@@ -27,7 +29,24 @@ export default function Butler(){
  r.onend=()=>{if(g===generation.current){setListening(false);if(conversation&&!received)stopVoice();}};
  try{r.start();}catch{stopVoice();setError(t[2]);}
  }
- function toggleVoice(){if(active.current){stopVoice();return;}if(busy)return;const C=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;if(!C||!window.speechSynthesis){listen(false);return;}window.speechSynthesis.cancel();const warmup=new SpeechSynthesisUtterance(" ");warmup.lang=speechLang;warmup.volume=0;window.speechSynthesis.speak(warmup);active.current=true;setVoice(true);listen(true);}
+ async function toggleVoice(){
+ if(active.current){stopVoice();return;}if(busy)return;
+ recognition.current?.abort();setError("");active.current=true;setVoice(true);setListening(false);
+ const controller=new AbortController();realtime.current=controller;
+ const fail=()=>{if(controller.signal.aborted)return;stopVoice();setOpen(true);setError(t[2]);};
+ try{
+ await startButlerRealtime(event=>{
+ if(controller.signal.aborted)return;
+ if(event.type==="input_audio_buffer.speech_started")setListening(true);
+ if(event.type==="input_audio_buffer.speech_stopped")setListening(false);
+ if(event.type==="conversation.item.input_audio_transcription.completed"&&event.transcript)setMessages(old=>[...old,{role:"user",content:event.transcript}]);
+ if(event.type==="response.output_audio_transcript.done"&&event.transcript)setMessages(old=>[...old,{role:"assistant",content:event.transcript}]);
+ if(event.type==="error")fail();
+ },fail,controller.signal);
+ if(!controller.signal.aborted)voiceTimer.current=setTimeout(()=>stopVoice(),120000);
+ }catch{fail();}
+ }
+
  if(!["kolesnikov.studio","www.kolesnikov.studio"].includes(window.location.hostname)&&!window.location.hostname.endsWith(".vercel.app"))return null;
  async function send(e:React.FormEvent){
  e.preventDefault();await sendMessage(input);}
@@ -37,7 +56,7 @@ export default function Butler(){
  const data=await response.json();if(!response.ok||typeof data.answer!=="string")throw new Error();
  setMessages(old=>[...old,{role:"user",content:message},{role:"assistant",content:data.answer}]);setInput("");
  if(data.inquiry&&!receipt&&!inquiry){setContact(typeof data.inquiry.contact==="string"?data.inquiry.contact:"");setSummary(data.inquiry.summary);setConsent(false);setInquiry(true);}
- if(active.current&&g===generation.current){const u=new SpeechSynthesisUtterance(data.answer);u.lang=/[іїєґ]/i.test(data.answer)?"uk-UA":/[а-яё]/i.test(data.answer)?(speechLang==="uk-UA"?"uk-UA":"ru-RU"):"en-US";const voices=window.speechSynthesis.getVoices();const chosen=voices.find(v=>v.lang.toLowerCase()===u.lang.toLowerCase())||voices.find(v=>v.lang.startsWith(u.lang.slice(0,2)));if(chosen)u.voice=chosen;u.onend=()=>{if(active.current&&g===generation.current)listen(true);};u.onerror=()=>{stopVoice();setOpen(true);setError(lang==="ru"?"Не удалось озвучить ответ":lang==="uk"?"Не вдалося озвучити відповідь":"Voice playback failed");};window.speechSynthesis.speak(u);}
+ if(active.current&&!realtime.current&&g===generation.current){const u=new SpeechSynthesisUtterance(data.answer);u.lang=/[іїєґ]/i.test(data.answer)?"uk-UA":/[а-яё]/i.test(data.answer)?(speechLang==="uk-UA"?"uk-UA":"ru-RU"):"en-US";const voices=window.speechSynthesis.getVoices();const chosen=voices.find(v=>v.lang.toLowerCase()===u.lang.toLowerCase())||voices.find(v=>v.lang.startsWith(u.lang.slice(0,2)));if(chosen)u.voice=chosen;u.onend=()=>{if(active.current&&g===generation.current)listen(true);};u.onerror=()=>{stopVoice();setOpen(true);setError(lang==="ru"?"Не удалось озвучить ответ":lang==="uk"?"Не вдалося озвучити відповідь":"Voice playback failed");};window.speechSynthesis.speak(u);}
  }catch{stopVoice();setError(t[2]);}finally{setBusy(false);}
  }
  sendRef.current=sendMessage;
