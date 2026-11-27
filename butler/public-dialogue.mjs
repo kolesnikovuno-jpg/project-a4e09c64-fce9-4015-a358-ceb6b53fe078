@@ -13,9 +13,9 @@ export function createPublicDialogue({loadRecords,complete,authorizeBudget}) {
   const history=body.history??[];
  if(!Array.isArray(history)||history.length>12||history.some(x=>!x||!["user","assistant"].includes(x.role)||typeof x.content!=="string"||x.content.length>2000)||JSON.stringify(history).length>12000) return {status:400,body:{error:"invalid_history"}};
  try {
-   const {answer}=await butler.dialogue({message:body.message,locale,history:history.map(({role,content})=>({role,content}))});
+   const {answer,inquiry}=await butler.dialogue({message:body.message,locale,history:history.map(({role,content})=>({role,content}))});
    if(typeof answer!=="string"||!answer.trim()) throw new Error("Unavailable");
-   return {status:200,body:{answer}};
-  }catch(e){console.warn("butler_dialogue_failure",e?.message);return {status:503,body:{error:"unavailable"}};}
+   return {status:200,body:{answer,inquiry}};
+  }catch(e){console.warn("butler_dialogue_failure");return {status:503,body:{error:"unavailable"}};}
  };
 }
