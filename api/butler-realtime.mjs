@@ -1,4 +1,6 @@
 import {createHmac,timingSafeEqual} from "node:crypto";
+import {waitUntil} from "@vercel/functions";
+export const config={maxDuration:180};
 export default async function handler(req,res){
  res.setHeader("Cache-Control","no-store");
  if(req.method!=="POST"||req.headers.origin!=="https://"+req.headers.host)return res.status(403).json({error:"forbidden"});
@@ -26,6 +28,7 @@ export default async function handler(req,res){
  const r=await fetch("https://api.openai.com/v1/realtime/calls",{method:"POST",headers,body:form,signal:AbortSignal.timeout(15000)});
  if(!r.ok){console.warn("butler_realtime_provider",r.status);return res.status(503).json({error:"provider"});}
  const id=r.headers.get("location")?.split("/").pop();if(!id||!/^rtc_[a-zA-Z0-9_-]+$/.test(id))return res.status(503).json({error:"call_id"});
+ waitUntil((async()=>{await new Promise(resolve=>setTimeout(resolve,120000));for(let i=0;i<3;i++){try{const stop=await fetch("https://api.openai.com/v1/realtime/calls/"+id+"/hangup",{method:"POST",headers,signal:AbortSignal.timeout(5000)});if(stop.ok||stop.status===404)return;}catch{}await new Promise(resolve=>setTimeout(resolve,1000));}console.error("butler_voice_expiry_failed",id);})());
  return res.status(200).json({sdp:await r.text(),id,signature:sign(id)});
  }catch{return res.status(503).json({error:"unavailable"});}
 }
