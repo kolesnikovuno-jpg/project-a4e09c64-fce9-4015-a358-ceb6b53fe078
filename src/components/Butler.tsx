@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {useLocation, Link} from "react-router-dom";
+import {useLocation} from "react-router-dom";
 type Message={role:"user"|"assistant";content:string};
 export default function Butler(){
  const {pathname}=useLocation();
@@ -7,6 +7,7 @@ export default function Butler(){
  const lang=locale==="uk"||locale==="en"?locale:"ru";
  const t={ru:["Напишите сообщение","Отправить","Сейчас Butler недоступен","Закрыть"],uk:["Напишіть повідомлення","Надіслати","Зараз Butler недоступний","Закрити"],en:["Write a message","Send","Butler is currently unavailable","Close"]}[lang];
  const [open,setOpen]=useState(false),[messages,setMessages]=useState<Message[]>([]),[input,setInput]=useState(""),[busy,setBusy]=useState(false),[error,setError]=useState("");
+ const [inquiry,setInquiry]=useState(false),[contact,setContact]=useState(""),[summary,setSummary]=useState(""),[consent,setConsent]=useState(false),[receipt,setReceipt]=useState("");
  if(!["kolesnikov.studio","www.kolesnikov.studio"].includes(window.location.hostname)&&!window.location.hostname.endsWith(".vercel.app"))return null;
  async function send(e:React.FormEvent){
  e.preventDefault();const message=input.trim();if(!message||busy)return;
@@ -21,7 +22,10 @@ export default function Butler(){
  <div className="flex justify-between"><strong>Butler</strong><button onClick={()=>setOpen(false)} aria-label={t[3]}>×</button></div>
  <div role="log" className="my-3 max-h-[40vh] overflow-auto space-y-3">{messages.map((m,i)=><p key={i} className="whitespace-pre-wrap break-words"><strong>{m.role==="assistant"?"Butler":"›"}</strong> {m.content}</p>)}</div>
  {error&&<p role="alert">{error}</p>}
- {messages.length>0&&<Link className="block underline my-2" to={`/${lang}/start`} onClick={()=>setOpen(false)}>{lang==="ru"?"Оформить обращение":lang==="uk"?"Оформити звернення":"Prepare an inquiry"}</Link>}
+ {messages.length>0&&!inquiry&&<button className="underline my-2" onClick={()=>{setSummary(messages.filter(m=>m.role==="user").map(m=>m.content).join("\n").slice(0,4000));setInquiry(true)}}>{lang==="ru"?"Оформить обращение":lang==="uk"?"Оформити звернення":"Prepare an inquiry"}</button>}
+ {inquiry&&<form className="space-y-2 my-2" onSubmit={async e=>{e.preventDefault();if(busy||!consent)return;setBusy(true);setError("");try{const r=await fetch("/api/butler-inquiry",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contact,summary,consent})});const d=await r.json();if(!r.ok||!d.id)throw new Error();setReceipt(d.id);}catch{setError(t[2]);}finally{setBusy(false);}}}>
+ {receipt?<p role="status">{lang==="ru"?"Обращение зарегистрировано":lang==="uk"?"Звернення зареєстровано":"Inquiry registered"}: {receipt}</p>:<><input required maxLength={320} value={contact} onChange={e=>setContact(e.target.value)} placeholder={lang==="ru"?"Контакт":lang==="uk"?"Контакт":"Contact"} className="w-full border rounded bg-transparent p-2"/><textarea required maxLength={4000} value={summary} onChange={e=>setSummary(e.target.value)} className="w-full border rounded bg-transparent p-2"/><label className="flex gap-2"><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}/>{lang==="ru"?"Согласен передать контакт и текст студии":lang==="uk"?"Погоджуюся передати контакт і текст студії":"I consent to sharing my contact and text with the studio"}</label><button disabled={busy||!consent} type="submit">{t[1]}</button></>}
+ </form>}
  <form onSubmit={send} className="flex gap-2"><input aria-label={t[0]} placeholder={t[0]} value={input} maxLength={4000} onChange={e=>setInput(e.target.value)} className="min-w-0 flex-1 border rounded bg-transparent p-2"/><button disabled={busy||!input.trim()} type="submit">{busy?"…":t[1]}</button></form>
  </section>}
  <button aria-expanded={open} onClick={()=>setOpen(v=>!v)} className="rounded-full border border-neutral-400/50 bg-background/90 text-foreground px-4 py-2">Butler</button>
