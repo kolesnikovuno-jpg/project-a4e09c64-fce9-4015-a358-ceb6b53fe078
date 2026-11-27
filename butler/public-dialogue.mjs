@@ -16,6 +16,6 @@ export function createPublicDialogue({loadRecords,complete,authorizeBudget}) {
    const {answer}=await butler.dialogue({message:body.message,locale,history:history.map(({role,content})=>({role,content}))});
    if(typeof answer!=="string"||!answer.trim()) throw new Error("Unavailable");
    return {status:200,body:{answer}};
-  }catch{return {status:503,body:{error:"unavailable"}};}
+  }catch(e){console.warn("butler_dialogue_failure",e?.message);return {status:503,body:{error:"unavailable"}};}
  };
 }
