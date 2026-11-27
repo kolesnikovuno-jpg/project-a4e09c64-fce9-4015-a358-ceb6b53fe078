@@ -120,7 +120,7 @@
       "handle": "filesystem"
     },
     {
-      "src": "^/(?!og/|assets/|.*\\..*).*$",
+      "src": "^/(?!api/|og/|assets/|.*\\..*).*$",
       "dest": "/index.html"
     }
   ]

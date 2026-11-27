@@ -1,3 +1,4 @@
+import Butler from "./components/Butler";
 import ColorTool from "./components/Color";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
@@ -178,6 +179,7 @@ const App = () => (
 
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <Butler />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
