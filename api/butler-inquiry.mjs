@@ -9,6 +9,11 @@ export default async function handler(req,res){
  const r=await fetch(new URL("/rest/v1/rpc/butler_submit_inquiry",process.env.SUPABASE_URL),{method:"POST",headers:{apikey:process.env.BUTLER_SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({p_secret:process.env.BUTLER_BUDGET_SECRET,p_contact:contact,p_summary:summary,p_consent:true}),signal:AbortSignal.timeout(5000)});
  const id=r.ok?await r.json():null;
  if(typeof id!=="string")return res.status(503).json({error:"unavailable"});
- return res.status(201).json({id});
+ let notified=false;
+ try{
+ const mail=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+process.env.RESEND_API_KEY,"Content-Type":"application/json","Idempotency-Key":"butler-inquiry/"+id},body:JSON.stringify({from:process.env.BUTLER_MAIL_FROM||"Butler <onboarding@resend.dev>",to:[process.env.BUTLER_MAIL_TO||"kolesnikow.ua@gmail.com"],subject:"Butler — новое обращение "+id,text:"Контакт: "+contact+"\n\nЗапрос:\n"+summary+"\n\nНомер: "+id}),signal:AbortSignal.timeout(8000)});
+ notified=mail.ok;console.info("butler_notification",id,mail.status);
+ }catch{console.warn("butler_notification_failed",id);}
+ return res.status(201).json({id,notified});
  }catch{return res.status(503).json({error:"unavailable"});}
 }
