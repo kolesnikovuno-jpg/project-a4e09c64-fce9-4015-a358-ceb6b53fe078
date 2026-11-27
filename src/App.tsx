@@ -105,6 +105,8 @@ const localizedPages: Array<{ path: string; element: JSX.Element }> = [
   { path: "egg", element: <EggGate /> },
   { path: "unocalc/about", element: <UnoCalcAbout /> },
   { path: "unocalc/lab", element: <UnoLab /> },
+  { path: "butler-view/lyra", element: <Lyra commercial /> },
+  { path: "butler-view/nava", element: <Nava /> },
   { path: "lyra", element: <RedirectToLyraDomain /> },
   { path: "lyra-request", element: <RedirectToLyraDomain /> },
   { path: "nava", element: <RedirectToNavaDomain /> },
