@@ -1,4 +1,5 @@
 import "./studio-object-controls.css";
+import "./site/Landing.css";
 import { useEffect, useRef, useState } from "react";
 import PageTransition from "@/components/PageTransition";
 import lyraHero from "@/assets/nava-hero.png";
@@ -414,11 +415,11 @@ const Nava = () => {
         className="relative w-screen"
         style={{ height: "300vh" }}
       >
-        <div className="sticky top-0 w-screen h-screen overflow-hidden">
+        <div className="sticky top-0 w-screen h-screen overflow-hidden landing-field" style={{cursor:"auto",position:"sticky"}}>
           {/* Layer 1: hero image */}
           <section
             ref={heroRef}
-            className="absolute inset-0 w-full h-full overflow-hidden"
+            className="absolute inset-0 w-full h-full overflow-hidden z-[1]"
             style={{ willChange: "opacity" }}
           >
             <div ref={heroLayerRef} className="absolute inset-0 w-full h-full">
@@ -472,7 +473,7 @@ const Nava = () => {
           {/* Layer 2: 3D scene */}
           <div
             ref={modelLayerRef}
-            className="absolute inset-0 w-full h-full bg-background flex items-center justify-center overflow-x-hidden"
+            className="absolute inset-0 w-full h-full z-[1] flex items-center justify-center overflow-x-hidden"
             style={{ opacity: 0, willChange: "opacity", pointerEvents: "none" }}
           >
         <style>{`
@@ -504,13 +505,13 @@ const Nava = () => {
           height:clamp(420px,68vw,720px);
           border-radius:18px;
           overflow:visible;
-          background:hsl(24 26% 94%);
+          background:transparent;
         }
         model-viewer::part(default-progress-bar){display:none;}
         .uno-loader{
           position:absolute;inset:0;
           display:flex;align-items:center;justify-content:center;
-          background:hsl(24 26% 94%);z-index:2;
+          background:transparent;z-index:2;
           transition:opacity .6s ease;
         }
         .uno-loader.hide{opacity:0;pointer-events:none;}
@@ -706,7 +707,7 @@ const Nava = () => {
                 width: "100%",
                 height: "100%",
                 display: "block",
-                background: "hsl(24 26% 94%)",
+                background: "transparent",
               }}
               ar
               ar-modes="webxr scene-viewer quick-look"
@@ -744,7 +745,7 @@ const Nava = () => {
           {/* Layer 3: text */}
           <div
             ref={textBlockRef}
-            className="absolute inset-0 w-full h-full bg-background nava-description-screen"
+            className="absolute inset-0 w-full h-full z-[1] nava-description-screen"
             style={{
               padding: "0 clamp(20px, 6vw, 96px)",
               boxSizing: "border-box",
