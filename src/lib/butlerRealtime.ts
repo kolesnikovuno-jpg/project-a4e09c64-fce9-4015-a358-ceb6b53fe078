@@ -1,6 +1,7 @@
 export async function startButlerRealtime(onEvent:(event:any)=>void,onError:()=>void,signal:AbortSignal){
- const pc=new RTCPeerConnection();const audio=document.createElement("audio");audio.autoplay=true;audio.setAttribute("playsinline","");let stream:MediaStream|undefined;let closed=false;
- const close=()=>{if(closed)return;closed=true;stream?.getTracks().forEach(t=>t.stop());pc.close();audio.pause();audio.srcObject=null;audio.remove();signal.removeEventListener("abort",close);};
+ const pc=new RTCPeerConnection();const audio=document.createElement("audio");audio.autoplay=true;audio.setAttribute("playsinline","");let stream:MediaStream|undefined;let closed=false;let remote:{id:string;signature:string}|undefined;
+ const hangup=()=>{if(remote)void fetch('/api/butler-realtime',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'stop',...remote}),keepalive:true}).catch(()=>{});};
+ const close=()=>{if(closed)return;closed=true;hangup();stream?.getTracks().forEach(t=>t.stop());pc.close();audio.pause();audio.srcObject=null;audio.remove();signal.removeEventListener("abort",close);};
  signal.addEventListener("abort",close,{once:true});
  try{
  if(signal.aborted)throw Error("cancelled");
@@ -9,8 +10,7 @@ export async function startButlerRealtime(onEvent:(event:any)=>void,onError:()=>
  stream.getTracks().forEach(t=>pc.addTrack(t,stream!));
  const dc=pc.createDataChannel("oai-events");dc.onmessage=e=>{try{onEvent(JSON.parse(e.data));}catch{}};pc.onconnectionstatechange=()=>{if(pc.connectionState==="failed"){close();onError();}};
  const offer=await pc.createOffer();await pc.setLocalDescription(offer);
- const token=await fetch("/api/butler-realtime",{method:"POST",signal});if(!token.ok)throw Error("session");const {value}=await token.json();
- const answer=await fetch("https://api.openai.com/v1/realtime/calls",{method:"POST",headers:{Authorization:"Bearer "+value,"Content-Type":"application/sdp"},body:offer.sdp,signal});if(!answer.ok)throw Error("connection");
- await pc.setRemoteDescription({type:"answer",sdp:await answer.text()});return close;
+ const response=await fetch("/api/butler-realtime",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sdp:offer.sdp})});if(!response.ok)throw Error("session");const answer=await response.json();remote={id:answer.id,signature:answer.signature};if(closed){hangup();throw Error("cancelled");}
+ await pc.setRemoteDescription({type:"answer",sdp:answer.sdp});return close;
  }catch(e){close();throw e;}
 }
