@@ -379,7 +379,7 @@ export default async function handler(req:Request,res:ServerResponse){
       sourceEventIds:[typeof picked.event.facts?.retry_source_event==="string"?picked.event.facts.retry_source_event:picked.event.id],runMode:"autonomous",
       aiProvider:model.kind,model:model.model,
       generatedAt:new Date().toISOString(),
-      internalAction:"observe_next_closed_day",
+      internalAction:objectResearch?"object_result_saved":"observe_next_closed_day",
       internalActionsExecuted:1,externalActionsExecuted:0,
       authorGoalChanged:false,
     };
@@ -392,7 +392,7 @@ export default async function handler(req:Request,res:ServerResponse){
     json(res,200,{
       ok:true,status:"research_saved",
       sphere:picked.task.sphere,sourceKind:picked.event.kind,day:sourceDay,
-      followup:"observe_next_closed_day",paidAiCalls:1,externalActionsExecuted:0,
+      followup:objectResearch?null:"observe_next_closed_day",paidAiCalls:1,externalActionsExecuted:0,
     });
   }catch(error){
     await saveUsage();
