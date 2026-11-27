@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {useLocation} from "react-router-dom";
+import {useLocation, Link} from "react-router-dom";
 type Message={role:"user"|"assistant";content:string};
 export default function Butler(){
  const {pathname}=useLocation();
@@ -21,6 +21,7 @@ export default function Butler(){
  <div className="flex justify-between"><strong>Butler</strong><button onClick={()=>setOpen(false)} aria-label={t[3]}>×</button></div>
  <div role="log" className="my-3 max-h-[40vh] overflow-auto space-y-3">{messages.map((m,i)=><p key={i} className="whitespace-pre-wrap break-words"><strong>{m.role==="assistant"?"Butler":"›"}</strong> {m.content}</p>)}</div>
  {error&&<p role="alert">{error}</p>}
+ {messages.length>0&&<Link className="block underline my-2" to={`/${lang}/start`} onClick={()=>setOpen(false)}>{lang==="ru"?"Оформить обращение":lang==="uk"?"Оформити звернення":"Prepare an inquiry"}</Link>}
  <form onSubmit={send} className="flex gap-2"><input aria-label={t[0]} placeholder={t[0]} value={input} maxLength={4000} onChange={e=>setInput(e.target.value)} className="min-w-0 flex-1 border rounded bg-transparent p-2"/><button disabled={busy||!input.trim()} type="submit">{busy?"…":t[1]}</button></form>
  </section>}
  <button aria-expanded={open} onClick={()=>setOpen(v=>!v)} className="rounded-full border border-neutral-400/50 bg-background/90 text-foreground px-4 py-2">Butler</button>
