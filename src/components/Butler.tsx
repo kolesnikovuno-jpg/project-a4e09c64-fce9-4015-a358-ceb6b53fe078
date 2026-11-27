@@ -11,7 +11,8 @@ export default function Butler(){
  const [inquiry,setInquiry]=useState(false),[contact,setContact]=useState(""),[summary,setSummary]=useState(""),[consent,setConsent]=useState(false),[receipt,setReceipt]=useState("");
  const [voice,setVoice]=useState(false),[listening,setListening]=useState(false),[expanded,setExpanded]=useState(false);
  const recognition=useRef<any>(null),active=useRef(false),generation=useRef(0),sendRef=useRef<(message:string)=>Promise<void>>(async()=>{});
- const speechLang={ru:"ru-RU",uk:"uk-UA",en:"en-US"}[lang];
+ const [voiceLang,setVoiceLang]=useState(()=>{const l=navigator.language.toLowerCase();return l.startsWith("uk")?"uk-UA":l.startsWith("ru")?"ru-RU":{ru:"ru-RU",uk:"uk-UA",en:"en-US"}[lang];});
+ const speechLang=voiceLang;
  function stopVoice(){active.current=false;generation.current++;setVoice(false);recognition.current?.abort();window.speechSynthesis?.cancel();setListening(false);}
  useEffect(()=>()=>{active.current=false;generation.current++;recognition.current?.abort();window.speechSynthesis?.cancel();},[]);
  function listen(conversation:boolean){
@@ -26,7 +27,7 @@ export default function Butler(){
  r.onend=()=>{if(g===generation.current){setListening(false);if(conversation&&!received)stopVoice();}};
  try{r.start();}catch{stopVoice();setError(t[2]);}
  }
- function toggleVoice(){if(active.current){stopVoice();return;}if(busy)return;const C=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;if(!C||!window.speechSynthesis){listen(false);return;}active.current=true;setVoice(true);listen(true);}
+ function toggleVoice(){if(active.current){stopVoice();return;}if(busy)return;const C=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;if(!C||!window.speechSynthesis){listen(false);return;}window.speechSynthesis.cancel();const warmup=new SpeechSynthesisUtterance(" ");warmup.lang=speechLang;warmup.volume=0;window.speechSynthesis.speak(warmup);active.current=true;setVoice(true);listen(true);}
  if(!["kolesnikov.studio","www.kolesnikov.studio"].includes(window.location.hostname)&&!window.location.hostname.endsWith(".vercel.app"))return null;
  async function send(e:React.FormEvent){
  e.preventDefault();await sendMessage(input);}
@@ -36,7 +37,7 @@ export default function Butler(){
  const data=await response.json();if(!response.ok||typeof data.answer!=="string")throw new Error();
  setMessages(old=>[...old,{role:"user",content:message},{role:"assistant",content:data.answer}]);setInput("");
  if(data.inquiry&&!receipt&&!inquiry){setContact(typeof data.inquiry.contact==="string"?data.inquiry.contact:"");setSummary(data.inquiry.summary);setConsent(false);setInquiry(true);}
- if(active.current&&g===generation.current){const u=new SpeechSynthesisUtterance(data.answer);u.lang=speechLang;u.onend=()=>{if(active.current&&g===generation.current)listen(true);};u.onerror=()=>stopVoice();window.speechSynthesis.speak(u);}
+ if(active.current&&g===generation.current){const u=new SpeechSynthesisUtterance(data.answer);u.lang=/[іїєґ]/i.test(data.answer)?"uk-UA":/[а-яё]/i.test(data.answer)?(speechLang==="uk-UA"?"uk-UA":"ru-RU"):"en-US";const voices=window.speechSynthesis.getVoices();const chosen=voices.find(v=>v.lang.toLowerCase()===u.lang.toLowerCase())||voices.find(v=>v.lang.startsWith(u.lang.slice(0,2)));if(chosen)u.voice=chosen;u.onend=()=>{if(active.current&&g===generation.current)listen(true);};u.onerror=()=>{stopVoice();setOpen(true);setError(lang==="ru"?"Не удалось озвучить ответ":lang==="uk"?"Не вдалося озвучити відповідь":"Voice playback failed");};window.speechSynthesis.speak(u);}
  }catch{stopVoice();setError(t[2]);}finally{setBusy(false);}
  }
  sendRef.current=sendMessage;
@@ -51,7 +52,7 @@ export default function Butler(){
  </form>}
  <form onSubmit={send} className="rounded-2xl border border-neutral-400/40 p-2 space-y-2">
  <textarea rows={2} aria-label={t[0]} placeholder={t[0]} value={input} maxLength={4000} onChange={e=>setInput(e.target.value)} className="w-full resize-none bg-transparent p-2 outline-none"/>
- <div className="flex items-center justify-end gap-2">
+ <div className="flex items-center justify-end gap-2"><select aria-label="Voice language" className="mr-auto bg-transparent text-xs" value={voiceLang} disabled={voice||listening} onChange={e=>setVoiceLang(e.target.value)}><option value="ru-RU">RU</option><option value="uk-UA">UA</option><option value="en-US">EN</option></select>
  <button type="button" className="p-2 rounded-full hover:bg-neutral-500/10" disabled={busy||voice||listening} onClick={()=>listen(false)} aria-label={lang==="ru"?"Диктовка":lang==="uk"?"Диктування":"Dictate"}><Mic size={20}/></button>
  <button type="button" className="p-2 rounded-full border" disabled={busy&&!voice} onClick={toggleVoice} aria-label={voice?"Stop voice":"Voice dialogue"}>{voice?<Square size={20}/>:<AudioLines size={20}/>}</button>
  {input.trim()&&<button className="p-2 rounded-full bg-foreground text-background" disabled={busy} type="submit" aria-label={t[1]}><ArrowUp size={20}/></button>}
