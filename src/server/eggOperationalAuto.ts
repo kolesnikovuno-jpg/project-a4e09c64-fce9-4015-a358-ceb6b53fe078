@@ -178,6 +178,9 @@ export default async function handler(req:Request,res:ServerResponse){
   const picked=pickTask(events,(taskRaw??[]) as TaskRow[]);
   if(!picked){json(res,200,{ok:true,status:"no_pending_tasks",paidAiCalls:0});return;}
   const sourceDay=isDate(picked.event.facts?.day)?picked.event.facts.day:utcDay;
+  const objectResearch=picked.event.source==="egg_object_research_v1";
+  let baselineDay=sourceDay;
+  if(!objectResearch){
   const {data:check,error:checkErr}=await db.from("egg_operational_source_checks")
     .select("source_day,status").eq("operational_project_id",project.id)
     .eq("source","lyra_supabase_daily_v1").in("status",["ok","no_activity"])
@@ -185,7 +188,8 @@ export default async function handler(req:Request,res:ServerResponse){
   if(checkErr){json(res,503,{ok:false,error:"source_check_unavailable"});return;}
   const evidence=executeEggAction({type:"verify_source_evidence",source:"lyra_supabase_daily_v1",sourceDay:check?.source_day??"",status:check?.status??""});
   if(!evidence.ok){json(res,503,{ok:false,error:"verified_source_check_required",paidAiCalls:0});return;}
-  const baselineDay=isDate(check?.source_day)&&check.source_day>sourceDay?check.source_day:sourceDay;
+  baselineDay=isDate(check?.source_day)&&check.source_day>sourceDay?check.source_day:sourceDay;
+  }
   const model=providerFromEnv(process.env,req.headers["x-vercel-oidc-token"]);
   if(!model){json(res,503,{ok:false,error:"ai_provider_unavailable"});return;}
 
@@ -307,6 +311,7 @@ export default async function handler(req:Request,res:ServerResponse){
       input:JSON.stringify({
         task:{sphere:picked.task.sphere,description:picked.task.task,
           eventId:picked.event.id,eventKind:picked.event.kind,sourceDay,retryNumber:picked.task.retry_count,sourceEventId:picked.event.facts?.retry_source_event??picked.event.id},
+        objectResearchRequest:objectResearch?picked.event.facts:null,
         goal:{metric:"confirmed_orders_per_month",target:project.goal_target},
         economics:{advertising:{dailyLimitUAH:project.ads_daily_limit_uah,
           rolling30DaysLimitUAH:project.ads_rolling_30d_limit_uah,operationsEnabled:false}},
