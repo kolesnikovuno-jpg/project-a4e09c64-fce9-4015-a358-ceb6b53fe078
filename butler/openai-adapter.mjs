@@ -7,7 +7,7 @@ export function createOpenAIAdapter({apiKey,model,fetchImpl=fetch}) {
    body:JSON.stringify({model,instructions,input,max_output_tokens:500,store:false}),
    signal:AbortSignal.timeout(20000)
   });
-  if(!response.ok) throw new Error("Provider unavailable");
+  if(!response.ok){console.warn("butler_provider_http",response.status);throw new Error("Provider unavailable");}
   const data=await response.json();
   if(data.status!=="completed") throw new Error("Incomplete response");
   const answer=(data.output??[]).filter(x=>x.type==="message").flatMap(x=>x.content??[]).filter(x=>x.type==="output_text").map(x=>x.text).join("\n");
