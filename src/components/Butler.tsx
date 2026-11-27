@@ -1,10 +1,10 @@
 import {startButlerRealtime} from "../lib/butlerRealtime";
 import {useState,useRef,useEffect} from "react";
 import {Mic,AudioLines,ArrowUp,Square,Maximize2,Minimize2,Minus} from "lucide-react";
-import {useLocation} from "react-router-dom";
+import {useLocation,useNavigate} from "react-router-dom";
 type Message={role:"user"|"assistant";content:string};
 export default function Butler(){
- const {pathname}=useLocation();
+ const {pathname}=useLocation();const navigate=useNavigate();
  const locale=pathname.split("/")[1];
  const lang=locale==="uk"||locale==="en"?locale:"ru";
  const t={ru:["Напишите сообщение","Отправить","Сейчас Butler недоступен","Закрыть"],uk:["Напишіть повідомлення","Надіслати","Зараз Butler недоступний","Закрити"],en:["Write a message","Send","Butler is currently unavailable","Close"]}[lang];
@@ -42,7 +42,7 @@ export default function Butler(){
  if(event.type==="conversation.item.input_audio_transcription.completed"&&event.transcript)setMessages(old=>[...old,{role:"user",content:event.transcript}]);
  if(event.type==="response.output_audio_transcript.done"&&event.transcript)setMessages(old=>[...old,{role:"assistant",content:event.transcript}]);
  if(event.type==="error")fail();
- },fail,controller.signal);
+ },fail,controller.signal,object=>{navigate(`/${lang}/butler-view/${object}`);setOpen(false);});
  if(!controller.signal.aborted)voiceTimer.current=setTimeout(()=>stopVoice(),120000);
  }catch{fail();}
  }
