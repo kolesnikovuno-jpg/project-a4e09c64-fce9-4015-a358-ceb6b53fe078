@@ -19,7 +19,7 @@ export default async function handler(req,res){
  if(process.env.BUTLER_REALTIME_ENABLED!=="true")return res.status(503).json({error:"voice_disabled"});
  if(typeof body?.sdp!=="string"||body.sdp.length>32000||!body.sdp.startsWith("v=0"))return res.status(400).json({error:"sdp"});
  const base=process.env.SUPABASE_URL,h={apikey:process.env.BUTLER_SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"};
- const budget=await fetch(base+"/rest/v1/rpc/butler_reserve_request",{method:"POST",headers:h,body:JSON.stringify({p_secret:secret}),signal:AbortSignal.timeout(5000)});
+ const budget=await fetch(base+"/rest/v1/rpc/butler_reserve_voice",{method:"POST",headers:h,body:JSON.stringify({p_secret:secret}),signal:AbortSignal.timeout(5000)});
  if(!budget.ok||await budget.json()!==true)return res.status(429).json({error:"limit"});
  const knowledge=await fetch(base+"/rest/v1/rpc/butler_public_records",{headers:h,signal:AbortSignal.timeout(5000)});
  if(!knowledge.ok)return res.status(503).json({error:"knowledge"});
