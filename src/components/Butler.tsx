@@ -15,10 +15,11 @@ export default function Butler(){
  try{const response=await fetch("/api/butler",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message,locale:lang,history:messages.slice(-6).map(m=>({...m,content:m.content.slice(0,1800)}))})});
  const data=await response.json();if(!response.ok||typeof data.answer!=="string")throw new Error();
  setMessages(old=>[...old,{role:"user",content:message},{role:"assistant",content:data.answer}]);setInput("");
+ if(data.inquiry&&!receipt&&!inquiry){setContact(typeof data.inquiry.contact==="string"?data.inquiry.contact:"");setSummary(data.inquiry.summary);setConsent(false);setInquiry(true);}
  }catch{setError(t[2]);}finally{setBusy(false);}
  }
  return <aside className="fixed bottom-5 right-5 z-50 text-sm">
- {open&&<section aria-label="Butler" className="mb-3 w-[min(22rem,calc(100vw-2.5rem))] rounded-xl border border-neutral-400/40 bg-background/95 text-foreground p-4 shadow-lg backdrop-blur">
+ {open&&<section aria-label="Butler" className="max-h-[85dvh] overflow-y-auto mb-3 w-[min(22rem,calc(100vw-2.5rem))] rounded-xl border border-neutral-400/40 bg-background/95 text-foreground p-4 shadow-lg backdrop-blur">
  <div className="flex justify-between"><strong>Butler</strong><button onClick={()=>setOpen(false)} aria-label={t[3]}>×</button></div>
  <div role="log" className="my-3 max-h-[40vh] overflow-auto space-y-3">{messages.map((m,i)=><p key={i} className="whitespace-pre-wrap break-words"><strong>{m.role==="assistant"?"Butler":"›"}</strong> {m.content}</p>)}</div>
  {error&&<p role="alert">{error}</p>}
