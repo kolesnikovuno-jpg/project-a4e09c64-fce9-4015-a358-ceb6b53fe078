@@ -21,7 +21,7 @@ import type {SphereId} from "../lib/eggEngine.js";
 import {providerFromEnv,generate} from "../../api/egg-flow-ai.js";
 
 type Request=IncomingMessage&{body?:unknown};
-const requestSchema=z.object({slot:z.number().int().min(1).max(24).optional()}).strict();
+const requestSchema=z.object({slot:z.number().int().min(1).max(24).optional(),mode:z.enum(["auto","manual","test"]).default("auto"),target:z.enum(["sphere","yolk"]).optional(),nodeId:z.string().uuid().optional()}).strict();
 const responseSchema={
   type:"object",additionalProperties:false,
   properties:{
@@ -132,7 +132,10 @@ export default async function handler(req:Request,res:ServerResponse){
   const cfg=getEggStorageConfig(process.env);
   if(!cfg){json(res,503,{ok:false,error:"storage_not_configured"});return;}
   let slot:number|undefined;
-  try{slot=requestSchema.parse(await body(req)).slot;}
+  let mode:"auto"|"manual"|"test"="auto";
+  let target:"sphere"|"yolk"|undefined;
+  let nodeId:string|undefined;
+  try{const parsed=requestSchema.parse(await body(req));({slot,mode,target,nodeId}=parsed);}
   catch{json(res,400,{ok:false,error:"invalid_request"});return;}
   const db=createClient(cfg.url,cfg.serviceKey,{auth:{persistSession:false,autoRefreshToken:false}});
   const {data:rawProject,error:projectErr}=await db.from("egg_operational_projects")
@@ -140,6 +143,18 @@ export default async function handler(req:Request,res:ServerResponse){
     .eq("slug","lyra").maybeSingle();
   if(projectErr||!rawProject){json(res,503,{ok:false,error:"project_not_available"});return;}
   const project=rawProject as ProjectRow;
+  if(mode==="test"){
+    const {data:root,error:rootError}=await db.from("egg_passport_registry").select("id").eq("source_project_id",project.id).eq("source_kind","operational").maybeSingle();
+    if(rootError||!root){json(res,503,{ok:false,error:"synthesis_root_unavailable"});return;}
+    let q=db.from("egg_yolk_semantic_work_v1").select("node_id,revision,snapshot").eq("root_passport_id",root.id);
+    if(nodeId)q=q.eq("node_id",nodeId);
+    if(target==="sphere"){json(res,400,{ok:false,error:"sphere_test_not_implemented",paidAiCalls:0});return;}
+    const {data:rows,error}=await q.limit(24);
+    if(error){json(res,503,{ok:false,error:"synthesis_queue_unavailable"});return;}
+    const schema=z.object({level:z.number(),goal:z.unknown(),sphere_matrix:z.unknown(),information_gaps:z.unknown(),child_handoffs:z.unknown(),next_tasks:z.unknown(),diagnosis:z.string()});
+    const checks=(rows??[]).map(r=>({nodeId:r.node_id,revision:r.revision,valid:schema.safeParse(r.snapshot).success}));
+    json(res,200,{ok:checks.length>0&&checks.every(r=>r.valid),mode,status:"dry_run",checks,paidAiCalls:0});return;
+  }
   if(!project.auto_research_enabled||project.auto_research_daily_limit===0||(slot!==undefined&&project.auto_research_daily_limit<slot)){
     json(res,200,{ok:true,status:"disabled",paidAiCalls:0});return;
   }
@@ -185,12 +200,15 @@ export default async function handler(req:Request,res:ServerResponse){
     .select("id,event_id,sphere,task,status,retry_count")
     .in("event_id",events.map(x=>x.id)).eq("status","pending").limit(80);
   if(taskErr){json(res,503,{ok:false,error:"task_queue_unavailable"});return;}
-  const picked=pickTask(events,(taskRaw??[]) as TaskRow[]);
+  const picked=target==="yolk"?null:pickTask(events,(taskRaw??[]) as TaskRow[]);
   if(!picked){
+    if(target==="sphere"){json(res,200,{ok:true,status:"no_pending_sphere_tasks",paidAiCalls:0});return;}
     // Semantic operations share the existing daily slots and budget ledger.
     const {data:root,error:rootError}=await db.from("egg_passport_registry").select("id").eq("source_project_id",project.id).eq("source_kind","operational").maybeSingle();
     if(rootError||!root){json(res,503,{ok:false,error:"synthesis_root_unavailable"});return;}
-    const {data:work,error:workError}=await db.from("egg_yolk_semantic_work_v1").select("node_id,revision,snapshot").eq("root_passport_id",root.id).order("node_id").limit(1).maybeSingle();
+    let workQuery=db.from("egg_yolk_semantic_work_v1").select("node_id,revision,snapshot").eq("root_passport_id",root.id);
+    if(nodeId)workQuery=workQuery.eq("node_id",nodeId);
+    const {data:work,error:workError}=await workQuery.order("node_id").limit(1).maybeSingle();
     if(workError){json(res,503,{ok:false,error:"synthesis_queue_unavailable"});return;}
     if(!work){json(res,200,{ok:true,status:"no_pending_tasks",paidAiCalls:0});return;}
     // Validate the input contract without consuming a slot.
