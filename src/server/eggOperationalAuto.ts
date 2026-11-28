@@ -184,7 +184,17 @@ export default async function handler(req:Request,res:ServerResponse){
     .in("event_id",events.map(x=>x.id)).eq("status","pending").limit(80);
   if(taskErr){json(res,503,{ok:false,error:"task_queue_unavailable"});return;}
   const picked=pickTask(events,(taskRaw??[]) as TaskRow[]);
-  if(!picked){json(res,200,{ok:true,status:"no_pending_tasks",paidAiCalls:0});return;}
+  if(!picked){
+    // Semantic operations share the existing daily slots and budget ledger.
+    const {data:root,error:rootError}=await db.from("egg_passport_registry").select("id").eq("operational_project_id",project.id).maybeSingle();
+    if(rootError||!root){json(res,503,{ok:false,error:"synthesis_root_unavailable"});return;}
+    const {data:work,error:workError}=await db.from("egg_yolk_semantic_work_v1").select("node_id,revision,snapshot").eq("root_passport_id",root.id).order("node_id").limit(1).maybeSingle();
+    if(workError){json(res,503,{ok:false,error:"synthesis_queue_unavailable"});return;}
+    if(!work){json(res,200,{ok:true,status:"no_pending_tasks",paidAiCalls:0});return;}
+    // A separate operation is deliberately not dispatched until its runtime
+    // validation and shared budget accounting have been verified.
+    json(res,200,{ok:true,status:"semantic_synthesis_pending",paidAiCalls:0});return;
+  }
   const sourceDay=isDate(picked.event.facts?.day)?picked.event.facts.day:utcDay;
   const objectResearch=picked.event.source==="egg_object_research_v1";
   let baselineDay=sourceDay;
