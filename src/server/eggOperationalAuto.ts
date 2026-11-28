@@ -191,9 +191,11 @@ export default async function handler(req:Request,res:ServerResponse){
     const {data:work,error:workError}=await db.from("egg_yolk_semantic_work_v1").select("node_id,revision,snapshot").eq("root_passport_id",root.id).order("node_id").limit(1).maybeSingle();
     if(workError){json(res,503,{ok:false,error:"synthesis_queue_unavailable"});return;}
     if(!work){json(res,200,{ok:true,status:"no_pending_tasks",paidAiCalls:0});return;}
-    // A separate operation is deliberately not dispatched until its runtime
-    // validation and shared budget accounting have been verified.
-    json(res,200,{ok:true,status:"semantic_synthesis_pending",paidAiCalls:0});return;
+    // Validate the input contract without consuming a slot.
+    const snapshotSchema=z.object({level:z.number(),goal:z.unknown(),sphere_matrix:z.unknown(),information_gaps:z.unknown(),child_handoffs:z.unknown(),next_tasks:z.unknown(),diagnosis:z.string()}).passthrough();
+    const checked=snapshotSchema.safeParse(work.snapshot);
+    if(!checked.success){json(res,503,{ok:false,error:"semantic_snapshot_invalid",paidAiCalls:0});return;}
+    json(res,200,{ok:true,status:"semantic_synthesis_pending",revision:work.revision,paidAiCalls:0});return;
   }
   const sourceDay=isDate(picked.event.facts?.day)?picked.event.facts.day:utcDay;
   const objectResearch=picked.event.source==="egg_object_research_v1";
