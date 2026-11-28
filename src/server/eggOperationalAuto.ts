@@ -490,6 +490,9 @@ export default async function handler(req:Request,res:ServerResponse){
       internalActionsExecuted:1,externalActionsExecuted:0,
       authorGoalChanged:false,
     };
+    stage="checkpoint_result";
+    const {error:checkpointError}=await db.from("egg_operational_result_recovery").insert({run_id:run.id,finding});
+    if(checkpointError)throw Error("result_checkpoint_failed");
     stage="save_result";
     const {data:finished,error:finishError}=await db.rpc("egg_complete_operational_auto_run",{
       p_run_id:run.id,p_activation_id:picked.task.id,p_project_id:project.id,
