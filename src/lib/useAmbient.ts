@@ -39,22 +39,28 @@ const anchors = {
 
 // Local solar estimate, with optional browser coordinates. No coordinates leave the device.
 type Location = { lat: number; lon: number };
-function solarHours(date: Date, location: Location | null): [number,number] {
+// Approximate apparent solar elevation in degrees, continuous over the day.
+// The timezone fallback is an approximation, never a claim of exact location.
+function solarElevation(date: Date, location: Location | null): number {
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const fallback: Record<string,Location> = {"Europe/Kyiv":{lat:50.45,lon:30.52},"Europe/Kiev":{lat:50.45,lon:30.52}};
   const loc = location ?? fallback[zone];
-  if (!loc) return [7,19];
-  const n = Math.floor((Date.UTC(date.getFullYear(),date.getMonth(),date.getDate())-Date.UTC(date.getFullYear(),0,0))/86400000);
-  const g = 2*Math.PI/365*(n-1);
-  const eq = 229.18*(.000075+.001868*Math.cos(g)-.032077*Math.sin(g)-.014615*Math.cos(2*g)-.040849*Math.sin(2*g));
-  const decl = .006918-.399912*Math.cos(g)+.070257*Math.sin(g)-.006758*Math.cos(2*g)+.000907*Math.sin(2*g)-.002697*Math.cos(3*g)+.00148*Math.sin(3*g);
-  const lat = loc.lat*Math.PI/180;
-  const cosH = (Math.cos(90.833*Math.PI/180)-Math.sin(lat)*Math.sin(decl))/(Math.cos(lat)*Math.cos(decl));
-  if(cosH>=1) return [11.9,12.1];
-  if(cosH<=-1) return [0,24];
-  const noon = (720-4*loc.lon-eq-date.getTimezoneOffset())/60;
-  const half = Math.acos(cosH)*180/Math.PI/15;
-  return [noon-half,noon+half];
+  const h = date.getHours()+date.getMinutes()/60+date.getSeconds()/3600+date.getMilliseconds()/3600000;
+  if (!loc) return 45*Math.cos((h-13)*Math.PI/12);
+  const n = (Date.UTC(date.getFullYear(),date.getMonth(),date.getDate())-Date.UTC(date.getFullYear(),0,0))/86400000;
+  const yearDays=(Date.UTC(date.getFullYear()+1,0,1)-Date.UTC(date.getFullYear(),0,1))/86400000;
+  const g=2*Math.PI/yearDays*(n-1+(h-12)/24);
+  const eq=229.18*(.000075+.001868*Math.cos(g)-.032077*Math.sin(g)-.014615*Math.cos(2*g)-.040849*Math.sin(2*g));
+  const decl=.006918-.399912*Math.cos(g)+.070257*Math.sin(g)-.006758*Math.cos(2*g)+.000907*Math.sin(2*g)-.002697*Math.cos(3*g)+.00148*Math.sin(3*g);
+  const lat=loc.lat*Math.PI/180;
+  const angle=(h*60+eq+4*loc.lon+date.getTimezoneOffset()-720)*Math.PI/720;
+  return Math.asin(Math.max(-1,Math.min(1,Math.sin(lat)*Math.sin(decl)+Math.cos(lat)*Math.cos(decl)*Math.cos(angle))))*180/Math.PI;
+}
+export function ambientWeights(elevation: number) {
+  const smooth=(v:number)=>{const t=Math.max(0,Math.min(1,v));return t*t*(3-2*t);};
+  const night=1-smooth((elevation+12)/12);
+  const day=smooth(elevation/15);
+  return {night,day,dawn:Math.max(0,1-night-day)};
 }
 export function useAmbient() {
   const [mode, setMode] = useState<Mode>(() => {
@@ -71,20 +77,14 @@ export function useAmbient() {
       },()=>{}, {maximumAge:86400000,timeout:4000});
     }).catch(()=>{});
     const tick=()=>setDate(new Date());
-    const timer=window.setInterval(tick,15000);
+    const timer=window.setInterval(tick,1000);
     document.addEventListener("visibilitychange",tick);
     return ()=>{active=false;window.clearInterval(timer);document.removeEventListener("visibilitychange",tick);};
   },[]);
   useEffect(() => { try { localStorage.setItem(KEY, mode); } catch {} }, [mode]);
-  const [rise,set] = solarHours(date,location);
-  const h = date.getHours()+date.getMinutes()/60;
-  const smooth=(v:number)=>{const t=Math.max(0,Math.min(1,v));return t*t*(3-2*t);};
-  const morning=h<(rise+set)/2;
-  const pivot=morning?rise:set;
-  const span=Math.min(1.25,Math.max(.1,(set-rise)/4));
-  const distance=(h-pivot)/span;
-  let dawn = morning ? (distance<0?smooth(distance+1):1-smooth(distance)) : (distance<0?smooth(distance+1):1-smooth(distance));
-  let nightWeight = morning ? 1-smooth(distance+1) : smooth(distance);
+  const weights=ambientWeights(solarElevation(date,location));
+  let dawn=weights.dawn;
+  let nightWeight=weights.night;
   if(mode==="dawn"){dawn=1;nightWeight=0;}
   if(mode==="day"){dawn=0;nightWeight=0;}
   if(mode==="dusk"){dawn=.65;nightWeight=.35;}
