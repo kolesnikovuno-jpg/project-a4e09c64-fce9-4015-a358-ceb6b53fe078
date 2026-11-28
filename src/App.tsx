@@ -1,3 +1,4 @@
+import AmbientRoot from "./components/AmbientRoot";
 import Butler from "./components/Butler";
 import ColorTool from "./components/Color";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -127,6 +128,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <LocalePersistenceGuard />
+        <AmbientRoot />
         <Routes>
           {/* Root → default locale */}
           <Route path="/" element={window.location.hostname === "color.kolesnikov.studio" ? <Navigate to={`/${initialLocale()}/color`} replace /> : window.location.hostname === "lyra.kolesnikov.studio" ? <RedirectToLyra /> : <RedirectToDefaultLocale />} />
