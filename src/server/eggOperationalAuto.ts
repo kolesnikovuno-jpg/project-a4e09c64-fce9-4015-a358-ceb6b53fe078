@@ -421,6 +421,17 @@ export default async function handler(req:Request,res:ServerResponse){
     const {data:externalGaps,error:gapError}=link?await db.from("egg_sphere_evidence_work_v1").select("gap_id,detail").eq("node_id",link.node_id).eq("sphere",picked.task.sphere).eq("action_kind","external_research").limit(3):{data:[],error:null};
     if(gapError)throw Error("source_unavailable");
     webResearch=objectResearch&&!!externalGaps?.length;
+    let primarySources:unknown=null;
+    if(link){
+      const node=await db.from("egg_object_nodes").select("root_passport_id").eq("id",link.node_id).single();
+      if(node.error)throw Error("source_unavailable");
+      const [assets,sources]=await Promise.all([
+        db.from("egg_primary_material_evidence_v1").select("asset_id,original_name,mime_type,metadata,selected_material").eq("root_passport_id",node.data.root_passport_id).limit(20),
+        db.from("egg_project_evidence_sources_v1").select("source_url,source_kind,revision_ref,evidence_status").eq("root_passport_id",node.data.root_passport_id).limit(10)
+      ]);
+      if(assets.error||sources.error)throw Error("source_unavailable");
+      primarySources={assets:assets.data,sources:sources.data};
+    }
     let targetedEvidence:unknown=null;
     if(link && Array.isArray(picked.event.facts?.gap_ids)){
       const ids=picked.event.facts.gap_ids.filter((v:unknown):v is string=>typeof v==="string"&&z.string().uuid().safeParse(v).success).slice(0,20);
@@ -444,6 +455,7 @@ export default async function handler(req:Request,res:ServerResponse){
         "resourceLedger содержит фактические зарезервированные слоты, результаты и время исполнения. null в стоимости или токенах означает отсутствие измерения, не нулевой расход. Не оценивай бюджет без источника.",
         "incomingSphereResults — результаты предшествующих сфер. Учитывай их как данные; proposed означает гипотезу, а не утверждённое решение. Не считай отсутствие результата подтверждением.",
         "Пиши кратко: observation, hypothesis, nextStep до 450 символов каждое; не дублируй сведения; обычно достаточно 1–3 пробелов и 1–2 сценариев. Заполни обязательные поля: observation, hypothesis, nextStep — содержательные строки не короче 12 символов; limitations — 1–4 строки по 8–360 символов; evidenceGaps — до 5; scenarios — до 3. Не добавляй поля вне схемы.",
+        "primarySources — реестр доступных материалов, а не доказательство прочтения файла. Для существующего прототипа не требуй повторения предыдущих уровней; продолжай независимые исследования, а недостающие документы обозначай как отложенные зависимости. Не утверждай содержание непрочитанного источника.",
         "Используй общую картину проекта; отделяй проверенные наблюдения от гипотез. Для targetedEvidence сопоставь конкретные пробелы с результатами и дочерними передачами по идентификаторам. Не считай предложенный результат первичным документом. Не объявляй отсутствующим то, что не вошло в выборку.",
         "ADR-033: Цель Автора первична, бюджет не требуется для исследования вариантов. Сначала исследуй несколько релевантных способов достижения цели, затем выявляй потребности и дефициты.",
         "Для сферы Маркетинг и Ритейл: исследуй альтернативные каналы презентации Lyra, требования к запуску, общие материалы для разных каналов и условия готовности; не предлагай запускать всё одновременно.",
@@ -460,7 +472,7 @@ export default async function handler(req:Request,res:ServerResponse){
         eggOperationalAnalysisRules,
         'Верни только JSON {"observation":"...","hypothesis":"...","nextStep":"...","confidence":"low|medium","limitations":["..."],"evidenceGaps":[{"missingFact":"...","whyNeeded":"...","sourceType":"internal|external|authorial","priority":"critical|important|optional","affectedDecision":"..."}],"scenarios":[{"id":"minimum","approach":"...","prerequisite":"...","costUah":null,"costEvidence":"unknown","sourceRef":null,"nextValidation":"..."}]}. Для 1–3 альтернативных сценариев, если данных достаточно; неизвестную цену передавай null. Число допустимо только при подтверждённом источнике или явно названном допущении. Никакой сценарий не разрешает расход.',
       ].join("\n"),
-      input:JSON.stringify({targetedEvidence:JSON.parse(boundedEggContext(targetedEvidence,30000)),context:JSON.parse(boundedEggContext({
+      input:JSON.stringify({primarySources:JSON.parse(boundedEggContext(primarySources,8000)),targetedEvidence:JSON.parse(boundedEggContext(targetedEvidence,30000)),context:JSON.parse(boundedEggContext({
         task:{sphere:picked.task.sphere,description:picked.task.task,
           eventId:picked.event.id,eventKind:picked.event.kind,sourceDay,retryNumber:picked.task.retry_count,sourceEventId:picked.event.facts?.retry_source_event??picked.event.id},
         objectResearchRequest:objectResearch?picked.event.facts:null,
@@ -476,7 +488,7 @@ export default async function handler(req:Request,res:ServerResponse){
           kind:e.kind,at:e.observed_at,status:e.evidence_status,
           summary:e.summary,facts:e.facts,
         })),
-      },55000))}),
+      },47000))}),
     };
     stage="budget_reservation";
     // Only the verified direct Luna tariff is enabled. Unknown providers fail closed.
