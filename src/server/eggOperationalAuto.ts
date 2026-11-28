@@ -148,7 +148,18 @@ export default async function handler(req:Request,res:ServerResponse){
     if(rootError||!root){json(res,503,{ok:false,error:"synthesis_root_unavailable"});return;}
     let q=db.from("egg_yolk_semantic_work_v1").select("node_id,revision,snapshot").eq("root_passport_id",root.id);
     if(nodeId)q=q.eq("node_id",nodeId);
-    if(target==="sphere"){json(res,400,{ok:false,error:"sphere_test_not_implemented",paidAiCalls:0});return;}
+    if(target==="sphere"){
+      if(!nodeId){json(res,400,{ok:false,error:"node_required",paidAiCalls:0});return;}
+      const {data:node,error:nodeError}=await db.from("egg_object_nodes").select("id").eq("id",nodeId).eq("root_passport_id",root.id).maybeSingle();
+      if(nodeError||!node){json(res,404,{ok:false,error:"object_not_available",paidAiCalls:0});return;}
+      const {data:links,error:linkError}=await db.from("egg_object_activation_links").select("activation_id").eq("node_id",nodeId).limit(80);
+      if(linkError){json(res,503,{ok:false,error:"object_links_unavailable",paidAiCalls:0});return;}
+      const ids=(links??[]).map(l=>l.activation_id);
+      const {data:tasks,error:taskError}=ids.length?await db.from("egg_operational_activations").select("id,sphere,status,task").in("id",ids).eq("status","pending"):{data:[],error:null};
+      if(taskError){json(res,503,{ok:false,error:"task_queue_unavailable",paidAiCalls:0});return;}
+      const checks=(tasks??[]).map(t=>({activationId:t.id,sphere:t.sphere,valid:typeof t.task==="string"&&t.task.trim().length>0&&Object.prototype.hasOwnProperty.call(EGG_SPHERE_MANIFESTS,t.sphere)}));
+      json(res,200,{ok:checks.length>0&&checks.every(t=>t.valid),mode,status:"dry_run",checks,paidAiCalls:0});return;
+    }
     const {data:rows,error}=await q.limit(24);
     if(error){json(res,503,{ok:false,error:"synthesis_queue_unavailable"});return;}
     const schema=z.object({level:z.number(),goal:z.unknown(),sphere_matrix:z.unknown(),information_gaps:z.unknown(),child_handoffs:z.unknown(),next_tasks:z.unknown(),diagnosis:z.string()});
