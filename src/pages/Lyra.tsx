@@ -57,7 +57,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
   const { t, locale, localePath } = useLocale();
   const modelRef = useRef<HTMLElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
-  const { mode, cycle, dawn, nightWeight, night } = useAmbient();
+  const { mode, cycle, dawn, nightWeight, night, palette, background, exposure } = useAmbient();
   const [modelLoaded, setModelLoaded] = useState(false);
   const [modelFullyVisible, setModelFullyVisible] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
@@ -478,30 +478,31 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
 
   return (
     <PageTransition>
-      <div className="lyra-theme-scope" data-lyra-theme={night ? "night" : "day"}>
+      <div className="lyra-theme-scope" data-lyra-theme={night ? "night" : "day"} style={palette}>
       <style>{`
-        .lyra-theme-scope[data-lyra-theme="night"] > .relative .landing-field {
-          --background: 40 7% 10%;
-          --foreground: 35 15% 82%;
-        }
-        .lyra-theme-scope[data-lyra-theme="night"] .lyra-description-screen p { color: hsl(35 15% 82%) !important; }
-        .lyra-theme-scope[data-lyra-theme="night"] .lyra-description-screen button,
-        .lyra-theme-scope[data-lyra-theme="night"] .uno-overlay-below p { color: hsl(35 12% 70%) !important; }
-        .lyra-theme-scope[data-lyra-theme="night"] .uno-actions { background: hsl(40 7% 10%); }
-        .lyra-theme-scope[data-lyra-theme="night"] .uno-actions button,
-        .lyra-theme-scope[data-lyra-theme="night"] .lyra-back,
-        .lyra-theme-scope[data-lyra-theme="night"] .lyra-language button { color: hsl(203 22% 72%) !important; }
-        .lyra-theme-scope[data-lyra-theme="night"] .uno-scroll-indicator { background: hsl(40 5% 25%); }
-        .lyra-theme-scope[data-lyra-theme="night"] .uno-scroll-fill,
-        .lyra-theme-scope[data-lyra-theme="night"] .uno-pixel-cloud i { background: hsl(203 22% 65%); }
-        .lyra-theme-scope .landing-theme-toggle { z-index: 61; }
-        .lyra-theme-scope[data-lyra-theme="night"] .landing-theme-toggle { color: hsl(35 15% 82% / .58); }
-        .lyra-theme-scope[data-lyra-theme="night"] .landing-theme-toggle .is-active { color: hsl(35 15% 82% / .95); }
+        .lyra-theme-scope .lyra-description-screen p { color: var(--ambient-foreground) !important; }
+        .lyra-theme-scope .lyra-description-screen button,
+        .lyra-theme-scope .uno-overlay-below p { color: hsl(var(--foreground) / .85) !important; }
+        .lyra-theme-scope .uno-actions { background: var(--ambient-background); }
+        .lyra-theme-scope .uno-actions button,
+        .lyra-theme-scope .lyra-back,
+        .lyra-theme-scope .lyra-language button { color: hsl(var(--ambient-accent)) !important; }
+        .lyra-theme-scope .uno-scroll-indicator { background: hsl(var(--foreground) / .15); }
+        .lyra-theme-scope .uno-scroll-fill,
+        .lyra-theme-scope .uno-pixel-cloud i { background: hsl(var(--ambient-accent)); }
+        .lyra-theme-scope .landing-theme-toggle { z-index: 61; color: hsl(var(--foreground) / .75); }
         .lyra-theme-scope .landing-theme-toggle.lyra-on-photo { color: #f5efeb; text-shadow: 0 1px 5px #000; }
         .lyra-theme-scope .landing-theme-toggle.lyra-on-photo .is-active { color: #fff; }
         @media (max-width: 640px) {
-          .lyra-theme-scope[data-lyra-theme="night"] .uno-actions { background: transparent; }
-          .lyra-theme-scope[data-lyra-theme="night"] .studio-object-actions::before { background: hsl(40 7% 10%); }
+          .lyra-theme-scope .uno-actions { background: transparent; }
+          .lyra-theme-scope .studio-object-actions::before { background: var(--ambient-background); }
+        }
+        @media (prefers-reduced-motion: no-preference) {
+          .lyra-theme-scope .uno-actions, .lyra-theme-scope .studio-object-actions::before { transition: background-color 1800ms ease; }
+          .lyra-theme-scope .lyra-description-screen p, .lyra-theme-scope .uno-overlay-below p { transition: color 1800ms ease; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .lyra-theme-scope img[data-ambient-layer] { transition: none !important; }
         }
       `}</style>
       <button type="button" className={`landing-theme-toggle ${switcherVisible ? "" : "lyra-on-photo"}`}
@@ -514,7 +515,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
         className="relative w-screen"
         style={{ height: "300vh" }}
       >
-        <div className="sticky top-0 w-screen h-screen overflow-hidden landing-field" data-theme={night ? "night" : "day"} style={{cursor:"auto"}}>
+        <div className="sticky top-0 w-screen h-screen overflow-hidden landing-field" data-theme={night ? "night" : "day"} style={{...palette,cursor:"auto"}}>
           {/* Layer 1: hero image */}
           <section
             ref={heroRef}
@@ -534,8 +535,8 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
                   backfaceVisibility: "hidden",
                 }}
               />
-              <img ref={ambientDawnRef} src="/ambient/lyra/C03FD56E-BBC5-47FA-8237-A584C619F6A0.png" alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center pointer-events-none" style={{opacity:dawn, transition:"opacity 1800ms ease"}} />
-              <img ref={ambientNightRef} src="/ambient/lyra/33E71915-2993-406C-AA5F-6656DC0ED56A.png" alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center pointer-events-none" style={{opacity:nightWeight, transition:"opacity 1800ms ease"}} />
+              <img data-ambient-layer ref={ambientDawnRef} src="/ambient/lyra/C03FD56E-BBC5-47FA-8237-A584C619F6A0.png" alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center pointer-events-none" style={{opacity:dawn, transition:"opacity 1800ms ease"}} />
+              <img data-ambient-layer ref={ambientNightRef} src="/ambient/lyra/33E71915-2993-406C-AA5F-6656DC0ED56A.png" alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center pointer-events-none" style={{opacity:nightWeight, transition:"opacity 1800ms ease"}} />
               <div
                 ref={heroLensRef}
                 aria-hidden
@@ -813,7 +814,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
               auto-rotate-delay="1200"
               rotation-per-second="20deg"
               environment-image="neutral"
-              exposure="1.45"
+              exposure={colorOpen ? "1.45" : exposure}
               shadow-intensity="0.6"
               shadow-softness="1"
               camera-orbit="-8deg 70deg 300%"
@@ -992,7 +993,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
       ) : <ModelSEO slug="lyra" />}
       {/* Language switcher — hidden on hero, fades in once user scrolls past it. */}
       <div className="lyra-language">
-        <LanguageSwitcher background={night ? "hsl(40 7% 10%)" : "hsl(24 26% 94%)"} />
+        <LanguageSwitcher background={background} />
       </div>
       </div>
     </PageTransition>
