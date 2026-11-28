@@ -36,6 +36,14 @@ const Landing = () => {
   const panelLabel = locale === "en" ? "Process and projects" : locale === "uk" ? "Процес і проєкти" : "Процесс и проекты";
   const mobileMenuToggle = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [night, setNight] = useState(() => {
+    try { return window.localStorage.getItem("studio-landing-theme") === "night"; }
+    catch { return false; }
+  });
+  useEffect(() => {
+    try { window.localStorage.setItem("studio-landing-theme", night ? "night" : "day"); }
+    catch { /* Theme remains usable without storage. */ }
+  }, [night]);
   useEffect(() => {
     if (!menuOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -88,6 +96,7 @@ const Landing = () => {
     <div
       ref={fieldRef}
       className="landing-field font-body antialiased"
+      data-theme={night ? "night" : "day"}
       onClick={handleScreenClick}
       onPointerMove={handlePointerMove}
       onPointerLeave={() => setPointerPosition(0, 0)}
@@ -98,7 +107,16 @@ const Landing = () => {
         image="/og-semantic-time-v3.jpg"
         alternates={alternates}
       />
-      <LanguageSwitcher background="hsl(24 26% 94%)" topOffset={0} />
+      <div className="landing-language">
+        <LanguageSwitcher background={night ? "hsl(40 7% 10%)" : "hsl(24 26% 94%)"} topOffset={0} />
+      </div>
+      <button type="button" className="landing-theme-toggle"
+        aria-label={locale === "ru" ? "Ночной режим" : locale === "uk" ? "Нічний режим" : "Night mode"}
+        aria-pressed={night} onClick={() => setNight(value => !value)}>
+        <span className={!night ? "is-active" : ""}>day</span>
+        <span aria-hidden="true"> / </span>
+        <span className={night ? "is-active" : ""}>night</span>
+      </button>
 
       <main className="landing-composition">
         <div className="landing-identity">
