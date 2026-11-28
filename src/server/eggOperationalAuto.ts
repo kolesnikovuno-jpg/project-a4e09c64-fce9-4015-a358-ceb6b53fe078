@@ -167,13 +167,12 @@ export default async function handler(req:Request,res:ServerResponse){
     const checks=(rows??[]).map(r=>({nodeId:r.node_id,revision:r.revision,valid:schema.safeParse(r.snapshot).success}));
     json(res,200,{ok:checks.length>0&&checks.every(r=>r.valid),mode,status:"dry_run",checks,paidAiCalls:0});return;
   }
-  // Manual requests are addressed and do not consume reserved AUTO slots.
-  // Both modes retain the shared pilot cap and AI budget reservation.
+  // Both modes share the execution ledger and financial budget reservation.
   if(activationId&&(mode!=="manual"||target!=="sphere"||!nodeId)){json(res,400,{ok:false,error:"invalid_activation_target",paidAiCalls:0});return;}
   if(mode==="manual"&&(!target||!nodeId||slot!==undefined)){
     json(res,400,{ok:false,error:"manual_requires_target_and_node",paidAiCalls:0});return;
   }
-  if(mode==="auto"&&(!project.auto_research_enabled||project.auto_research_daily_limit===0||(slot!==undefined&&project.auto_research_daily_limit<slot))){
+  if(mode==="auto"&&(!project.auto_research_enabled||project.auto_research_daily_limit===0)){
     json(res,200,{ok:true,status:"disabled",paidAiCalls:0});return;
   }
   if(project.ads_operation_allowed){
@@ -184,12 +183,7 @@ export default async function handler(req:Request,res:ServerResponse){
     const {data:runs,error}=await db.from("egg_operational_auto_runs").select("slot,status").eq("operational_project_id",project.id).eq("run_day",utcDay);
     if(error){json(res,503,{ok:false,error:"run_ledger_unavailable"});return;}
     if((runs??[]).some(r=>r.status==="claimed")){json(res,200,{ok:true,status:"execution_in_progress",paidAiCalls:0});return;}
-    const used=new Set((runs??[]).map(r=>r.slot));
-    const slots=mode==="manual"
-      ?Array.from({length:Math.max(0,24-project.auto_research_daily_limit)},(_,i)=>24-i)
-      :Array.from({length:project.auto_research_daily_limit},(_,i)=>i+1);
-    slot=slots.find(i=>!used.has(i));
-    if(slot===undefined){json(res,200,{ok:true,status:mode==="manual"?"manual_slots_exhausted":"daily_slots_exhausted",paidAiCalls:0});return;}
+    slot=(runs??[]).reduce((max,r)=>Math.max(max,r.slot),0)+1;
   }
   const {data:existing,error:existingErr}=await db.from("egg_operational_auto_runs")
     .select("status").eq("operational_project_id",project.id)
@@ -197,15 +191,6 @@ export default async function handler(req:Request,res:ServerResponse){
   if(existingErr){json(res,503,{ok:false,error:"run_ledger_unavailable"});return;}
   if(existing){json(res,200,{ok:true,status:"already_ran",paidAiCalls:0});return;}
 
-  // Apply existing per-day global cap to manual + automated pilot calls.
-  const yesterday=new Date(Date.now()-86400000).toISOString();
-  const {count,error:countErr}=await db.from("egg_operational_activations")
-    .select("id",{count:"exact",head:true})
-    .gte("started_at",yesterday).in("status",["researching","proposed","blocked"]);
-  if(countErr){json(res,503,{ok:false,error:"ai_usage_check_unavailable"});return;}
-  const {count:semanticCount,error:semanticCountError}=await db.from("egg_operational_auto_runs").select("id",{count:"exact",head:true}).eq("operation_kind","yolk").gte("attempted_at",yesterday);
-  if(semanticCountError){json(res,503,{ok:false,error:"ai_usage_check_unavailable"});return;}
-  if((count??0)+(semanticCount??0)>=24){json(res,200,{ok:true,status:"pilot_daily_limit",paidAiCalls:0});return;}
   const {data:eventsRaw,error:eventsErr}=await db.from("egg_operational_events")
     .select("id,kind,source,recorded_at,evidence_status,facts")
     .eq("operational_project_id",project.id)
