@@ -33,27 +33,62 @@ const luminance = (c: Triple) => .2126*linear(c[0])+.7152*linear(c[1])+.0722*lin
 const contrast = (a: Triple,b: Triple) => (Math.max(luminance(a),luminance(b))+.05)/(Math.min(luminance(a),luminance(b))+.05);
 const anchors = {
   day: lab([239,237,233]),
-  dawn: lab([219,205,196]),
+  dawn: lab([188,172,162]),
   night: lab([35,31,28]),
 };
 
+// Local solar estimate, with optional browser coordinates. No coordinates leave the device.
+type Location = { lat: number; lon: number };
+function solarHours(date: Date, location: Location | null): [number,number] {
+  const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const fallback: Record<string,Location> = {"Europe/Kyiv":{lat:50.45,lon:30.52},"Europe/Kiev":{lat:50.45,lon:30.52}};
+  const loc = location ?? fallback[zone];
+  if (!loc) return [7,19];
+  const n = Math.floor((Date.UTC(date.getFullYear(),date.getMonth(),date.getDate())-Date.UTC(date.getFullYear(),0,0))/86400000);
+  const g = 2*Math.PI/365*(n-1);
+  const eq = 229.18*(.000075+.001868*Math.cos(g)-.032077*Math.sin(g)-.014615*Math.cos(2*g)-.040849*Math.sin(2*g));
+  const decl = .006918-.399912*Math.cos(g)+.070257*Math.sin(g)-.006758*Math.cos(2*g)+.000907*Math.sin(2*g)-.002697*Math.cos(3*g)+.00148*Math.sin(3*g);
+  const lat = loc.lat*Math.PI/180;
+  const cosH = (Math.cos(90.833*Math.PI/180)-Math.sin(lat)*Math.sin(decl))/(Math.cos(lat)*Math.cos(decl));
+  if(cosH>=1) return [11.9,12.1];
+  if(cosH<=-1) return [0,24];
+  const noon = (720-4*loc.lon-eq-date.getTimezoneOffset())/60;
+  const half = Math.acos(cosH)*180/Math.PI/15;
+  return [noon-half,noon+half];
+}
 export function useAmbient() {
   const [mode, setMode] = useState<Mode>(() => {
     try { const m = localStorage.getItem(KEY) as Mode; return modes.includes(m) ? m : "auto"; } catch { return "auto"; }
   });
-  const [hour, setHour] = useState(() => { const d = new Date(); return d.getHours() + d.getMinutes()/60; });
-  useEffect(() => {
-    const tick = () => { const d = new Date(); setHour(d.getHours() + d.getMinutes()/60); };
-    const timer = window.setInterval(tick, 15000);
-    document.addEventListener("visibilitychange", tick);
-    return () => { window.clearInterval(timer); document.removeEventListener("visibilitychange", tick); };
-  }, []);
+  const [date,setDate] = useState(()=>new Date());
+  const [location,setLocation] = useState<Location|null>(null);
+  useEffect(()=>{
+    let active=true;
+    // Do not prompt on arrival; use location only if the visitor already granted permission.
+    if(navigator.permissions && navigator.geolocation) navigator.permissions.query({name:"geolocation"}).then(p=>{
+      if(active && p.state==="granted") navigator.geolocation.getCurrentPosition(pos=>{
+        if(active) setLocation({lat:pos.coords.latitude,lon:pos.coords.longitude});
+      },()=>{}, {maximumAge:86400000,timeout:4000});
+    }).catch(()=>{});
+    const tick=()=>setDate(new Date());
+    const timer=window.setInterval(tick,15000);
+    document.addEventListener("visibilitychange",tick);
+    return ()=>{active=false;window.clearInterval(timer);document.removeEventListener("visibilitychange",tick);};
+  },[]);
   useEffect(() => { try { localStorage.setItem(KEY, mode); } catch {} }, [mode]);
-  const h = mode === "auto" ? hour : mode === "dawn" ? 7 : mode === "day" ? 12 : mode === "dusk" ? 18.7 : 23;
-  const lerp = (a: number, b: number) => Math.max(0, Math.min(1, (h-a)/(b-a)));
-  const smooth = (v: number) => v*v*(3-2*v);
-  const dawn = h < 7 ? smooth(lerp(5,7)) : 1-smooth(lerp(7,10));
-  const nightWeight = h < 7 ? 1-smooth(lerp(5,7)) : smooth(lerp(17,21));
+  const [rise,set] = solarHours(date,location);
+  const h = date.getHours()+date.getMinutes()/60;
+  const smooth=(v:number)=>{const t=Math.max(0,Math.min(1,v));return t*t*(3-2*t);};
+  const morning=h<(rise+set)/2;
+  const pivot=morning?rise:set;
+  const span=Math.min(1.25,Math.max(.1,(set-rise)/4));
+  const distance=(h-pivot)/span;
+  let dawn = morning ? (distance<0?smooth(distance+1):1-smooth(distance)) : (distance<0?smooth(distance+1):1-smooth(distance));
+  let nightWeight = morning ? 1-smooth(distance+1) : smooth(distance);
+  if(mode==="dawn"){dawn=1;nightWeight=0;}
+  if(mode==="day"){dawn=0;nightWeight=0;}
+  if(mode==="dusk"){dawn=.65;nightWeight=.35;}
+  if(mode==="night"){dawn=0;nightWeight=1;}
   // Blend in OKLab; use the same actual image contribution for the palette.
   const dayWeight = Math.max(0,1-dawn-nightWeight);
   const bgLab = anchors.day.map((v,i)=>v*dayWeight+anchors.dawn[i]*dawn+anchors.night[i]*nightWeight) as Triple;
