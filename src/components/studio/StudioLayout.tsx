@@ -63,7 +63,7 @@ const StudioLayout = ({ children, page, title, description }: Props) => {
         image="/og/lyra-preview.png"
         alternates={alternates}
       />
-      <LanguageSwitcher background="hsl(24 26% 94%)" hidden={open} />
+      <LanguageSwitcher background="hsl(var(--background))" hidden={open} />
 
       <header className="fixed inset-x-0 top-0 z-40 bg-background/85 backdrop-blur-[2px]">
         <div className="mx-auto flex max-w-[1180px] items-center justify-between px-6 py-5 md:px-10">
