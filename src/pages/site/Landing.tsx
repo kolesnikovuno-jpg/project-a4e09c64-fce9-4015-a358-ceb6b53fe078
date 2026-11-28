@@ -1,3 +1,4 @@
+import { useAmbient } from "@/lib/useAmbient";
 import { useCallback, useEffect, useRef, useState } from "react";
 import SEO from "@/components/SEO";
 import LanguageSwitcher from "@/i18n/LanguageSwitcher";
@@ -36,14 +37,7 @@ const Landing = () => {
   const panelLabel = locale === "en" ? "Process and projects" : locale === "uk" ? "Процес і проєкти" : "Процесс и проекты";
   const mobileMenuToggle = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [night, setNight] = useState(() => {
-    try { return window.localStorage.getItem("studio-landing-theme") === "night"; }
-    catch { return false; }
-  });
-  useEffect(() => {
-    try { window.localStorage.setItem("studio-landing-theme", night ? "night" : "day"); }
-    catch { /* Theme remains usable without storage. */ }
-  }, [night]);
+  const { mode, cycle, night } = useAmbient();
   useEffect(() => {
     if (!menuOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -111,11 +105,8 @@ const Landing = () => {
         <LanguageSwitcher background={night ? "hsl(40 7% 10%)" : "hsl(24 26% 94%)"} topOffset={0} />
       </div>
       <button type="button" className="landing-theme-toggle"
-        aria-label={locale === "ru" ? "Ночной режим" : locale === "uk" ? "Нічний режим" : "Night mode"}
-        aria-pressed={night} onClick={() => setNight(value => !value)}>
-        <span className={!night ? "is-active" : ""}>day</span>
-        <span aria-hidden="true"> / </span>
-        <span className={night ? "is-active" : ""}>night</span>
+        aria-label={locale === "ru" ? "Сменить световую среду" : locale === "uk" ? "Змінити світлове середовище" : "Change ambient lighting"} onClick={cycle}>
+        <span className="is-active">{mode}</span>
       </button>
 
       <main className="landing-composition">
