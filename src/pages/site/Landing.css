@@ -936,3 +936,11 @@
   .landing-theme-toggle,
   .landing-theme-toggle span { transition: color 600ms ease; }
 }
+
+/* Shared Ambient Engine: palette only; preserve DNA-STUDIO-001 geometry. */
+.landing-field[data-theme]::after { color: var(--ambient-egg, rgba(119,116,102,.055)); }
+.landing-field[data-theme] .landing-language button { color: hsl(var(--ambient-accent, 203 24% 40%)) !important; }
+@media (prefers-reduced-motion: no-preference) {
+  .landing-field[data-theme] { transition: background-color 1800ms ease, color 1800ms ease, box-shadow 1800ms ease; }
+  .landing-field[data-theme]::after, .landing-field[data-theme] .landing-toprail, .landing-field[data-theme] .landing-wordmark { transition: color 1800ms ease; }
+}
