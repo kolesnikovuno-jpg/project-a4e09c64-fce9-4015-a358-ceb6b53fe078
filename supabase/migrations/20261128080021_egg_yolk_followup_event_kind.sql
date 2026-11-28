@@ -1,0 +1,1 @@
+alter table public.egg_operational_events drop constraint egg_operational_events_kind_check, add constraint egg_operational_events_kind_check check (kind in ('ads_metrics','site_metrics','inquiry_received','order_confirmed','commercial_terms_changed','capacity_changed','supplies_changed','legal_conditions_changed','product_feedback','yolk_followup'));
