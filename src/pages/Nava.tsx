@@ -49,7 +49,7 @@ const NAVA_FIELD_OF_VIEW = "28deg";
 const NAVA_CAMERA_DISTANCE_LOCK = "auto auto 4m";
 
 const Nava = () => {
-  const { mode, cycle, palette, night, exposure, background } = useAmbient();
+  const { mode, cycle, palette, night, exposure, background, dawn, nightWeight, evening } = useAmbient();
   const { t, locale } = useLocale();
   const modelRef = useRef<HTMLElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -58,6 +58,13 @@ const Nava = () => {
   const heroRef = useRef<HTMLElement>(null);
   const heroImgRef = useRef<HTMLImageElement>(null);
   const heroLensRef = useRef<HTMLDivElement>(null);
+  const ambientDawnRef = useRef<HTMLImageElement>(null);
+  const ambientDuskRef = useRef<HTMLImageElement>(null);
+  const ambientNightRef = useRef<HTMLImageElement>(null);
+  const nightAlpha = mode === "dusk" ? 0 : nightWeight;
+  const twilightAlpha = mode === "dusk" ? 1 : dawn;
+  const duskAlpha = twilightAlpha * evening;
+  const dawnAlpha = duskAlpha >= 1 ? 0 : twilightAlpha * (1-evening) / (1-duskAlpha);
   const crossfadeRef = useRef<HTMLDivElement>(null);
   const heroLayerRef = useRef<HTMLDivElement>(null);
   const modelLayerRef = useRef<HTMLDivElement>(null);
@@ -320,6 +327,7 @@ const Nava = () => {
       // Default focal is 75% (right side) → map panX∈[-1..1] to [15%..95%].
       const panPct = 55 + panX * 40;
       img.style.objectPosition = `${panPct}% center`;
+      for (const ref of [ambientDawnRef,ambientDuskRef,ambientNightRef]) if(ref.current) ref.current.style.objectPosition=img.style.objectPosition;
       lens.style.backgroundPosition = `${panPct}% center`;
 
       // Lens layer = duplicate, displaced + radially masked at focal point.
@@ -328,7 +336,7 @@ const Nava = () => {
       const radius = Math.max(120, Math.min(rect.width, rect.height) * 0.22);
       const a = Math.max(0, Math.min(1, intensity));
       lens.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
-      lens.style.opacity = String(a);
+      lens.style.opacity = String(a * (1-Number(ambientDawnRef.current?.style.opacity||0)) * (1-Number(ambientDuskRef.current?.style.opacity||0)) * (1-Number(ambientNightRef.current?.style.opacity||0)));
       lens.style.maskImage = `radial-gradient(circle ${radius}px at ${fx}px ${fy}px, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 0.85) 18%, hsl(0 0% 0% / 0.45) 45%, hsl(0 0% 0% / 0.12) 75%, hsl(0 0% 0% / 0) 100%)`;
       (lens.style as any).webkitMaskImage = lens.style.maskImage;
 
@@ -413,6 +421,7 @@ const Nava = () => {
     <PageTransition>
       <div className="nava-ambient" style={palette} data-photo={!switcherVisible ? "true" : "false"}>
       <style>{`
+        @media(prefers-reduced-motion:reduce){.nava-ambient img[data-ambient-layer]{transition:none!important;}}
         .nava-ambient .uno-actions {background:var(--ambient-background);}
         .nava-ambient .uno-actions button,.nava-ambient .nava-back,.nava-ambient .uno-overlay-below p,.nava-ambient .nava-description-screen p,.nava-ambient .nava-collaboration-link {color:var(--ambient-foreground)!important;}
         .nava-ambient .uno-scroll-indicator {background:hsl(var(--foreground) / .15);}
@@ -438,7 +447,7 @@ const Nava = () => {
             <div ref={heroLayerRef} className="absolute inset-0 w-full h-full">
               <img
                 ref={heroImgRef}
-                src={lyraHero}
+                src="/ambient/nava/9819CCED-5A59-4CEA-A387-4F42DFCEF679.png"
                 alt={t.nava.hero_alt}
                 className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center"
                 loading="eager"
@@ -448,6 +457,9 @@ const Nava = () => {
                   backfaceVisibility: "hidden",
                 }}
               />
+              <img data-ambient-layer ref={ambientDawnRef} src="/ambient/nava/94BE7584-0151-4E84-B9FB-647A220CD27E.png" alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center pointer-events-none" style={{opacity:dawnAlpha,transition:"opacity 1800ms ease"}} />
+              <img data-ambient-layer ref={ambientDuskRef} src={lyraHero} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center pointer-events-none" style={{opacity:duskAlpha,transition:"opacity 1800ms ease"}} />
+              <img data-ambient-layer ref={ambientNightRef} src="/ambient/nava/C5BD254B-E624-4248-8526-5E7389274BBB.png" alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center pointer-events-none" style={{opacity:nightAlpha,transition:"opacity 1800ms ease"}} />
               <div
                 ref={heroLensRef}
                 aria-hidden
@@ -457,7 +469,7 @@ const Nava = () => {
                   transformOrigin: "50% 100%",
                   backfaceVisibility: "hidden",
                   opacity: 0,
-                  backgroundImage: `url(${lyraHero})`,
+                  backgroundImage: "url(/ambient/nava/9819CCED-5A59-4CEA-A387-4F42DFCEF679.png)",
                 }}
               />
               <div
