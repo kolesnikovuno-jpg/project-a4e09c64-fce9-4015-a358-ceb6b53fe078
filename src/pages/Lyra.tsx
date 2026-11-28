@@ -478,7 +478,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
 
   return (
     <PageTransition>
-      <div className="lyra-theme-scope" data-lyra-theme={night ? "night" : "day"} style={palette}>
+      <div className="lyra-theme-scope" data-lyra-theme={night ? "night" : "day"} data-photo={!switcherVisible ? "true" : "false"} style={palette}>
       <style>{`
         .lyra-theme-scope .lyra-description-screen p { color: var(--ambient-foreground) !important; }
         .lyra-theme-scope .lyra-description-screen button,
@@ -490,6 +490,16 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
         .lyra-theme-scope .uno-scroll-indicator { background: hsl(var(--foreground) / .15); }
         .lyra-theme-scope .uno-scroll-fill,
         .lyra-theme-scope .uno-pixel-cloud i { background: hsl(var(--ambient-accent)); }
+        .lyra-theme-scope[data-photo="true"] .uno-actions { background: rgba(24,20,17,.22); backdrop-filter: blur(8px); }
+        .lyra-theme-scope[data-photo="true"] .uno-actions button,
+        .lyra-theme-scope[data-photo="true"] .lyra-back,
+        .lyra-theme-scope[data-photo="true"] .lyra-language button { color: #f5efeb !important; text-shadow: 0 1px 5px #0009; }
+        .lyra-theme-scope[data-photo="true"] .uno-scroll-indicator { background: #f5efeb30; }
+        .lyra-theme-scope[data-photo="true"] .uno-scroll-fill { background: #f5efebbb; }
+        @media (max-width:640px) {
+          .lyra-theme-scope[data-photo="true"] .uno-actions { background: transparent; backdrop-filter: none; }
+          .lyra-theme-scope[data-photo="true"] .studio-object-actions::before { background: rgba(24,20,17,.22); backdrop-filter: blur(8px); }
+        }
         .lyra-theme-scope .landing-theme-toggle { z-index: 61; color: hsl(var(--foreground) / .75); }
         .lyra-theme-scope .landing-theme-toggle.lyra-on-photo { color: #f5efeb; text-shadow: 0 1px 5px #000; }
         .lyra-theme-scope .landing-theme-toggle.lyra-on-photo .is-active { color: #fff; }
@@ -993,7 +1003,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
       ) : <ModelSEO slug="lyra" />}
       {/* Language switcher — hidden on hero, fades in once user scrolls past it. */}
       <div className="lyra-language">
-        <LanguageSwitcher background={background} />
+        <LanguageSwitcher background={switcherVisible ? background : "rgba(24,20,17,.22)"} />
       </div>
       </div>
     </PageTransition>
