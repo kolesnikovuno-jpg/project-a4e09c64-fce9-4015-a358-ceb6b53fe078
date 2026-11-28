@@ -215,3 +215,23 @@
     letter-spacing: 0;
   }
 }
+
+/* DNA-STUDIO-002 — shared public ambient palette, scoped by route. */
+:root[data-studio-ambient="true"] {
+  --background: var(--studio-background,24 26% 94%);
+  --foreground: var(--studio-foreground,0 0% 20%);
+  --card: var(--background); --card-foreground: var(--foreground);
+  --popover: var(--background); --popover-foreground: var(--foreground);
+  --secondary: var(--background); --secondary-foreground: var(--foreground);
+  --muted: var(--background); --muted-foreground: var(--foreground);
+  --primary: var(--foreground); --primary-foreground: var(--background);
+  --accent: var(--foreground); --accent-foreground: var(--background);
+  --border: var(--foreground); --input: var(--foreground); --ring: var(--foreground);
+  --ambient-egg: var(--studio-ambient-egg);
+  --ambient-accent: var(--studio-ambient-accent);
+}
+:root[data-studio-ambient="true"] .landing-field::after {color:var(--studio-ambient-egg);}
+@media (prefers-reduced-motion:no-preference) {
+  :root[data-studio-ambient="true"] body,
+  :root[data-studio-ambient="true"] .bg-background {transition-property:background-color,color;transition-duration:1800ms;transition-timing-function:ease;}
+}
