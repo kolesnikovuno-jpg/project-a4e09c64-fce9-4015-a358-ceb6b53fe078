@@ -1,3 +1,4 @@
+import { useAmbient } from "@/lib/useAmbient";
 import "./studio-object-controls.css";
 import "./site/Landing.css";
 import { useEffect, useRef, useState } from "react";
@@ -48,6 +49,7 @@ const NAVA_FIELD_OF_VIEW = "28deg";
 const NAVA_CAMERA_DISTANCE_LOCK = "auto auto 4m";
 
 const Nava = () => {
+  const { mode, cycle, palette, night, exposure, background } = useAmbient();
   const { t, locale } = useLocale();
   const modelRef = useRef<HTMLElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -409,13 +411,24 @@ const Nava = () => {
 
   return (
     <PageTransition>
+      <div className="nava-ambient" style={palette} data-photo={!switcherVisible ? "true" : "false"}>
+      <style>{`
+        .nava-ambient .uno-actions {background:var(--ambient-background);}
+        .nava-ambient .uno-actions button,.nava-ambient .nava-back,.nava-ambient .uno-overlay-below p,.nava-ambient .nava-description-screen p,.nava-ambient .nava-collaboration-link {color:var(--ambient-foreground)!important;}
+        .nava-ambient .uno-scroll-indicator {background:hsl(var(--foreground) / .15);}
+        .nava-ambient .uno-scroll-fill {background:hsl(var(--foreground) / .8);}
+        .nava-ambient[data-photo="true"] .uno-actions {background:rgba(24,20,17,.22);backdrop-filter:blur(8px);}
+        .nava-ambient[data-photo="true"] .uno-actions button,.nava-ambient[data-photo="true"] .nava-back,.nava-ambient[data-photo="true"] .landing-theme-toggle,.nava-ambient[data-photo="true"] .nava-language button {color:#f5efeb!important;text-shadow:0 1px 5px #0009;}
+        @media(max-width:640px){.nava-ambient .uno-actions,.nava-ambient[data-photo="true"] .uno-actions{background:transparent;backdrop-filter:none;}.nava-ambient .studio-object-actions::before{background:var(--ambient-background);}.nava-ambient[data-photo="true"] .studio-object-actions::before{background:rgba(24,20,17,.22);backdrop-filter:blur(8px);}}
+      `}</style>
+      <button type="button" className="landing-theme-toggle" style={{zIndex:61}} onClick={cycle} aria-label="Change ambient lighting"><span className="is-active">{mode}</span></button>
       {/* Crossfade scroll zone: hero image fades out, 3D fades in */}
       <div
         ref={crossfadeRef}
         className="relative w-screen"
         style={{ height: "300vh" }}
       >
-        <div className="sticky top-0 w-screen h-screen overflow-hidden landing-field" style={{cursor:"auto",position:"sticky"}}>
+        <div className="sticky top-0 w-screen h-screen overflow-hidden landing-field" data-theme={night ? "night" : "day"} style={{...palette,cursor:"auto",position:"sticky"}}>
           {/* Layer 1: hero image */}
           <section
             ref={heroRef}
@@ -694,7 +707,7 @@ const Nava = () => {
               auto-rotate-delay="1200"
               rotation-per-second="20deg"
               environment-image="neutral"
-              exposure="1.45"
+              exposure={exposure}
               shadow-intensity="0.6"
               shadow-softness="1"
               camera-orbit={NAVA_CAMERA_ORBIT}
@@ -781,7 +794,7 @@ const Nava = () => {
       </div>
       <button
         onClick={() => window.location.assign(`https://www.kolesnikov.studio/${locale}`)}
-        className="fixed top-4 left-4 md:top-5 md:left-5 px-2 py-1 text-[hsl(203_24%_40%)] hover:text-[#C97A63] transition-colors duration-300 z-[60]"
+        className="nava-back fixed top-4 left-4 md:top-5 md:left-5 px-2 py-1 text-[hsl(203_24%_40%)] hover:text-[#C97A63] transition-colors duration-300 z-[60]"
         aria-label={t.nav.back}
       >
         <span
@@ -826,9 +839,8 @@ const Nava = () => {
       </div>
       <ModelSEO slug="nava" />
       {/* Language switcher — hidden on hero, fades in once user scrolls past it. */}
-      <LanguageSwitcher
-        background="hsl(24 26% 94%)"
-      />
+      <div className="nava-language"><LanguageSwitcher background={switcherVisible ? background : "rgba(24,20,17,.22)"} /></div>
+      </div>
     </PageTransition>
   );
 };
