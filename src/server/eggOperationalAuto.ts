@@ -21,7 +21,7 @@ import type {SphereId} from "../lib/eggEngine.js";
 import {providerFromEnv,generate} from "../../api/egg-flow-ai.js";
 
 type Request=IncomingMessage&{body?:unknown};
-const requestSchema=z.object({slot:z.number().int().min(1).max(24)}).strict();
+const requestSchema=z.object({slot:z.number().int().min(1).max(24).optional()}).strict();
 const responseSchema={
   type:"object",additionalProperties:false,
   properties:{
@@ -131,7 +131,7 @@ export default async function handler(req:Request,res:ServerResponse){
   }
   const cfg=getEggStorageConfig(process.env);
   if(!cfg){json(res,503,{ok:false,error:"storage_not_configured"});return;}
-  let slot:number;
+  let slot:number|undefined;
   try{slot=requestSchema.parse(await body(req)).slot;}
   catch{json(res,400,{ok:false,error:"invalid_request"});return;}
   const db=createClient(cfg.url,cfg.serviceKey,{auth:{persistSession:false,autoRefreshToken:false}});
@@ -140,13 +140,21 @@ export default async function handler(req:Request,res:ServerResponse){
     .eq("slug","lyra").maybeSingle();
   if(projectErr||!rawProject){json(res,503,{ok:false,error:"project_not_available"});return;}
   const project=rawProject as ProjectRow;
-  if(!project.auto_research_enabled||project.auto_research_daily_limit<slot){
+  if(!project.auto_research_enabled||project.auto_research_daily_limit===0||(slot!==undefined&&project.auto_research_daily_limit<slot)){
     json(res,200,{ok:true,status:"disabled",paidAiCalls:0});return;
   }
   if(project.ads_operation_allowed){
     json(res,409,{ok:false,error:"external_actions_not_permitted"});return;
   }
   const utcDay=new Date().toISOString().slice(0,10);
+  if(slot===undefined){
+    const {data:runs,error}=await db.from("egg_operational_auto_runs").select("slot,status").eq("operational_project_id",project.id).eq("run_day",utcDay);
+    if(error){json(res,503,{ok:false,error:"run_ledger_unavailable"});return;}
+    if((runs??[]).some(r=>r.status==="claimed")){json(res,200,{ok:true,status:"execution_in_progress",paidAiCalls:0});return;}
+    const used=new Set((runs??[]).map(r=>r.slot));
+    slot=Array.from({length:project.auto_research_daily_limit},(_,i)=>i+1).find(i=>!used.has(i));
+    if(slot===undefined){json(res,200,{ok:true,status:"daily_slots_exhausted",paidAiCalls:0});return;}
+  }
   const {data:existing,error:existingErr}=await db.from("egg_operational_auto_runs")
     .select("status").eq("operational_project_id",project.id)
     .eq("run_day",utcDay).eq("slot",slot).maybeSingle();
