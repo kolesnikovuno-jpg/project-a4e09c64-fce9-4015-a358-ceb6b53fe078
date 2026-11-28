@@ -17,7 +17,7 @@ type Props = {
  * default — relies on background color matching to stay secondary.
  */
 const LanguageSwitcher = ({
-  background = "hsl(24 26% 94%)",
+  background = "hsl(var(--background))",
   topOffset = 0,
   hidden = false,
 }: Props) => {
@@ -81,7 +81,7 @@ const LanguageSwitcher = ({
           border: "none",
           outline: "none",
           cursor: "pointer",
-          color: "hsl(203 24% 40%)",
+          color: "hsl(var(--foreground))",
           fontSize: 12,
           fontWeight: 300,
           letterSpacing: "0.18em",
@@ -125,7 +125,7 @@ const LanguageSwitcher = ({
                   background: "transparent",
                   border: "none",
                   cursor: "pointer",
-                  color: "hsl(203 24% 55%)",
+                  color: "hsl(var(--foreground) / .8)",
                   fontSize: 12,
                   fontWeight: 300,
                   letterSpacing: "0.18em",
@@ -139,7 +139,7 @@ const LanguageSwitcher = ({
                 }
                 onMouseLeave={(e) =>
                   ((e.currentTarget as HTMLButtonElement).style.color =
-                    "hsl(203 24% 55%)")
+                    "hsl(var(--foreground) / .8)")
                 }
               >
                 {LOCALE_LABEL[l]}
