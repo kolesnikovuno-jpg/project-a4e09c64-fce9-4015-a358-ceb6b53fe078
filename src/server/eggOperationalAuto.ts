@@ -195,12 +195,19 @@ export default async function handler(req:Request,res:ServerResponse){
   const cutoff=Date.now()-8*86400000;
   const events=((eventsRaw??[]) as EventRow[]).filter(e=>
     e.source==="egg_object_research_v1" || (isDate(e.facts?.day)&&Date.parse(e.facts.day+"T00:00:00Z")>=cutoff));
-  if(!events.length){json(res,200,{ok:true,status:"no_verified_events",paidAiCalls:0});return;}
-  const {data:taskRaw,error:taskErr}=await db.from("egg_operational_activations")
+  // Yolk synthesis is independent of the verified sphere event queue.
+  const {data:taskRaw,error:taskErr}=target==="yolk"||!events.length?{data:[],error:null}:await db.from("egg_operational_activations")
     .select("id,event_id,sphere,task,status,retry_count")
     .in("event_id",events.map(x=>x.id)).eq("status","pending").limit(80);
   if(taskErr){json(res,503,{ok:false,error:"task_queue_unavailable"});return;}
-  const picked=target==="yolk"?null:pickTask(events,(taskRaw??[]) as TaskRow[]);
+  let candidates=(taskRaw??[]) as TaskRow[];
+  if(nodeId&&target!=="yolk"&&candidates.length){
+    const {data:links,error:linkError}=await db.from("egg_object_activation_links").select("activation_id").eq("node_id",nodeId).in("activation_id",candidates.map(t=>t.id));
+    if(linkError){json(res,503,{ok:false,error:"object_links_unavailable",paidAiCalls:0});return;}
+    const ids=new Set((links??[]).map(l=>l.activation_id));
+    candidates=candidates.filter(t=>ids.has(t.id));
+  }
+  const picked=target==="yolk"?null:pickTask(events,candidates);
   if(!picked){
     if(target==="sphere"){json(res,200,{ok:true,status:"no_pending_sphere_tasks",paidAiCalls:0});return;}
     // Semantic operations share the existing daily slots and budget ledger.
@@ -454,7 +461,7 @@ export default async function handler(req:Request,res:ServerResponse){
       })),
       informationReadiness,informationModelVersion:"0.1",goalFeasibilityProtocol:"ADR-033",
       marketingDeliveryDiagnosis:picked.task.sphere==="marketing"?adsDiagnosis:null,
-      sourceEventIds:[typeof picked.event.facts?.retry_source_event==="string"?picked.event.facts.retry_source_event:picked.event.id],runMode:"autonomous",
+      sourceEventIds:[typeof picked.event.facts?.retry_source_event==="string"?picked.event.facts.retry_source_event:picked.event.id],runMode:mode,
       aiProvider:model.kind,model:model.model,
       generatedAt:new Date().toISOString(),
       internalAction:objectResearch?"object_result_saved":"observe_next_closed_day",
@@ -480,7 +487,7 @@ export default async function handler(req:Request,res:ServerResponse){
       code,stage,provider:model.kind,model:model.model,
     });
     await db.from("egg_operational_activations")
-      .update({status:"blocked",finding:{kind:"worker_error",code,stage,mode:"autonomous",...(analysisIssues?{analysisIssues}:{})},
+      .update({status:"blocked",finding:{kind:"worker_error",code,stage,mode,...(analysisIssues?{analysisIssues}:{})},
         completed_at:new Date().toISOString()})
       .eq("id",picked.task.id).eq("status","researching");
     await db.from("egg_operational_auto_runs")
