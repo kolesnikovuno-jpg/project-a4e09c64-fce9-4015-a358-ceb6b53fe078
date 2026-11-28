@@ -252,8 +252,9 @@ export async function safeEggProvider400Details(response:Response){
 export function eggOpenAiJsonInput(input:string):string{
  return input+"\n\nReturn exactly one valid JSON object. Do not wrap it in Markdown.";
 }
-export async function generate(model:Provider,prompt:{instructions:string;input:string;imageData?:string;responseJsonSchema?:unknown},
+export async function generate(model:Provider,prompt:{instructions:string;input:string;imageData?:string;responseJsonSchema?:unknown;webResearch?:boolean;onWebSources?:(sources:string[])=>void},
   maxTokens=2200,onUsage?:(usage:{input:number|null;output:number|null;total:number|null})=>void):Promise<string>{
+  if(prompt.webResearch&&model.kind!=="direct_openai")throw Error("web_research_provider_unsupported");
   const tokenCount=(v:unknown):number|null=>typeof v==="number"&&Number.isSafeInteger(v)&&v>=0?v:null;
   const reportUsage=(input:unknown,output:unknown,total:unknown)=>{
     const i=tokenCount(input),o=tokenCount(output),t=tokenCount(total);
@@ -288,6 +289,7 @@ export async function generate(model:Provider,prompt:{instructions:string;input:
         input:prompt.imageData?[{role:"user",content:[{type:"input_text",text:eggOpenAiJsonInput(prompt.input)},
           {type:"input_image",image_url:prompt.imageData}]}]:eggOpenAiJsonInput(prompt.input),
         max_output_tokens:maxTokens,store:false,
+        ...(prompt.webResearch?{tools:[{type:"web_search"}],tool_choice:"required",max_tool_calls:1,include:["web_search_call.action.sources"]}:{}),
         ...(model.kind==="direct_openai"&&model.model==="gpt-6-luna"?
           {reasoning:{effort:"none"}}:{}),
         text:{format:model.kind==="direct_openai"&&prompt.responseJsonSchema?
@@ -325,11 +327,16 @@ export async function generate(model:Provider,prompt:{instructions:string;input:
   }
   let data:{
     usage?:{input_tokens?:number;output_tokens?:number;total_tokens?:number};
-    status?:string;output?:Array<{type?:string;content?:Array<{type?:string;text?:string}>}>;
+    status?:string;output?:Array<{type?:string;action?:{sources?:Array<{url?:string}>};content?:Array<{type?:string;text?:string;annotations?:Array<{type?:string;url?:string}>}>}>;
   };
   try{data=await response.json() as typeof data;}catch{throw Error("invalid_ai_output");}
   reportUsage(data.usage?.input_tokens,data.usage?.output_tokens,data.usage?.total_tokens);
   if(data.status!=="completed")throw Error("model_incomplete");
+  if(prompt.webResearch){
+    const sources=[...new Set((data.output??[]).flatMap(x=>[...(x.action?.sources??[]).map(y=>y.url),...(x.content??[]).flatMap(c=>(c.annotations??[]).filter(a=>a.type==="url_citation").map(a=>a.url))]).filter((u):u is string=>typeof u==="string"&&/^https:\/\//i.test(u)&&u.length<=2048))];
+    if(!sources.length)throw Error("web_research_no_sources");
+    prompt.onWebSources?.(sources.slice(0,20));
+  }
   const raw=data.output?.flatMap(x=>x.type==="message"?(x.content??[]):[])
     .filter(x=>x.type==="output_text")
     .map(x=>x.text??"").join("")??"";
