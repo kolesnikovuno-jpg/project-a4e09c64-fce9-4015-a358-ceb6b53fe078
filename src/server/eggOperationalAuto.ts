@@ -21,7 +21,7 @@ import type {SphereId} from "../lib/eggEngine.js";
 import {providerFromEnv,generate} from "../../api/egg-flow-ai.js";
 
 type Request=IncomingMessage&{body?:unknown};
-const requestSchema=z.object({slot:z.number().int().min(1).max(24).optional(),mode:z.enum(["auto","manual","test"]).default("auto"),target:z.enum(["sphere","yolk"]).optional(),nodeId:z.string().uuid().optional()}).strict();
+const requestSchema=z.object({slot:z.number().int().min(1).max(24).optional(),mode:z.enum(["auto","manual","test"]).default("auto"),target:z.enum(["sphere","yolk"]).optional(),nodeId:z.string().uuid().optional(),activationId:z.string().uuid().optional()}).strict();
 const responseSchema={
   type:"object",additionalProperties:false,
   properties:{
@@ -70,13 +70,13 @@ function sameToken(actual:string,expected:string){
 async function body(req:Request){
   if(req.body!==undefined){
     const raw=typeof req.body==="string"?JSON.parse(req.body) as unknown:req.body;
-    if(Buffer.byteLength(JSON.stringify(raw))>160)throw Error("invalid_request");
+    if(Buffer.byteLength(JSON.stringify(raw))>256)throw Error("invalid_request");
     return raw;
   }
   const parts:Buffer[]=[];let total=0;
   for await(const chunk of req){
     const b=Buffer.isBuffer(chunk)?chunk:Buffer.from(chunk as Uint8Array);
-    total+=b.byteLength;if(total>160)throw Error("invalid_request");
+    total+=b.byteLength;if(total>256)throw Error("invalid_request");
     parts.push(b);
   }
   return JSON.parse(Buffer.concat(parts).toString("utf8")) as unknown;
@@ -135,7 +135,8 @@ export default async function handler(req:Request,res:ServerResponse){
   let mode:"auto"|"manual"|"test"="auto";
   let target:"sphere"|"yolk"|undefined;
   let nodeId:string|undefined;
-  try{const parsed=requestSchema.parse(await body(req));({slot,mode,target,nodeId}=parsed);}
+  let activationId:string|undefined;
+  try{const parsed=requestSchema.parse(await body(req));({slot,mode,target,nodeId,activationId}=parsed);}
   catch{json(res,400,{ok:false,error:"invalid_request"});return;}
   const db=createClient(cfg.url,cfg.serviceKey,{auth:{persistSession:false,autoRefreshToken:false}});
   const {data:rawProject,error:projectErr}=await db.from("egg_operational_projects")
@@ -168,6 +169,7 @@ export default async function handler(req:Request,res:ServerResponse){
   }
   // Manual requests are addressed and do not consume reserved AUTO slots.
   // Both modes retain the shared pilot cap and AI budget reservation.
+  if(activationId&&(mode!=="manual"||target!=="sphere"||!nodeId)){json(res,400,{ok:false,error:"invalid_activation_target",paidAiCalls:0});return;}
   if(mode==="manual"&&(!target||!nodeId||slot!==undefined)){
     json(res,400,{ok:false,error:"manual_requires_target_and_node",paidAiCalls:0});return;
   }
@@ -226,6 +228,7 @@ export default async function handler(req:Request,res:ServerResponse){
     const ids=new Set((links??[]).map(l=>l.activation_id));
     candidates=candidates.filter(t=>ids.has(t.id));
   }
+  if(activationId){candidates=candidates.filter(t=>t.id===activationId);}
   const picked=target==="yolk"?null:pickTask(events,candidates);
   if(!picked){
     if(target==="sphere"){json(res,200,{ok:true,status:"no_pending_sphere_tasks",paidAiCalls:0});return;}
