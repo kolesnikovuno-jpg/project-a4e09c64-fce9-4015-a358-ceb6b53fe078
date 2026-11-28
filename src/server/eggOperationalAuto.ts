@@ -88,7 +88,7 @@ function reason(error:unknown){
     "model_request_failed","ai_rate_limited","ai_budget_exhausted",
     "ai_model_not_authorized","ai_provider_bad_request","model_incomplete",
     "provider_timeout","ai_context_too_large","source_unavailable",
-    "invalid_ai_response","atomic_commit_failed",
+    "invalid_ai_response","atomic_commit_failed","ai_budget_reservation_denied","usage_unverified","ai_tariff_unverified",
   ]);
   return allow.has(msg)?msg:"autopilot_failed";
 }
@@ -166,7 +166,12 @@ export default async function handler(req:Request,res:ServerResponse){
     const checks=(rows??[]).map(r=>({nodeId:r.node_id,revision:r.revision,valid:schema.safeParse(r.snapshot).success}));
     json(res,200,{ok:checks.length>0&&checks.every(r=>r.valid),mode,status:"dry_run",checks,paidAiCalls:0});return;
   }
-  if(!project.auto_research_enabled||project.auto_research_daily_limit===0||(slot!==undefined&&project.auto_research_daily_limit<slot)){
+  // Manual requests are addressed and do not consume reserved AUTO slots.
+  // Both modes retain the shared pilot cap and AI budget reservation.
+  if(mode==="manual"&&(!target||!nodeId||slot!==undefined)){
+    json(res,400,{ok:false,error:"manual_requires_target_and_node",paidAiCalls:0});return;
+  }
+  if(mode==="auto"&&(!project.auto_research_enabled||project.auto_research_daily_limit===0||(slot!==undefined&&project.auto_research_daily_limit<slot))){
     json(res,200,{ok:true,status:"disabled",paidAiCalls:0});return;
   }
   if(project.ads_operation_allowed){
@@ -178,8 +183,11 @@ export default async function handler(req:Request,res:ServerResponse){
     if(error){json(res,503,{ok:false,error:"run_ledger_unavailable"});return;}
     if((runs??[]).some(r=>r.status==="claimed")){json(res,200,{ok:true,status:"execution_in_progress",paidAiCalls:0});return;}
     const used=new Set((runs??[]).map(r=>r.slot));
-    slot=Array.from({length:project.auto_research_daily_limit},(_,i)=>i+1).find(i=>!used.has(i));
-    if(slot===undefined){json(res,200,{ok:true,status:"daily_slots_exhausted",paidAiCalls:0});return;}
+    const slots=mode==="manual"
+      ?Array.from({length:Math.max(0,24-project.auto_research_daily_limit)},(_,i)=>24-i)
+      :Array.from({length:project.auto_research_daily_limit},(_,i)=>i+1);
+    slot=slots.find(i=>!used.has(i));
+    if(slot===undefined){json(res,200,{ok:true,status:mode==="manual"?"manual_slots_exhausted":"daily_slots_exhausted",paidAiCalls:0});return;}
   }
   const {data:existing,error:existingErr}=await db.from("egg_operational_auto_runs")
     .select("status").eq("operational_project_id",project.id)
