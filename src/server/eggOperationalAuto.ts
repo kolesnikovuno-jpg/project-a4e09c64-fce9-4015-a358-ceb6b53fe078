@@ -207,13 +207,13 @@ export default async function handler(req:Request,res:ServerResponse){
   const {data:eventsRaw,error:eventsErr}=await db.from("egg_operational_events")
     .select("id,kind,source,recorded_at,evidence_status,facts")
     .eq("operational_project_id",project.id)
-    .in("source",["lyra_supabase_daily_v1","egg_object_research_v1"])
-    .eq("evidence_status","verified_source")
+    .in("source",["lyra_supabase_daily_v1","egg_object_research_v1","egg_yolk_followup_v1"])
+    .in("evidence_status",["verified_source","hypothesis"])
     .order("recorded_at",{ascending:false}).limit(80);
   if(eventsErr){json(res,503,{ok:false,error:"source_events_unavailable"});return;}
   const cutoff=Date.now()-8*86400000;
   const events=((eventsRaw??[]) as EventRow[]).filter(e=>
-    e.source==="egg_object_research_v1" || (isDate(e.facts?.day)&&Date.parse(e.facts.day+"T00:00:00Z")>=cutoff));
+    (e.source==="egg_yolk_followup_v1" && e.kind==="yolk_followup" && e.evidence_status==="hypothesis" && e.facts?.research_only===true && e.facts?.approval_status==="unapproved") || (e.evidence_status==="verified_source" && (e.source==="egg_object_research_v1" || (isDate(e.facts?.day)&&Date.parse(e.facts.day+"T00:00:00Z")>=cutoff))));
   // Yolk synthesis is independent of the verified sphere event queue.
   const {data:taskRaw,error:taskErr}=target==="yolk"||!events.length?{data:[],error:null}:await db.from("egg_operational_activations")
     .select("id,event_id,sphere,task,status,retry_count")
@@ -274,7 +274,7 @@ export default async function handler(req:Request,res:ServerResponse){
     }
   }
   const sourceDay=isDate(picked.event.facts?.day)?picked.event.facts.day:utcDay;
-  const objectResearch=picked.event.source==="egg_object_research_v1";
+  const objectResearch=picked.event.source==="egg_object_research_v1" || picked.event.source==="egg_yolk_followup_v1";
   let baselineDay=sourceDay;
   if(!objectResearch){
   const {data:check,error:checkErr}=await db.from("egg_operational_source_checks")
