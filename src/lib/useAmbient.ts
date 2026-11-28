@@ -81,7 +81,18 @@ export function useAmbient() {
     document.addEventListener("visibilitychange",tick);
     return ()=>{active=false;window.clearInterval(timer);document.removeEventListener("visibilitychange",tick);};
   },[]);
-  useEffect(() => { try { localStorage.setItem(KEY, mode); } catch {} }, [mode]);
+  useEffect(() => {
+    const sync = () => { try { const m=localStorage.getItem(KEY) as Mode; if(modes.includes(m)) setMode(m); } catch {} };
+    window.addEventListener("studio:ambient-mode",sync);
+    window.addEventListener("storage",sync);
+    return ()=>{window.removeEventListener("studio:ambient-mode",sync);window.removeEventListener("storage",sync);};
+  },[]);
+  const cycle = () => {
+    const next=modes[(modes.indexOf(mode)+1)%modes.length];
+    setMode(next);
+    try {localStorage.setItem(KEY,next);} catch {}
+    window.dispatchEvent(new Event("studio:ambient-mode"));
+  };
   const weights=ambientWeights(solarElevation(date,location));
   let dawn=weights.dawn;
   let nightWeight=weights.night;
@@ -109,5 +120,5 @@ export function useAmbient() {
   // Night is the top photo layer; compensate the dawn alpha so the underlying
   // daytime photo does not leak through a night-to-dawn transition.
   const dawnAlpha = nightWeight >= 1 ? 0 : Math.min(1,dawn/(1-nightWeight));
-  return { mode, cycle: () => setMode(m => modes[(modes.indexOf(m)+1)%modes.length]), dawn: dawnAlpha, nightWeight, night: dark, palette, background: "hsl("+bgHsl+")", exposure: (1.45-.16*dawn-.35*nightWeight).toFixed(3) };
+  return { mode, cycle, dawn: dawnAlpha, nightWeight, night: dark, palette, background: "hsl("+bgHsl+")", exposure: (1.45-.16*dawn-.35*nightWeight).toFixed(3) };
 }
