@@ -280,9 +280,20 @@ export default async function handler(req:Request,res:ServerResponse){
       return {gap_id:r.gap_id,activation_id:r.activation_id,gap_status:r.gap_status,review_state:r.review_state};
     });
     const evidence=Array.from(reviewResults,([activation_id,result])=>({activation_id,result}));
-    const {data:aliasCandidates,error:aliasError}=await db.from('egg_evidence_alias_candidates_v1').select('gap_id,source_type,missing_fact,affected_decision,priority').eq('node_id',work.node_id).order('gap_id').limit(60);
+    const {data:aliasCandidates,error:aliasError}=await db.from('egg_evidence_alias_candidates_v1').select('gap_id,source_type,missing_fact,affected_decision,priority').eq('node_id',work.node_id).order('gap_id').limit(250);
     if(aliasError){json(res,503,{ok:false,error:'alias_candidates_unavailable',paidAiCalls:0});return;}
-    const input=JSON.stringify({alias_candidates:JSON.parse(boundedEggContext(aliasCandidates??[],10000)),eligible_gap_index:eligible,coordinated_evidence_review:reviewIndex,coordinated_research_results:JSON.parse(boundedEggContext(evidence,32000)),snapshot:JSON.parse(boundedEggContext(checked.data,38000))});
+    const aliasRows=aliasCandidates??[];
+    const terms=(v:unknown)=>new Set(String(v??'').toLowerCase().match(/[\p{L}\p{N}]{4,}/gu)??[]);
+    const pairs:{a:typeof aliasRows[number],b:typeof aliasRows[number],score:number}[]=[];
+    for(let i=0;i<aliasRows.length;i++)for(let j=i+1;j<aliasRows.length;j++){
+      const a=aliasRows[i],b=aliasRows[j];if(a.source_type!==b.source_type)continue;
+      const x=terms(a.missing_fact),y=terms(b.missing_fact);
+      const common=[...x].filter(t=>y.has(t)).length;
+      const score=common/Math.max(1,Math.min(x.size,y.size));
+      if(common>=2&&score>=0.35)pairs.push({a,b,score});
+    }
+    pairs.sort((a,b)=>b.score-a.score);
+    const input=JSON.stringify({alias_candidates:JSON.parse(boundedEggContext(pairs.slice(0,12),10000)),eligible_gap_index:eligible,coordinated_evidence_review:reviewIndex,coordinated_research_results:JSON.parse(boundedEggContext(evidence,32000)),snapshot:JSON.parse(boundedEggContext(checked.data,38000))});
     if(Buffer.byteLength(input)>100000){json(res,503,{ok:false,error:"ai_context_too_large",paidAiCalls:0});return;}
     const {data:run,error:runError}=await db.from("egg_operational_auto_runs").insert({operational_project_id:project.id,run_day:utcDay,slot,operation_kind:"yolk",synthesis_node_id:work.node_id,synthesis_revision:work.revision,status:"claimed"}).select("id").single();
     if(runError||!run){json(res,409,{ok:false,error:"run_slot_already_claimed",paidAiCalls:0});return;}
