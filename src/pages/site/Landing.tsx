@@ -37,7 +37,7 @@ const Landing = () => {
   const panelLabel = locale === "en" ? "Process and projects" : locale === "uk" ? "Процес і проєкти" : "Процесс и проекты";
   const mobileMenuToggle = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { mode, cycle, night } = useAmbient();
+  const { mode, cycle, night, palette, background } = useAmbient();
   useEffect(() => {
     if (!menuOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -91,6 +91,7 @@ const Landing = () => {
       ref={fieldRef}
       className="landing-field font-body antialiased"
       data-theme={night ? "night" : "day"}
+      style={palette}
       onClick={handleScreenClick}
       onPointerMove={handlePointerMove}
       onPointerLeave={() => setPointerPosition(0, 0)}
@@ -102,7 +103,7 @@ const Landing = () => {
         alternates={alternates}
       />
       <div className="landing-language">
-        <LanguageSwitcher background={night ? "hsl(40 7% 10%)" : "hsl(24 26% 94%)"} topOffset={0} />
+        <LanguageSwitcher background={background} topOffset={0} />
       </div>
       <button type="button" className="landing-theme-toggle"
         aria-label={locale === "ru" ? "Сменить световую среду" : locale === "uk" ? "Змінити світлове середовище" : "Change ambient lighting"} onClick={cycle}>
