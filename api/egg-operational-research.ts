@@ -75,7 +75,7 @@ async function readRequest(req:Request):Promise<unknown>{
 export default async function handler(req:Request,res:ServerResponse){
   const mode=new URL(req.url??"/","https://egg.kolesnikov.studio").searchParams.get("mode");
   if(mode==="sync")return lyraSyncHandler(req,res);
-  if(mode==="auto")return operationalAutopilot(req,res);
+  if(mode==="auto"||mode==="manual"||mode==="test")return operationalAutopilot(req,res);
   if(req.method!=="POST"){res.setHeader("Allow","POST");respond(res,405,{ok:false,error:"method_not_allowed"});return;}
   const origin=req.headers.origin;
   const host=req.headers.host;
