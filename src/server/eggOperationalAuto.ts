@@ -233,8 +233,6 @@ export default async function handler(req:Request,res:ServerResponse){
     if(!model||model.kind!=="direct_openai"||model.model!=="gpt-6-luna"){json(res,503,{ok:false,error:"ai_tariff_unverified",paidAiCalls:0});return;}
     const input=JSON.stringify(checked.data);
     if(Buffer.byteLength(input)>100000){json(res,503,{ok:false,error:"ai_context_too_large",paidAiCalls:0});return;}
-    const {count:yolkCount,error:yolkCountError}=await db.from("egg_operational_auto_runs").select("id",{count:"exact",head:true}).eq("operation_kind","yolk").gte("attempted_at",yesterday);
-    if(yolkCountError||(count??0)+(yolkCount??0)>=24){json(res,200,{ok:false,status:"pilot_daily_limit",paidAiCalls:0});return;}
     const {data:run,error:runError}=await db.from("egg_operational_auto_runs").insert({operational_project_id:project.id,run_day:utcDay,slot,operation_kind:"yolk",synthesis_node_id:work.node_id,synthesis_revision:work.revision,status:"claimed"}).select("id").single();
     if(runError||!run){json(res,409,{ok:false,error:"run_slot_already_claimed",paidAiCalls:0});return;}
     let started=false;
