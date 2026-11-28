@@ -88,7 +88,7 @@ function reason(error:unknown){
     "model_request_failed","ai_rate_limited","ai_budget_exhausted",
     "ai_model_not_authorized","ai_provider_bad_request","model_incomplete",
     "provider_timeout","ai_context_too_large","source_unavailable",
-    "invalid_ai_response","atomic_commit_failed","ai_budget_reservation_denied","usage_unverified","ai_tariff_unverified",
+    "invalid_ai_response","atomic_commit_failed","result_checkpoint_failed","ai_budget_reservation_denied","usage_unverified","ai_tariff_unverified",
   ]);
   return allow.has(msg)?msg:"autopilot_failed";
 }
@@ -507,7 +507,8 @@ export default async function handler(req:Request,res:ServerResponse){
   }catch(error){
     await saveUsage();
     await settleBudget();
-    const code=reason(error);
+    const baseCode=reason(error);
+    const code=baseCode==="autopilot_failed"&&stage==="model_call"?"model_request_failed":baseCode;
     console.warn("egg_auto_research_issue",{
       code,stage,provider:model.kind,model:model.model,
     });
