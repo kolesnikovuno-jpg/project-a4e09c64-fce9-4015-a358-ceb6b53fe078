@@ -186,7 +186,7 @@ export default async function handler(req:Request,res:ServerResponse){
   const picked=pickTask(events,(taskRaw??[]) as TaskRow[]);
   if(!picked){
     // Semantic operations share the existing daily slots and budget ledger.
-    const {data:root,error:rootError}=await db.from("egg_passport_registry").select("id").eq("operational_project_id",project.id).maybeSingle();
+    const {data:root,error:rootError}=await db.from("egg_passport_registry").select("id").eq("source_project_id",project.id).eq("source_kind","operational").maybeSingle();
     if(rootError||!root){json(res,503,{ok:false,error:"synthesis_root_unavailable"});return;}
     const {data:work,error:workError}=await db.from("egg_yolk_semantic_work_v1").select("node_id,revision,snapshot").eq("root_passport_id",root.id).order("node_id").limit(1).maybeSingle();
     if(workError){json(res,503,{ok:false,error:"synthesis_queue_unavailable"});return;}
