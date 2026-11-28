@@ -280,10 +280,12 @@ const Nava = () => {
     const onTilt = (e: DeviceOrientationEvent) => {
       // Mobile: tilt sets focal point relative to hero center, drag = tilt vector.
       const rect = hero.getBoundingClientRect();
-      const g = e.gamma ?? 0;
+      if (e.gamma == null || e.beta == null) return;
+      const g = e.gamma;
       const b = (e.beta ?? 0) - 30;
-      const nx = Math.max(-1, Math.min(1, g / 20));
-      const ny = Math.max(-1, Math.min(1, b / 20));
+      const orientation = screen.orientation?.angle ?? (window as Window & { orientation?: number }).orientation ?? 0;
+      const nx = Math.max(-1, Math.min(1, (orientation === 90 ? -e.beta : orientation === -90 || orientation === 270 ? e.beta : g) / 20));
+      const ny = Math.max(-1, Math.min(1, (orientation === 90 ? g : orientation === -90 || orientation === 270 ? -g : b) / 20));
       tFX = rect.width / 2 + nx * (rect.width * 0.35);
       tFY = rect.height / 2 + ny * (rect.height * 0.35);
       tDX = nx;
@@ -292,7 +294,7 @@ const Nava = () => {
       lastInput = performance.now();
       // Horizontal pan from gamma (left-right tilt). Saturates around ±25°.
       // Account for screen orientation so landscape feels natural.
-      const angle = (screen.orientation && screen.orientation.angle) || 0;
+      const angle = screen.orientation?.angle ?? (window as Window & { orientation?: number }).orientation ?? 0;
       let panSrc = g;
       if (angle === 90) panSrc = -(e.beta ?? 0);
       else if (angle === -90 || angle === 270) panSrc = (e.beta ?? 0);
@@ -336,7 +338,10 @@ const Nava = () => {
       const radius = Math.max(120, Math.min(rect.width, rect.height) * 0.22);
       const a = Math.max(0, Math.min(1, intensity));
       lens.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
-      lens.style.opacity = String(a * (1-Number(ambientDawnRef.current?.style.opacity||0)) * (1-Number(ambientDuskRef.current?.style.opacity||0)) * (1-Number(ambientNightRef.current?.style.opacity||0)));
+      // Apply the same small displacement to the visible composite, not just the day lens.
+      const layers = [img, ...[ambientDawnRef,ambientDuskRef,ambientNightRef].map(ref=>ref.current).filter((el): el is HTMLImageElement=>!!el)];
+      for(const layer of layers) layer.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(1.012)`;
+      lens.style.opacity = String(a * (1 - Number(ambientDawnRef.current?.style.opacity || 0)) * (1 - Number(ambientNightRef.current?.style.opacity || 0)) * (1 - Number(ambientDuskRef.current?.style.opacity || 0)));
       lens.style.maskImage = `radial-gradient(circle ${radius}px at ${fx}px ${fy}px, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 0.85) 18%, hsl(0 0% 0% / 0.45) 45%, hsl(0 0% 0% / 0.12) 75%, hsl(0 0% 0% / 0) 100%)`;
       (lens.style as any).webkitMaskImage = lens.style.maskImage;
 
@@ -371,28 +376,44 @@ const Nava = () => {
       lastInput = 0; // force fade immediately
       ensureLoop();
     };
-    const onTiltWake = (e: DeviceOrientationEvent) => { onTilt(e); ensureLoop(); };
+    const onTiltWake = (e: DeviceOrientationEvent) => { if(e.gamma == null || e.beta == null) return; onTilt(e); ensureLoop(); };
 
     window.addEventListener("mousemove", onMouseWake, { passive: true });
     hero.addEventListener("mouseleave", onLeave);
     window.addEventListener("deviceorientation", onTiltWake);
 
-    // iOS 13+ requires explicit permission for DeviceOrientationEvent.
-    // Request it on the first user touch anywhere on the page.
-    const DOE: any = (window as any).DeviceOrientationEvent;
+    // Safari requires a direct user gesture. Retry failed requests on a later
+    // gesture, but never repeatedly prompt after explicit denial.
+    const DOE = (window as any).DeviceOrientationEvent;
     const needsPerm = DOE && typeof DOE.requestPermission === "function";
-    const requestTilt = () => {
-      window.removeEventListener("touchend", requestTilt);
-      if (!needsPerm) return;
-      DOE.requestPermission().then((state: string) => {
-        if (state === "granted") {
-          window.addEventListener("deviceorientation", onTiltWake);
-        }
-      }).catch(() => {});
+    let disposed = false, requesting = false, permissionSettled = false;
+    const removePermissionListeners = () => {
+      window.removeEventListener("click", requestTilt, true);
+      window.removeEventListener("touchend", requestTilt, true);
     };
-    if (needsPerm) {
-      window.addEventListener("touchend", requestTilt, { once: true });
+    function requestTilt() {
+      if (!needsPerm || disposed || requesting || permissionSettled) return;
+      requesting = true;
+      try {
+        Promise.resolve(DOE.requestPermission()).then((state: string) => {
+          if(disposed) return;
+          if(state==="granted" || state==="denied") {
+            permissionSettled=true;
+            removePermissionListeners();
+          }
+          if(state==="granted") ensureLoop();
+        }).catch(()=>{}).finally(()=>{requesting=false;});
+      } catch { requesting=false; }
     }
+    if(needsPerm) {
+      window.addEventListener("click",requestTilt,true);
+      window.addEventListener("touchend",requestTilt,{capture:true,passive:true});
+    }
+    const wakeOnReturn = () => { if(!document.hidden) ensureLoop(); };
+    document.addEventListener("visibilitychange",wakeOnReturn);
+    window.addEventListener("pageshow",wakeOnReturn);
+    window.addEventListener("resize",wakeOnReturn);
+    window.addEventListener("orientationchange",wakeOnReturn);
 
     // Initial sync.
     const r0 = hero.getBoundingClientRect();
@@ -404,9 +425,15 @@ const Nava = () => {
       window.removeEventListener("mousemove", onMouseWake);
       hero.removeEventListener("mouseleave", onLeave);
       window.removeEventListener("deviceorientation", onTiltWake);
-      window.removeEventListener("touchend", requestTilt);
+      disposed = true;
+      removePermissionListeners();
+      document.removeEventListener("visibilitychange",wakeOnReturn);
+      window.removeEventListener("pageshow",wakeOnReturn);
+      window.removeEventListener("resize",wakeOnReturn);
+      window.removeEventListener("orientationchange",wakeOnReturn);
       if (raf) cancelAnimationFrame(raf);
       img.style.transform = "";
+      for (const ref of [ambientDawnRef,ambientDuskRef,ambientNightRef]) if(ref.current){ref.current.style.transform="";ref.current.style.objectPosition="";}
       img.style.opacity = "";
       img.style.objectPosition = "";
       lens.style.transform = "";
