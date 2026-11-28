@@ -535,7 +535,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
                   backfaceVisibility: "hidden",
                 }}
               />
-              <img data-ambient-layer ref={ambientDawnRef} src="/ambient/lyra/C03FD56E-BBC5-47FA-8237-A584C619F6A0.png" alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center pointer-events-none" style={{opacity:dawn, transition:"opacity 1800ms ease"}} />
+              <img data-ambient-layer ref={ambientDawnRef} src="/ambient/lyra/CC4D6844-0404-4B74-881E-E04BEBE47077.png" alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center pointer-events-none" style={{opacity:dawn, transition:"opacity 1800ms ease"}} />
               <img data-ambient-layer ref={ambientNightRef} src="/ambient/lyra/33E71915-2993-406C-AA5F-6656DC0ED56A.png" alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center pointer-events-none" style={{opacity:nightWeight, transition:"opacity 1800ms ease"}} />
               <div
                 ref={heroLensRef}
