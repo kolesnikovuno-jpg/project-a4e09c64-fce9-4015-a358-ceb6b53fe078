@@ -604,7 +604,18 @@ export default async function handler(req:Request,res:ServerResponse){
       p_run_id:run.id,p_activation_id:picked.task.id,p_project_id:project.id,
       p_finding:finding,p_baseline_day:baselineDay,
     });
-    if(finishError||finished!==true)throw Error("atomic_commit_failed");
+    if(finishError||finished!==true){
+      const sqlstate=finishError?.code??"no_result";
+      console.warn("egg_atomic_commit_diagnostic",{runId:run.id,sqlstate});
+      // Retry only transient transaction conflicts, using the same checkpoint.
+      if(["40001","40P01","55P03"].includes(sqlstate)){
+        const retry=await db.rpc("egg_complete_operational_auto_run",{
+          p_run_id:run.id,p_activation_id:picked.task.id,p_project_id:project.id,
+          p_finding:finding,p_baseline_day:baselineDay,
+        });
+        if(retry.error||retry.data!==true)throw Error("atomic_commit_failed");
+      }else throw Error("atomic_commit_failed");
+    }
     json(res,200,{
       ok:true,status:"research_saved",
       sphere:picked.task.sphere,sourceKind:picked.event.kind,day:sourceDay,
