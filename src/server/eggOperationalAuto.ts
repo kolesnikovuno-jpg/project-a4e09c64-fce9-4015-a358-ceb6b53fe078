@@ -264,7 +264,9 @@ export default async function handler(req:Request,res:ServerResponse){
     if(!checked.success){json(res,503,{ok:false,error:"semantic_snapshot_invalid",paidAiCalls:0});return;}
     const model=providerFromEnv(process.env,req.headers["x-vercel-oidc-token"]);
     if(!model||model.kind!=="direct_openai"||model.model!=="gpt-6-luna"){json(res,503,{ok:false,error:"ai_tariff_unverified",paidAiCalls:0});return;}
-    const input=boundedEggContext(checked.data,90000);
+    const {data:gapGroups,error:gapGroupError}=await db.from("egg_shared_evidence_gap_groups_v1").select("normalized_fact,gap_ids,spheres,requests,critical,source_type").eq("node_id",work.node_id).order("critical",{ascending:false}).order("requests",{ascending:false}).limit(60);
+    if(gapGroupError){json(res,503,{ok:false,error:"shared_gap_groups_unavailable",paidAiCalls:0});return;}
+    const input=boundedEggContext({shared_gap_groups:gapGroups??[],...checked.data},90000);
     if(Buffer.byteLength(input)>100000){json(res,503,{ok:false,error:"ai_context_too_large",paidAiCalls:0});return;}
     const {data:run,error:runError}=await db.from("egg_operational_auto_runs").insert({operational_project_id:project.id,run_day:utcDay,slot,operation_kind:"yolk",synthesis_node_id:work.node_id,synthesis_revision:work.revision,status:"claimed"}).select("id").single();
     if(runError||!run){json(res,409,{ok:false,error:"run_slot_already_claimed",paidAiCalls:0});return;}
