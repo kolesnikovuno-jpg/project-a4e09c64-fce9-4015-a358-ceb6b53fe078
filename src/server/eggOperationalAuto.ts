@@ -421,6 +421,20 @@ export default async function handler(req:Request,res:ServerResponse){
     const {data:externalGaps,error:gapError}=link?await db.from("egg_sphere_evidence_work_v1").select("gap_id,detail").eq("node_id",link.node_id).eq("sphere",picked.task.sphere).eq("action_kind","external_research").limit(3):{data:[],error:null};
     if(gapError)throw Error("source_unavailable");
     webResearch=objectResearch&&!!externalGaps?.length;
+    let targetedEvidence:unknown=null;
+    if(link && Array.isArray(picked.event.facts?.gap_ids)){
+      const ids=picked.event.facts.gap_ids.filter((v:unknown):v is string=>typeof v==="string"&&z.string().uuid().safeParse(v).success).slice(0,20);
+      const [gaps,children,results]=await Promise.all([
+        db.from("egg_operational_information_gaps").select("id,detail,status,source_type,source_activation_id").in("id",ids),
+        db.from("egg_object_handoffs").select("id,child_id,level,result,created_at").eq("parent_id",link.node_id).eq("level",link.level).order("created_at",{ascending:false}).limit(8),
+        db.from("egg_object_sphere_results").select("id,sphere,iteration,result,operational_activation_id").eq("node_id",link.node_id).eq("level",link.level).order("created_at",{ascending:false}).limit(12)
+      ]);
+      if(gaps.error||children.error||results.error)throw Error("source_unavailable");
+      const {data:localLinks,error:localError}=await db.from("egg_object_activation_links").select("activation_id").eq("node_id",link.node_id).in("activation_id",(gaps.data??[]).map(g=>g.source_activation_id));
+      if(localError)throw Error("source_unavailable");
+      const local=new Set((localLinks??[]).map(l=>l.activation_id));
+      targetedEvidence={criterion:picked.event.facts.completion_criterion,gaps:(gaps.data??[]).filter(g=>local.has(g.source_activation_id)),childHandoffs:children.data,sphereResults:(results.data??[]).map(r=>({...r,result:compactFinding(r.result)}))};
+    }
     const prompt={
       instructions:[
         "Ты функциональная сфера EGG, а не независимый управляющий проектом.",
@@ -430,7 +444,7 @@ export default async function handler(req:Request,res:ServerResponse){
         "resourceLedger содержит фактические зарезервированные слоты, результаты и время исполнения. null в стоимости или токенах означает отсутствие измерения, не нулевой расход. Не оценивай бюджет без источника.",
         "incomingSphereResults — результаты предшествующих сфер. Учитывай их как данные; proposed означает гипотезу, а не утверждённое решение. Не считай отсутствие результата подтверждением.",
         "Пиши кратко: observation, hypothesis, nextStep до 450 символов каждое; не дублируй сведения; обычно достаточно 1–3 пробелов и 1–2 сценариев. Заполни обязательные поля: observation, hypothesis, nextStep — содержательные строки не короче 12 символов; limitations — 1–4 строки по 8–360 символов; evidenceGaps — до 5; scenarios — до 3. Не добавляй поля вне схемы.",
-        "Используй общую картину проекта; отделяй проверенные наблюдения от гипотез.",
+        "Используй общую картину проекта; отделяй проверенные наблюдения от гипотез. Для targetedEvidence сопоставь конкретные пробелы с результатами и дочерними передачами по идентификаторам. Не считай предложенный результат первичным документом. Не объявляй отсутствующим то, что не вошло в выборку.",
         "ADR-033: Цель Автора первична, бюджет не требуется для исследования вариантов. Сначала исследуй несколько релевантных способов достижения цели, затем выявляй потребности и дефициты.",
         "Для сферы Маркетинг и Ритейл: исследуй альтернативные каналы презентации Lyra, требования к запуску, общие материалы для разных каналов и условия готовности; не предлагай запускать всё одновременно.",
         "Для сферы Коммерция: отделяй проверенные суммы, оценки и неизвестные затраты; рассматривай минимальный, сбалансированный и расширенный сценарии, включая время, людей и риски.",
@@ -446,7 +460,7 @@ export default async function handler(req:Request,res:ServerResponse){
         eggOperationalAnalysisRules,
         'Верни только JSON {"observation":"...","hypothesis":"...","nextStep":"...","confidence":"low|medium","limitations":["..."],"evidenceGaps":[{"missingFact":"...","whyNeeded":"...","sourceType":"internal|external|authorial","priority":"critical|important|optional","affectedDecision":"..."}],"scenarios":[{"id":"minimum","approach":"...","prerequisite":"...","costUah":null,"costEvidence":"unknown","sourceRef":null,"nextValidation":"..."}]}. Для 1–3 альтернативных сценариев, если данных достаточно; неизвестную цену передавай null. Число допустимо только при подтверждённом источнике или явно названном допущении. Никакой сценарий не разрешает расход.',
       ].join("\n"),
-      input:boundedEggContext({
+      input:JSON.stringify({targetedEvidence:JSON.parse(boundedEggContext(targetedEvidence,30000)),context:JSON.parse(boundedEggContext({
         task:{sphere:picked.task.sphere,description:picked.task.task,
           eventId:picked.event.id,eventKind:picked.event.kind,sourceDay,retryNumber:picked.task.retry_count,sourceEventId:picked.event.facts?.retry_source_event??picked.event.id},
         objectResearchRequest:objectResearch?picked.event.facts:null,
@@ -462,7 +476,7 @@ export default async function handler(req:Request,res:ServerResponse){
           kind:e.kind,at:e.observed_at,status:e.evidence_status,
           summary:e.summary,facts:e.facts,
         })),
-      },90000),
+      },55000))}),
     };
     stage="budget_reservation";
     // Only the verified direct Luna tariff is enabled. Unknown providers fail closed.
