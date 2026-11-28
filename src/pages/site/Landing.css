@@ -809,8 +809,8 @@
 
   .landing-toprail--mobile {
     top: 3.5rem;
-    left: 5vw;
-    width: 90vw;
+    left: 1vw;
+    width: 98vw;
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -854,7 +854,7 @@
   }
 
   .landing-wordmark {
-    left: clamp(3px, 1.15vw, 6px);
+    left: -0.065em;
     font-size: 10.35vw;
     font-weight: 350;
     letter-spacing: 0.065em;
