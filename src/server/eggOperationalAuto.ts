@@ -77,7 +77,7 @@ type EventRow={
 };
 type TaskRow={
   id:string;event_id:string;sphere:SphereId;task:string;
-  status:string;retry_count:number;
+  status:string;retry_count:number;coordinatedGapIds?:string[];
 };
 type ProjectRow={
   id:string;goal_target:number;auto_research_enabled:boolean;
@@ -135,7 +135,7 @@ function pickTask(events:EventRow[],tasks:TaskRow[]):{task:TaskRow;event:EventRo
     const inquiry=(x:typeof a)=>x.event.kind==="inquiry_received"?0:1;
     const eventDay=(x:typeof a)=>isDate(x.event.facts?.day)?x.event.facts.day:"";
     const retry=(x:typeof a)=>typeof x.event.facts?.retry_number==="number"?0:1;
-    const coordinated=(x:typeof a)=>x.event.source==="egg_yolk_followup_v1" && Array.isArray(x.event.facts?.gap_ids) && typeof x.event.facts?.completion_criterion==="string"?0:1;
+    const coordinated=(x:typeof a)=>x.task.coordinatedGapIds?.length?0:x.event.source==="egg_yolk_followup_v1" && Array.isArray(x.event.facts?.gap_ids) && typeof x.event.facts?.completion_criterion==="string"?0:1;
     const coordinationOrder=coordinated(a)-coordinated(b);if(coordinationOrder)return coordinationOrder;
     const retryOrder=retry(a)-retry(b);if(retryOrder)return retryOrder;
     const objectResearch=(x:typeof a)=>x.event.source==="egg_object_research_v1"?0:1;
@@ -244,6 +244,13 @@ export default async function handler(req:Request,res:ServerResponse){
     candidates=candidates.filter(t=>ids.has(t.id));
   }
   if(activationId){candidates=candidates.filter(t=>t.id===activationId);}
+  if(candidates.length){
+    const {data:coord,error:coordError}=await db.from("egg_coordinated_evidence_review_v1").select("activation_id,gap_id,gap_status").in("activation_id",candidates.map(t=>t.id)).limit(1600);
+    if(coordError){json(res,503,{ok:false,error:"coordination_unavailable",paidAiCalls:0});return;}
+    const grouped=new Map<string,string[]>();
+    for(const row of coord??[]){if(row.gap_status==="resolved")continue;const ids=grouped.get(row.activation_id)??[];ids.push(row.gap_id);grouped.set(row.activation_id,ids);}
+    for(const task of candidates){const ids=grouped.get(task.id);if(ids?.length){task.coordinatedGapIds=ids;}}
+  }
   const preferYolk=mode==="auto" && !target && slot%3===0;
   let picked=target==="yolk"?null:pickTask(events,candidates);
   if(preferYolk && picked){
@@ -456,8 +463,8 @@ export default async function handler(req:Request,res:ServerResponse){
       primarySources={assets:assets.data,sources:sources.data,publicEvidence};
     }
     let targetedEvidence:unknown=null;
-    if(link && Array.isArray(picked.event.facts?.gap_ids)){
-      const ids=picked.event.facts.gap_ids.filter((v:unknown):v is string=>typeof v==="string"&&z.string().uuid().safeParse(v).success).slice(0,20);
+    if(link && (picked.task.coordinatedGapIds?.length || Array.isArray(picked.event.facts?.gap_ids))){
+      const ids=(picked.task.coordinatedGapIds??picked.event.facts.gap_ids as unknown[]).filter((v:unknown):v is string=>typeof v==="string"&&z.string().uuid().safeParse(v).success).slice(0,20);
       const [gaps,children,results]=await Promise.all([
         db.from("egg_operational_information_gaps").select("id,detail,status,source_type,source_activation_id").in("id",ids),
         db.from("egg_object_handoffs").select("id,child_id,level,result,created_at").eq("parent_id",link.node_id).eq("level",link.level).order("created_at",{ascending:false}).limit(8),
@@ -467,7 +474,7 @@ export default async function handler(req:Request,res:ServerResponse){
       const {data:localLinks,error:localError}=await db.from("egg_object_activation_links").select("activation_id").eq("node_id",link.node_id).in("activation_id",(gaps.data??[]).map(g=>g.source_activation_id));
       if(localError)throw Error("source_unavailable");
       const local=new Set((localLinks??[]).map(l=>l.activation_id));
-      targetedEvidence={criterion:picked.event.facts.completion_criterion,gaps:(gaps.data??[]).filter(g=>local.has(g.source_activation_id)),childHandoffs:children.data,sphereResults:(results.data??[]).map(r=>({...r,result:compactFinding(r.result)}))};
+      targetedEvidence={criterion:picked.task.coordinatedGapIds?.length?picked.task.task:picked.event.facts.completion_criterion,gaps:(gaps.data??[]).filter(g=>local.has(g.source_activation_id)),childHandoffs:children.data,sphereResults:(results.data??[]).map(r=>({...r,result:compactFinding(r.result)}))};
     }
     const prompt={
       instructions:[
