@@ -1,3 +1,4 @@
+import { useAmbient } from "@/lib/useAmbient";
 import "./studio-object-controls.css";
 import "./site/Landing.css";
 import ColorTool from "@/components/Color";
@@ -56,19 +57,14 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
   const { t, locale, localePath } = useLocale();
   const modelRef = useRef<HTMLElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
-  const [night, setNight] = useState(() => {
-    try { return window.localStorage.getItem("studio-landing-theme") === "night"; }
-    catch { return false; }
-  });
-  useEffect(() => {
-    try { window.localStorage.setItem("studio-landing-theme", night ? "night" : "day"); }
-    catch { /* Theme works without storage. */ }
-  }, [night]);
+  const { mode, cycle, dawn, nightWeight, night } = useAmbient();
   const [modelLoaded, setModelLoaded] = useState(false);
   const [modelFullyVisible, setModelFullyVisible] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
   const heroImgRef = useRef<HTMLImageElement>(null);
   const heroLensRef = useRef<HTMLDivElement>(null);
+  const ambientDawnRef = useRef<HTMLImageElement>(null);
+  const ambientNightRef = useRef<HTMLImageElement>(null);
   const crossfadeRef = useRef<HTMLDivElement>(null);
   const heroLayerRef = useRef<HTMLDivElement>(null);
   const modelLayerRef = useRef<HTMLDivElement>(null);
@@ -389,6 +385,8 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
       // Default focal is 75% (right side) → map panX∈[-1..1] to [15%..95%].
       const panPct = 55 + panX * 40;
       img.style.objectPosition = `${panPct}% center`;
+      if (ambientDawnRef.current) ambientDawnRef.current.style.objectPosition = img.style.objectPosition;
+      if (ambientNightRef.current) ambientNightRef.current.style.objectPosition = img.style.objectPosition;
       lens.style.backgroundPosition = `${panPct}% center`;
 
       // Lens layer = duplicate, displaced + radially masked at focal point.
@@ -397,7 +395,7 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
       const radius = Math.max(120, Math.min(rect.width, rect.height) * 0.22);
       const a = Math.max(0, Math.min(1, intensity));
       lens.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
-      lens.style.opacity = String(a);
+      lens.style.opacity = String(a * (1 - Number(ambientDawnRef.current?.style.opacity || 0)) * (1 - Number(ambientNightRef.current?.style.opacity || 0)));
       lens.style.maskImage = `radial-gradient(circle ${radius}px at ${fx}px ${fy}px, hsl(0 0% 0% / 1) 0%, hsl(0 0% 0% / 0.85) 18%, hsl(0 0% 0% / 0.45) 45%, hsl(0 0% 0% / 0.12) 75%, hsl(0 0% 0% / 0) 100%)`;
       (lens.style as any).webkitMaskImage = lens.style.maskImage;
 
@@ -507,11 +505,8 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
         }
       `}</style>
       <button type="button" className={`landing-theme-toggle ${switcherVisible ? "" : "lyra-on-photo"}`}
-        aria-label={locale === "ru" ? "Ночной режим" : locale === "uk" ? "Нічний режим" : "Night mode"}
-        aria-pressed={night} onClick={() => setNight(value => !value)}>
-        <span className={!night ? "is-active" : ""}>day</span>
-        <span aria-hidden="true"> / </span>
-        <span className={night ? "is-active" : ""}>night</span>
+        aria-label={locale === "ru" ? "Сменить световую среду" : locale === "uk" ? "Змінити світлове середовище" : "Change ambient lighting"} onClick={cycle}>
+        <span className="is-active">{mode}</span>
       </button>
       {/* Crossfade scroll zone: hero image fades out, 3D fades in */}
       <div
@@ -539,6 +534,8 @@ const Lyra = ({ commercial = false }: { commercial?: boolean }) => {
                   backfaceVisibility: "hidden",
                 }}
               />
+              <img ref={ambientDawnRef} src="/ambient/lyra/C03FD56E-BBC5-47FA-8237-A584C619F6A0.png" alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center pointer-events-none" style={{opacity:dawn, transition:"opacity 1800ms ease"}} />
+              <img ref={ambientNightRef} src="/ambient/lyra/33E71915-2993-406C-AA5F-6656DC0ED56A.png" alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover object-[75%_center] md:object-center pointer-events-none" style={{opacity:nightWeight, transition:"opacity 1800ms ease"}} />
               <div
                 ref={heroLensRef}
                 aria-hidden
