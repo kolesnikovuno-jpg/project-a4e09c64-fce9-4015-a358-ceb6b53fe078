@@ -94,6 +94,10 @@ export function useAmbient() {
     window.dispatchEvent(new Event("studio:ambient-mode"));
   };
   const weights=ambientWeights(solarElevation(date,location));
+  // Separate morning and evening photo adapters without changing the shared solar cycle.
+  const slope=solarElevation(new Date(date.getTime()+60000),location)-solarElevation(new Date(date.getTime()-60000),location);
+  const t=Math.max(0,Math.min(1,.5-slope/.1));
+  const evening=mode==="dusk"?1:mode==="dawn"?0:t*t*(3-2*t);
   let dawn=weights.dawn;
   let nightWeight=weights.night;
   if(mode==="dawn"){dawn=1;nightWeight=0;}
@@ -120,5 +124,5 @@ export function useAmbient() {
   // Night is the top photo layer; compensate the dawn alpha so the underlying
   // daytime photo does not leak through a night-to-dawn transition.
   const dawnAlpha = nightWeight >= 1 ? 0 : Math.min(1,dawn/(1-nightWeight));
-  return { mode, cycle, dawn: dawnAlpha, nightWeight, night: dark, palette, background: "hsl("+bgHsl+")", exposure: (1.45-.16*dawn-.35*nightWeight).toFixed(3) };
+  return { mode, cycle, evening, dawn: dawnAlpha, nightWeight, night: dark, palette, background: "hsl("+bgHsl+")", exposure: (1.45-.16*dawn-.35*nightWeight).toFixed(3) };
 }
