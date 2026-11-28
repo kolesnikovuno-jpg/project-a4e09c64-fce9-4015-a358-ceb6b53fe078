@@ -887,3 +887,52 @@
     outline-offset: 2px;
   }
 }
+
+
+/* Experimental day/night lighting — scoped to the Studio landing only.
+   DNA-STUDIO-001: all geometry and individual glyph spacing remain intact. */
+.landing-field[data-theme="night"] {
+  --background: 40 7% 10%;
+  --foreground: 35 15% 82%;
+  --ring: 35 15% 65%;
+  color-scheme: dark;
+}
+.landing-field[data-theme="night"]::after {
+  color: rgba(216, 210, 202, 0.045);
+}
+.landing-field[data-theme="night"] .landing-language button {
+  color: hsl(203 22% 70%) !important;
+}
+.landing-theme-toggle {
+  position: fixed;
+  z-index: 10;
+  top: 12px;
+  right: 2vw;
+  min-height: 36px;
+  padding: 0 4px;
+  background: transparent;
+  border: 0;
+  color: hsl(var(--foreground) / 0.58);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+}
+.landing-theme-toggle .is-active {
+  color: hsl(var(--foreground) / 0.95);
+}
+.landing-theme-toggle:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .landing-field { transition: background-color 600ms ease, color 600ms ease, box-shadow 600ms ease; }
+  .landing-field::after,
+  .landing-toprail,
+  .landing-wordmark,
+  .landing-popup__stages p,
+  .landing-popup__projects a,
+  .landing-theme-toggle,
+  .landing-theme-toggle span { transition: color 600ms ease; }
+}
