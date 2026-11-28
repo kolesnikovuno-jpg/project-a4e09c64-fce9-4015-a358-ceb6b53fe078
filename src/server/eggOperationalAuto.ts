@@ -135,6 +135,8 @@ function pickTask(events:EventRow[],tasks:TaskRow[]):{task:TaskRow;event:EventRo
     const inquiry=(x:typeof a)=>x.event.kind==="inquiry_received"?0:1;
     const eventDay=(x:typeof a)=>isDate(x.event.facts?.day)?x.event.facts.day:"";
     const retry=(x:typeof a)=>typeof x.event.facts?.retry_number==="number"?0:1;
+    const coordinated=(x:typeof a)=>x.event.source==="egg_yolk_followup_v1" && Array.isArray(x.event.facts?.gap_ids) && typeof x.event.facts?.completion_criterion==="string"?0:1;
+    const coordinationOrder=coordinated(a)-coordinated(b);if(coordinationOrder)return coordinationOrder;
     const retryOrder=retry(a)-retry(b);if(retryOrder)return retryOrder;
     const objectResearch=(x:typeof a)=>x.event.source==="egg_object_research_v1"?0:1;
     const objectOrder=objectResearch(a)-objectResearch(b);if(objectOrder)return objectOrder;
