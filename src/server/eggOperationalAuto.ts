@@ -231,6 +231,23 @@ export default async function handler(req:Request,res:ServerResponse){
   const cutoff=Date.now()-8*86400000;
   const events=((eventsRaw??[]) as EventRow[]).filter(e=>
     (e.source==="egg_yolk_followup_v1" && e.kind==="yolk_followup" && e.evidence_status==="hypothesis" && e.facts?.research_only===true && e.facts?.approval_status==="unapproved") || (e.evidence_status==="verified_source" && (e.source==="egg_object_research_v1" || (isDate(e.facts?.day)&&Date.parse(e.facts.day+"T00:00:00Z")>=cutoff))));
+  // Include explicitly coordinated pending work from verified connector events,
+  // without treating historical metrics as current observations.
+  if(target!=="yolk"){
+    const {data:links,error:linksError}=await db.from("egg_coordinated_evidence_review_v1").select("activation_id").eq("execution_status","pending").limit(1000);
+    if(linksError){json(res,503,{ok:false,error:"coordination_unavailable",paidAiCalls:0});return;}
+    const ids=[...new Set((links??[]).map(x=>x.activation_id))];
+    if(ids.length){
+      const {data:pending,error:pendingError}=await db.from("egg_operational_activations").select("event_id").in("id",ids).eq("status","pending");
+      if(pendingError){json(res,503,{ok:false,error:"task_queue_unavailable",paidAiCalls:0});return;}
+      const eventIds=[...new Set((pending??[]).map(x=>x.event_id))];
+      if(eventIds.length){
+        const {data:historical,error:historicalError}=await db.from("egg_operational_events").select("id,kind,source,recorded_at,evidence_status,facts").eq("operational_project_id",project.id).eq("source","lyra_supabase_connector").eq("evidence_status","verified_source").eq("kind","site_metrics").in("id",eventIds);
+        if(historicalError){json(res,503,{ok:false,error:"source_events_unavailable",paidAiCalls:0});return;}
+        for(const event of (historical??[]) as EventRow[]){if(!events.some(e=>e.id===event.id))events.push(event);}
+      }
+    }
+  }
   // Yolk synthesis is independent of the verified sphere event queue.
   const {data:taskRaw,error:taskErr}=target==="yolk"||!events.length?{data:[],error:null}:await db.from("egg_operational_activations")
     .select("id,event_id,sphere,task,status,retry_count")
